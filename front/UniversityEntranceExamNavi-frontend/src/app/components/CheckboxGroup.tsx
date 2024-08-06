@@ -66,12 +66,12 @@ const CheckboxGroup = <T,>({
   }, [selectedItems, items]);
 
   return (
-    <div className="mt-2">
+    <div className="mt-2 mb-4">
       <label htmlFor={checkboxType} className="block text-gray-700 mb-2">
         {checkboxType === "region" ? "地域・都道府県" : "分類"}
       </label>
       <div className="flex flex-col">
-        <div className="flex flex-wrap mb-4">
+        <div className="flex flex-wrap">
           <AllCheckbox
             allChecked={Object.values(items)
               .flat()

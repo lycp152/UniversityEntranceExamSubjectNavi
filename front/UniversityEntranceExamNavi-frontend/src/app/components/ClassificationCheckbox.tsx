@@ -1,10 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import AllCheckbox from "./AllCheckbox";
-
-interface ClassificationCheckboxProps {
-  classification: string[];
-  setClassification: React.Dispatch<React.SetStateAction<string[]>>;
-}
+import React, { useState } from "react";
+import CheckboxGroup from "./CheckboxGroup";
 
 const classificationData: Record<string, string[]> = {
   国公立: [
@@ -38,124 +33,18 @@ const classificationData: Record<string, string[]> = {
   ],
 };
 
-const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
-  classification,
-  setClassification,
-}) => {
-  const allRef = useRef<HTMLInputElement | null>(null);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    setClassification((prev) =>
-      checked ? [...prev, value] : prev.filter((c) => c !== value)
-    );
-  };
-
-  const handleAllChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    classificationName: string
-  ) => {
-    const { checked } = e.target;
-    setClassification(
-      checked
-        ? [...classification, ...classificationData[classificationName]]
-        : classification.filter(
-            (c) => !classificationData[classificationName].includes(c)
-          )
-    );
-  };
-
-  const handleSelectAllChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { checked } = e.target;
-    if (checked) {
-      setClassification((prev) => [
-        ...new Set([...prev, ...Object.values(classificationData).flat()]),
-      ]);
-    } else {
-      setClassification([]);
-    }
-  };
-
-  useEffect(() => {
-    if (allRef.current) {
-      const allChecked = Object.values(classificationData)
-        .flat()
-        .every((c) => classification.includes(c));
-      const someChecked = Object.values(classificationData)
-        .flat()
-        .some((c) => classification.includes(c));
-      allRef.current.indeterminate = someChecked && !allChecked;
-      allRef.current.checked = allChecked;
-    }
-  }, [classification]);
-
-  const isClassificationDefined = Array.isArray(classification);
+const ClassificationCheckbox: React.FC = () => {
+  const [classification, setClassification] = useState<string[]>([]);
 
   return (
-    <div className="mt-2">
-      <label htmlFor="classification" className="block text-gray-700 mb-2">
-        分類
-      </label>
-      <div className="flex flex-col">
-        {/* 「すべて」チェックボックス */}
-        <div className="flex flex-wrap mb-4">
-          <AllCheckbox
-            allChecked={Object.values(classificationData)
-              .flat()
-              .every((c) => classification.includes(c))}
-            indeterminate={
-              Object.values(classificationData)
-                .flat()
-                .some((c) => classification.includes(c)) &&
-              !Object.values(classificationData)
-                .flat()
-                .every((c) => classification.includes(c))
-            }
-            onChange={handleSelectAllChange}
-            label="すべて"
-          />
-        </div>
-        {/* Container for 横並び */}
-        <div className="flex flex-wrap">
-          {Object.entries(classificationData).map(
-            ([classificationName, subItems]) => (
-              <div key={classificationName} className="flex-1 mb-4">
-                <AllCheckbox
-                  allChecked={
-                    isClassificationDefined &&
-                    subItems.every((c) => classification.includes(c))
-                  }
-                  indeterminate={
-                    isClassificationDefined &&
-                    subItems.some((c) => classification.includes(c)) &&
-                    !subItems.every((c) => classification.includes(c))
-                  }
-                  onChange={(e) => handleAllChange(e, classificationName)}
-                  label={classificationName}
-                />
-                <div className="ml-4">
-                  {subItems.map((subItem) => (
-                    <label key={subItem} className="block mb-1">
-                      <input
-                        type="checkbox"
-                        value={subItem}
-                        checked={
-                          isClassificationDefined &&
-                          classification.includes(subItem)
-                        }
-                        onChange={handleChange}
-                        className="mr-2"
-                      />
-                      {subItem}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )
-          )}
-        </div>
-      </div>
-    </div>
+    <CheckboxGroup
+      items={classificationData}
+      selectedItems={classification}
+      setSelectedItems={setClassification}
+      allLabel="すべて"
+      itemLabel={(item) => item}
+      checkboxType="classification"
+    />
   );
 };
 

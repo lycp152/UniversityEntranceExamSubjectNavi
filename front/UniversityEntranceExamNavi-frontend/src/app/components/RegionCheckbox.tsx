@@ -23,7 +23,7 @@ const regionData: Record<string, string[]> = {
 export default function RegionCheckbox({
   region,
   setRegion,
-}: RegionCheckboxProps) {
+}: Readonly<RegionCheckboxProps>) {
   const ref = useRef<HTMLInputElement | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +69,10 @@ export default function RegionCheckbox({
 
   return (
     <div className="mt-2">
-      <label className="block text-gray-700 mb-2">地域・都道府県</label>
+      <label htmlFor="region" className="block text-gray-700 mb-2">
+        地域・都道府県
+      </label>
+      {/* すべてチェックボックスを一番上に配置 */}
       <div className="flex flex-wrap">
         <AllCheckbox
           allChecked={Object.values(regionData)
@@ -89,35 +92,36 @@ export default function RegionCheckbox({
           }}
           label="すべて"
         />
-        <div className="flex flex-wrap">
-          {Object.entries(regionData).map(([regionName, prefectures]) => (
-            <div key={regionName} className="mb-4">
-              <AllCheckbox
-                allChecked={prefectures.every((pref) => region.includes(pref))}
-                indeterminate={
-                  prefectures.some((pref) => region.includes(pref)) &&
-                  !prefectures.every((pref) => region.includes(pref))
-                }
-                onChange={(e) => handleAllChange(e, regionName)}
-                label={regionName}
-              />
-              <div className="ml-4">
-                {prefectures.map((pref) => (
-                  <label key={pref} className="block">
-                    <input
-                      type="checkbox"
-                      value={pref}
-                      checked={region.includes(pref)}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    {pref}
-                  </label>
-                ))}
-              </div>
+      </div>
+      {/* 親項目と子項目の配置 */}
+      <div className="flex flex-wrap">
+        {Object.entries(regionData).map(([regionName, prefectures]) => (
+          <div key={regionName} className="mb-4">
+            <AllCheckbox
+              allChecked={prefectures.every((pref) => region.includes(pref))}
+              indeterminate={
+                prefectures.some((pref) => region.includes(pref)) &&
+                !prefectures.every((pref) => region.includes(pref))
+              }
+              onChange={(e) => handleAllChange(e, regionName)}
+              label={regionName}
+            />
+            <div className="ml-4">
+              {prefectures.map((pref) => (
+                <label key={pref} className="block">
+                  <input
+                    type="checkbox"
+                    value={pref}
+                    checked={region.includes(pref)}
+                    onChange={handleChange}
+                    className="mr-2"
+                  />
+                  {pref}
+                </label>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );

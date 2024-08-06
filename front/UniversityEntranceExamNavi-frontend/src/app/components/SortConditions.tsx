@@ -5,8 +5,8 @@ interface SortCondition {
 }
 
 interface SortConditionsProps {
-  sortOrder: SortCondition[];
-  setSortOrder: React.Dispatch<React.SetStateAction<SortCondition[]>>;
+  readonly sortOrder: SortCondition[];
+  readonly setSortOrder: React.Dispatch<React.SetStateAction<SortCondition[]>>;
 }
 
 export default function SortConditions({
@@ -42,7 +42,10 @@ export default function SortConditions({
     <div className="mt-4">
       <h2 className="text-lg font-semibold">検索結果の並び替え</h2>
       {sortOrder.map((condition, index) => (
-        <div key={index} className="flex items-center space-x-4 mt-2">
+        <div
+          key={`${condition.examType}-${condition.subjectName}-${condition.order}`}
+          className="flex items-center space-x-4 mt-2"
+        >
           <select
             value={condition.examType}
             onChange={(e) =>
@@ -64,8 +67,8 @@ export default function SortConditions({
           >
             <option value="">科目名を選択</option>
             <option value="英語R+L">英語R+L</option>
-            <option value="英語R">英語R</option>
-            <option value="英語L">英語L</option>
+            <option value="英語R（リーディング）">英語R（リーディング）</option>
+            <option value="英語L（リスニング）">英語L（リスニング）</option>
             <option value="数学">数学</option>
             <option value="国語">国語</option>
             <option value="理科">理科</option>

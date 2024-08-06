@@ -12,6 +12,7 @@ export default function SearchForm() {
   const [region, setRegion] = useState<string[]>([]);
   const [academicField, setAcademicField] = useState<string[]>([]);
   const [schedule, setSchedule] = useState<string[]>([]);
+  const [classification, setClassification] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +57,8 @@ export default function SearchForm() {
         setAcademicField={setAcademicField}
         schedule={schedule}
         setSchedule={setSchedule}
+        classification={classification}
+        setClassification={setClassification}
       />
     </div>
   );

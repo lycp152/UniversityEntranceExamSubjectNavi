@@ -24,7 +24,7 @@ export default function DetailSearch({
   setSchedule,
   classification,
   setClassification,
-}: DetailSearchProps) {
+}: Readonly<DetailSearchProps>) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -33,22 +33,31 @@ export default function DetailSearch({
         <h2 className="text-lg font-semibold">詳細検索</h2>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="ml-2 text-blue-500 focus:outline-none"
+          className="ml-2 text-gray-600 focus:outline-none"
         >
           {isExpanded ? "▲" : "▼"}
         </button>
       </div>
       {isExpanded && (
-        <div className="flex mt-4">
-          <div className="flex-1">
+        <div className="mt-4">
+          {/* 地域・都道府県 */}
+          <div className="mb-4">
             <RegionCheckbox region={region} setRegion={setRegion} />
           </div>
-          <div className="flex-1 space-y-4">
-            <AcademicFieldCheckbox
-              academicField={academicField}
-              setAcademicField={setAcademicField}
-            />
-            <ScheduleCheckbox schedule={schedule} setSchedule={setSchedule} />
+          {/* 学問系統と日程 */}
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <AcademicFieldCheckbox
+                academicField={academicField}
+                setAcademicField={setAcademicField}
+              />
+            </div>
+            <div className="flex-1">
+              <ScheduleCheckbox schedule={schedule} setSchedule={setSchedule} />
+            </div>
+          </div>
+          {/* 分類 */}
+          <div className="mt-4">
             <ClassificationCheckbox
               classification={classification}
               setClassification={setClassification}

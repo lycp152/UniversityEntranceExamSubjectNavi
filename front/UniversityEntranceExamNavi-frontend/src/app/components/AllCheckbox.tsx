@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 interface AllCheckboxProps {
   allChecked: boolean;
@@ -13,20 +13,23 @@ const AllCheckbox: React.FC<AllCheckboxProps> = ({
   onChange,
   label,
 }) => {
+  const checkboxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
   return (
-    <label className="block mb-2">
+    <label className="flex items-center space-x-2">
       <input
         type="checkbox"
+        ref={checkboxRef}
         checked={allChecked}
-        ref={(el) => {
-          if (el) {
-            el.indeterminate = indeterminate;
-          }
-        }}
         onChange={onChange}
-        className="mr-2"
       />
-      {label}
+      <span>{label}</span>
     </label>
   );
 };

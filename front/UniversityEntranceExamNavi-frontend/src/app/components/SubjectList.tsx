@@ -1,13 +1,12 @@
 interface Subject {
   id: number;
   name: string;
-  weight: string;
 }
 
 const subjects: Subject[] = [
-  { id: 1, name: "数学", weight: "高" },
-  { id: 2, name: "英語", weight: "中" },
-  { id: 3, name: "物理", weight: "低" },
+  { id: 1, name: "〇〇大学" },
+  { id: 2, name: "〇〇大学" },
+  { id: 3, name: "〇〇大学" },
 ];
 
 export default function SubjectList() {
@@ -17,8 +16,7 @@ export default function SubjectList() {
       <ul>
         {subjects.map((subject) => (
           <li key={subject.id} className="mb-2">
-            <span className="font-bold">{subject.name}</span>: 比重{" "}
-            {subject.weight}
+            <span className="font-bold">{subject.name}</span>
           </li>
         ))}
       </ul>

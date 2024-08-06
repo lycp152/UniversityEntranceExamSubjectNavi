@@ -51,25 +51,6 @@ const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
     );
   };
 
-  const handleClassificationToggle = (classificationName: string) => {
-    if (
-      classificationData[classificationName].every((c) =>
-        classification.includes(c)
-      )
-    ) {
-      setClassification((prev) =>
-        prev.filter((c) => !classificationData[classificationName].includes(c))
-      );
-    } else {
-      setClassification((prev) => [
-        ...prev,
-        ...classificationData[classificationName].filter(
-          (c) => !prev.includes(c)
-        ),
-      ]);
-    }
-  };
-
   const handleAllChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     classificationName: string

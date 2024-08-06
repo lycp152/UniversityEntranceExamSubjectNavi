@@ -35,14 +35,6 @@ export default function RegionCheckbox({
     }
   };
 
-  const handleRegionToggle = (regionName: string) => {
-    if (region.every((r) => regionData[regionName].includes(r))) {
-      setRegion(region.filter((r) => !regionData[regionName].includes(r)));
-    } else {
-      setRegion([...region, ...regionData[regionName]]);
-    }
-  };
-
   const handleAllChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     regionName: string

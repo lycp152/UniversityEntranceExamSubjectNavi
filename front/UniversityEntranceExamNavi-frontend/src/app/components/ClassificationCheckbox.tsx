@@ -56,10 +56,10 @@ const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
     classificationName: string
   ) => {
     const { checked } = e.target;
-    setClassification((prev) =>
+    setClassification(
       checked
-        ? [...prev, ...classificationData[classificationName]]
-        : prev.filter(
+        ? [...classification, ...classificationData[classificationName]]
+        : classification.filter(
             (c) => !classificationData[classificationName].includes(c)
           )
     );
@@ -85,11 +85,7 @@ const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
         .flat()
         .some((c) => classification.includes(c));
       allRef.current.indeterminate = someChecked && !allChecked;
-      if (allChecked) {
-        allRef.current.checked = true;
-      } else {
-        allRef.current.checked = false;
-      }
+      allRef.current.checked = allChecked;
     }
   }, [classification]);
 
@@ -102,20 +98,28 @@ const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
       </label>
       <div className="flex flex-col">
         {/* 「すべて」チェックボックス */}
-        <label className="block mb-2">
-          <input
-            ref={allRef}
-            type="checkbox"
+        <div className="flex flex-wrap mb-4">
+          <AllCheckbox
+            allChecked={Object.values(classificationData)
+              .flat()
+              .every((c) => classification.includes(c))}
+            indeterminate={
+              Object.values(classificationData)
+                .flat()
+                .some((c) => classification.includes(c)) &&
+              !Object.values(classificationData)
+                .flat()
+                .every((c) => classification.includes(c))
+            }
             onChange={handleSelectAllChange}
-            className="mr-2"
+            label="すべて"
           />
-          すべて
-        </label>
+        </div>
         {/* Container for 横並び */}
-        <div className="flex">
+        <div className="flex flex-wrap">
           {Object.entries(classificationData).map(
             ([classificationName, subItems]) => (
-              <div key={classificationName} className="flex-1">
+              <div key={classificationName} className="flex-1 mb-4">
                 <AllCheckbox
                   allChecked={
                     isClassificationDefined &&
@@ -129,9 +133,9 @@ const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
                   onChange={(e) => handleAllChange(e, classificationName)}
                   label={classificationName}
                 />
-                <div className="flex flex-col ml-4">
+                <div className="ml-4">
                   {subItems.map((subItem) => (
-                    <label key={subItem} className="block mb-2">
+                    <label key={subItem} className="block mb-1">
                       <input
                         type="checkbox"
                         value={subItem}

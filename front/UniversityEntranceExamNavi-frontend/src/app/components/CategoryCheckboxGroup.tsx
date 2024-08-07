@@ -80,9 +80,9 @@ const CategoryCheckboxGroup = <T,>({
         onChange={handleSelectAllChange}
         label="すべて"
       />
-      <div className="flex overflow-x-auto">
+      <div className="flex flex-wrap gap-4">
         {Object.entries(categories).map(([categoryName, categoryItems]) => (
-          <div key={categoryName} className="flex-none w-max p-2">
+          <div key={categoryName} className="flex-1 min-w-[150px] p-2">
             <AllCheckbox
               allChecked={categoryItems.every((item) =>
                 selectedItems.includes(item)
@@ -94,7 +94,7 @@ const CategoryCheckboxGroup = <T,>({
               onChange={(e) => handleCategoryChange(e, categoryItems)}
               label={categoryName}
             />
-            <div className="ml-4 p-1">
+            <div className="ml-4">
               {categoryItems.map((item) => (
                 <label key={String(item)} className="flex items-center mb-1">
                   <input

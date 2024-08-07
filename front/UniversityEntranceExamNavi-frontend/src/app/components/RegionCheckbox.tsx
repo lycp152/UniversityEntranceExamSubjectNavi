@@ -1,5 +1,5 @@
 import React from "react";
-import CheckboxGroup from "./CheckboxGroup";
+import GroupedCheckbox from "./GroupedCheckbox";
 
 const regionData: Record<string, string[]> = {
   北海道: ["北海道"],
@@ -25,7 +25,7 @@ const RegionCheckbox: React.FC<RegionCheckboxProps> = ({
   setRegion,
 }) => {
   return (
-    <CheckboxGroup
+    <GroupedCheckbox
       items={regionData}
       selectedItems={region}
       setSelectedItems={setRegion}

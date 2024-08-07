@@ -1,5 +1,5 @@
 import React from "react";
-import CheckboxGroup from "./CheckboxGroup";
+import GroupedCheckbox from "./GroupedCheckbox";
 
 const classificationData: Record<string, string[]> = {
   国公立: [
@@ -43,7 +43,7 @@ const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
   setClassification,
 }) => {
   return (
-    <CheckboxGroup
+    <GroupedCheckbox
       items={classificationData}
       selectedItems={classification}
       setSelectedItems={setClassification}

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import AllCheckbox from "./AllCheckbox";
 
-interface CheckboxGroupProps<T> {
+interface GroupedCheckboxProps<T> {
   items: Record<string, T[]>;
   selectedItems: T[];
   setSelectedItems: React.Dispatch<React.SetStateAction<T[]>>;
@@ -10,14 +10,14 @@ interface CheckboxGroupProps<T> {
   checkboxType: "region" | "classification";
 }
 
-const CheckboxGroup = <T,>({
+const GroupedCheckbox = <T,>({
   items,
   selectedItems,
   setSelectedItems,
   allLabel,
   itemLabel,
   checkboxType,
-}: CheckboxGroupProps<T>) => {
+}: GroupedCheckboxProps<T>) => {
   const allRef = useRef<HTMLInputElement | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,4 +127,4 @@ const CheckboxGroup = <T,>({
   );
 };
 
-export default CheckboxGroup;
+export default GroupedCheckbox;

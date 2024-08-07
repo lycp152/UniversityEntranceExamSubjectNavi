@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import AllCheckbox from "./AllCheckbox";
+import React from "react";
+import GenericCheckboxGroup from "./GenericCheckboxGroup";
 
 interface AcademicFieldCheckboxProps {
   academicField: string[];
@@ -32,68 +32,13 @@ const academicFields = [
 const AcademicFieldCheckbox: React.FC<AcademicFieldCheckboxProps> = ({
   academicField,
   setAcademicField,
-}) => {
-  const [allChecked, setAllChecked] = useState(false);
-  const [isIndeterminate, setIsIndeterminate] = useState(false);
-
-  const handleAcademicFieldChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setAcademicField([...academicField, value]);
-    } else {
-      setAcademicField(academicField.filter((field) => field !== value));
-    }
-  };
-
-  const handleAllChange = () => {
-    if (allChecked) {
-      setAcademicField([]);
-    } else {
-      setAcademicField(academicFields);
-    }
-    setAllChecked(!allChecked);
-  };
-
-  React.useEffect(() => {
-    const allChecked = academicFields.every((field) =>
-      academicField.includes(field)
-    );
-    const someChecked = academicFields.some((field) =>
-      academicField.includes(field)
-    );
-    setAllChecked(allChecked);
-    setIsIndeterminate(someChecked && !allChecked);
-  }, [academicField]);
-
-  return (
-    <div className="mt-2">
-      <label htmlFor="academicField" className="block text-gray-700 mb-2">
-        学問系統
-      </label>
-      <AllCheckbox
-        allChecked={allChecked}
-        indeterminate={isIndeterminate}
-        onChange={handleAllChange}
-        label="すべて"
-      />
-      <div className="flex flex-wrap">
-        {academicFields.map((field) => (
-          <label key={field} className="mr-4 mb-2">
-            <input
-              type="checkbox"
-              value={field}
-              checked={academicField.includes(field)}
-              onChange={handleAcademicFieldChange}
-              className="mr-2"
-            />
-            {field}
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-};
+}) => (
+  <GenericCheckboxGroup
+    items={academicFields}
+    selectedItems={academicField}
+    setSelectedItems={setAcademicField}
+    label="学問系統"
+  />
+);
 
 export default AcademicFieldCheckbox;

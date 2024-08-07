@@ -27,12 +27,23 @@ export default function DetailSearch({
 }: Readonly<DetailSearchProps>) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const closeSearch = () => {
+    setIsExpanded(false);
+  };
+
   return (
     <div className="mt-4">
-      <div className="flex items-center">
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={toggleExpanded}
+      >
         <h2 className="text-lg font-semibold">詳細検索</h2>
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={toggleExpanded}
           className="ml-2 text-gray-600 focus:outline-none"
         >
           {isExpanded ? "▲" : "▼"}
@@ -62,6 +73,15 @@ export default function DetailSearch({
               classification={classification}
               setClassification={setClassification}
             />
+          </div>
+          {/* 詳細検索を閉じるボタン */}
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={closeSearch}
+              className="text-blue-600 hover:text-blue-700 py-2 px-4 rounded flex items-center"
+            >
+              <span className="mr-2">×</span> 詳細検索を閉じる
+            </button>
           </div>
         </div>
       )}

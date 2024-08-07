@@ -13,21 +13,6 @@ export default function SortConditions({
   sortOrder,
   setSortOrder,
 }: SortConditionsProps) {
-  const addSortCondition = () => {
-    if (sortOrder.length < 5) {
-      setSortOrder([
-        ...sortOrder,
-        { examType: "", subjectName: "", order: "" },
-      ]);
-    }
-  };
-
-  const removeSortCondition = (index: number) => {
-    const newSortOrder = [...sortOrder];
-    newSortOrder.splice(index, 1);
-    setSortOrder(newSortOrder);
-  };
-
   const handleSortChange = (
     index: number,
     field: keyof SortCondition,
@@ -83,25 +68,8 @@ export default function SortConditions({
             <option value="多い">多い</option>
             <option value="少ない">少ない</option>
           </select>
-          {sortOrder.length > 1 && (
-            <button
-              type="button"
-              onClick={() => removeSortCondition(index)}
-              className="bg-red-500 text-white py-1 px-3 rounded"
-            >
-              削除
-            </button>
-          )}
         </div>
       ))}
-      <button
-        type="button"
-        onClick={addSortCondition}
-        disabled={sortOrder.length >= 5} // ボタンを無効化
-        className="mt-2 bg-gray-600 text-white py-2 px-4 disabled:bg-gray-400"
-      >
-        + 条件追加
-      </button>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import React from "react";
 import { subjects, titleData } from "./SubjectData";
 
 const SubjectTable: React.FC = () => {

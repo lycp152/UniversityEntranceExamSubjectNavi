@@ -20,7 +20,7 @@ const sortOptions = {
     "理科",
     "地歴公",
   ],
-  order: ["多い", "少ない"],
+  order: ["高い", "低い"],
 };
 
 const Select = ({
@@ -76,18 +76,21 @@ export default function SortConditions({
             onChange={(value) => handleSortChange(index, "examType", value)}
             placeholder="試験を選択"
           />
+          <span>の</span>
           <Select
             value={condition.subjectName}
             options={sortOptions.subjectName}
             onChange={(value) => handleSortChange(index, "subjectName", value)}
             placeholder="科目名を選択"
           />
+          <span>の比率が</span>
           <Select
             value={condition.order}
             options={sortOptions.order}
             onChange={(value) => handleSortChange(index, "order", value)}
             placeholder="並び順を選択"
           />
+          <span>順</span>
         </div>
       ))}
     </div>

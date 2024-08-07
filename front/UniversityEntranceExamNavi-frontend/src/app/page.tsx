@@ -1,6 +1,7 @@
+import React from "react";
 import Header from "./components/Header";
 import SubjectSearchForm from "./components/SearchForm";
-import SubjectList from "./components/SubjectList";
+import SubjectTable from "./components/SubjectTable";
 
 export default function Home() {
   return (
@@ -8,7 +9,7 @@ export default function Home() {
       <Header />
       <div className="container mx-auto p-4">
         <SubjectSearchForm />
-        <SubjectList />
+        <SubjectTable />
       </div>
     </main>
   );

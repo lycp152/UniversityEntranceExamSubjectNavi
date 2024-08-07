@@ -69,7 +69,9 @@ const AcademicFieldCheckbox: React.FC<AcademicFieldCheckboxProps> = ({
 
   return (
     <div className="mt-2">
-      <label className="block text-gray-700 mb-2">学問系統</label>
+      <label htmlFor="academicField" className="block text-gray-700 mb-2">
+        学問系統
+      </label>
       <AllCheckbox
         allChecked={allChecked}
         indeterminate={isIndeterminate}

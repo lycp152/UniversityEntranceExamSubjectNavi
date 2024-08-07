@@ -9,7 +9,11 @@ export const metadata = {
   description: "大学受験の科目別配点割合をグラフ化・検索",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  readonly children: ReactNode;
+}) {
   return (
     <html lang="ja">
       <body>{children}</body>

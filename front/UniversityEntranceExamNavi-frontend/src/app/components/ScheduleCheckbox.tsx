@@ -42,7 +42,9 @@ const ScheduleCheckbox: React.FC<ScheduleCheckboxProps> = ({
 
   return (
     <div className="mt-2">
-      <label className="block text-gray-700 mb-2">日程</label>
+      <label htmlFor="schedule" className="block text-gray-700 mb-2">
+        日程
+      </label>
       <AllCheckbox
         allChecked={allChecked}
         indeterminate={isIndeterminate}

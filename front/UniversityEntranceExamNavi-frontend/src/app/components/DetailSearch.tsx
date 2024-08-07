@@ -15,7 +15,7 @@ interface DetailSearchProps {
   setClassification: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-export default function DetailSearch({
+const DetailSearch: React.FC<DetailSearchProps> = ({
   region,
   setRegion,
   academicField,
@@ -24,38 +24,69 @@ export default function DetailSearch({
   setSchedule,
   classification,
   setClassification,
-}: DetailSearchProps) {
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpanded = () => {
+    setIsExpanded((prev) => !prev);
+  };
+
+  const closeSearch = () => {
+    setIsExpanded(false);
+  };
 
   return (
     <div className="mt-4">
-      <div className="flex items-center">
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={toggleExpanded}
+      >
         <h2 className="text-lg font-semibold">詳細検索</h2>
         <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="ml-2 text-blue-500 focus:outline-none"
+          onClick={toggleExpanded}
+          className="ml-2 text-gray-600 focus:outline-none"
         >
           {isExpanded ? "▲" : "▼"}
         </button>
       </div>
       {isExpanded && (
-        <div className="flex mt-4">
-          <div className="flex-1">
+        <div className="mt-4">
+          {/* 地域・都道府県 */}
+          <div className="mb-4">
             <RegionCheckbox region={region} setRegion={setRegion} />
           </div>
-          <div className="flex-1 space-y-4">
-            <AcademicFieldCheckbox
-              academicField={academicField}
-              setAcademicField={setAcademicField}
-            />
-            <ScheduleCheckbox schedule={schedule} setSchedule={setSchedule} />
+          {/* 学問系統と日程 */}
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <AcademicFieldCheckbox
+                academicField={academicField}
+                setAcademicField={setAcademicField}
+              />
+            </div>
+            <div className="flex-1">
+              <ScheduleCheckbox schedule={schedule} setSchedule={setSchedule} />
+            </div>
+          </div>
+          {/* 分類 */}
+          <div className="mt-4">
             <ClassificationCheckbox
               classification={classification}
               setClassification={setClassification}
             />
           </div>
+          {/* 詳細検索を閉じるボタン */}
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={closeSearch}
+              className="text-blue-600 hover:text-blue-700 py-2 px-4 rounded flex items-center"
+            >
+              <span className="mr-2">×</span> 詳細検索を閉じる
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default DetailSearch;

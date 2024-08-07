@@ -1,5 +1,4 @@
-import React from "react";
-import GenericCheckboxGroup from "./GenericCheckboxGroup";
+import GenericCheckboxGroup from "./SimpleCheckboxGroup";
 
 interface AcademicFieldCheckboxProps {
   academicField: string[];

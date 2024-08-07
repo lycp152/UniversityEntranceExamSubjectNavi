@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import AllCheckbox from "./AllCheckbox";
 
-interface GenericCheckboxGroupProps {
+interface SimpleCheckboxGroupProps {
   items: string[];
   selectedItems: string[];
   setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
   label: string;
 }
 
-const GenericCheckboxGroup: React.FC<GenericCheckboxGroupProps> = ({
+const SimpleCheckboxGroup: React.FC<SimpleCheckboxGroupProps> = ({
   items,
   selectedItems,
   setSelectedItems,
@@ -51,7 +51,7 @@ const GenericCheckboxGroup: React.FC<GenericCheckboxGroupProps> = ({
         onChange={handleAllChange}
         label="すべて"
       />
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap p-2">
         {items.map((item) => (
           <label key={item} className="mr-4 mb-2">
             <input
@@ -69,4 +69,4 @@ const GenericCheckboxGroup: React.FC<GenericCheckboxGroupProps> = ({
   );
 };
 
-export default GenericCheckboxGroup;
+export default SimpleCheckboxGroup;

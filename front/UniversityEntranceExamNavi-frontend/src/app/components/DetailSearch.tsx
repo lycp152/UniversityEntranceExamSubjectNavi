@@ -15,7 +15,7 @@ interface DetailSearchProps {
   setClassification: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-export default function DetailSearch({
+const DetailSearch: React.FC<DetailSearchProps> = ({
   region,
   setRegion,
   academicField,
@@ -24,11 +24,11 @@ export default function DetailSearch({
   setSchedule,
   classification,
   setClassification,
-}: Readonly<DetailSearchProps>) {
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
+    setIsExpanded((prev) => !prev);
   };
 
   const closeSearch = () => {
@@ -87,4 +87,6 @@ export default function DetailSearch({
       )}
     </div>
   );
-}
+};
+
+export default DetailSearch;

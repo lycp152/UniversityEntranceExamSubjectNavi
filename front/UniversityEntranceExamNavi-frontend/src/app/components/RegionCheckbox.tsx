@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import CheckboxGroup from "./CheckboxGroup";
 
 const regionData: Record<string, string[]> = {
@@ -15,9 +15,15 @@ const regionData: Record<string, string[]> = {
   九州: ["福岡", "佐賀", "長崎", "熊本", "大分", "宮崎", "鹿児島", "沖縄"],
 };
 
-const RegionCheckbox: React.FC = () => {
-  const [region, setRegion] = useState<string[]>([]);
+interface RegionCheckboxProps {
+  region: string[];
+  setRegion: React.Dispatch<React.SetStateAction<string[]>>;
+}
 
+const RegionCheckbox: React.FC<RegionCheckboxProps> = ({
+  region,
+  setRegion,
+}) => {
   return (
     <CheckboxGroup
       items={regionData}

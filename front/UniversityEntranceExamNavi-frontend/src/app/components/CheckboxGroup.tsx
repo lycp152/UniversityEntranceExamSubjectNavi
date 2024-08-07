@@ -103,17 +103,20 @@ const CheckboxGroup = <T,>({
                 label={groupName}
               />
               <div className="ml-4">
-                {subItems.map((subItem) => (
-                  <label key={subItem as string} className="block mb-1">
+                {subItems.map((item) => (
+                  <div key={String(item)} className="flex items-center mb-1">
                     <input
                       type="checkbox"
-                      value={subItem as string}
-                      checked={selectedItems.includes(subItem)}
+                      id={`${checkboxType}-${item}`}
+                      value={item as string}
+                      checked={selectedItems.includes(item)}
                       onChange={handleChange}
                       className="mr-2"
                     />
-                    {itemLabel(subItem)}
-                  </label>
+                    <label htmlFor={`${checkboxType}-${item}`}>
+                      {itemLabel(item)}
+                    </label>
+                  </div>
                 ))}
               </div>
             </div>

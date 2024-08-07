@@ -9,6 +9,45 @@ interface SortConditionsProps {
   readonly setSortOrder: React.Dispatch<React.SetStateAction<SortCondition[]>>;
 }
 
+const sortOptions = {
+  examType: ["共通テスト", "二次試験", "共通テスト + 二次試験"],
+  subjectName: [
+    "英語R+L",
+    "英語R（リーディング）",
+    "英語L（リスニング）",
+    "数学",
+    "国語",
+    "理科",
+    "地歴公",
+  ],
+  order: ["多い", "少ない"],
+};
+
+const Select = ({
+  value,
+  options,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+  placeholder: string;
+}) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="border border-gray-300 p-2"
+  >
+    <option value="">{placeholder}</option>
+    {options.map((option) => (
+      <option key={option} value={option}>
+        {option}
+      </option>
+    ))}
+  </select>
+);
+
 export default function SortConditions({
   sortOrder,
   setSortOrder,
@@ -19,7 +58,7 @@ export default function SortConditions({
     value: string
   ) => {
     const newSortOrder = [...sortOrder];
-    newSortOrder[index][field] = value;
+    newSortOrder[index] = { ...newSortOrder[index], [field]: value };
     setSortOrder(newSortOrder);
   };
 
@@ -31,43 +70,24 @@ export default function SortConditions({
           key={`${condition.examType}-${condition.subjectName}-${condition.order}`}
           className="flex items-center space-x-4 mt-2"
         >
-          <select
+          <Select
             value={condition.examType}
-            onChange={(e) =>
-              handleSortChange(index, "examType", e.target.value)
-            }
-            className="border border-gray-300 p-2"
-          >
-            <option value="">試験を選択</option>
-            <option value="共通テスト">共通テスト</option>
-            <option value="二次試験">二次試験</option>
-            <option value="共通テスト + 二次試験">共通テスト+二次試験</option>
-          </select>
-          <select
+            options={sortOptions.examType}
+            onChange={(value) => handleSortChange(index, "examType", value)}
+            placeholder="試験を選択"
+          />
+          <Select
             value={condition.subjectName}
-            onChange={(e) =>
-              handleSortChange(index, "subjectName", e.target.value)
-            }
-            className="border border-gray-300 p-2"
-          >
-            <option value="">科目名を選択</option>
-            <option value="英語R+L">英語R+L</option>
-            <option value="英語R（リーディング）">英語R（リーディング）</option>
-            <option value="英語L（リスニング）">英語L（リスニング）</option>
-            <option value="数学">数学</option>
-            <option value="国語">国語</option>
-            <option value="理科">理科</option>
-            <option value="地歴公">地歴公</option>
-          </select>
-          <select
+            options={sortOptions.subjectName}
+            onChange={(value) => handleSortChange(index, "subjectName", value)}
+            placeholder="科目名を選択"
+          />
+          <Select
             value={condition.order}
-            onChange={(e) => handleSortChange(index, "order", e.target.value)}
-            className="border border-gray-300 p-2"
-          >
-            <option value="">並び順を選択</option>
-            <option value="多い">多い</option>
-            <option value="少ない">少ない</option>
-          </select>
+            options={sortOptions.order}
+            onChange={(value) => handleSortChange(index, "order", value)}
+            placeholder="並び順を選択"
+          />
         </div>
       ))}
     </div>

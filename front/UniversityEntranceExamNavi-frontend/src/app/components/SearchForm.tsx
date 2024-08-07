@@ -14,9 +14,12 @@ export default function SearchForm() {
   const [schedule, setSchedule] = useState<string[]>([]);
   const [classification, setClassification] = useState<string[]>([]);
 
+  const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSubject(e.target.value);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // 検索ロジックをここに追加
     console.log(
       "Searching for:",
       subject,
@@ -41,7 +44,7 @@ export default function SearchForm() {
             className="w-full border border-gray-300 p-2"
             placeholder="例：北海道大学 工学部（空白で全てから検索します）"
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+            onChange={handleSubjectChange}
           />
         </div>
         <button type="submit" className="bg-blue-600 text-white py-2 px-4">

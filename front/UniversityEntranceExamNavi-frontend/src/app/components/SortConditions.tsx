@@ -12,9 +12,9 @@ interface SortConditionsProps {
 const sortOptions = {
   examType: ["共通テスト", "二次試験", "共通テスト + 二次試験"],
   subjectName: [
-    "英語R+L",
     "英語R（リーディング）",
     "英語L（リスニング）",
+    "英語R + L",
     "数学",
     "国語",
     "理科",

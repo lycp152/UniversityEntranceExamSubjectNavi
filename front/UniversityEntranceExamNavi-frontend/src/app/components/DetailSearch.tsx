@@ -37,20 +37,17 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
 
   return (
     <div className="mt-4">
-      <div
-        className="flex items-center cursor-pointer"
+      <button
+        className="flex items-center cursor-pointer focus:outline-none"
         onClick={toggleExpanded}
+        aria-expanded={isExpanded}
+        aria-controls="detail-search-content"
       >
         <h2 className="text-lg font-semibold">詳細検索</h2>
-        <button
-          onClick={toggleExpanded}
-          className="ml-2 text-gray-600 focus:outline-none"
-        >
-          {isExpanded ? "▲" : "▼"}
-        </button>
-      </div>
+        <span className="ml-2 text-gray-600">{isExpanded ? "▲" : "▼"}</span>
+      </button>
       {isExpanded && (
-        <div className="mt-4">
+        <div id="detail-search-content" className="mt-4">
           {/* 地域・都道府県 */}
           <div className="mb-4">
             <RegionCheckbox region={region} setRegion={setRegion} />
@@ -78,7 +75,7 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
           <div className="mt-4 flex justify-center">
             <button
               onClick={closeSearch}
-              className="text-blue-600 hover:text-blue-700 py-2 px-4 rounded flex items-center"
+              className="text-blue-600 hover:text-blue-700 py-2 px-4 rounded flex items-center focus:outline-none"
             >
               <span className="mr-2">×</span> 詳細検索を閉じる
             </button>

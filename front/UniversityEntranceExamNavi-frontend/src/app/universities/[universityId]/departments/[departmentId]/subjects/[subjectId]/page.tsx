@@ -3,74 +3,57 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { subjects } from "../../../../../../components/SubjectData";
+import DetailSection from "../../../../../../components/SubjectDetailPage/DetailSection";
+import ScoreTable from "../../../../../../components/SubjectDetailPage/ScoreTable";
+import { Subject } from "../../../../../../components/SubjectData";
 
 const SubjectDetailPage = ({
   params,
 }: {
   params: { universityId: string; departmentId: string; subjectId: string };
 }) => {
-  useRouter();
+  const router = useRouter();
   const { universityId, departmentId, subjectId } = params;
 
-  const [subjectDetail, setSubjectDetail] = useState<{
-    universityName: string | null;
-    department: string | null;
-    major: string | null;
-    schedule: string | null;
-    enrollment: number | null;
-  }>({
-    universityName: null,
-    department: null,
-    major: null,
-    schedule: null,
-    enrollment: null,
-  });
+  const [subjectDetail, setSubjectDetail] = useState<Subject | null>(null);
 
   useEffect(() => {
-    // ID に基づいてデータを取得する
-    const subject = subjects.find(
-      (subject) =>
-        subject.universityId === parseInt(universityId) &&
-        subject.departmentId === parseInt(departmentId) &&
-        subject.subjectId === parseInt(subjectId)
-    );
+    const fetchSubjectDetail = () => {
+      const subject = subjects.find(
+        (subject) =>
+          subject.universityId === parseInt(universityId) &&
+          subject.departmentId === parseInt(departmentId) &&
+          subject.subjectId === parseInt(subjectId)
+      );
 
-    if (subject) {
-      setSubjectDetail({
-        universityName: subject.universityName,
-        department: subject.department,
-        major: subject.major,
-        schedule: subject.schedule,
-        enrollment: subject.enrollment,
-      });
-    } else {
-      setSubjectDetail({
-        universityName: "大学名が見つかりません",
-        department: null,
-        major: null,
-        schedule: null,
-        enrollment: null,
-      });
-    }
+      setSubjectDetail(subject ?? null);
+    };
+
+    fetchSubjectDetail();
   }, [universityId, departmentId, subjectId]);
 
   return (
     <div className="bg-white shadow p-4">
-      <h1 className="text-xl font-bold mb-4">
-        {subjectDetail.universityName ?? "読み込み中..."}
-      </h1>
-      <p className="mb-2">
-        <strong>学部・募集枠:</strong> {subjectDetail.department ?? "情報なし"}
-      </p>
-      <p className="mb-2">
-        <strong>学科・専攻・募集枠:</strong> {subjectDetail.major ?? "情報なし"}
-      </p>
-      <p className="mb-2">
-        <strong>日程:</strong> {subjectDetail.schedule ?? "情報なし"}期
-      </p>
-      <p className="mb-2">
-        <strong>募集人員:</strong> {subjectDetail.enrollment ?? "情報なし"} 名
-      </p>
+      {subjectDetail ? (
+        <>
+          <h1 className="text-xl font-bold mb-4">
+            {subjectDetail.universityName}
+          </h1>
+          <DetailSection
+            label="学部・募集枠"
+            value={subjectDetail.department}
+          />
+          <DetailSection label="学科・専攻" value={subjectDetail.major} />
+          <DetailSection label="日程" value={`${subjectDetail.schedule}期`} />
+          <DetailSection
+            label="募集人員"
+            value={`${subjectDetail.enrollment} 名`}
+          />
+          <ScoreTable subjectScores={subjectDetail.subjectScores} />
+        </>
+      ) : (
+        <p>情報が見つかりません。</p>
+      )}
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {
   subjects,
   Subject,
-} from "../../../../../../components/SubjectTable/SubjectData";
+} from "../../../../../../components/SearchResultTable/SubjectData";
 import DetailSection from "../../../../../../components/SubjectDetailPage/DetailSection";
 import ScoreTable from "../../../../../../components/SubjectDetailPage/ScoreTable";
 
@@ -22,7 +22,7 @@ const SubjectDetailPage = ({
   useEffect(() => {
     const fetchSubjectDetail = () => {
       const subject = subjects.find(
-        (subject) =>
+        (subject: Subject) =>
           subject.universityId === parseInt(universityId) &&
           subject.departmentId === parseInt(departmentId) &&
           subject.subjectId === parseInt(subjectId)

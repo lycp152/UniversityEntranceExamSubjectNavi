@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { subjects, titleData } from "./SubjectTable/SubjectData";
+import { subjects, titleData } from "./SearchResultTable/SubjectData";
 
-const SubjectTable: React.FC = () => {
+const ResultTable: React.FC = () => {
   useRouter();
 
   // タイトルの生成
@@ -62,4 +62,4 @@ const SubjectTable: React.FC = () => {
   );
 };
 
-export default SubjectTable;
+export default ResultTable;

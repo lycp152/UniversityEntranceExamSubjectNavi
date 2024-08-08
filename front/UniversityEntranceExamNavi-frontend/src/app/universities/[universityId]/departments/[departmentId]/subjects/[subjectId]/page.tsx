@@ -2,17 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { subjects } from "../../../../../../components/SubjectData";
+import {
+  subjects,
+  Subject,
+} from "../../../../../../components/SubjectTable/SubjectData";
 import DetailSection from "../../../../../../components/SubjectDetailPage/DetailSection";
 import ScoreTable from "../../../../../../components/SubjectDetailPage/ScoreTable";
-import { Subject } from "../../../../../../components/SubjectData";
 
 const SubjectDetailPage = ({
   params,
 }: {
   params: { universityId: string; departmentId: string; subjectId: string };
 }) => {
-  const router = useRouter();
+  useRouter();
   const { universityId, departmentId, subjectId } = params;
 
   const [subjectDetail, setSubjectDetail] = useState<Subject | null>(null);

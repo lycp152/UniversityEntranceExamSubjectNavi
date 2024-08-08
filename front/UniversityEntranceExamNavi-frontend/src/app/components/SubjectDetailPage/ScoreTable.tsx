@@ -1,5 +1,5 @@
 import ScoreTableRow from "./ScoreTableRow";
-import { Subject } from "../../components/SubjectData";
+import { Subject } from "../SubjectTable/SubjectData";
 
 const ScoreTable = ({
   subjectScores,

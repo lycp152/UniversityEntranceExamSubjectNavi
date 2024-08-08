@@ -1,4 +1,4 @@
-import CategoryCheckboxGroup from "./CategoryCheckboxGroup";
+import CategoryCheckboxGroup from "./Checkbox/CategoryCheckboxGroup";
 
 const regionData: Record<string, string[]> = {
   北海道: ["北海道"],

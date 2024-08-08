@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import SortConditions from "./SortConditions";
-import DetailSearch from "./DetailSearch";
+import SortConditions from "./SearchForm/SortConditions";
+import DetailSearch from "./SearchForm/DetailSearch";
 
 export default function SearchForm() {
   const [subject, setSubject] = useState<string>("");

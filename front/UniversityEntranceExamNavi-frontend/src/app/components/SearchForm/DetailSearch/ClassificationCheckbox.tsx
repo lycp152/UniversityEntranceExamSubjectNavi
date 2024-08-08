@@ -1,4 +1,4 @@
-import CategoryCheckboxGroup from "./CategoryCheckboxGroup";
+import CategoryCheckboxGroup from "./Checkbox/CategoryCheckboxGroup";
 
 const classificationData: Record<string, string[]> = {
   国公立: [

@@ -1,4 +1,4 @@
-import GenericCheckboxGroup from "./SimpleCheckboxGroup";
+import GenericCheckboxGroup from "./Checkbox/SimpleCheckboxGroup";
 
 interface AcademicFieldCheckboxProps {
   academicField: string[];

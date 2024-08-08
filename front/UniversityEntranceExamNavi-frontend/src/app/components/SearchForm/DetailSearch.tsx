@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import RegionCheckbox from "./RegionCheckbox";
-import AcademicFieldCheckbox from "./AcademicFieldCheckbox";
-import ScheduleCheckbox from "./ScheduleCheckbox";
-import ClassificationCheckbox from "./ClassificationCheckbox";
+import RegionCheckbox from "./DetailSearch/RegionCheckbox";
+import AcademicFieldCheckbox from "./DetailSearch/AcademicFieldCheckbox";
+import ScheduleCheckbox from "./DetailSearch/ScheduleCheckbox";
+import ClassificationCheckbox from "./DetailSearch/ClassificationCheckbox";
 
 interface DetailSearchProps {
   region: string[];

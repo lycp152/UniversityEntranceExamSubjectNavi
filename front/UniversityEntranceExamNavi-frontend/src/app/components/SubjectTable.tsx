@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { subjects, titleData } from "./SubjectData";
+import { subjects, titleData } from "./SubjectTable/SubjectData";
 
 const SubjectTable: React.FC = () => {
   useRouter();

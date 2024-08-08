@@ -24,7 +24,7 @@ const ScoreTableRow: React.FC<ScoreTableRowProps> = ({
     {Object.keys(scores).map((subjectName) => (
       <td key={subjectName} className="border border-gray-300 p-2 text-center">
         {isPercentage
-          ? `${(scores[subjectName][keyName] as number).toFixed(2)}%`
+          ? `${(scores[subjectName][keyName] as number).toFixed(2)} %`
           : scores[subjectName][keyName]}
       </td>
     ))}

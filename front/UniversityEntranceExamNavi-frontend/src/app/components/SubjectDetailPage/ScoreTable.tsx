@@ -26,7 +26,7 @@ const ScoreTable = ({
           scores={subjectScores}
         />
         <ScoreTableRow
-          label="共通テスト 割合"
+          label="配点合計に占める割合"
           keyName="commonTestRatio"
           scores={subjectScores}
           isPercentage
@@ -37,18 +37,18 @@ const ScoreTable = ({
           scores={subjectScores}
         />
         <ScoreTableRow
-          label="二次試験 割合"
+          label="配点合計に占める割合"
           keyName="secondTestRatio"
           scores={subjectScores}
           isPercentage
         />
         <ScoreTableRow
-          label="共通テスト+二次試験 配点"
+          label="共通テスト + 二次試験 配点"
           keyName="totalScore"
           scores={subjectScores}
         />
         <ScoreTableRow
-          label="共通テスト+二次試験 割合"
+          label="配点合計に占める割合"
           keyName="totalRatio"
           scores={subjectScores}
           isPercentage

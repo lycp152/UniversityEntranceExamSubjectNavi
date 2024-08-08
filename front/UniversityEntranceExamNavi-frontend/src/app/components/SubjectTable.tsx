@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { subjects, titleData } from "./SubjectData";
 
 const SubjectTable: React.FC = () => {
-  const router = useRouter();
+  useRouter();
 
   // タイトルの生成
   const title = `${titleData.testType} の ${titleData.subject} の配点比率が${titleData.attribute}大学(${titleData.schedule}期)`;

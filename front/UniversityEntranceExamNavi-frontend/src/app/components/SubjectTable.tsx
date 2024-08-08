@@ -15,9 +15,8 @@ const SubjectTable: React.FC = () => {
     departmentId: number,
     subjectId: number
   ) => {
-    router.push(
-      `/universities/${universityId}/departments/${departmentId}/subjects/${subjectId}`
-    );
+    const url = `/universities/${universityId}/departments/${departmentId}/subjects/${subjectId}`;
+    window.open(url, "_blank");
   };
 
   return (

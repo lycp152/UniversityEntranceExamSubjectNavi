@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   subjects,
   Subject,
 } from "../../../../../../components/SearchResultTable/SubjectData";
-import DetailSection from "../../../../../../components/SubjectDetailPage/DetailSection";
+import SubjectInfo from "../../../../../../components/SubjectDetailPage/SubjectInfo";
 import ScoreTable from "../../../../../../components/SubjectDetailPage/ScoreTable";
 
 const SubjectDetailPage = ({
@@ -14,10 +14,10 @@ const SubjectDetailPage = ({
 }: {
   params: { universityId: string; departmentId: string; subjectId: string };
 }) => {
-  useRouter();
   const { universityId, departmentId, subjectId } = params;
 
   const [subjectDetail, setSubjectDetail] = useState<Subject | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSubjectDetail = () => {
@@ -29,33 +29,25 @@ const SubjectDetailPage = ({
       );
 
       setSubjectDetail(subject ?? null);
+      setLoading(false); // データ読み込みが完了したら、loadingをfalseにする
     };
 
     fetchSubjectDetail();
   }, [universityId, departmentId, subjectId]);
 
+  if (loading) {
+    return <p>読み込み中...</p>; // 読み込み中のメッセージを表示
+  }
+
+  if (!subjectDetail) {
+    notFound(); // 情報が見つからない場合、デフォルトのnotfoundページを表示
+    return null;
+  }
+
   return (
     <div className="bg-white shadow p-4">
-      {subjectDetail ? (
-        <>
-          <h1 className="text-xl font-bold mb-4">
-            {subjectDetail.universityName}
-          </h1>
-          <DetailSection
-            label="学部・募集枠"
-            value={subjectDetail.department}
-          />
-          <DetailSection label="学科・専攻" value={subjectDetail.major} />
-          <DetailSection label="日程" value={`${subjectDetail.schedule}期`} />
-          <DetailSection
-            label="募集人員"
-            value={`${subjectDetail.enrollment} 名`}
-          />
-          <ScoreTable subjectScores={subjectDetail.subjectScores} />
-        </>
-      ) : (
-        <p>情報が見つかりません。</p>
-      )}
+      <SubjectInfo subjectDetail={subjectDetail} />
+      <ScoreTable subjectScores={subjectDetail.subjectScores} />
     </div>
   );
 };

@@ -1,8 +1,24 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { subjects, titleData } from "./SubjectData";
 
 const SubjectTable: React.FC = () => {
+  const router = useRouter();
+
   // タイトルの生成
   const title = `${titleData.testType} の ${titleData.subject} の配点比率が${titleData.attribute}大学(${titleData.schedule}期)`;
+
+  // 行クリック時のハンドラ
+  const handleRowClick = (
+    universityId: number,
+    departmentId: number,
+    subjectId: number
+  ) => {
+    router.push(
+      `/universities/${universityId}/departments/${departmentId}/subjects/${subjectId}`
+    );
+  };
 
   return (
     <div className="bg-white shadow p-4">
@@ -21,7 +37,17 @@ const SubjectTable: React.FC = () => {
         </thead>
         <tbody>
           {subjects.map((subject) => (
-            <tr key={subject.id}>
+            <tr
+              key={subject.subjectId}
+              className="cursor-pointer hover:bg-gray-100"
+              onClick={() =>
+                handleRowClick(
+                  subject.universityId,
+                  subject.departmentId,
+                  subject.subjectId
+                )
+              }
+            >
               <td className="py-2 px-4 border-b">{subject.rank}</td>
               <td className="py-2 px-4 border-b">{subject.subjectRatio} %</td>
               <td className="py-2 px-4 border-b">{subject.universityName}</td>

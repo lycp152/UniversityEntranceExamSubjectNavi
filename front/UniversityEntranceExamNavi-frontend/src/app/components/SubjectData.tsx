@@ -1,5 +1,7 @@
 export interface Subject {
-  id: number;
+  universityId: number;
+  departmentId: number;
+  subjectId: number;
   rank: number;
   subjectRatio: number;
   universityName: string;
@@ -11,7 +13,9 @@ export interface Subject {
 
 export const subjects: Subject[] = [
   {
-    id: 1,
+    universityId: 1,
+    departmentId: 2,
+    subjectId: 2,
     rank: 1,
     subjectRatio: 75.29,
     universityName: "〇〇大学",
@@ -21,7 +25,9 @@ export const subjects: Subject[] = [
     enrollment: 100,
   },
   {
-    id: 2,
+    universityId: 2,
+    departmentId: 1,
+    subjectId: 1,
     rank: 2,
     subjectRatio: 60.49,
     universityName: "△△大学",
@@ -31,7 +37,9 @@ export const subjects: Subject[] = [
     enrollment: 80,
   },
   {
-    id: 3,
+    universityId: 3,
+    departmentId: 7,
+    subjectId: 6,
     rank: 3,
     subjectRatio: 32.79,
     universityName: "□□大学",

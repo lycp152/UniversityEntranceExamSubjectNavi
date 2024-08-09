@@ -8,6 +8,7 @@ import {
 } from "../../../../../../components/SearchResultTable/SubjectData";
 import SubjectInfo from "../../../../../../components/SubjectDetailPage/SubjectInfo";
 import ScoreTable from "../../../../../../components/SubjectDetailPage/ScoreTable";
+import PieChart from "../../../../../../components/SubjectDetailPage/PieChart";
 
 const SubjectDetailPage = ({
   params,
@@ -29,24 +30,40 @@ const SubjectDetailPage = ({
       );
 
       setSubjectDetail(subject ?? null);
-      setLoading(false); // データ読み込みが完了したら、loadingをfalseにする
+      setLoading(false);
     };
 
     fetchSubjectDetail();
   }, [universityId, departmentId, subjectId]);
 
   if (loading) {
-    return <p>読み込み中...</p>; // 読み込み中のメッセージを表示
+    return <p>読み込み中...</p>;
   }
 
   if (!subjectDetail) {
-    notFound(); // 情報が見つからない場合、デフォルトのnotfoundページを表示
+    notFound();
     return null;
   }
 
   return (
     <div className="bg-white shadow p-4">
-      <SubjectInfo subjectDetail={subjectDetail} />
+      <div className="flex flex-col lg:flex-row">
+        {/* 左側のコンテンツ */}
+        <div className="lg:w-1/4 lg:pr-4 mb-4 lg:mb-0">
+          <SubjectInfo subjectDetail={subjectDetail} />
+        </div>
+        {/* 右側のコンテンツ */}
+        <div className="flex-1">
+          <div className="flex flex-col lg:flex-row lg:gap-4">
+            <div className="flex justify-center items-center mb-4 lg:mb-0">
+              <PieChart />
+            </div>
+            <div className="flex justify-center items-center">
+              <PieChart />
+            </div>
+          </div>
+        </div>
+      </div>
       <ScoreTable subjectScores={subjectDetail.subjectScores} />
     </div>
   );

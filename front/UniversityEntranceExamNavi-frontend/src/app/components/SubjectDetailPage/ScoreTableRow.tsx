@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ScoreTableRowProps {
   label: string;
   keyName: string;

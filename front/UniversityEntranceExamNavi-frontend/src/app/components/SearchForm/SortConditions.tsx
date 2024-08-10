@@ -1,3 +1,5 @@
+import React from "react";
+
 interface SortCondition {
   examType: string;
   subjectName: string;
@@ -34,18 +36,20 @@ const Select = ({
   onChange: (value: string) => void;
   placeholder: string;
 }) => (
-  <select
-    value={value}
-    onChange={(e) => onChange(e.target.value)}
-    className="border border-gray-300 p-2"
-  >
-    <option value="">{placeholder}</option>
-    {options.map((option) => (
-      <option key={option} value={option}>
-        {option}
-      </option>
-    ))}
-  </select>
+  <div className="w-full">
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="border border-gray-300 p-2 w-full"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((option) => (
+        <option key={option} value={option}>
+          {option}
+        </option>
+      ))}
+    </select>
+  </div>
 );
 
 export default function SortConditions({
@@ -68,29 +72,37 @@ export default function SortConditions({
       {sortOrder.map((condition, index) => (
         <div
           key={`${condition.examType}-${condition.subjectName}-${condition.order}`}
-          className="flex items-center space-x-4 mt-2"
+          className="flex flex-col md:flex-row items-start md:items-center md:space-x-4 space-y-2 md:space-y-0 mt-2 w-full"
         >
-          <Select
-            value={condition.examType}
-            options={sortOptions.examType}
-            onChange={(value) => handleSortChange(index, "examType", value)}
-            placeholder="試験を選択"
-          />
-          <span>の</span>
-          <Select
-            value={condition.subjectName}
-            options={sortOptions.subjectName}
-            onChange={(value) => handleSortChange(index, "subjectName", value)}
-            placeholder="科目名を選択"
-          />
-          <span>の比率が</span>
-          <Select
-            value={condition.order}
-            options={sortOptions.order}
-            onChange={(value) => handleSortChange(index, "order", value)}
-            placeholder="並び順を選択"
-          />
-          <span>順</span>
+          <div className="flex items-center w-full">
+            <Select
+              value={condition.examType}
+              options={sortOptions.examType}
+              onChange={(value) => handleSortChange(index, "examType", value)}
+              placeholder="試験を選択"
+            />
+            <span className="ml-2">の</span>
+          </div>
+          <div className="flex items-center w-full">
+            <Select
+              value={condition.subjectName}
+              options={sortOptions.subjectName}
+              onChange={(value) =>
+                handleSortChange(index, "subjectName", value)
+              }
+              placeholder="科目名を選択"
+            />
+            <span className="ml-2 whitespace-nowrap">の比率が</span>
+          </div>
+          <div className="flex items-center w-full">
+            <Select
+              value={condition.order}
+              options={sortOptions.order}
+              onChange={(value) => handleSortChange(index, "order", value)}
+              placeholder="並び順を選択"
+            />
+            <span className="ml-2">順</span>
+          </div>
         </div>
       ))}
     </div>

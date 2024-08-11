@@ -9,6 +9,7 @@ import {
 import SubjectInfo from "../../../../../../components/SubjectDetailPage/SubjectInfo";
 import ScoreTable from "../../../../../../components/SubjectDetailPage/ScoreTable";
 import PieChart from "../../../../../../components/SubjectDetailPage/PieChart";
+import Header from "../../../../../../components/Header"; // Headerをインポート
 
 const SubjectDetailPage = ({
   params,
@@ -46,26 +47,29 @@ const SubjectDetailPage = ({
   }
 
   return (
-    <div className="bg-white shadow p-4">
-      <div className="flex flex-col lg:flex-row">
-        {/* 左側のコンテンツ */}
-        <div className="lg:w-1/4 lg:pr-4 mb-4 lg:mb-0">
-          <SubjectInfo subjectDetail={subjectDetail} />
-        </div>
-        {/* 右側のコンテンツ */}
-        <div className="flex-1">
-          <div className="flex flex-col lg:flex-row lg:gap-4">
-            <div className="flex justify-center items-center mb-4 lg:mb-0">
-              <PieChart />
-            </div>
-            <div className="flex justify-center items-center">
-              <PieChart />
+    <>
+      <Header />
+      <div className="bg-white shadow p-4">
+        <div className="flex flex-col lg:flex-row">
+          {/* 左側のコンテンツ */}
+          <div className="lg:w-1/4 lg:pr-4 mb-4 lg:mb-0">
+            <SubjectInfo subjectDetail={subjectDetail} />
+          </div>
+          {/* 右側のコンテンツ */}
+          <div className="flex-1">
+            <div className="flex flex-col lg:flex-row lg:gap-4">
+              <div className="flex justify-center items-center mb-4 lg:mb-0">
+                <PieChart />
+              </div>
+              <div className="flex justify-center items-center">
+                <PieChart />
+              </div>
             </div>
           </div>
         </div>
+        <ScoreTable subjectScores={subjectDetail.subjectScores} />
       </div>
-      <ScoreTable subjectScores={subjectDetail.subjectScores} />
-    </div>
+    </>
   );
 };
 

@@ -1,5 +1,4 @@
-import React from "react";
-import CheckboxGroup from "./CheckboxGroup";
+import CategoryCheckboxGroup from "./Checkbox/CategoryCheckboxGroup";
 
 const classificationData: Record<string, string[]> = {
   国公立: [
@@ -43,13 +42,12 @@ const ClassificationCheckbox: React.FC<ClassificationCheckboxProps> = ({
   setClassification,
 }) => {
   return (
-    <CheckboxGroup
-      items={classificationData}
+    <CategoryCheckboxGroup
+      categories={classificationData}
       selectedItems={classification}
       setSelectedItems={setClassification}
-      allLabel="すべて"
+      label="分類"
       itemLabel={(item) => item}
-      checkboxType="classification"
     />
   );
 };

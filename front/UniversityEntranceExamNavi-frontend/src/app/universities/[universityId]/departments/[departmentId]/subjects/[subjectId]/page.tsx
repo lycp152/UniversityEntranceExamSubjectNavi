@@ -1,15 +1,13 @@
-"use client";
+'use client';
 
-import { notFound } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-  subjects,
-  Subject,
-} from "../../../../../../components/SearchResultTable/SubjectData";
-import SubjectInfo from "../../../../../../components/SubjectDetailPage/SubjectInfo";
-import ScoreTable from "../../../../../../components/SubjectDetailPage/ScoreTable";
-import PieChart from "../../../../../../components/SubjectDetailPage/PieChart";
-import Header from "../../../../../../components/Header"; // Headerをインポート
+import { notFound } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { subjects } from '@/features/data/SubjectData';
+import type { Subject } from '@/features/data/types';
+import SubjectInfo from '@/features/subject/components/SubjectDetail/Overview/SubjectInfo';
+import ScoreTable from '@/features/subject/components/SubjectDetail/Scores/ScoreTable';
+import PieChart from '@/features/subject/components/SubjectDetail/Scores/SubjectScoreDonutChart';
+import Header from '@/components/layout/Header';
 
 const SubjectDetailPage = ({
   params,
@@ -57,17 +55,12 @@ const SubjectDetailPage = ({
           </div>
           {/* 右側のコンテンツ */}
           <div className="flex-1">
-            <div className="flex flex-col lg:flex-row lg:gap-4">
-              <div className="flex justify-center items-center mb-4 lg:mb-0">
-                <PieChart />
-              </div>
-              <div className="flex justify-center items-center">
-                <PieChart />
-              </div>
+            <div className="flex justify-center items-center">
+              <PieChart />
             </div>
           </div>
         </div>
-        <ScoreTable subjectScores={subjectDetail.subjectScores} />
+        <ScoreTable scores={subjectDetail.subjects} />
       </div>
     </>
   );

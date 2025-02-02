@@ -1,27 +1,39 @@
 {
-  "name": "UniversityEntranceExamSubjectNavi-frontend",
+  "name": "university-entrance-exam-subject-navi-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "autoprefixer": "^10.4.20",
     "next": "14.2.4",
-    "react": "^18",
-    "react-dom": "^18"
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "recharts": "2.15.1"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
+    "@testing-library/react": "14.2.1",
+    "@types/node": "20.11.16",
+    "@types/react": "18.2.52",
+    "@types/react-dom": "18.2.18",
+    "@vitejs/plugin-react": "4.2.1",
+    "@vitest/coverage-v8": "1.2.2",
+    "autoprefixer": "10.4.20",
+    "eslint": "8.56.0",
     "eslint-config-next": "14.2.4",
-    "postcss": "^8.4.41",
-    "tailwindcss": "^3.4.7",
-    "typescript": "^5"
+    "eslint-config-prettier": "9.1.0",
+    "jsdom": "24.0.0",
+    "postcss": "8.4.41",
+    "prettier": "3.2.5",
+    "tailwindcss": "3.4.7",
+    "typescript": "5.3.3",
+    "vitest": "1.2.2"
   }
 }

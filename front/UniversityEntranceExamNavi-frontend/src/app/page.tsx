@@ -1,6 +1,6 @@
-import Header from "./components/Header";
-import SearchForm from "./components/SearchForm";
-import SearchResultTable from "./components/SearchResultTable";
+import Header from '../components/layout/Header';
+import SearchForm from '../features/search/components/SearchForm';
+import SearchResultTable from '../features/search/components/SearchResultTable';
 
 export default function Home() {
   return (

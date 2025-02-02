@@ -4,5 +4,9 @@
   },
   "editor.quickSuggestions": {
     "strings": true
-  }
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": ["source.fixAll.eslint"],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

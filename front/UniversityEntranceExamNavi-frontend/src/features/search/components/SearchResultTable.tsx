@@ -1,6 +1,6 @@
 'use client';
 
-import { Subject } from '@/features/data/types';
+import { Subject } from '@/lib/types';
 import { subjects, titleData } from '@/features/data/SubjectData';
 import { tableStyles } from './SearchResultTable/styles';
 

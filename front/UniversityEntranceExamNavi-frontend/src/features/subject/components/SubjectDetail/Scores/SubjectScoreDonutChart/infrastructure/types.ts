@@ -1,5 +1,5 @@
 /**
- * エラーコードの定義
+ * バリデーションエラーコードの定義
  */
 export const ValidationErrorCodes = {
   /** 無効な数値 */
@@ -14,9 +14,6 @@ export const ValidationErrorCodes = {
   INVALID_PARAMS: "INVALID_PARAMS",
 } as const;
 
-/**
- * エラーコードの型
- */
 export type ValidationErrorCode =
   (typeof ValidationErrorCodes)[keyof typeof ValidationErrorCodes];
 

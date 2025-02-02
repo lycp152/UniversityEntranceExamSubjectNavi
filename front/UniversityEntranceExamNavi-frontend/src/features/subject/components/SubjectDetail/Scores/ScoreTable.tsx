@@ -1,6 +1,6 @@
 import ScoreTableRow from './ScoreTableRow';
-import type { Subject } from '@/features/data/types';
-import { SUBJECT_DISPLAY_ORDER } from '@/features/data/constants/subjects';
+import type { Subject } from '@/lib/types';
+import { SUBJECT_DISPLAY_ORDER } from '@/lib/constants/subjects';
 import { FC } from 'react';
 
 const ScoreTable: FC<{ scores: Subject['subjects'] }> = ({ scores }) => (

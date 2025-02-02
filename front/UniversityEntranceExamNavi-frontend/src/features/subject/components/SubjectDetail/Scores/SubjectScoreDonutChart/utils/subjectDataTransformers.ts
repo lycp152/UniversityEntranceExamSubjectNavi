@@ -1,7 +1,7 @@
-import type { TestType } from '@/features/data/types';
-import { TransformedSubjectData } from '../types/transformers';
-import { getCategoryFromSubject, getDisplayName } from './stringTransformers';
-import { formatWithTestType } from './stringFormatters';
+import { TestType } from '@/lib/types';
+import { TransformedSubjectData } from '../types/pieDataTransformerTypes';
+import { getCategoryFromSubject, getDisplayName } from './subjectNameParser';
+import { formatWithTestType } from './subjectNameFormatter';
 
 export const transformSubjectData = (
   subjectName: string,

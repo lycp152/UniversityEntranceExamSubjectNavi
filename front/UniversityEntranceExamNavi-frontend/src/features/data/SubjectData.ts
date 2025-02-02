@@ -1,4 +1,4 @@
-import { Subject } from './types';
+import { Subject } from '@/lib/types';
 
 export const subjects: Subject[] = [
   {

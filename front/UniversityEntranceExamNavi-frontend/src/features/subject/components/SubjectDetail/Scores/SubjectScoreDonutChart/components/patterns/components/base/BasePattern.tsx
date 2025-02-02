@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { COLORS } from '@/components/SubjectDetailPieChart/constants';
+import { COLORS } from '@/features/subject/components/SubjectDetail/Scores/SubjectScoreDonutChart/constants';
 import { PATTERN_DIMENSIONS } from '../../constants/dimensions';
 import { BasePatternProps } from '../../types';
 

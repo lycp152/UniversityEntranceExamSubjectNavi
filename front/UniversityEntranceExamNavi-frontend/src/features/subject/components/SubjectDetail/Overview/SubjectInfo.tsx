@@ -1,5 +1,5 @@
 import DetailSection from './DetailSection';
-import { Subject } from '@/features/data/types';
+import { Subject } from '@/lib/types';
 
 const SubjectInfo = ({ subjectDetail }: { subjectDetail: Subject }) => {
   return (

@@ -1,13 +1,13 @@
-import { Subject } from '@/features/data/types';
-import { SUBJECT_DISPLAY_ORDER } from '../constants';
-import { PieData } from '../types';
+import type { Subject, SubjectScores } from '@/lib/types';
+import { SUBJECT_DISPLAY_ORDER } from '@/lib/constants/subjects';
+import { PieData } from '../types/chart';
 import { createOuterPieData } from '../utils/dataTransformers';
-import { extractSubjectMainCategory } from '@/features/data/utils/subjectNameUtils';
+import { extractSubjectMainCategory } from '@/lib/utils/subjectNameUtils';
 
 export const useOuterData = (
   subjectData: Subject,
   totalScore: number,
-  calculateCategoryTotal: (subjects: Subject['subjects'], category: string) => number
+  calculateCategoryTotal: (subjects: SubjectScores, category: string) => number
 ) => {
   return SUBJECT_DISPLAY_ORDER.reduce((acc, subject) => {
     const category = extractSubjectMainCategory(subject);

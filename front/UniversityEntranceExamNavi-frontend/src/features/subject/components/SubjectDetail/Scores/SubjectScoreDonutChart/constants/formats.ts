@@ -1,4 +1,4 @@
-import { TestType } from "../types/subjects";
+import { TestType } from '@/lib/types';
 
 type FormatFunction = {
   TEST_TYPE: (name: string, type: TestType) => string;

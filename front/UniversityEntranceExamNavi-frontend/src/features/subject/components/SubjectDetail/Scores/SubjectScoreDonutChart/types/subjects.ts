@@ -1,4 +1,4 @@
-import type { TestType, SubjectName } from '@/features/data/types';
+import type { TestType, SubjectName } from '@/lib/types';
 
 export interface SubjectScore {
   type: TestType;
@@ -10,4 +10,9 @@ export interface SubjectScoreError {
   type: 'error';
   message: string;
   subjectName: SubjectName;
+}
+
+export interface ScoreEntry {
+  commonTest: number;
+  secondTest: number;
 }

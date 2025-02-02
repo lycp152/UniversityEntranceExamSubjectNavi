@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Subject } from '@/features/data/types';
+import { Subject } from '@/lib/types';
 
 const ScoreTableHeader: FC<{ scores: Subject['subjects'] }> = ({ scores }) => (
   <thead>

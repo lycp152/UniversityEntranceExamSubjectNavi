@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import type { Subject } from '@/features/data/types';
+import type { Subject } from '@/lib/types';
 
 interface ScoreTableRowProps {
   label: string;

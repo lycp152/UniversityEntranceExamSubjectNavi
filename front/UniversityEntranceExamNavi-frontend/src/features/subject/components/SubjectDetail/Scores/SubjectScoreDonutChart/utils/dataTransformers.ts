@@ -1,5 +1,5 @@
 import { DetailedPieData, PieData } from '../types/chart';
-import type { TestType } from '@/features/data/types';
+import { TestType } from '@/lib/types';
 import { transformSubjectData } from './subjectDataTransformers';
 import { transformToPieData } from './baseTransformers';
 

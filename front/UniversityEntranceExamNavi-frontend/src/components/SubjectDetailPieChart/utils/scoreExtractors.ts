@@ -1,6 +1,6 @@
 import { EXAM_TYPE_OPTIONS } from '@/features/data/constants/subjects';
-import type { SubjectScore } from '../types/subjects';
-import type { BaseSubjectScore, SubjectName, SubjectScoreError } from '@/features/data/types';
+import type { SubjectScore, SubjectScoreError } from '../types/subjects';
+import type { BaseSubjectScore, SubjectName } from '@/features/data/types';
 
 export const extractScores = (
   scores: BaseSubjectScore,

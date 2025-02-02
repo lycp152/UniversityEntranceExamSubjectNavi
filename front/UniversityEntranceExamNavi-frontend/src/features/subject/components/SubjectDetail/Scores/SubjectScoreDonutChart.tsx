@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { subjects } from '../../../../data/SubjectData';
+import { subjects } from '@/features/data/SubjectData';
 import CustomLabel from './SubjectScoreDonutChart/components/CustomLabel';
 import { useChartData } from './SubjectScoreDonutChart/hooks/useChartData';
 import { COLORS } from './SubjectScoreDonutChart/constants';

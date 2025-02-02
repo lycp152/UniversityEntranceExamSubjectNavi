@@ -1,11 +1,11 @@
 import { FC } from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { subjects } from '@/features/data/SubjectData';
-import CustomLabel from './SubjectDetailPieChart/components/CustomLabel';
-import { useChartData } from './SubjectDetailPieChart/hooks/useChartData';
-import { COLORS } from './SubjectDetailPieChart/constants';
-import { pieChartStyles } from './SubjectDetailPieChart/styles';
-import { Patterns } from './SubjectDetailPieChart/components/patterns';
+import CustomLabel from './components/CustomLabel';
+import { useChartData } from './hooks/useChartData';
+import { COLORS } from './constants';
+import { pieChartStyles } from './styles';
+import { Patterns } from './components/patterns';
 
 const SubjectDetailPieChart: FC = () => {
   const subjectData = subjects[0];

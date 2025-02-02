@@ -5,14 +5,3 @@ export interface SubjectScore {
   value: number;
   subjectName: SubjectName;
 }
-
-export interface SubjectScoreError {
-  type: 'error';
-  message: string;
-  subjectName: SubjectName;
-}
-
-export interface ScoreEntry {
-  commonTest: number;
-  secondTest: number;
-}

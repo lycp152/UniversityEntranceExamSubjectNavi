@@ -39,15 +39,21 @@ const createRightOuterData = (detailedData: SubjectScore[]): SubjectScore[] => {
     });
 };
 
+const getCategoryType = (item: SubjectScore) => {
+  if (isCommonSubject(item.name)) {
+    return SUBJECT_TYPES.COMMON;
+  }
+  if (isSecondarySubject(item.name)) {
+    return SUBJECT_TYPES.SECONDARY;
+  }
+  return item.category;
+};
+
 const createRightDetailedData = (detailedData: SubjectScore[]): SubjectScore[] => {
   return [...detailedData]
     .map((item) => ({
       ...item,
-      category: isCommonSubject(item.name)
-        ? SUBJECT_TYPES.COMMON
-        : isSecondarySubject(item.name)
-          ? SUBJECT_TYPES.SECONDARY
-          : item.category,
+      category: getCategoryType(item),
     }))
     .sort((a, b) => {
       const aIsCommon = isCommonSubject(a.name);

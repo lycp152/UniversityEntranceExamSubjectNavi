@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 import { subjects } from '@/features/data/SubjectData';
 import type { Subject } from '@/lib/types';
 import SubjectInfo from '@/features/subject/components/SubjectDetail/Overview/SubjectInfo';
-import ScoreTable from '@/features/subject/components/SubjectDetail/Scores/ScoreTable';
-import PieChart from '@/features/subject/components/SubjectDetail/Scores/SubjectScoreDonutChart';
+import { Scores } from '@/features/subject/components/SubjectDetail/Scores';
 import Header from '@/components/layout/Header';
+import SubjectScoreTable from '@/features/subject/components/SubjectDetail/Scores/SubjectScoreTable';
 
 const SubjectDetailPage = ({
   params,
@@ -48,19 +48,21 @@ const SubjectDetailPage = ({
     <>
       <Header />
       <div className="bg-white shadow p-4">
-        <div className="flex flex-col lg:flex-row">
-          {/* 左側のコンテンツ */}
-          <div className="lg:w-1/4 lg:pr-4 mb-4 lg:mb-0">
+        {/* 上部エリア */}
+        <div className="flex flex-col lg:flex-row mb-16">
+          {/* 左側の情報 */}
+          <div className="lg:w-1/4 lg:pr-4">
             <SubjectInfo subjectDetail={subjectDetail} />
           </div>
-          {/* 右側のコンテンツ */}
-          <div className="flex-1">
-            <div className="flex justify-center items-center">
-              <PieChart />
-            </div>
+          {/* 右側のグラフ */}
+          <div className="flex-1 flex bg-transparent">
+            <Scores scores={subjectDetail.subjects} />
           </div>
         </div>
-        <ScoreTable scores={subjectDetail.subjects} />
+        {/* 下部の表 */}
+        <div>
+          <SubjectScoreTable />
+        </div>
       </div>
     </>
   );

@@ -1,21 +1,22 @@
 import { FC } from 'react';
 import { CustomLabelProps } from '@/features/subject/types';
 
-// ラベルテキストを加工する関数
+// ラベルフォーマット戦略
+const labelFormatters = {
+  right: (name: string) => {
+    const regex = /\((.*?)([LR])\)/;
+    const match = regex.exec(name);
+    return match ? `(${match[1]})\n${match[2]}` : name;
+  },
+  left: (name: string) => {
+    const regex = /[LR]\(/;
+    return regex.exec(name) ? name.replace(/([LR])(\()/, '$1\n$2') : name;
+  },
+};
+
 const formatLabelText = (name: string, isRight: boolean) => {
-  if (isRight) {
-    // 右側グラフの場合：(英語R) → (英語)\nR
-    const match = name.match(/\((.*?)([LR])\)/);
-    if (match) {
-      const [_, subject, lr] = match;
-      return `(${subject})\n${lr}`; // 括弧を含めた形で改行
-    }
-  }
-  // 左側グラフの場合：英語R(共通) → 英語R\n(共通)
-  if (name.match(/[LR]\(/)) {
-    return name.replace(/([LR])(\()/, '$1\n$2');
-  }
-  return name;
+  const formatter = labelFormatters[isRight ? 'right' : 'left'];
+  return formatter(name);
 };
 
 const CustomLabel: FC<CustomLabelProps> = (props) => {
@@ -47,8 +48,8 @@ const CustomLabel: FC<CustomLabelProps> = (props) => {
 
   // テキストが改行を含むかチェックを修正
   const hasLineBreak = isRightChart
-    ? labelText.match(/\((.*?)([LR])\)/) // 右側グラフの場合
-    : labelText.match(/[LR]\(/); // 左側グラフの場合
+    ? /\((.*?)([LR])\)/.exec(labelText) // 右側グラフの場合
+    : /[LR]\(/.exec(labelText); // 左側グラフの場合
 
   return (
     <text

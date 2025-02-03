@@ -1,0 +1,33 @@
+.tableContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  text-align: center;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+.table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.totalRow {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}

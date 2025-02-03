@@ -1,33 +1,33 @@
 import { FC } from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { ChartProps, SubjectScore } from '@/features/subject/types';
+import { SubjectScore } from '@/features/subject/types';
 import CustomLabel from './CustomLabel';
 import Patterns from '../Patterns';
 import { ChartTooltip, TooltipPayload } from './ChartTooltip';
-import {
-  isCommonSubject,
-  isSecondarySubject,
-  getSubjectBaseCategory,
-} from '@/features/subject/utils/chartUtils';
+import { getSubjectBaseCategory } from '@/features/subject/utils/chartUtils';
 import { CHART_CONFIG } from '@/features/subject/constants/chart';
-import { SUBJECT_COLORS, TEST_TYPE_COLORS } from '../constants';
 
-// 外側の円グラフ用
-const getOuterChartFillColor = (entry: SubjectScore, isRightChart: boolean) => {
-  if (isRightChart) {
-    // 右側は共通/二次のパターンを使用
-    return `url(#pattern-${entry.category})`;
-  }
-  // 左側は科目別のパターンを使用
-  return `url(#pattern-${getSubjectBaseCategory(entry.name)})`;
+type ChartProps = {
+  detailedData: SubjectScore[];
+  outerData: SubjectScore[];
+  isRightChart?: boolean;
 };
 
-// 内側の円グラフ用
-const getInnerChartFillColor = (entry: SubjectScore, isRightChart: boolean) => {
-  return isRightChart
-    ? `url(#pattern-${entry.category})`
-    : `url(#pattern-${getSubjectBaseCategory(entry.name)})`;
+// パターン選択戦略
+const patternStrategies = {
+  right: (entry: SubjectScore) => `url(#pattern-${entry.category})`,
+  left: (entry: SubjectScore) => `url(#pattern-${getSubjectBaseCategory(entry.name)})`,
 };
+
+const getChartFillColor = (entry: SubjectScore, isRightChart: boolean) => {
+  const strategyKey = isRightChart ? 'right' : 'left';
+  const strategy = patternStrategies[strategyKey];
+  return strategy(entry);
+};
+
+// 外側と内側で同じ戦略を使用
+const getOuterChartFillColor = getChartFillColor;
+const getInnerChartFillColor = getChartFillColor;
 
 export const DonutChart: FC<ChartProps> = ({ detailedData, outerData, isRightChart }) => (
   <ResponsiveContainer width="100%" height="100%">

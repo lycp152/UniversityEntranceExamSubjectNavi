@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { SUBJECT_PATTERNS, TEST_TYPE_PATTERNS, PATTERN_CONFIG } from '../constants';
+import { SUBJECT_PATTERNS, TEST_TYPE_PATTERNS } from '../constants';
 
 const Patterns: FC = () => (
   <>

@@ -1,0 +1,18 @@
+{
+  "filters": {},
+  "rules": {
+    "preset-japanese": true,
+    "preset-ja-technical-writing": {
+      "no-exclamation-question-mark": false,
+      "max-ten": {
+        "max": 3
+      },
+      "sentence-length": {
+        "max": 100
+      }
+    },
+    "prh": {
+      "rulePaths": []
+    }
+  }
+}

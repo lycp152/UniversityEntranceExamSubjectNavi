@@ -13,7 +13,6 @@ const nextConfig = {
   // パフォーマンス最適化
   experimental: {
     optimizeCss: true,
-    serverActions: true,
     typedRoutes: true,
     webpackBuildWorker: true,
   },

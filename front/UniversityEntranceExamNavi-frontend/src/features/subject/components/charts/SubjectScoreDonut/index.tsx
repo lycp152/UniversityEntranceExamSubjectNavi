@@ -1,8 +1,8 @@
 import { FC } from 'react';
 import { subjects } from '@/features/data/SubjectData';
+import { DonutChart } from './components/DonutChart';
 import { useSubjectChart } from '@/features/subject/hooks/useSubjectChart';
 import { containerStyles, containerClassName, pieChartStyles } from './styles';
-import { DonutChart } from './components/DonutChart';
 
 const SubjectScoreDonutChart: FC = () => {
   const subjectData = subjects[0];

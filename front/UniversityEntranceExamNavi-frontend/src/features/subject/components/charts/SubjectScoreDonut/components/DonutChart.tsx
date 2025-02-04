@@ -10,7 +10,7 @@ import {
   isCommonSubject,
   isSecondarySubject,
   getSubjectBaseCategory,
-} from '@/features/subject/utils/chartUtils';
+} from '@/features/subject/utils/subjectOperations';
 
 const getFillColor = (entry: SubjectScore) => {
   if (isCommonSubject(entry.name) || isSecondarySubject(entry.name)) {

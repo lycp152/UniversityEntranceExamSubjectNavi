@@ -1,5 +1,5 @@
-import { BaseTransformParams, TransformResult } from "../types/transformers";
-import { calculatePercentage } from "./calculations";
+import { BaseTransformParams, TransformResult } from '../types/chartTransformers';
+import { calculatePercentage } from './calculations';
 
 export const transformToPieData = ({
   value,

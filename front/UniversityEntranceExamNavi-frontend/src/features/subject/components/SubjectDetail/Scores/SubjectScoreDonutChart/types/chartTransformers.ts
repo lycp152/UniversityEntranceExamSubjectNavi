@@ -1,4 +1,4 @@
-import { PieData } from "./chart";
+import { PieData } from './pieChart';
 
 export interface TransformedSubjectData {
   name: string;

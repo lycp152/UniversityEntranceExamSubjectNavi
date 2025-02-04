@@ -1,7 +1,7 @@
-import { DetailedPieData, PieData, TransformInput } from '../types/chart';
+import { DetailedPieData, PieData, TransformInput } from '@/features/subject/types';
 import { TestType } from '@/lib/types';
 import { transformSubjectData } from './subjectDataTransformers';
-import { transformToPieData } from './baseTransformers';
+import { transformToPieData } from './baseChartTransformers';
 
 export const createDetailedPieData = (
   subjectName: string,

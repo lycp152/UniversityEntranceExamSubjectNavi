@@ -1,4 +1,4 @@
-import { PieData } from "./chart";
+import { PieData } from './pieChart';
 
 /**
  * 変換後の科目データの型

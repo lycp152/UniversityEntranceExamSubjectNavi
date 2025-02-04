@@ -1,5 +1,5 @@
 import { TestType } from '@/lib/types';
-import { FORMAT_PATTERNS } from '../constants/formats';
+import { FORMAT_PATTERNS } from '../constants/subjectFormats';
 
 /**
  * 科目名とテストタイプを組み合わせて表示用の文字列を生成する

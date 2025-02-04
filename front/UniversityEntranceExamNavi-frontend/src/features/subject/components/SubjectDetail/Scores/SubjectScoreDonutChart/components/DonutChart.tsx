@@ -4,7 +4,7 @@ import { SubjectScore } from '@/features/subject/types';
 import CustomLabel from './CustomLabel';
 import Patterns from '../Patterns';
 import { ChartTooltip, TooltipPayload } from './ChartTooltip';
-import { getSubjectBaseCategory } from '@/features/subject/utils/chartUtils';
+import { getSubjectBaseCategory } from '@/features/subject/utils/subjectOperations';
 import { CHART_CONFIG } from '@/features/subject/constants/chart';
 
 type ChartProps = {

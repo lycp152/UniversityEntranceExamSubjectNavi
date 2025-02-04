@@ -1,5 +1,5 @@
 import { PatternConfig } from '@/features/subject/types';
-import { PATTERN_CONFIG, createPattern } from './pattern';
+import { PATTERN_CONFIG, createPattern } from './patternConfig';
 
 // 科目別のパターン定義
 export const SUBJECT_PATTERNS: Record<string, PatternConfig> = {

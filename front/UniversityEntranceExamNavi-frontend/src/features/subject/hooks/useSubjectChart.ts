@@ -2,7 +2,11 @@ import { Subject } from '@/lib/types';
 import { SubjectScore } from '../types';
 import { useChartData } from '../components/SubjectDetail/Scores/SubjectScoreDonutChart/hooks/useChartData';
 import { SUBJECT_TYPES } from '../constants';
-import { isCommonSubject, compareSubjectOrder, isSecondarySubject } from '../utils/chartUtils';
+import {
+  isCommonSubject,
+  compareSubjectOrder,
+  isSecondarySubject,
+} from '../utils/subjectOperations';
 
 const calculateTotalScore = (data: SubjectScore[]): number => {
   return data.reduce((sum: number, item: SubjectScore) => sum + item.value, 0);

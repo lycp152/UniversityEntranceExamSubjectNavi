@@ -1,7 +1,7 @@
 import type { Subject, SubjectScores } from '@/lib/types';
 import { SUBJECT_DISPLAY_ORDER } from '@/lib/constants/subjects';
-import { PieData } from '../types/chart';
-import { createOuterPieData } from '../utils/dataTransformers';
+import { PieData } from '../types/pieChart';
+import { createOuterPieData } from '../utils/pieChartTransformers';
 import { extractSubjectMainCategory } from '@/lib/utils/subjectNameUtils';
 
 export const useOuterData = (

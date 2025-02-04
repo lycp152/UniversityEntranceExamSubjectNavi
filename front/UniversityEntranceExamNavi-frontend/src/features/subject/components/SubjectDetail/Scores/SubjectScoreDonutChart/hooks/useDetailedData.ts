@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 import type { Subject } from '@/lib/types';
 import { SUBJECT_DISPLAY_ORDER } from '@/lib/constants/subjects';
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants/errorCodes';
-import { DetailedPieData } from '../types/chart';
+import { DetailedPieData } from '../types/pieChart';
 import { ChartResult } from '@/features/subject/types';
-import { createDetailedPieData } from '../utils/dataTransformers';
+import { createDetailedPieData } from '../utils/pieChartTransformers';
 import { createChartError } from '../utils/errorHandlers';
 import { extractScores } from '../utils/scoreExtractors';
 

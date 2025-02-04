@@ -1,9 +1,18 @@
+import { SubjectType } from '@/features/subject/constants';
+
 // 基本的なチャートデータの型
-export type PieData = {
+export interface PieData {
   name: string;
   value: number;
-  percentage?: number;
-};
+  percentage: number; // 必須に統一
+}
+
+// 変換用の入力型
+export interface TransformInput {
+  value: number;
+  totalScore: number;
+  name: string;
+}
 
 // 科目スコアの基本型（表示用）
 export type SubjectScore = PieData & {
@@ -12,13 +21,12 @@ export type SubjectScore = PieData & {
   displayName?: string; // 表示用の名前
 };
 
-// 詳細なチャートデータの型（データ処理用）
-export type DetailedPieData = {
-  name: string;
-  value: number;
-  percentage: number;
-  type: string; // データ処理用のタイプ（共通/二次など）
-};
+// 詳細なチャートデータの型
+export interface DetailedPieData extends PieData {
+  category: string;
+  displayName?: string;
+  type: SubjectType;
+}
 
 // ドーナツチャートのProps
 export type ChartProps = {

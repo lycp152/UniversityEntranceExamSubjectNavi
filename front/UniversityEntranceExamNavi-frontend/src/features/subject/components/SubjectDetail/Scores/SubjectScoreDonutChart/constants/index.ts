@@ -1,5 +1,3 @@
-export * from './types';
 export * from './pattern';
-export * from './subjects';
-export * from './testTypes';
+export * from './patterns';
 export * from './formats';

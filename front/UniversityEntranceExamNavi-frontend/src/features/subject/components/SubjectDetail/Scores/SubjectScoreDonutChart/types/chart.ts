@@ -1,3 +1,12 @@
+import { TestType } from '@/lib/types';
+
+// 基本的なデータ変換の入力型
+export interface TransformInput {
+  value: number;
+  totalScore: number;
+  name: string;
+}
+
 export interface PieData {
   name: string;
   value: number;
@@ -6,5 +15,6 @@ export interface PieData {
 
 export interface DetailedPieData extends PieData {
   category: string;
-  displayName: string;
+  displayName?: string;
+  type: TestType;
 }

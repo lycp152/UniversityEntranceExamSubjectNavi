@@ -1,6 +1,7 @@
-import { PatternConfig } from './types';
+import { PatternConfig } from '@/features/subject/types';
 import { PATTERN_CONFIG, createPattern } from './pattern';
 
+// 科目別のパターン定義
 export const SUBJECT_PATTERNS: Record<string, PatternConfig> = {
   英語: {
     color: '#DAA520',
@@ -77,7 +78,34 @@ export const SUBJECT_PATTERNS: Record<string, PatternConfig> = {
         ),
     },
   },
-} as const;
+};
+
+// テストタイプ別のパターン定義
+export const TEST_TYPE_PATTERNS: Record<string, PatternConfig> = {
+  共通: {
+    color: '#4169E1',
+    pattern: {
+      width: PATTERN_CONFIG.size,
+      height: PATTERN_CONFIG.size,
+      content: (color: string) =>
+        createPattern(
+          color,
+          `<line x1="0" y1="4" x2="${PATTERN_CONFIG.size}" y2="4"
+          stroke="white"
+          strokeWidth="${PATTERN_CONFIG.strokeWidth}"
+          strokeOpacity="${PATTERN_CONFIG.opacity}" />`
+        ),
+    },
+  },
+  二次: {
+    color: '#A9A9A9',
+    pattern: {
+      width: PATTERN_CONFIG.size,
+      height: PATTERN_CONFIG.size,
+      content: (color: string) => createPattern(color, ''),
+    },
+  },
+};
 
 export const SUBJECT_ORDER = ['英語L', '英語R', '数学', '国語', '理科', '地歴公'] as const;
 export const BASE_SUBJECTS = ['英語', '数学', '国語', '理科', '地歴公'] as const;
@@ -85,3 +113,7 @@ export const BASE_SUBJECTS = ['英語', '数学', '国語', '理科', '地歴公
 export const SUBJECT_COLORS = Object.fromEntries(
   Object.entries(SUBJECT_PATTERNS).map(([key, value]) => [key, value.color])
 ) as Record<keyof typeof SUBJECT_PATTERNS, string>;
+
+export const TEST_TYPE_COLORS = Object.fromEntries(
+  Object.entries(TEST_TYPE_PATTERNS).map(([key, value]) => [key, value.color])
+) as Record<keyof typeof TEST_TYPE_PATTERNS, string>;

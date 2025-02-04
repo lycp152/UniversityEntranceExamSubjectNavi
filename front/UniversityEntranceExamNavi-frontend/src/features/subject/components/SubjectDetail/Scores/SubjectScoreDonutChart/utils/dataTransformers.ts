@@ -1,4 +1,4 @@
-import { DetailedPieData, PieData } from '../types/chart';
+import { DetailedPieData, PieData, TransformInput } from '../types/chart';
 import { TestType } from '@/lib/types';
 import { transformSubjectData } from './subjectDataTransformers';
 import { transformToPieData } from './baseTransformers';
@@ -10,24 +10,20 @@ export const createDetailedPieData = (
   testType: TestType
 ): DetailedPieData => {
   const { name, displayName, category } = transformSubjectData(subjectName, testType);
-  const { data: baseData } = transformToPieData({ value, totalScore, name });
+  const transformInput: TransformInput = { value, totalScore, name };
+  const baseData = transformToPieData(transformInput);
 
   return {
-    ...baseData,
+    ...baseData.data,
     category,
     displayName,
+    type: testType,
   };
 };
 
-export const createOuterPieData = (
-  category: string,
-  total: number,
-  totalScore: number
-): PieData => {
-  const { data } = transformToPieData({
+export const createOuterPieData = (category: string, total: number, totalScore: number): PieData =>
+  transformToPieData({
     value: total,
     totalScore,
     name: category,
-  });
-  return data;
-};
+  }).data;

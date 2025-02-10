@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { subjects } from '@/features/data/SubjectData';
+import { Subject } from '@/lib/types';
 import { useSubjectChart } from '@/features/subject/hooks/useSubjectChart';
 import {
   containerStyles,
@@ -8,8 +8,11 @@ import {
 } from './SubjectScoreDonutChart/styles';
 import { DonutChart } from './SubjectScoreDonutChart/components/DonutChart';
 
-const SubjectScoreDonutChart: FC = () => {
-  const subjectData = subjects[0];
+interface SubjectScoreDonutChartProps {
+  subjectData: Subject;
+}
+
+const SubjectScoreDonutChart: FC<SubjectScoreDonutChartProps> = ({ subjectData }) => {
   const { leftChart, rightChart } = useSubjectChart(subjectData);
 
   return (

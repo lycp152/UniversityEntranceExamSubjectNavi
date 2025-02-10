@@ -1,4 +1,4 @@
-import { TestType } from '@/lib/types';
+import { SubjectType } from '@/features/subject/constants';
 
 // 基本的なデータ変換の入力型
 export interface TransformInput {
@@ -16,5 +16,5 @@ export interface PieData {
 export interface DetailedPieData extends PieData {
   category: string;
   displayName?: string;
-  type: TestType;
+  type: SubjectType;
 }

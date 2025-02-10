@@ -1,7 +1,11 @@
 import { DetailedPieData, PieData, TransformInput } from '@/features/subject/types';
 import { TestType } from '@/lib/types';
+import { SUBJECT_TYPES } from '@/features/subject/constants';
 import { transformSubjectData } from './subjectDataTransformers';
 import { transformToPieData } from './baseChartTransformers';
+
+const mapTestTypeToSubjectType = (testType: TestType) =>
+  testType === 'commonTest' ? SUBJECT_TYPES.COMMON : SUBJECT_TYPES.SECONDARY;
 
 export const createDetailedPieData = (
   subjectName: string,
@@ -17,7 +21,7 @@ export const createDetailedPieData = (
     ...baseData.data,
     category,
     displayName,
-    type: testType,
+    type: mapTestTypeToSubjectType(testType),
   };
 };
 

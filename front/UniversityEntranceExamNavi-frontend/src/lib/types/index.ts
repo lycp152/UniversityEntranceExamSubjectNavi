@@ -5,60 +5,38 @@ import {
 } from '../constants/subjects';
 
 // 基本的な型定義
-export type TestType = (typeof EXAM_TYPE_OPTIONS)[number];
+export type ExamType = (typeof EXAM_TYPE_OPTIONS)[number];
 export type SubjectMainCategory = (typeof SUBJECT_MAIN_CATEGORIES)[number];
 export type SubjectNameDisplay =
   (typeof SUBJECT_NAME_DISPLAY_MAPPING)[keyof typeof SUBJECT_NAME_DISPLAY_MAPPING];
 
 // スコア関連の型
+export interface BaseScore {
+  score: number;
+  maxScore: number;
+  percentage: number;
+}
+
+export interface TestScores {
+  commonTest: BaseScore;
+  secondTest: BaseScore;
+  total: BaseScore;
+}
+
 export interface BaseSubjectScore {
   commonTest: number;
   secondTest: number;
 }
 
-export interface DetailedSubjectScore {
-  type: TestType;
-  value: number;
-  subjectName: SubjectName;
-}
+export type SubjectName = '英語R' | '英語L' | '数学' | '国語' | '理科' | '地歴公';
+export type SubjectScores = Record<SubjectName, BaseSubjectScore>;
 
-export interface SubjectScore {
-  type: TestType;
-  value: number;
-  subjectName: SubjectName;
-}
+export const TEST_TYPES = {
+  COMMON: 'commonTest',
+  SECOND: 'secondTest',
+} as const;
 
-export interface SubjectScoreError {
-  type: 'error';
-  message: string;
-  subjectName: SubjectName;
-}
-
-// 科目関連の型
-export interface Subject {
-  universityId: number;
-  departmentId: number;
-  subjectId: number;
-  universityName: string;
-  department: string;
-  major: string;
-  schedule: string;
-  enrollment: number;
-  rank: number;
-  subjectRatio: number;
-  subjects: SubjectScores;
-}
-
-export type SubjectScores = {
-  英語R: BaseSubjectScore;
-  英語L: BaseSubjectScore;
-  数学: BaseSubjectScore;
-  国語: BaseSubjectScore;
-  理科: BaseSubjectScore;
-  地歴公: BaseSubjectScore;
-};
-
-export type SubjectName = keyof SubjectScores;
+export type TestType = (typeof TEST_TYPES)[keyof typeof TEST_TYPES];
 
 // 表示関連の型
 export interface TitleData {
@@ -76,18 +54,16 @@ export interface ScoreCalculation {
 }
 
 // バリデーション関連の型
-export interface ValidationMetadata {
-  processedAt: number;
-  totalItems: number;
-  successCount: number;
-  errorCount: number;
+export interface ValidationError {
+  code: string;
+  message: string;
+  field?: string;
 }
 
 export interface ValidationResult<T> {
   isValid: boolean;
   data?: T;
-  errors: SubjectScoreError[];
-  metadata?: ValidationMetadata;
+  errors: ValidationError[];
 }
 
 /**
@@ -117,5 +93,32 @@ export interface ChartData {
 export interface ChartDataSet {
   detailedData: ChartData[];
   outerData: ChartData[];
-  errors: SubjectScoreError[];
+  errors: ValidationError[];
+}
+
+// 科目関連の型
+export interface Subject {
+  universityId: number;
+  departmentId: number;
+  subjectId: number;
+  universityName: string;
+  department: string;
+  major: string;
+  schedule: string;
+  enrollment: number;
+  rank: number;
+  subjectRatio: number;
+  subjects: SubjectScores;
+}
+
+export interface SubjectScore {
+  type: TestType;
+  value: number;
+  subjectName: SubjectName;
+}
+
+export interface SubjectScoreError {
+  type: 'error';
+  message: string;
+  subjectName: SubjectName;
 }

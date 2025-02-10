@@ -56,12 +56,12 @@ const SubjectDetailPage = ({
           </div>
           {/* 右側のグラフ */}
           <div className="flex-1 flex bg-transparent">
-            <Scores scores={subjectDetail.subjects} />
+            <Scores scores={subjectDetail} />
           </div>
         </div>
         {/* 下部の表 */}
         <div>
-          <SubjectScoreTable />
+          <SubjectScoreTable subjectData={subjectDetail} />
         </div>
       </div>
     </>

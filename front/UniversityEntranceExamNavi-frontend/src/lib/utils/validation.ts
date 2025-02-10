@@ -26,15 +26,9 @@ export const createValidationResult = <T>(
     isValid,
     data,
     errors: errors.map((message) => ({
-      type: 'error',
+      code: 'VALIDATION_ERROR',
       message,
-      subjectName: '数学', // デフォルト値
+      field: '数学',
     })),
-    metadata: {
-      processedAt: Date.now(),
-      totalItems: data ? 1 : 0,
-      successCount: isValid ? 1 : 0,
-      errorCount: errors.length,
-    },
   };
 };

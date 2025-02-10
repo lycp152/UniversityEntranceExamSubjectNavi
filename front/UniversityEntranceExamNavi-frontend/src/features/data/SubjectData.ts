@@ -52,28 +52,28 @@ export const subjects: Subject[] = [
     subjectRatio: 32.8,
     subjects: {
       英語L: {
-        commonTest: 50,
-        secondTest: 0,
+        commonTest: 100,
+        secondTest: 100,
       },
       英語R: {
-        commonTest: 70,
-        secondTest: 150,
+        commonTest: 100,
+        secondTest: 100,
       },
       数学: {
-        commonTest: 130,
-        secondTest: 150,
+        commonTest: 100,
+        secondTest: 100,
       },
       国語: {
         commonTest: 100,
-        secondTest: 0,
+        secondTest: 100,
       },
       理科: {
-        commonTest: 150,
+        commonTest: 100,
         secondTest: 100,
       },
       地歴公: {
-        commonTest: 50,
-        secondTest: 0,
+        commonTest: 100,
+        secondTest: 100,
       },
     },
   },

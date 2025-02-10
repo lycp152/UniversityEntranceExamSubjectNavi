@@ -1,10 +1,10 @@
 import { FC } from 'react';
 import SubjectScoreDonutChart from './SubjectScoreDonutChart';
 import styles from './Scores.module.css';
-import { SubjectScores } from '@/lib/types';
+import { Subject } from '@/lib/types';
 
 type ScoresProps = {
-  scores: SubjectScores;
+  scores: Subject;
 };
 
 export const Scores: FC<ScoresProps> = ({ scores }) => {
@@ -12,7 +12,7 @@ export const Scores: FC<ScoresProps> = ({ scores }) => {
     <div className={styles.container}>
       <div className="flex w-full h-[400px]">
         <div className="flex-1">
-          <SubjectScoreDonutChart />
+          <SubjectScoreDonutChart subjectData={scores} />
         </div>
       </div>
     </div>

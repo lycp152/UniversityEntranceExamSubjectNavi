@@ -1,11 +1,6 @@
-import type {
-  BaseSubjectScore,
-  SubjectName,
-  TestType,
-  SubjectScore,
-  SubjectScoreError,
-} from '../types';
+import type { BaseSubjectScore, SubjectName, SubjectScore, SubjectScoreError } from '../types';
 import { EXAM_TYPE_OPTIONS } from '../constants/subjects';
+import { TEST_TYPES } from '../types';
 
 /**
  * 科目のスコアを試験区分ごとに抽出する
@@ -24,9 +19,9 @@ export const extractScores = (
     ];
   }
 
-  const extractedScores = EXAM_TYPE_OPTIONS.map((type: TestType) => ({
-    type,
-    value: type === '共通' ? scores.commonTest : scores.secondTest,
+  const extractedScores = EXAM_TYPE_OPTIONS.map((examType) => ({
+    type: examType === '共通' ? TEST_TYPES.COMMON : TEST_TYPES.SECOND,
+    value: examType === '共通' ? scores.commonTest : scores.secondTest,
     subjectName,
   })).filter((score: SubjectScore) => score.value > 0);
 

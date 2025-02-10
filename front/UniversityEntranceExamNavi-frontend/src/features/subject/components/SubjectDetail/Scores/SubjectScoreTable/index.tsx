@@ -1,8 +1,31 @@
 import { FC } from 'react';
-import { MOCK_TABLE_DATA, TOTAL_SCORES } from '@/features/subject/constants/mockData';
 import styles from './SubjectScoreTable.module.css';
+import { Subject } from '@/lib/types';
+import { calculatePercentage } from '@/features/subject/utils/scoreCalculations';
 
-const SubjectScoreTable: FC = () => {
+interface SubjectScoreTableProps {
+  subjectData: Subject;
+}
+
+const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {
+  const subjects = subjectData.subjects;
+
+  // 合計点の計算
+  const calculateTotalScores = () => {
+    const commonTestTotal = Object.values(subjects).reduce(
+      (sum, subject) => sum + subject.commonTest,
+      0
+    );
+    const secondTestTotal = Object.values(subjects).reduce(
+      (sum, subject) => sum + subject.secondTest,
+      0
+    );
+    const total = commonTestTotal + secondTestTotal;
+    return { commonTest: commonTestTotal, secondTest: secondTestTotal, total };
+  };
+
+  const totals = calculateTotalScores();
+
   return (
     <div className="mt-4">
       <h2 className="text-lg font-semibold mb-2">科目別配点と割合</h2>
@@ -11,9 +34,9 @@ const SubjectScoreTable: FC = () => {
           <thead>
             <tr>
               <th className="whitespace-nowrap border-b">項目</th>
-              {MOCK_TABLE_DATA.map((subject) => (
-                <th key={subject.subject} className="whitespace-nowrap border-b">
-                  {subject.subject}
+              {Object.keys(subjects).map((subject) => (
+                <th key={subject} className="whitespace-nowrap border-b">
+                  {subject}
                 </th>
               ))}
               <th className="whitespace-nowrap border-b">合計</th>
@@ -22,54 +45,61 @@ const SubjectScoreTable: FC = () => {
           <tbody>
             <tr className="hover:bg-gray-50">
               <td className="border-b">共通テスト配点</td>
-              {MOCK_TABLE_DATA.map((subject) => (
-                <td key={subject.subject} className="border-b">
-                  {subject.commonTest.score}
+              {Object.entries(subjects).map(([subject, scores]) => (
+                <td key={subject} className="border-b">
+                  {scores.commonTest}
                 </td>
               ))}
-              <td className="border-b">{TOTAL_SCORES.commonTest}</td>
+              <td className="border-b">{totals.commonTest}</td>
             </tr>
             <tr className="hover:bg-gray-50">
               <td className="border-b">配点割合</td>
-              {MOCK_TABLE_DATA.map((subject) => (
-                <td key={subject.subject} className="border-b">
-                  {subject.commonTest.percentage.toFixed(1)}%
+              {Object.entries(subjects).map(([subject, scores]) => (
+                <td key={subject} className="border-b">
+                  {calculatePercentage(scores.commonTest, totals.total).toFixed(1)}%
                 </td>
               ))}
-              <td className="border-b">100.0%</td>
+              <td className="border-b">
+                {calculatePercentage(totals.commonTest, totals.total).toFixed(1)}%
+              </td>
             </tr>
             <tr className="hover:bg-gray-50">
               <td className="border-b">二次試験配点</td>
-              {MOCK_TABLE_DATA.map((subject) => (
-                <td key={subject.subject} className="border-b">
-                  {subject.secondaryTest.score}
+              {Object.entries(subjects).map(([subject, scores]) => (
+                <td key={subject} className="border-b">
+                  {scores.secondTest}
                 </td>
               ))}
-              <td className="border-b">{TOTAL_SCORES.secondaryTest}</td>
+              <td className="border-b">{totals.secondTest}</td>
             </tr>
             <tr className="hover:bg-gray-50">
               <td className="border-b">配点割合</td>
-              {MOCK_TABLE_DATA.map((subject) => (
-                <td key={subject.subject} className="border-b">
-                  {subject.secondaryTest.percentage.toFixed(1)}%
+              {Object.entries(subjects).map(([subject, scores]) => (
+                <td key={subject} className="border-b">
+                  {calculatePercentage(scores.secondTest, totals.total).toFixed(1)}%
                 </td>
               ))}
-              <td className="border-b">100.0%</td>
+              <td className="border-b">
+                {calculatePercentage(totals.secondTest, totals.total).toFixed(1)}%
+              </td>
             </tr>
             <tr className="hover:bg-gray-50">
               <td className="border-b">総配点</td>
-              {MOCK_TABLE_DATA.map((subject) => (
-                <td key={subject.subject} className="border-b">
-                  {subject.total.score}
+              {Object.entries(subjects).map(([subject, scores]) => (
+                <td key={subject} className="border-b">
+                  {scores.commonTest + scores.secondTest}
                 </td>
               ))}
-              <td className="border-b">{TOTAL_SCORES.total}</td>
+              <td className="border-b">{totals.total}</td>
             </tr>
             <tr className="hover:bg-gray-50">
               <td className="border-b">配点割合</td>
-              {MOCK_TABLE_DATA.map((subject) => (
-                <td key={subject.subject} className="border-b">
-                  {subject.total.percentage.toFixed(1)}%
+              {Object.entries(subjects).map(([subject, scores]) => (
+                <td key={subject} className="border-b">
+                  {calculatePercentage(scores.commonTest + scores.secondTest, totals.total).toFixed(
+                    1
+                  )}
+                  %
                 </td>
               ))}
               <td className="border-b">100.0%</td>

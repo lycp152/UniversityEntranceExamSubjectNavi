@@ -28,7 +28,7 @@ const CustomLabel: FC<CustomLabelProps> = (props) => {
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-  if (percent < 0.05) return null;
+  if (percent < 0.02) return null;
 
   const getLabelText = () => {
     if (isRightChart && innerRadius === 0) {

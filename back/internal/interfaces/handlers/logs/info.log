@@ -1,0 +1,71 @@
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Set item with key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cached FindAll results
+INFO: 2025/02/10 21:28:14 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Hit for key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache hit for FindAll
+INFO: 2025/02/10 21:28:14 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Hit for key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache hit for FindAll
+INFO: 2025/02/10 21:28:14 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Deleted item with key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Set item with key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cached FindAll results
+INFO: 2025/02/10 21:28:14 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Hit for key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache hit for FindAll
+INFO: 2025/02/10 21:28:14 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Deleted item with key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Set item with key: universities:all
+INFO: 2025/02/10 21:28:14 logger.go:48: Cached FindAll results
+INFO: 2025/02/10 21:28:14 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Deleted item with key: universities:search:テスト
+INFO: 2025/02/10 21:28:14 logger.go:48: Cache: Deleted item with key: universities:search:テスト
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Set item with key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cached FindAll results
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Hit for key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache hit for FindAll
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Hit for key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache hit for FindAll
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Set item with key: universities:search:テスト
+INFO: 2025/02/10 21:29:11 logger.go:48: Cached search results for query: テスト
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully searched universities with query 'テスト', found 1 results
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Set item with key: universities:search:存在しない大学
+INFO: 2025/02/10 21:29:11 logger.go:48: Cached search results for query: 存在しない大学
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully searched universities with query '存在しない大学', found 0 results
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Hit for key: universities:search:テスト
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache hit for Search: テスト
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully searched universities with query 'テスト', found 1 results
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Deleted item with key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Set item with key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cached FindAll results
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Hit for key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache hit for FindAll
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Deleted item with key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cache: Set item with key: universities:all
+INFO: 2025/02/10 21:29:11 logger.go:48: Cached FindAll results
+INFO: 2025/02/10 21:29:11 logger.go:48: Successfully fetched 1 universities
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache: Deleted item with key: universities:search:テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache: Set item with key: universities:search:テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Cached search results for query: テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Successfully searched universities with query 'テスト', found 1 results
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache: Hit for key: universities:search:テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache hit for Search: テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Successfully searched universities with query 'テスト', found 1 results
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache: Deleted item with key: universities:search:テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache: Set item with key: universities:search:テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Cached search results for query: テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Successfully searched universities with query 'テスト', found 1 results
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache: Hit for key: universities:search:テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Cache hit for Search: テスト
+INFO: 2025/02/10 21:29:12 logger.go:48: Successfully searched universities with query 'テスト', found 1 results
+INFO: 2025/02/10 21:29:13 logger.go:48: Cache: Hit for key: universities:search:テスト
+INFO: 2025/02/10 21:29:13 logger.go:48: Cache hit for Search: テスト
+INFO: 2025/02/10 21:29:13 logger.go:48: Successfully searched universities with query 'テスト', found 1 results
+INFO: 2025/02/10 21:29:13 logger.go:48: Cache: Hit for key: universities:search:テスト
+INFO: 2025/02/10 21:29:13 logger.go:48: Cache hit for Search: テスト
+INFO: 2025/02/10 21:29:13 logger.go:48: Successfully searched universities with query 'テスト', found 1 results

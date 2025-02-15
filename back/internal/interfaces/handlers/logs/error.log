@@ -1,0 +1,32 @@
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query 'テスト': database operation 'Search' failed: ERROR: column reference "name" is ambiguous (SQLSTATE 42702)
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query '': invalid input for field query: search query cannot be empty
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query '存在しない大学': database operation 'Search' failed: ERROR: column reference "name" is ambiguous (SQLSTATE 42702)
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query 'テスト': database operation 'Search' failed: sql: database is closed
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query 'テスト': database operation 'Search' failed: ERROR: column reference "name" is ambiguous (SQLSTATE 42702)
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query 'テスト': database operation 'Search' failed: ERROR: column reference "name" is ambiguous (SQLSTATE 42702)
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query 'テスト': database operation 'Search' failed: ERROR: column reference "name" is ambiguous (SQLSTATE 42702)
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query 'テスト': database operation 'Search' failed: ERROR: column reference "name" is ambiguous (SQLSTATE 42702)
+ERROR: 2025/02/10 21:28:14 logger.go:53: Failed to search universities with query 'テスト': database operation 'Search' failed: ERROR: column reference "name" is ambiguous (SQLSTATE 42702)
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Failed to search universities with query '': invalid input for field query: search query cannot be empty
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/10 21:29:11 logger.go:53: Invalid department ID format: strconv.ParseUint: parsing "": invalid syntax

@@ -1,0 +1,30 @@
+ERROR: 2025/02/13 19:15:47 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 20:04:23 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 20:10:07 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 20:27:41 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 20:27:59 logger.go:53: Failed to fetch universities: database operation 'FindAll' failed: ERROR: cached plan must not change result type (SQLSTATE 0A000)
+ERROR: 2025/02/13 20:27:59 logger.go:53: Failed to fetch universities: database operation 'FindAll' failed: ERROR: cached plan must not change result type (SQLSTATE 0A000)
+ERROR: 2025/02/13 20:34:44 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 21:10:07 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 21:15:48 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 21:16:20 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 21:16:39 logger.go:53: Failed to update subject with ID 9: database operation 'UpdateSubject' failed: ERROR: deadlock detected (SQLSTATE 40P01)
+ERROR: 2025/02/13 21:24:42 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 21:26:15 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 21:32:36 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/13 21:32:43 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/14 00:41:39 logger.go:53: Invalid subject ID format: strconv.ParseUint: parsing "batch": invalid syntax
+ERROR: 2025/02/14 23:11:03 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: ERROR: cached plan must not change result type (SQLSTATE 0A000)
+ERROR: 2025/02/14 23:11:03 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: ERROR: cached plan must not change result type (SQLSTATE 0A000)
+ERROR: 2025/02/15 03:57:16 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/15 03:58:15 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/15 04:02:22 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: Subjects: unsupported relations for schema Department
+ERROR: 2025/02/15 04:02:22 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: Subjects: unsupported relations for schema Department
+ERROR: 2025/02/15 04:02:57 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: Subjects: unsupported relations for schema Department
+ERROR: 2025/02/15 04:02:57 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: Subjects: unsupported relations for schema Department
+ERROR: 2025/02/15 19:22:03 logger.go:53: Failed to update subjects batch with department ID 2: database operation 'UpdateSubjectsBatch' failed: ERROR: column "department_id" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/15 19:24:11 logger.go:53: Failed to update subjects batch with department ID 2: database operation 'UpdateSubjectsBatch' failed: ERROR: column "department_id" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/15 19:27:09 logger.go:53: Failed to update subjects batch with department ID 2: database operation 'UpdateSubjectsBatch' failed: ERROR: column "department_id" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/15 19:27:46 logger.go:53: Failed to update subjects batch with department ID 2: database operation 'UpdateSubjectsBatch' failed: ERROR: duplicate key value violates unique constraint "test_scores_pkey" (SQLSTATE 23505)
+ERROR: 2025/02/15 19:29:51 logger.go:53: Failed to update subjects batch with department ID 2: database operation 'UpdateSubjectsBatch' failed: ERROR: duplicate key value violates unique constraint "test_scores_pkey" (SQLSTATE 23505)
+ERROR: 2025/02/15 19:32:11 logger.go:53: Failed to update subjects batch with department ID 2: database operation 'UpdateSubjectsBatch' failed: ERROR: duplicate key value violates unique constraint "test_scores_pkey" (SQLSTATE 23505)

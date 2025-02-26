@@ -1,1 +1,34 @@
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Environment variables
+**/.env
+**/.env.local
+**/.env.*
+
+# Backend
+back/vendor/
+back/tmp/
+back/dist/
+back/*.log
+
+# Frontend
+front/node_modules/
+front/.next/
+front/dist/
+front/build/
+front/*.log
+front/npm-debug.log*
+front/yarn-debug.log*
+front/yarn-error.log*
+
+# IDE
+.idea/
+.vscode/
+**/*.swp
+**/*.swo
+
+# OS
 .DS_Store
+Thumbs.db

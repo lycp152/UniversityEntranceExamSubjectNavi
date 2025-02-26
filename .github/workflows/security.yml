@@ -1,0 +1,143 @@
+name: Security Checks
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 毎日実行
+  push:
+    branches: [main, develop]
+    paths:
+      - "**.go"
+      - "**.ts"
+      - "**.tsx"
+      - "**/package.json"
+      - "**/package-lock.json"
+      - "**/go.mod"
+      - "**/go.sum"
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Snyk
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-projects
+
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "UniversityEntranceExamSubjectNavi"
+          path: "."
+          format: "SARIF"
+
+      - name: Upload dependency scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: "dependency-check-report.sarif"
+
+  code-scanning:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: "go,javascript,typescript"
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  secret-scanning:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Gitleaks
+        uses: zricethezav/gitleaks-action@master
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run license compliance check
+        uses: fossas/fossa-action@main
+        with:
+          api-key: ${{ secrets.FOSSA_API_KEY }}
+
+      - name: Run security compliance tests
+        run: |
+          cd back
+          go test -v ./tests/security/compliance/...
+
+  penetration-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: university_exam_test_db
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Start containers
+        run: docker compose -f deployments/docker/development/docker-compose.yml up -d
+
+      - name: Run OWASP ZAP scan
+        uses: zaproxy/action-full-scan@v0.9.0
+        with:
+          target: "http://localhost:8080"
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-a"
+
+      - name: Run security tests
+        run: |
+          cd back
+          go test -v ./tests/security/pentest/...
+
+  report:
+    needs:
+      [
+        dependency-check,
+        code-scanning,
+        secret-scanning,
+        compliance,
+        penetration-test,
+      ]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify security check results
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: |
+            Security Check Summary:
+            - Dependency Check: ${{ needs.dependency-check.result }}
+            - Code Scanning: ${{ needs.code-scanning.result }}
+            - Secret Scanning: ${{ needs.secret-scanning.result }}
+            - Compliance: ${{ needs.compliance.result }}
+            - Penetration Test: ${{ needs.penetration-test.result }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

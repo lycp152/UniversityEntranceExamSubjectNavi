@@ -1,0 +1,132 @@
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to fetch university with ID 999: University with ID 999 not found
+ERROR: 2025/02/19 13:21:24 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to fetch university with ID 999999: University with ID 999999 not found
+ERROR: 2025/02/19 13:21:24 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:21:24 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to update university with ID 1: database operation 'Update' failed: ERROR: new row for relation "universities" violates check constraint "chk_universities_name" (SQLSTATE 23514)
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:21:28 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to fetch university with ID 999: University with ID 999 not found
+ERROR: 2025/02/19 13:22:58 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to fetch university with ID 999999: University with ID 999999 not found
+ERROR: 2025/02/19 13:22:58 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:22:58 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to update university with ID 1: database operation 'Update' failed: ERROR: new row for relation "universities" violates check constraint "chk_universities_name" (SQLSTATE 23514)
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:23:02 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to fetch university with ID 999: University with ID 999 not found
+ERROR: 2025/02/19 13:28:31 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to fetch university with ID 999999: University with ID 999999 not found
+ERROR: 2025/02/19 13:28:31 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:28:31 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to update university with ID 1: database operation 'Update' failed: ERROR: new row for relation "universities" violates check constraint "chk_universities_name" (SQLSTATE 23514)
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:35 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to fetch university with ID 999: University with ID 999 not found
+ERROR: 2025/02/19 13:28:47 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to fetch university with ID 999999: University with ID 999999 not found
+ERROR: 2025/02/19 13:28:47 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:28:47 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:50 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:50 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:50 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to update university with ID 1: database operation 'Update' failed: ERROR: new row for relation "universities" violates check constraint "chk_universities_name" (SQLSTATE 23514)
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:28:51 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to fetch university with ID 999: University with ID 999 not found
+ERROR: 2025/02/19 13:34:18 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to fetch university with ID 999999: University with ID 999999 not found
+ERROR: 2025/02/19 13:34:18 logger.go:53: Invalid university ID format: strconv.ParseUint: parsing "invalid": invalid syntax
+ERROR: 2025/02/19 13:34:18 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to update university with ID 1: database operation 'Update' failed: ERROR: new row for relation "universities" violates check constraint "chk_universities_name" (SQLSTATE 23514)
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to fetch university with ID 0: University with ID 0 not found
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty
+ERROR: 2025/02/19 13:34:22 logger.go:53: Failed to create university: university name cannot be empty

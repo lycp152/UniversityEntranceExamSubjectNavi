@@ -12,7 +12,7 @@ const (
 )
 
 // setupTest はテストの共通セットアップを行います
-func setupTest(t *testing.T) (*UniversityRepository, *models.University) {
+func setupTest(t *testing.T) (*universityRepository, *models.University) {
 	t.Helper()
 	db := SetupTestDB()
 	repo := NewUniversityRepository(db)
@@ -26,7 +26,7 @@ func setupTest(t *testing.T) (*UniversityRepository, *models.University) {
 		t.Fatalf(errCreateTestData, err)
 	}
 
-	return repo, university
+	return repo.(*universityRepository), university
 }
 
 func TestFindAll(t *testing.T) {

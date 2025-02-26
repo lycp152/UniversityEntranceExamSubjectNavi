@@ -17,12 +17,17 @@ import (
 
 // createScheduleData はテスト用のスケジュールデータを作成します
 func createScheduleData(db *gorm.DB) error {
-	schedule := &models.Schedule{
+	schedule := &models.AdmissionSchedule{
 		Name:         "前期",
 		DisplayOrder: 1,
-		Description:  "前期日程試験",
-		StartDate:    time.Date(2024, 2, 25, 0, 0, 0, 0, time.Local),
-		EndDate:      time.Date(2024, 3, 7, 23, 59, 59, 0, time.Local),
+		TestTypes: []models.TestType{
+			{
+				Name: "共通",
+			},
+			{
+				Name: "二次",
+			},
+		},
 	}
 
 	return db.Create(schedule).Error
@@ -38,9 +43,8 @@ func createTestData(db *gorm.DB) error {
 				Majors: []models.Major{
 					{
 						Name: "テスト学科",
-						ExamInfos: []models.ExamInfo{
+						AdmissionInfos: []models.AdmissionInfo{
 							{
-								ScheduleID:   1,
 								Enrollment:   100,
 								AcademicYear: 2024,
 								ValidFrom:    time.Now(),
@@ -48,19 +52,21 @@ func createTestData(db *gorm.DB) error {
 								Status:       "active",
 								CreatedBy:    "system",
 								UpdatedBy:    "system",
-								Subjects: []models.Subject{
+								AdmissionSchedules: []models.AdmissionSchedule{
 									{
-										Name: "テスト科目1",
-										TestScores: []models.TestScore{
+										Name:         "前期",
+										DisplayOrder: 1,
+										TestTypes: []models.TestType{
 											{
-												Type:       models.CommonTest,
-												Score:      80,
-												Percentage: 20.0,
-											},
-											{
-												Type:       models.SecondaryTest,
-												Score:      90,
-												Percentage: 30.0,
+												Name: "共通",
+												Subjects: []models.Subject{
+													{
+														Name:         "テスト科目1",
+														Score:        80,
+														Percentage:   20.0,
+														DisplayOrder: 1,
+													},
+												},
 											},
 										},
 									},
@@ -84,7 +90,7 @@ func setupTestServer() (*echo.Echo, *handlers.UniversityHandler) {
 	db := repositories.SetupTestDB()
 
 	// データベースをクリーンアップ
-	if err := db.Exec("TRUNCATE universities, schedules CASCADE").Error; err != nil {
+	if err := db.Exec("TRUNCATE universities CASCADE").Error; err != nil {
 		panic(err)
 	}
 

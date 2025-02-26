@@ -51,7 +51,7 @@ func validateUniversityResponse(t *testing.T, universities []models.University, 
 	}
 }
 
-func setupTestDB() *repositories.UniversityRepository {
+func setupTestDB() repositories.IUniversityRepository {
 	db := repositories.SetupTestDB()
 	return repositories.NewUniversityRepository(db)
 }

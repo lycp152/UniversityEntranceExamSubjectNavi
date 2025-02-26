@@ -22,10 +22,10 @@ const (
 )
 
 type UniversityHandler struct {
-    repo *repositories.UniversityRepository
+    repo repositories.IUniversityRepository
 }
 
-func NewUniversityHandler(repo *repositories.UniversityRepository) *UniversityHandler {
+func NewUniversityHandler(repo repositories.IUniversityRepository) *UniversityHandler {
     return &UniversityHandler{repo: repo}
 }
 
@@ -285,11 +285,11 @@ func (h *UniversityHandler) DeleteDepartment(c echo.Context) error {
 
 // CreateSubject は新しい科目を作成します
 func (h *UniversityHandler) CreateSubject(c echo.Context) error {
-    departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
+    scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidDepartmentIDFormat, err)
+        logger.Error("Invalid schedule ID format: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": errMsgInvalidDepartmentID,
+            "error": "Invalid schedule ID format",
         })
     }
 
@@ -301,7 +301,7 @@ func (h *UniversityHandler) CreateSubject(c echo.Context) error {
         })
     }
 
-    subject.ExamInfoID = uint(departmentID)
+    subject.TestTypeID = uint(scheduleID)
     if err := h.repo.CreateSubject(&subject); err != nil {
         logger.Error("Failed to create subject: %v", err)
         return handleError(c, err)
@@ -311,7 +311,7 @@ func (h *UniversityHandler) CreateSubject(c echo.Context) error {
     return c.JSON(http.StatusCreated, subject)
 }
 
-// UpdateSubject は既存の科目を更新します
+// UpdateSubject は科目を更新します
 func (h *UniversityHandler) UpdateSubject(c echo.Context) error {
     subjectID, err := strconv.ParseUint(c.Param("subjectId"), 10, 32)
     if err != nil {
@@ -360,11 +360,11 @@ func (h *UniversityHandler) DeleteSubject(c echo.Context) error {
 
 // UpdateSubjectsBatch は複数の科目を一括で更新します
 func (h *UniversityHandler) UpdateSubjectsBatch(c echo.Context) error {
-    departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
+    scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidDepartmentIDFormat, err)
+        logger.Error("Invalid schedule ID format: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": errMsgInvalidDepartmentID,
+            "error": "Invalid schedule ID format",
         })
     }
 
@@ -376,11 +376,33 @@ func (h *UniversityHandler) UpdateSubjectsBatch(c echo.Context) error {
         })
     }
 
-    if err := h.repo.UpdateSubjectsBatch(uint(departmentID), subjects); err != nil {
-        logger.Error("Failed to update subjects batch with department ID %d: %v", departmentID, err)
+    if err := h.repo.UpdateSubjectsBatch(uint(scheduleID), subjects); err != nil {
+        logger.Error("Failed to update subjects batch: %v", err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated subjects batch for department ID %d", departmentID)
+    logger.Info("Successfully updated subjects batch")
     return c.JSON(http.StatusOK, subjects)
+}
+
+// GetCSRFToken はCSRFトークンを返します
+func (h *UniversityHandler) GetCSRFToken(c echo.Context) error {
+	// 新しいCSRFトークンを生成
+	token := c.Get("csrf")
+	if token == nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "CSRFトークンの生成に失敗しました",
+		})
+	}
+
+	tokenStr, ok := token.(string)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "CSRFトークンの型が不正です",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"token": tokenStr,
+	})
 }

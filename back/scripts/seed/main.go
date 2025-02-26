@@ -17,17 +17,13 @@ func calculatePercentages(subjects []models.Subject) []models.Subject {
 
 	// 全科目の総得点を計算
 	for _, subject := range subjects {
-		for _, score := range subject.TestScores {
-			totalScore += float64(score.Score)
-		}
+		totalScore += float64(subject.Score)
 	}
 
 	// パーセンテージを計算
 	if totalScore > 0 {
 		for i := range subjects {
-			for j := range subjects[i].TestScores {
-				subjects[i].TestScores[j].Percentage = float64(subjects[i].TestScores[j].Score) / totalScore * 100
-			}
+			subjects[i].Percentage = float64(subjects[i].Score) / totalScore * 100
 		}
 	}
 
@@ -60,25 +56,38 @@ type SubjectData struct {
 }
 
 func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
-	subjects := make([]models.Subject, len(subjectsData))
+	subjects := make([]models.Subject, len(subjectsData)*2)
+	idx := 0
 
-	for i, data := range subjectsData {
-		subjects[i] = models.Subject{
-			Name: data.Name,
-			DisplayOrder: data.Order,
-			TestScores: []models.TestScore{
-				{
-					Type: models.CommonTest,
-					Score: data.CommonScore,
+	for _, data := range subjectsData {
+		// 共通テスト用の科目
+		if data.CommonScore > 0 {
+			subjects[idx] = models.Subject{
+				BaseModel: models.BaseModel{
+					Version: 1,
 				},
-				{
-					Type: models.SecondaryTest,
-					Score: data.SecondaryScore,
+				Name:         data.Name,
+				Score:        data.CommonScore,
+				DisplayOrder: data.Order,
+			}
+			idx++
+		}
+
+		// 二次試験用の科目
+		if data.SecondaryScore > 0 {
+			subjects[idx] = models.Subject{
+				BaseModel: models.BaseModel{
+					Version: 1,
 				},
-			},
+				Name:         data.Name,
+				Score:        data.SecondaryScore,
+				DisplayOrder: data.Order,
+			}
+			idx++
 		}
 	}
 
+	subjects = subjects[:idx]
 	return calculatePercentages(subjects)
 }
 
@@ -115,92 +124,141 @@ func main() {
 		}
 	}()
 
-	// スケジュールマスターデータを作成
-	schedules := []models.Schedule{
-		{
-			Name: "前期",
-			DisplayOrder: 1,
-			Description: "前期日程試験",
-			StartDate: time.Date(2024, 2, 25, 0, 0, 0, 0, time.Local),
-			EndDate: time.Date(2024, 3, 7, 23, 59, 59, 0, time.Local),
-		},
-		{
-			Name: "中期",
-			DisplayOrder: 2,
-			Description: "中期日程試験",
-			StartDate: time.Date(2024, 3, 8, 0, 0, 0, 0, time.Local),
-			EndDate: time.Date(2024, 3, 14, 23, 59, 59, 0, time.Local),
-		},
-		{
-			Name: "後期",
-			DisplayOrder: 3,
-			Description: "後期日程試験",
-			StartDate: time.Date(2024, 3, 15, 0, 0, 0, 0, time.Local),
-			EndDate: time.Date(2024, 3, 25, 23, 59, 59, 0, time.Local),
-		},
-	}
-
-	// スケジュールマスターデータを保存
-	for _, schedule := range schedules {
-		if err := tx.Create(&schedule).Error; err != nil {
-			tx.Rollback()
-			log.Fatalf("Failed to seed schedule data: %v", err)
-		}
-	}
-
 	// 現在の年度と有効期間を設定
 	currentYear := 2024
 	validFrom := time.Date(2024, 4, 1, 0, 0, 0, 0, time.Local)
 	validUntil := time.Date(2025, 3, 31, 23, 59, 59, 0, time.Local)
 
-	// 〇〇大学の科目データを作成
-	medicalSubjects := createSubjectsWithScores([]SubjectData{
-		{"英語L", 1, 50, 0},
-		{"英語R", 2, 50, 150},
-		{"数学", 3, 100, 150},
-		{"国語", 4, 100, 0},
-		{"理科", 5, 200, 0},
-		{"地歴公", 6, 50, 0},
-	})
-
-	// △△大学の科目データを作成
-	engineeringSubjects := createSubjectsWithScores([]SubjectData{
-		{"英語L", 1, 100, 100},
-		{"英語R", 2, 100, 100},
-		{"数学", 3, 100, 100},
-		{"国語", 4, 100, 100},
-		{"理科", 5, 100, 100},
-		{"地歴公", 6, 100, 100},
-	})
-
 	// Sample data
 	universities := []models.University{
 		{
+			BaseModel: models.BaseModel{
+				Version: 1,
+			},
 			Name: "〇〇大学",
-			Description: "総合大学として医学部を含む多様な学部を持つ大学です。",
-			Website: "https://example-univ1.ac.jp",
 			Departments: []models.Department{
 				{
+					BaseModel: models.BaseModel{
+						Version: 1,
+					},
 					Name: "医学部",
-					Description: "最新の医療技術と研究設備を備えた医学部です。",
-					Website: "https://example-univ1.ac.jp/medical",
 					Majors: []models.Major{
 						{
+							BaseModel: models.BaseModel{
+								Version: 1,
+							},
 							Name: "医学科",
-							Description: "6年間の医学教育を通じて、優れた医師を育成します。",
-							Website: "https://example-univ1.ac.jp/medical/medicine",
-							Features: "充実した臨床実習、最新の研究設備、高い国家試験合格率",
-							ExamInfos: []models.ExamInfo{
+							AdmissionInfos: []models.AdmissionInfo{
 								{
-									ScheduleID: 1,
-									Enrollment: 100,
+									BaseModel: models.BaseModel{
+										Version: 1,
+									},
+									Enrollment:   100,
 									AcademicYear: currentYear,
-									ValidFrom: validFrom,
-									ValidUntil: validUntil,
-									Status: "active",
-									Subjects: medicalSubjects,
-									CreatedBy: "system",
-									UpdatedBy: "system",
+									ValidFrom:    validFrom,
+									ValidUntil:   validUntil,
+									Status:       "published",
+									CreatedBy:    "system",
+									UpdatedBy:    "system",
+									AdmissionSchedules: []models.AdmissionSchedule{
+										{
+											BaseModel: models.BaseModel{
+												Version: 1,
+											},
+											Name:         "前期",
+											DisplayOrder: 1,
+											TestTypes: []models.TestType{
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name: "共通",
+													Subjects: []models.Subject{
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "英語L",
+															Score:        50,
+															Percentage:   5.88,
+															DisplayOrder: 1,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "英語R",
+															Score:        50,
+															Percentage:   5.88,
+															DisplayOrder: 2,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "数学",
+															Score:        100,
+															Percentage:   11.76,
+															DisplayOrder: 3,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "国語",
+															Score:        100,
+															Percentage:   11.76,
+															DisplayOrder: 4,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "理科",
+															Score:        200,
+															Percentage:   23.53,
+															DisplayOrder: 5,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "地歴公",
+															Score:        50,
+															Percentage:   5.88,
+															DisplayOrder: 6,
+														},
+													},
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name: "二次",
+													Subjects: []models.Subject{
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "英語R",
+															Score:        150,
+															Percentage:   17.65,
+															DisplayOrder: 1,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "数学",
+															Score:        150,
+															Percentage:   17.65,
+															DisplayOrder: 2,
+														},
+													},
+												},
+											},
+										},
+									},
 								},
 							},
 						},
@@ -209,31 +267,169 @@ func main() {
 			},
 		},
 		{
+			BaseModel: models.BaseModel{
+				Version: 1,
+			},
 			Name: "△△大学",
-			Description: "工学系の研究に特化した理工系大学です。",
-			Website: "https://example-univ2.ac.jp",
 			Departments: []models.Department{
 				{
+					BaseModel: models.BaseModel{
+						Version: 1,
+					},
 					Name: "工学部",
-					Description: "最先端の工学技術を学べる学部です。",
-					Website: "https://example-univ2.ac.jp/engineering",
 					Majors: []models.Major{
 						{
+							BaseModel: models.BaseModel{
+								Version: 1,
+							},
 							Name: "機械工学科",
-							Description: "機械工学の基礎から応用まで幅広く学べます。",
-							Website: "https://example-univ2.ac.jp/engineering/mechanical",
-							Features: "充実した実験設備、企業との連携、高い就職率",
-							ExamInfos: []models.ExamInfo{
+							AdmissionInfos: []models.AdmissionInfo{
 								{
-									ScheduleID: 3,
-									Enrollment: 150,
+									BaseModel: models.BaseModel{
+										Version: 1,
+									},
+									Enrollment:   150,
 									AcademicYear: currentYear,
-									ValidFrom: validFrom,
-									ValidUntil: validUntil,
-									Status: "active",
-									Subjects: engineeringSubjects,
-									CreatedBy: "system",
-									UpdatedBy: "system",
+									ValidFrom:    validFrom,
+									ValidUntil:   validUntil,
+									Status:       "published",
+									CreatedBy:    "system",
+									UpdatedBy:    "system",
+									AdmissionSchedules: []models.AdmissionSchedule{
+										{
+											BaseModel: models.BaseModel{
+												Version: 1,
+											},
+											Name:         "後期",
+											DisplayOrder: 3,
+											TestTypes: []models.TestType{
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name: "共通",
+													Subjects: []models.Subject{
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "英語L",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 1,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "英語R",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 2,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "数学",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 3,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "国語",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 4,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "理科",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 5,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "地歴公",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 6,
+														},
+													},
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name: "二次",
+													Subjects: []models.Subject{
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "英語L",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 1,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "英語R",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 2,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "数学",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 3,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "国語",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 4,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "理科",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 5,
+														},
+														{
+															BaseModel: models.BaseModel{
+																Version: 1,
+															},
+															Name:         "地歴公",
+															Score:        100,
+															Percentage:   8.33,
+															DisplayOrder: 6,
+														},
+													},
+												},
+											},
+										},
+									},
 								},
 							},
 						},

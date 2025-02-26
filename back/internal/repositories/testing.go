@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -22,34 +23,54 @@ func SetupTestDB() *gorm.DB {
 	os.Setenv("DB_PASSWORD", "password")
 	os.Setenv("DB_NAME", "university_exam_test_db")
 	os.Setenv("DB_PORT", "5432")
+	os.Setenv("DB_SCHEMA", "test_schema")
 
 	db := database.NewDB()
-	if err := database.AutoMigrate(db); err != nil {
-		log.Fatalf("Failed to migrate test database: %v", err)
+	if db == nil {
+		log.Printf("データベース接続の初期化に失敗しました")
+		return nil
+	}
+
+	// スキーマの設定
+	if err := db.Exec("DROP SCHEMA IF EXISTS test_schema CASCADE").Error; err != nil {
+		log.Printf("スキーマの削除に失敗: %v", err)
+		return nil
+	}
+
+	if err := db.Exec("CREATE SCHEMA test_schema").Error; err != nil {
+		log.Printf("スキーマの作成に失敗: %v", err)
+		return nil
+	}
+
+	if err := db.Exec("SET search_path TO test_schema").Error; err != nil {
+		log.Printf("検索パスの設定に失敗: %v", err)
+		return nil
+	}
+
+	// データベースのエンコーディングを設定
+	if err := db.Exec("SET client_encoding TO 'UTF8'").Error; err != nil {
+		log.Printf("クライアントエンコーディングの設定に失敗: %v", err)
+		return nil
+	}
+
+	// マイグレーションを実行
+	if err := database.RunMigrations(db); err != nil {
+		log.Printf("マイグレーションに失敗: %v", err)
+		return nil
 	}
 
 	return db
 }
 
-// createScheduleData はテスト用のスケジュールデータを作成します
-func createScheduleData(db *gorm.DB) error {
-	schedule := &models.Schedule{
-		Name:         "前期",
-		DisplayOrder: 1,
-		Description:  "前期日程試験",
-		StartDate:    time.Date(2024, 2, 25, 0, 0, 0, 0, time.Local),
-		EndDate:      time.Date(2024, 3, 7, 23, 59, 59, 0, time.Local),
-	}
-
-	return db.Create(schedule).Error
-}
-
-// テストデータを作成します
+// createTestData はテストデータを作成します
 func createTestData(db *gorm.DB) (*models.University, error) {
-	// スケジュールデータを作成
-	if err := createScheduleData(db); err != nil {
-		return nil, err
+	currentYear := time.Now().Year()
+	if time.Now().Month() < 4 {
+		currentYear--
 	}
+
+	validFrom := time.Now()
+	validUntil := validFrom.AddDate(1, 0, 0)
 
 	university := &models.University{
 		Name: "テスト大学",
@@ -59,29 +80,30 @@ func createTestData(db *gorm.DB) (*models.University, error) {
 				Majors: []models.Major{
 					{
 						Name: "テスト学科",
-						ExamInfos: []models.ExamInfo{
+						AdmissionInfos: []models.AdmissionInfo{
 							{
-								ScheduleID:   1,
 								Enrollment:   100,
-								AcademicYear: 2024,
-								ValidFrom:    time.Now(),
-								ValidUntil:   time.Now().AddDate(1, 0, 0),
-								Status:       "active",
+								AcademicYear: currentYear,
+								ValidFrom:    validFrom,
+								ValidUntil:   validUntil,
+								Status:       "draft",
 								CreatedBy:    "system",
 								UpdatedBy:    "system",
-								Subjects: []models.Subject{
+								AdmissionSchedules: []models.AdmissionSchedule{
 									{
-										Name: "テスト科目1",
-										TestScores: []models.TestScore{
+										Name:         "前期",
+										DisplayOrder: 1,
+										TestTypes: []models.TestType{
 											{
-												Type:       models.CommonTest,
-												Score:      80,
-												Percentage: 20.0,
-											},
-											{
-												Type:       models.SecondaryTest,
-												Score:      90,
-												Percentage: 30.0,
+												Name: "共通",
+												Subjects: []models.Subject{
+													{
+														Name:         "数学",
+														Score:        200,
+														Percentage:   20.0,
+														DisplayOrder: 1,
+													},
+												},
 											},
 										},
 									},
@@ -95,13 +117,13 @@ func createTestData(db *gorm.DB) (*models.University, error) {
 	}
 
 	if err := db.Create(university).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("テストデータの作成に失敗: %w", err)
 	}
 
 	return university, nil
 }
 
-// テストデータをクリーンアップします
+// cleanupTestData はテストデータをクリーンアップします
 func cleanupTestData(db *gorm.DB) error {
-	return db.Exec("TRUNCATE universities, schedules CASCADE").Error
+	return db.Exec("TRUNCATE TABLE universities CASCADE").Error
 }

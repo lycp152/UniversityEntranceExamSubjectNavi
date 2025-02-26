@@ -36,12 +36,15 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 				if !limiter.Allow() {
 					logger.Error("Rate limit exceeded for IP: %s", c.RealIP())
 					return c.JSON(http.StatusTooManyRequests, map[string]string{
-						"error": "Rate limit exceeded",
+						"error":   "Rate Limit Error",
+						"message": "リクエスト制限を超えました",
 					})
 				}
 				return next(c)
 			}
 		},
+
+		// CSRFミドルウェアは別途設定
 
 		// セキュリティヘッダーミドルウェア
 		middleware.SecureWithConfig(middleware.SecureConfig{
@@ -53,7 +56,7 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 			ContentSecurityPolicy: "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data:;",
 		}),
 
-		// CORS設定の詳細化
+		// CORS設定
 		middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins: []string{"*"},
 			AllowMethods: []string{
@@ -69,6 +72,7 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 				echo.HeaderAccept,
 				echo.HeaderAuthorization,
 				echo.HeaderXRequestedWith,
+				"X-CSRF-Token", // CSRFトークン用のヘッダーを追加
 				"Cache-Control",
 				"Pragma",
 			},

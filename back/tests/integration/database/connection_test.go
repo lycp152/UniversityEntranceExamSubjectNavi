@@ -16,7 +16,8 @@ func TestDatabaseConnection(t *testing.T) {
 	os.Setenv("DB_USER", "user")
 	os.Setenv("DB_PASSWORD", "password")
 	os.Setenv("DB_NAME", "university_exam_test_db")
-	os.Setenv("DB_PORT", "5432")  // 5433から5432に変更
+	os.Setenv("DB_PORT", "5432")
+	os.Setenv("DB_SCHEMA", "test_schema")
 
 	// データベース接続のテスト
 	db := database.NewDB()
@@ -30,8 +31,13 @@ func TestDatabaseConnection(t *testing.T) {
 		t.Fatalf("Failed to ping database: %v", err)
 	}
 
+	// スキーマの設定
+	if err := db.Exec("SET search_path TO test_schema").Error; err != nil {
+		t.Fatalf("Failed to set schema: %v", err)
+	}
+
 	// マイグレーションのテスト
-	if err := database.AutoMigrate(db); err != nil {
+	if err := database.RunMigrations(db); err != nil {
 		t.Fatalf("Failed to run migrations: %v", err)
 	}
 }

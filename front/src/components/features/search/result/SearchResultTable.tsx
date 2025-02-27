@@ -119,6 +119,17 @@ const SearchResultTable = () => {
     return <ErrorMessage message={error} />;
   }
 
+  if (subjects.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-xl text-gray-600">データが見つかりませんでした。</p>
+        <p className="mt-2 text-gray-500">
+          現在、データベースに大学情報が登録されていません。
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={tableStyles.container}>
       <h2 className={tableStyles.title}>{title}</h2>

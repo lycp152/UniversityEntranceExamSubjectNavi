@@ -14224,3 +14224,9 @@ ERROR: 2025/02/20 19:06:55 logger.go:53: Rate limit exceeded for IP: 172.20.0.1
 ERROR: 2025/02/20 19:06:55 logger.go:53: Rate limit exceeded for IP: 172.20.0.1
 ERROR: 2025/02/26 13:40:27 logger.go:53: Failed to migrate database: ERROR: column "test_type_id" of relation "subjects" contains null values (SQLSTATE 23502)
 ERROR: 2025/02/26 23:31:17 logger.go:53: Server failed to start: listen tcp :8080: bind: address already in use
+ERROR: 2025/02/27 20:24:54 logger.go:53: Failed to migrate database: ERROR: column "major_id" of relation "admission_infos" contains null values (SQLSTATE 23502)
+ERROR: 2025/02/27 20:51:20 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
+ERROR: 2025/02/27 20:51:20 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
+ERROR: 2025/02/27 20:52:48 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
+ERROR: 2025/02/27 20:52:48 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
+ERROR: 2025/02/27 20:52:53 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found

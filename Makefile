@@ -1,7 +1,7 @@
 # 環境変数
 ENV ?= development
-DOCKER_COMPOSE_DIR = deployments/$(ENV)
-DOCKER_COMPOSE = docker-compose -f $(DOCKER_COMPOSE_DIR)/docker-compose.yml
+DOCKER_COMPOSE_DIR = deployments/docker/$(ENV)
+DOCKER_COMPOSE = docker compose -f $(DOCKER_COMPOSE_DIR)/docker-compose.yml
 
 # 基本コマンド
 .PHONY: help
@@ -67,6 +67,10 @@ migrate-down: ## マイグレーションをロールバック
 migrate-create: ## 新しいマイグレーションファイルを作成
 	cd back && go run cmd/migrate/main.go create $(name)
 
+.PHONY: seed
+seed: ## データベースにシードデータを投入
+	$(DOCKER_COMPOSE) exec backend go run scripts/seed/main.go
+
 # デプロイ関連
 .PHONY: deploy-prod
 deploy-prod: ## 本番環境にデプロイ
@@ -92,6 +96,10 @@ clean: ## ビルドファイルとキャッシュを削除
 	rm -rf front/dist front/.next front/node_modules
 	rm -rf back/dist back/tmp
 	docker system prune -f
+
+.PHONY: clean-volumes
+clean-volumes: ## Dockerボリュームを削除
+	docker volume rm development_postgres_data development_backend_cache development_frontend_node_modules
 
 # その他
 .PHONY: init

@@ -227,40 +227,26 @@ const getAdditionalRules = (
   ...(rules.customRules ?? []),
 ];
 
-export const validateScore = (
+const validateAndCollectErrors = (
   value: number,
-  rules: ScoreValidationRules = {},
-  options: ErrorOptions = {}
-): ValidationResult => {
-  const startTime = Date.now();
-
-  if (options.cacheable) {
-    const cachedResult = checkCache(value, rules, startTime);
-    if (cachedResult) return cachedResult;
-  }
-
-  const { result: basicResult, executionTime: baseExecutionTime } =
-    validateBasicRule(value, startTime);
-  if (basicResult) {
-    if (options.cacheable) {
-      ruleResultCache.set(getCacheKey(value, rules), basicResult);
-    }
-    return basicResult;
-  }
-
+  rules: ValidationRule<number>[],
+  startTime: number,
+  metadata?: Record<string, unknown>
+): {
+  errors: ValidationError[];
+  appliedRules: string[];
+  ruleExecutionTimes: Record<string, number>;
+} => {
   const errors: ValidationError[] = [];
   const appliedRules: string[] = [];
-  const ruleExecutionTimes: Record<string, number> = {
-    [SCORE_RULES.isValid.code]: baseExecutionTime,
-  };
+  const ruleExecutionTimes: Record<string, number> = {};
 
-  const additionalRules = getAdditionalRules(rules);
-  for (const rule of additionalRules) {
+  for (const rule of rules) {
     const { isValid, executionTime, error } = validateWithPerformance(
       value,
       rule,
       startTime,
-      rules.metadata
+      metadata
     );
 
     ruleExecutionTimes[rule.code] = executionTime;
@@ -270,7 +256,37 @@ export const validateScore = (
     }
   }
 
-  const result = {
+  return { errors, appliedRules, ruleExecutionTimes };
+};
+
+const handleCacheResult = (
+  value: number,
+  rules: ScoreValidationRules,
+  result: ValidationResult,
+  options: ErrorOptions
+): ValidationResult => {
+  if (options.cacheable) {
+    ruleResultCache.set(getCacheKey(value, rules), result);
+  }
+  return result;
+};
+
+const validateAndProcessRules = (
+  value: number,
+  rules: ScoreValidationRules,
+  startTime: number,
+  baseExecutionTime: number
+): ValidationResult => {
+  const additionalRules = getAdditionalRules(rules);
+  const { errors, appliedRules, ruleExecutionTimes } = validateAndCollectErrors(
+    value,
+    additionalRules,
+    startTime,
+    rules.metadata
+  );
+  ruleExecutionTimes[SCORE_RULES.isValid.code] = baseExecutionTime;
+
+  return {
     isValid: errors.length === 0,
     errors,
     metadata: {
@@ -282,13 +298,43 @@ export const validateScore = (
       },
     },
   };
-
-  if (options.cacheable) {
-    ruleResultCache.set(getCacheKey(value, rules), result);
-  }
-
-  return result;
 };
+
+const processValidationResult = (
+  value: number,
+  rules: ScoreValidationRules,
+  options: ErrorOptions,
+  startTime: number
+): ValidationResult => {
+  const { result: basicResult, executionTime: baseExecutionTime } =
+    validateBasicRule(value, startTime);
+  if (basicResult) return basicResult;
+
+  return validateAndProcessRules(value, rules, startTime, baseExecutionTime);
+};
+
+const validateWithCache = (
+  value: number,
+  rules: ScoreValidationRules,
+  options: ErrorOptions
+): ValidationResult => {
+  const startTime = Date.now();
+  return (
+    (options.cacheable && checkCache(value, rules, startTime)) ||
+    handleCacheResult(
+      value,
+      rules,
+      processValidationResult(value, rules, options, startTime),
+      options
+    )
+  );
+};
+
+export const validateScore = (
+  value: number,
+  rules: ScoreValidationRules = {},
+  options: ErrorOptions = {}
+): ValidationResult => validateWithCache(value, rules, options);
 
 export const isValidScore = (
   value: number,

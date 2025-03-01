@@ -1,10 +1,13 @@
-import type { Score } from '../../../../types/subject/score';
-import type { ValidationResult } from '@/types/validation';
-import { SCORE_CONSTRAINTS } from '../../../../constants/subject/scores';
+import type { Score } from "@/types/subject/score";
+import type { ValidationResult } from "@/types/validation";
+import { SCORE_CONSTRAINTS } from "@/lib/constants/subject/scores";
 
 export class ScoreCalculator {
   calculateTotalScore(scores: Score[]): number {
-    return scores.reduce((total, score) => total + score.value * score.weight, 0);
+    return scores.reduce(
+      (total, score) => total + score.value * score.weight,
+      0
+    );
   }
 
   calculatePercentage(value: number, total: number): number {
@@ -29,8 +32,8 @@ export class ScoreCalculator {
         ? []
         : [
             {
-              code: 'INVALID_SCORE',
-              message: '点数が有効範囲外です',
+              code: "INVALID_SCORE",
+              message: "点数が有効範囲外です",
             },
           ],
       metadata: {

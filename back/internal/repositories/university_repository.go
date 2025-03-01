@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	preloadPath = "Departments.Majors.AdmissionInfos.AdmissionSchedules.TestTypes.Subjects"
+	preloadPath = "Departments.Majors.AdmissionSchedules.TestTypes.Subjects"
 	cacheDuration = 5 * time.Minute
 	cacheCleanupInterval = 10 * time.Minute
 	departmentIDQuery = "department_id = ?"
@@ -68,14 +68,14 @@ func (r *universityRepository) applyPreloads(query *gorm.DB) *gorm.DB {
 	}
 	return query.Preload("Departments").
 		Preload("Departments.Majors").
-		Preload("Departments.Majors.AdmissionInfos").
-		Preload("Departments.Majors.AdmissionInfos.AdmissionSchedules", func(db *gorm.DB) *gorm.DB {
-			return db.Order(displayOrderASC)
+		Preload("Departments.Majors.AdmissionSchedules").
+		Preload("Departments.Majors.AdmissionSchedules.AdmissionInfos", func(db *gorm.DB) *gorm.DB {
+			return db.Order("created_at ASC")
 		}).
-		Preload("Departments.Majors.AdmissionInfos.AdmissionSchedules.TestTypes", func(db *gorm.DB) *gorm.DB {
+		Preload("Departments.Majors.AdmissionSchedules.TestTypes", func(db *gorm.DB) *gorm.DB {
 			return db.Order("name ASC")
 		}).
-		Preload("Departments.Majors.AdmissionInfos.AdmissionSchedules.TestTypes.Subjects", func(db *gorm.DB) *gorm.DB {
+		Preload("Departments.Majors.AdmissionSchedules.TestTypes.Subjects", func(db *gorm.DB) *gorm.DB {
 			return db.Order(displayOrderASC)
 		})
 }
@@ -126,7 +126,7 @@ func (r *universityRepository) getUniversityFromCache(id uint) (*models.Universi
 
 func (r *universityRepository) getUniversityFromDB(id uint) (*models.University, error) {
 	var university models.University
-	if err := r.db.Preload(preloadPath).First(&university, id).Error; err != nil {
+	if err := r.applyPreloads(r.db).First(&university, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, &errors.ErrNotFound{Resource: "University", ID: id}
 		}

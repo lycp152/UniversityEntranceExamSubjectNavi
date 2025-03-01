@@ -6,7 +6,6 @@ import type {
   APIUniversity,
   APIDepartment,
   APIMajor,
-  APIExamInfo,
   APIAdmissionSchedule,
   APITestType,
 } from "@/lib/types/university/api";
@@ -18,36 +17,66 @@ import { ErrorMessage } from "@/components/common/ErrorMessage";
 const transformUniversityData = (
   universities: APIUniversity[]
 ): UISubject[] => {
+  console.log("Input universities:", universities); // デバッグ用
   const transformedSubjectsMap = new Map<string, UISubject>();
 
   universities.forEach((apiUniversity) => {
-    if (!apiUniversity?.departments) return;
+    if (!apiUniversity?.departments) {
+      console.log("No departments for university:", apiUniversity.name); // デバッグ用
+      return;
+    }
 
     apiUniversity.departments.forEach((department: APIDepartment) => {
-      if (!department?.majors) return;
+      if (!department?.majors) {
+        console.log("No majors for department:", department.name); // デバッグ用
+        return;
+      }
 
       department.majors.forEach((major: APIMajor) => {
-        if (!major?.exam_infos) return;
+        console.log("Major data:", {
+          name: major.name,
+          id: major.id,
+          department_id: major.department_id,
+          admission_schedules: major.admission_schedules,
+        }); // デバッグ用
 
-        const subjects = major.exam_infos
-          .flatMap((info: APIExamInfo) => info.admissionSchedules ?? [])
-          .flatMap(
-            (schedule: APIAdmissionSchedule) => schedule.test_types ?? []
-          )
-          .filter((testType: APITestType) => testType?.subjects?.length > 0)
-          .map((testType: APITestType) => {
-            const subject = transformSubjectData(
-              testType.subjects[0],
-              testType.subjects,
-              apiUniversity,
-              department,
-              major,
-              major.exam_infos[0],
-              major.exam_infos[0].admissionSchedules[0]
-            );
-            return subject;
-          })
-          .filter((subject): subject is UISubject => subject !== null);
+        if (!major.admission_schedules?.length) {
+          console.log("No admission schedules found for major:", major.name); // デバッグ用
+          return;
+        }
+
+        const subjects = major.admission_schedules.flatMap(
+          (schedule: APIAdmissionSchedule) => {
+            if (!schedule?.test_types) {
+              console.log("No test types for schedule:", schedule.name); // デバッグ用
+              return [];
+            }
+            return schedule.test_types
+              .map((testType: APITestType) => {
+                if (!testType?.subjects?.length) {
+                  console.log("No subjects for test type:", testType.name); // デバッグ用
+                  return null;
+                }
+                const admissionInfo = schedule.admission_infos?.[0];
+                if (!admissionInfo) {
+                  console.log("No admission info for schedule:", schedule.name); // デバッグ用
+                  return null;
+                }
+                const result = transformSubjectData(
+                  testType.subjects[0],
+                  testType.subjects,
+                  apiUniversity,
+                  department,
+                  major,
+                  admissionInfo,
+                  schedule
+                );
+                console.log("Transformed subject data:", result); // デバッグ用
+                return result;
+              })
+              .filter((subject): subject is UISubject => subject !== null);
+          }
+        );
 
         subjects.forEach((subject) => {
           const key = `${subject.universityId}-${subject.departmentId}-${subject.majorId}-${subject.admissionScheduleId}`;
@@ -59,7 +88,9 @@ const transformUniversityData = (
     });
   });
 
-  return Array.from(transformedSubjectsMap.values());
+  const result = Array.from(transformedSubjectsMap.values());
+  console.log("Final transformed data:", result); // デバッグ用
+  return result;
 };
 
 const SearchResultTable = () => {
@@ -76,13 +107,41 @@ const SearchResultTable = () => {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/universities`
         );
-        const universities = await response.json();
+        const data = await response.json();
+        console.log("Raw API response:", data); // デバッグ用
 
-        if (!Array.isArray(universities)) {
+        if (!Array.isArray(data)) {
+          console.error("Data is not an array:", typeof data); // デバッグ用
           throw new Error("Invalid response format");
         }
 
-        setSubjects(transformUniversityData(universities));
+        console.log("API response structure:", {
+          universities: data.length,
+          firstUniversity: data[0]
+            ? {
+                name: data[0].name,
+                departmentsCount: data[0].departments?.length,
+                firstDepartment: data[0].departments?.[0]
+                  ? {
+                      name: data[0].departments[0].name,
+                      majorsCount: data[0].departments[0].majors?.length,
+                      firstMajor: data[0].departments[0].majors?.[0]
+                        ? {
+                            name: data[0].departments[0].majors[0].name,
+                            schedulesCount:
+                              data[0].departments[0].majors[0]
+                                .admissionSchedules?.length,
+                          }
+                        : null,
+                    }
+                  : null,
+              }
+            : null,
+        }); // デバッグ用
+
+        const transformedData = transformUniversityData(data);
+        console.log("Transformed data:", transformedData); // デバッグ用
+        setSubjects(transformedData);
       } catch (error) {
         console.error("Failed to fetch universities:", error);
         setError(

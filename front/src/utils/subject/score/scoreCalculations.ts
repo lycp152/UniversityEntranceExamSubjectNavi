@@ -1,17 +1,23 @@
-import { SubjectScores, BaseSubjectScore } from '@/lib/types/models';
+import { SubjectScores, BaseSubjectScore } from "@/types/subject/score";
 
 /**
  * 全科目の合計点を計算する
  */
 export const calculateTotalScore = (subjects: SubjectScores): number => {
   const scores = Object.values<BaseSubjectScore>(subjects);
-  return scores.reduce((sum, score) => sum + score.commonTest + score.secondTest, 0);
+  return scores.reduce(
+    (sum, score) => sum + score.commonTest + score.secondTest,
+    0
+  );
 };
 
 /**
  * 特定のカテゴリーの合計点を計算する
  */
-export const calculateCategoryTotal = (subjects: SubjectScores, targetCategory: string): number => {
+export const calculateCategoryTotal = (
+  subjects: SubjectScores,
+  targetCategory: string
+): number => {
   const entries = Object.entries<BaseSubjectScore>(subjects);
   return entries
     .filter(([key]) => key.startsWith(targetCategory))

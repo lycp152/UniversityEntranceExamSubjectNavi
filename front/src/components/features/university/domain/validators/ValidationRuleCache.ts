@@ -1,4 +1,4 @@
-import type { ValidationRule } from './validation';
+import type { ValidationRule } from "@/types/validation";
 
 interface CacheMetrics {
   hits: number;
@@ -14,7 +14,7 @@ interface CacheEntry<T> {
 }
 
 export class ValidationRuleCache<T> {
-  private static instance: ValidationRuleCache<any>;
+  private static instance: unknown;
   private readonly cache: Map<string, CacheEntry<T>> = new Map();
   private readonly metrics: CacheMetrics = {
     hits: 0,
@@ -32,7 +32,7 @@ export class ValidationRuleCache<T> {
     if (!ValidationRuleCache.instance) {
       ValidationRuleCache.instance = new ValidationRuleCache<T>();
     }
-    return ValidationRuleCache.instance;
+    return ValidationRuleCache.instance as ValidationRuleCache<T>;
   }
 
   getCachedRules(key: string): ValidationRule<T>[] | undefined {

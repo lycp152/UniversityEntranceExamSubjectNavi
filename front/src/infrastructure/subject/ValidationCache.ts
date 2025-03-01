@@ -1,14 +1,22 @@
-'use server';
+"use server";
 
-import { ValidationResult, ScoreValidationRules } from '../types/validation';
-import { cache } from 'react';
-import { unstable_cache, revalidateTag } from 'next/cache';
-import { ValidationError } from './errors';
-import { ValidationResultValidator } from './validators';
-import { ChartDataCacheKey as ValidationCacheKey } from './chartDataCacheKeys';
-import { CacheOptions, StorageProvider, ValidationErrorCodes } from './types';
-import { gzip, gunzip } from 'zlib';
-import { Severity, Priority, MemoryType, Strategy } from '../types/errors';
+import {
+  ValidationResult,
+  ScoreValidationRules,
+} from "@/components/features/charts/subject/donut/types/validation";
+import { cache } from "react";
+import { unstable_cache, revalidateTag } from "next/cache";
+import { ValidationError } from "./errors";
+import { ValidationResultValidator } from "./validators";
+import { ChartDataCacheKey as ValidationCacheKey } from "./chartDataCacheKeys";
+import { CacheOptions, StorageProvider, ValidationErrorCodes } from "./types";
+import { gzip, gunzip } from "zlib";
+import {
+  Severity,
+  Priority,
+  MemoryType,
+  Strategy,
+} from "@/components/features/charts/subject/donut/types/errors";
 
 interface AlertBase {
   type: string;
@@ -17,17 +25,17 @@ interface AlertBase {
   metadata?: Record<string, unknown>;
 }
 
-interface ActiveAlert extends AlertBase {
+export interface ActiveAlert extends AlertBase {
   timestamp: number;
 }
 
-interface HistoryAlert extends AlertBase {
+export interface HistoryAlert extends AlertBase {
   startTime: number;
   endTime: number;
   duration: number;
 }
 
-interface AlertHistory extends AlertBase {
+export interface AlertHistory extends AlertBase {
   startTime: number;
   endTime: number;
   duration: number;
@@ -35,13 +43,21 @@ interface AlertHistory extends AlertBase {
   preventiveMeasures: string[];
 }
 
-interface PerformanceMetrics {
+export interface PerformanceMetrics {
   trends: {
-    responseTime: Array<{ timestamp: number; value: number; operation: string }>;
+    responseTime: Array<{
+      timestamp: number;
+      value: number;
+      operation: string;
+    }>;
     throughput: Array<{ timestamp: number; value: number }>;
     errorRate: Array<{ timestamp: number; value: number; errorType: string }>;
     memoryUsage: Array<{ timestamp: number; value: number; type: MemoryType }>;
-    cacheEfficiency: Array<{ timestamp: number; hitRate: number; missRate: number }>;
+    cacheEfficiency: Array<{
+      timestamp: number;
+      hitRate: number;
+      missRate: number;
+    }>;
   };
   warnings: Array<{
     timestamp: number;
@@ -50,13 +66,19 @@ interface PerformanceMetrics {
     priority: Priority;
     impact: string;
   }>;
-  // ... existing code ...
+  operationTimes: Map<string, number[]>;
+  averageResponseTime: number;
+  bottlenecks: {
+    concurrency: boolean;
+    memory: boolean;
+    responseTime: boolean;
+  };
 }
 
 export class ValidationCache {
   private readonly ttl: number;
   private readonly revalidateSeconds: number;
-  private readonly cacheTag = 'validation-cache';
+  private readonly cacheTag = "validation-cache";
   private readonly storage: StorageProvider;
   private maxCacheSize: number;
   private cacheSize = 0;
@@ -77,7 +99,7 @@ export class ValidationCache {
       maxEntrySize: 1024 * 1000,
       targetCompressionRatio: 0.5,
     },
-    strategies: ['gzip', 'base64'] as Strategy[],
+    strategies: ["gzip", "base64"] as Strategy[],
   };
 
   private readonly metrics = {
@@ -133,14 +155,14 @@ export class ValidationCache {
         active: [] as Array<{
           type: string;
           message: string;
-          severity: 'critical' | 'warning' | 'info';
+          severity: "critical" | "warning" | "info";
           timestamp: number;
           metadata?: Record<string, unknown>;
         }>,
         history: [] as Array<{
           type: string;
           message: string;
-          severity: 'critical' | 'warning' | 'info';
+          severity: "critical" | "warning" | "info";
           startTime: number;
           endTime: number;
           duration: number;
@@ -243,8 +265,14 @@ export class ValidationCache {
   constructor(options: CacheOptions) {
     const { ttl = 5 * 60 * 1000, storage, maxCacheSize = 1000 } = options;
 
-    ValidationResultValidator.validateNumber(ttl, ValidationErrorCodes.INVALID_NUMBER);
-    ValidationResultValidator.validateNumber(maxCacheSize, ValidationErrorCodes.INVALID_NUMBER);
+    ValidationResultValidator.validateNumber(
+      ttl,
+      ValidationErrorCodes.INVALID_NUMBER
+    );
+    ValidationResultValidator.validateNumber(
+      maxCacheSize,
+      ValidationErrorCodes.INVALID_NUMBER
+    );
 
     this.ttl = ttl;
     this.revalidateSeconds = Math.floor(ttl / 1000);
@@ -290,14 +318,24 @@ export class ValidationCache {
     return true;
   }
 
-  private recordError(error: Error, context: { key: string; operationType: string }): void {
+  private recordError(
+    error: Error,
+    context: { key: string; operationType: string }
+  ): void {
     this.metrics.errors.total++;
-    const errorType = error instanceof ValidationError ? error.code : 'UNKNOWN_ERROR';
+    const errorType =
+      error instanceof ValidationError ? error.code : "UNKNOWN_ERROR";
     const currentCount = this.metrics.errors.byType.get(errorType) ?? 0;
     this.metrics.errors.byType.set(errorType, currentCount + 1);
+    this.metrics.performance.warnings.push(
+      `エラー発生: ${context.operationType} (キー: ${context.key})`
+    );
   }
 
-  private enhanceError(error: Error, context: { key: string; operationType: string }): Error {
+  private enhanceError(
+    error: Error,
+    context: { key: string; operationType: string }
+  ): Error {
     if (error instanceof ValidationError) {
       return new ValidationError(
         `${error.message} (操作: ${context.operationType}, キー: ${context.key})`,
@@ -327,11 +365,16 @@ export class ValidationCache {
     return this.metrics.errors.recoveryAttempts === 0
       ? 0
       : Math.round(
-          (this.metrics.errors.recoverySuccess / this.metrics.errors.recoveryAttempts) * 100
+          (this.metrics.errors.recoverySuccess /
+            this.metrics.errors.recoveryAttempts) *
+            100
         );
   }
 
-  private measureOperationTime<T>(operation: () => Promise<T>, operationType: string): Promise<T> {
+  private measureOperationTime<T>(
+    operation: () => Promise<T>,
+    operationType: string
+  ): Promise<T> {
     const startTime = performance.now();
     return operation().then((result) => {
       const duration = performance.now() - startTime;
@@ -342,7 +385,8 @@ export class ValidationCache {
   }
 
   private recordOperationTime(operationType: string, duration: number): void {
-    const times = this.metrics.performance.operationTimes.get(operationType) ?? [];
+    const times =
+      this.metrics.performance.operationTimes.get(operationType) ?? [];
     times.push(duration);
 
     // 最新の100件のみを保持
@@ -368,7 +412,10 @@ export class ValidationCache {
       totalOperations > 0 ? totalTime / totalOperations : 0;
   }
 
-  private trackSlowestOperations(operationType: string, duration: number): void {
+  private trackSlowestOperations(
+    operationType: string,
+    duration: number
+  ): void {
     const slowestOps = this.metrics.performance.slowestOperations;
 
     slowestOps.push({
@@ -381,26 +428,31 @@ export class ValidationCache {
     this.metrics.performance.slowestOperations = slowestOps.slice(0, 10);
   }
 
-  private checkPerformanceThresholds(operationType: string, duration: number): void {
+  private checkPerformanceThresholds(
+    operationType: string,
+    duration: number
+  ): void {
     const warnings = this.metrics.performance.warnings;
     const bottlenecks = this.metrics.performance.bottlenecks;
 
     // レスポンスタイムのチェック
     if (duration > this.performanceThresholds.maxResponseTime) {
       bottlenecks.responseTime = true;
-      warnings.push(`遅い操作を検出: ${operationType} (${Math.round(duration)}ms)`);
+      warnings.push(
+        `遅い操作を検出: ${operationType} (${Math.round(duration)}ms)`
+      );
     }
 
     // 同時実行数のチェック
     if (this.metrics.concurrentOperations >= this.maxConcurrentOperations) {
       bottlenecks.concurrency = true;
-      warnings.push('同時実行数が上限に達しています');
+      warnings.push("同時実行数が上限に達しています");
     }
 
     // メモリ使用量のチェック
     if (this.metrics.memoryUsage >= this.performanceThresholds.maxMemoryUsage) {
       bottlenecks.memory = true;
-      warnings.push('メモリ使用量が警告閾値を超えています');
+      warnings.push("メモリ使用量が警告閾値を超えています");
     }
 
     // 警告は最新の10件のみを保持
@@ -444,28 +496,41 @@ export class ValidationCache {
     rules: ScoreValidationRules
   ): Promise<ValidationResult | null> {
     if (!Number.isFinite(value) || !rules) {
-      throw new ValidationError('無効なパラメータです', ValidationErrorCodes.INVALID_PARAMS);
+      throw new ValidationError(
+        "無効なパラメータです",
+        ValidationErrorCodes.INVALID_PARAMS
+      );
     }
 
     const cacheKey = ValidationCacheKey.createKey(value, rules);
     return this.executeWithRetry(
       async () => {
-        const result = await unstable_cache(() => this.validateAndCache(value, rules), [cacheKey], {
-          revalidate: this.revalidateSeconds,
-          tags: [this.cacheTag],
-        })();
+        const result = await unstable_cache(
+          () => this.validateAndCache(value, rules),
+          [cacheKey],
+          {
+            revalidate: this.revalidateSeconds,
+            tags: [this.cacheTag],
+          }
+        )();
         return result;
       },
-      { key: cacheKey, operationType: 'get' }
+      { key: cacheKey, operationType: "get" }
     );
   }
 
   get = cache(
-    async (value: number, rules: ScoreValidationRules): Promise<ValidationResult | null> => {
+    async (
+      value: number,
+      rules: ScoreValidationRules
+    ): Promise<ValidationResult | null> => {
       this.metrics.totalOperations++;
       await this.checkAndCleanup();
 
-      return this.measureOperationTime(() => this.executeValidation(value, rules), 'get');
+      return this.measureOperationTime(
+        () => this.executeValidation(value, rules),
+        "get"
+      );
     }
   );
 
@@ -493,7 +558,10 @@ export class ValidationCache {
     const lock = (async () => {
       try {
         const timeoutPromise = new Promise<T>((_, reject) => {
-          setTimeout(() => reject(new Error('操作がタイムアウトしました')), this.operationTimeout);
+          setTimeout(
+            () => reject(new Error("操作がタイムアウトしました")),
+            this.operationTimeout
+          );
         });
         const result = await Promise.race([operation(), timeoutPromise]);
         return result;
@@ -525,9 +593,9 @@ export class ValidationCache {
         const evictedCount = await this.evictExpiredEntries();
         this.metrics.evictions += evictedCount;
       }
-    } catch (error) {
+    } catch {
       throw new ValidationError(
-        'キャッシュのクリーンアップに失敗しました',
+        "キャッシュのクリーンアップに失敗しました",
         ValidationErrorCodes.CACHE_ERROR
       );
     }
@@ -558,7 +626,9 @@ export class ValidationCache {
     // キャッシュサイズが上限を超えている場合、最も古いエントリを削除
     while (this.cacheSize > this.maxCacheSize * 0.8) {
       const oldestEntry = entries
-        .filter(([key]) => !expiredEntries.some(([expiredKey]) => expiredKey === key))
+        .filter(
+          ([key]) => !expiredEntries.some(([expiredKey]) => expiredKey === key)
+        )
         .sort(([, a], [, b]) => a - b)[0];
 
       if (oldestEntry) {
@@ -577,7 +647,7 @@ export class ValidationCache {
     this.lruMap.delete(key);
     this.cacheSize--;
     // ストレージからの削除は実装依存のため、必要に応じて実装
-    await this.storage.set(key, '', { ttl: 0 });
+    await this.storage.set(key, "", { ttl: 0 });
   }
 
   private updateLRUEntry(key: string): void {
@@ -601,14 +671,22 @@ export class ValidationCache {
       const endTime = performance.now();
 
       // 圧縮結果の評価と統計の更新
-      this.updateCompressionMetrics(originalSize, compressed.length, endTime - startTime, strategy);
+      this.updateCompressionMetrics(
+        originalSize,
+        compressed.length,
+        endTime - startTime,
+        strategy
+      );
       this.adjustAdaptiveThresholds(originalSize, compressed.length);
 
       return compressed;
     } catch (error) {
       const endTime = performance.now();
       this.recordCompressionFailure(error, endTime - startTime);
-      throw new ValidationError('データの圧縮に失敗しました', ValidationErrorCodes.CACHE_ERROR);
+      throw new ValidationError(
+        "データの圧縮に失敗しました",
+        ValidationErrorCodes.CACHE_ERROR
+      );
     }
   }
 
@@ -644,7 +722,10 @@ export class ValidationCache {
   }
 
   private calculateStrategyScore(result: { ratio: number; time: number }) {
-    return result.ratio * 0.7 + (1 - result.time / this.compressionConfig.maxCompressionTime) * 0.3;
+    return (
+      result.ratio * 0.7 +
+      (1 - result.time / this.compressionConfig.maxCompressionTime) * 0.3
+    );
   }
 
   private async selectCompressionStrategy(
@@ -652,14 +733,16 @@ export class ValidationCache {
   ): Promise<(typeof this.compressionConfig.strategies)[number]> {
     const strategies = this.compressionConfig.strategies;
     const results = await Promise.all(
-      strategies.map((strategy) => this.evaluateCompressionStrategy(strategy, data))
+      strategies.map((strategy) =>
+        this.evaluateCompressionStrategy(strategy, data)
+      )
     );
 
     const validResults = results.filter(
       (result): result is NonNullable<typeof result> => result !== null
     );
 
-    if (validResults.length === 0) return 'gzip';
+    if (validResults.length === 0) return "gzip";
 
     return validResults.reduce((best, current) => {
       if (!best) return current;
@@ -674,10 +757,10 @@ export class ValidationCache {
     strategy: (typeof this.compressionConfig.strategies)[number]
   ): Promise<string> {
     switch (strategy) {
-      case 'gzip':
+      case "gzip":
         return this.compressWithGzip(data);
-      case 'base64':
-        return Buffer.from(data).toString('base64');
+      case "base64":
+        return Buffer.from(data).toString("base64");
       default:
         throw new Error(`未対応の圧縮戦略: ${strategy}`);
     }
@@ -692,14 +775,18 @@ export class ValidationCache {
         resolve(new Uint8Array(result.buffer));
       });
     });
-    return Buffer.from(compressed).toString('base64');
+    return Buffer.from(compressed).toString("base64");
   }
 
-  private adjustAdaptiveThresholds(originalSize: number, compressedSize: number): void {
+  private adjustAdaptiveThresholds(
+    originalSize: number,
+    compressedSize: number
+  ): void {
     if (!this.compressionConfig.adaptiveThresholds.enabled) return;
 
     const ratio = compressedSize / originalSize;
-    const targetRatio = this.compressionConfig.adaptiveThresholds.targetCompressionRatio;
+    const targetRatio =
+      this.compressionConfig.adaptiveThresholds.targetCompressionRatio;
     const currentThreshold = this.metrics.compression.adaptiveThreshold;
 
     if (ratio > targetRatio) {
@@ -718,7 +805,7 @@ export class ValidationCache {
   }
 
   private recordCompressionFailure(error: unknown, duration: number): void {
-    const strategy = 'gzip';
+    const strategy = "gzip";
     const stats = this.getCompressionStats(strategy);
     stats.failureCount++;
     stats.compressionTime += duration;
@@ -772,12 +859,15 @@ export class ValidationCache {
 
     const now = Date.now();
     const accessTimes = Array.from(this.lruMap.values());
-    const averageAge = accessTimes.reduce((sum, time) => sum + (now - time), 0) / totalEntries;
+    const averageAge =
+      accessTimes.reduce((sum, time) => sum + (now - time), 0) / totalEntries;
 
     this.metrics.cacheEfficiency = {
       ...this.metrics.cacheEfficiency,
       averageEntrySize: Math.round(this.metrics.memoryUsage / totalEntries),
-      lruHitRate: Math.round((this.metrics.hits / this.metrics.totalOperations) * 100),
+      lruHitRate: Math.round(
+        (this.metrics.hits / this.metrics.totalOperations) * 100
+      ),
       averageAge: Math.round(averageAge),
     };
   }
@@ -828,8 +918,15 @@ export class ValidationCache {
     rules: ScoreValidationRules,
     result: ValidationResult
   ): Promise<void> => {
-    if (!Number.isFinite(value) || !rules || !ValidationResultValidator.isValidResult(result)) {
-      throw new ValidationError('無効なパラメータです', ValidationErrorCodes.INVALID_PARAMS);
+    if (
+      !Number.isFinite(value) ||
+      !rules ||
+      !ValidationResultValidator.isValidResult(result)
+    ) {
+      throw new ValidationError(
+        "無効なパラメータです",
+        ValidationErrorCodes.INVALID_PARAMS
+      );
     }
 
     const cacheKey = ValidationCacheKey.createKey(value, rules);
@@ -850,9 +947,9 @@ export class ValidationCache {
       await this.storage.flushAll();
       this.cacheSize = 0;
       revalidateTag(this.cacheTag);
-    } catch (error) {
+    } catch {
       throw new ValidationError(
-        'キャッシュのクリアに失敗しました',
+        "キャッシュのクリアに失敗しました",
         ValidationErrorCodes.CACHE_ERROR
       );
     }
@@ -863,22 +960,29 @@ export class ValidationCache {
     rules: ScoreValidationRules
   ): Promise<ValidationResult | null> {
     try {
-      const cached = await this.storage.get(ValidationCacheKey.createKey(value, rules));
+      const cached = await this.storage.get(
+        ValidationCacheKey.createKey(value, rules)
+      );
       if (!cached) return null;
 
       const isCompressed = this.isCompressedData(cached);
-      const decodedData = isCompressed ? await this.decompressData(cached) : cached;
+      const decodedData = isCompressed
+        ? await this.decompressData(cached)
+        : cached;
 
       const parsed = JSON.parse(decodedData);
       return ValidationResultValidator.isValidResult(parsed) ? parsed : null;
-    } catch (error) {
-      throw new ValidationError('キャッシュの取得に失敗しました', ValidationErrorCodes.CACHE_ERROR);
+    } catch {
+      throw new ValidationError(
+        "キャッシュの取得に失敗しました",
+        ValidationErrorCodes.CACHE_ERROR
+      );
     }
   }
 
   private isCompressedData(data: string): boolean {
     try {
-      return Buffer.from(data, 'base64').length > 0;
+      return Buffer.from(data, "base64").length > 0;
     } catch {
       return false;
     }
@@ -886,7 +990,10 @@ export class ValidationCache {
 
   private async adjustResources(): Promise<void> {
     const now = Date.now();
-    if (now - this.metrics.scaling.lastScaleTime < this.scalingConfig.cooldownPeriod) {
+    if (
+      now - this.metrics.scaling.lastScaleTime <
+      this.scalingConfig.cooldownPeriod
+    ) {
       return;
     }
 
@@ -905,10 +1012,13 @@ export class ValidationCache {
     operations: number;
   }> {
     const memoryUsage = process.memoryUsage();
-    const heapUsedPercentage = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
+    const heapUsedPercentage =
+      (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
 
     return {
-      cpu: (this.metrics.concurrentOperations / this.maxConcurrentOperations) * 100,
+      cpu:
+        (this.metrics.concurrentOperations / this.maxConcurrentOperations) *
+        100,
       memory: heapUsedPercentage,
       operations: this.calculateOperationsPerMinute(),
     };
@@ -916,13 +1026,19 @@ export class ValidationCache {
 
   private calculateOperationsPerMinute(): number {
     const oneMinuteAgo = Date.now() - 60000;
-    const recentOperations = Array.from(this.metrics.performance.operationTimes.values())
+    const recentOperations = Array.from(
+      this.metrics.performance.operationTimes.values()
+    )
       .flat()
       .filter((time) => time > oneMinuteAgo);
     return recentOperations.length;
   }
 
-  private calculateNewScale(usage: { cpu: number; memory: number; operations: number }): number {
+  private calculateNewScale(usage: {
+    cpu: number;
+    memory: number;
+    operations: number;
+  }): number {
     let scaleMultiplier = 1;
 
     if (usage.cpu > this.scalingConfig.thresholds.cpu) {
@@ -936,7 +1052,10 @@ export class ValidationCache {
     }
 
     const newScale = this.metrics.scaling.currentScale * scaleMultiplier;
-    return Math.max(this.scalingConfig.minScale, Math.min(this.scalingConfig.maxScale, newScale));
+    return Math.max(
+      this.scalingConfig.minScale,
+      Math.min(this.scalingConfig.maxScale, newScale)
+    );
   }
 
   private async applyNewScale(newScale: number): Promise<void> {
@@ -971,19 +1090,22 @@ export class ValidationCache {
     const reasons: string[] = [];
 
     if (usage.cpu > this.scalingConfig.thresholds.cpu) {
-      reasons.push('高CPU使用率');
+      reasons.push("高CPU使用率");
     }
     if (usage.memory > this.scalingConfig.thresholds.memory) {
-      reasons.push('高メモリ使用率');
+      reasons.push("高メモリ使用率");
     }
     if (usage.operations > this.scalingConfig.thresholds.operations) {
-      reasons.push('高負荷な操作数');
+      reasons.push("高負荷な操作数");
     }
 
-    return `${reasons.join(', ')} (${oldScale} → ${newScale})`;
+    return `${reasons.join(", ")} (${oldScale} → ${newScale})`;
   }
 
-  private updatePerformanceMetrics(operationType: string, duration: number): void {
+  private updatePerformanceMetrics(
+    operationType: string,
+    duration: number
+  ): void {
     this.recordOperationTime(operationType, duration);
     this.updateTrends();
     this.calculateHealthScore();
@@ -1016,9 +1138,15 @@ export class ValidationCache {
 
     // 古いデータの削除
     const cutoffTime = now - this.performanceConfig.trendRetentionPeriod;
-    trends.responseTime = trends.responseTime.filter((item) => item.timestamp > cutoffTime);
-    trends.throughput = trends.throughput.filter((item) => item.timestamp > cutoffTime);
-    trends.errorRate = trends.errorRate.filter((item) => item.timestamp > cutoffTime);
+    trends.responseTime = trends.responseTime.filter(
+      (item) => item.timestamp > cutoffTime
+    );
+    trends.throughput = trends.throughput.filter(
+      (item) => item.timestamp > cutoffTime
+    );
+    trends.errorRate = trends.errorRate.filter(
+      (item) => item.timestamp > cutoffTime
+    );
   }
 
   private calculateErrorRate(): number {
@@ -1059,7 +1187,8 @@ export class ValidationCache {
 
   private calculateResponseTimeHealth(): number {
     const avgResponseTime = this.metrics.performance.averageResponseTime;
-    const { warning, critical } = this.performanceConfig.alertThresholds.responseTime;
+    const { warning, critical } =
+      this.performanceConfig.alertThresholds.responseTime;
 
     if (avgResponseTime >= critical) return 0;
     if (avgResponseTime >= warning) {
@@ -1070,7 +1199,8 @@ export class ValidationCache {
 
   private calculateErrorRateHealth(): number {
     const errorRate = this.calculateErrorRate();
-    const { warning, critical } = this.performanceConfig.alertThresholds.errorRate;
+    const { warning, critical } =
+      this.performanceConfig.alertThresholds.errorRate;
 
     if (errorRate >= critical) return 0;
     if (errorRate >= warning) {
@@ -1081,8 +1211,10 @@ export class ValidationCache {
 
   private calculateMemoryHealth(): number {
     const memoryUsage =
-      (this.metrics.memoryUsage / this.performanceThresholds.maxMemoryUsage) * 100;
-    const { warning, critical } = this.performanceConfig.alertThresholds.memoryUsage;
+      (this.metrics.memoryUsage / this.performanceThresholds.maxMemoryUsage) *
+      100;
+    const { warning, critical } =
+      this.performanceConfig.alertThresholds.memoryUsage;
 
     if (memoryUsage >= critical) return 0;
     if (memoryUsage >= warning) {
@@ -1127,20 +1259,21 @@ export class ValidationCache {
 
   private checkResponseTimeAlert(timestamp: number): void {
     const avgResponseTime = this.metrics.performance.averageResponseTime;
-    const { warning, critical } = this.performanceConfig.alertThresholds.responseTime;
+    const { warning, critical } =
+      this.performanceConfig.alertThresholds.responseTime;
 
     if (avgResponseTime >= critical) {
       this.addAlert(
-        'HIGH_RESPONSE_TIME',
+        "HIGH_RESPONSE_TIME",
         `応答時間が危険な水準です: ${Math.round(avgResponseTime)}ms`,
-        'critical',
+        "critical",
         timestamp
       );
     } else if (avgResponseTime >= warning) {
       this.addAlert(
-        'HIGH_RESPONSE_TIME',
+        "HIGH_RESPONSE_TIME",
         `応答時間が警告水準です: ${Math.round(avgResponseTime)}ms`,
-        'warning',
+        "warning",
         timestamp
       );
     }
@@ -1148,20 +1281,21 @@ export class ValidationCache {
 
   private checkErrorRateAlert(timestamp: number): void {
     const errorRate = this.calculateErrorRate();
-    const { warning, critical } = this.performanceConfig.alertThresholds.errorRate;
+    const { warning, critical } =
+      this.performanceConfig.alertThresholds.errorRate;
 
     if (errorRate >= critical) {
       this.addAlert(
-        'HIGH_ERROR_RATE',
+        "HIGH_ERROR_RATE",
         `エラー率が危険な水準です: ${Math.round(errorRate)}%`,
-        'critical',
+        "critical",
         timestamp
       );
     } else if (errorRate >= warning) {
       this.addAlert(
-        'HIGH_ERROR_RATE',
+        "HIGH_ERROR_RATE",
         `エラー率が警告水準です: ${Math.round(errorRate)}%`,
-        'warning',
+        "warning",
         timestamp
       );
     }
@@ -1169,27 +1303,34 @@ export class ValidationCache {
 
   private checkMemoryUsageAlert(timestamp: number): void {
     const memoryUsage =
-      (this.metrics.memoryUsage / this.performanceThresholds.maxMemoryUsage) * 100;
-    const { warning, critical } = this.performanceConfig.alertThresholds.memoryUsage;
+      (this.metrics.memoryUsage / this.performanceThresholds.maxMemoryUsage) *
+      100;
+    const { warning, critical } =
+      this.performanceConfig.alertThresholds.memoryUsage;
 
     if (memoryUsage >= critical) {
       this.addAlert(
-        'HIGH_MEMORY_USAGE',
+        "HIGH_MEMORY_USAGE",
         `メモリ使用率が危険な水準です: ${Math.round(memoryUsage)}%`,
-        'critical',
+        "critical",
         timestamp
       );
     } else if (memoryUsage >= warning) {
       this.addAlert(
-        'HIGH_MEMORY_USAGE',
+        "HIGH_MEMORY_USAGE",
         `メモリ使用率が警告水準です: ${Math.round(memoryUsage)}%`,
-        'warning',
+        "warning",
         timestamp
       );
     }
   }
 
-  private addAlert(type: string, message: string, severity: Severity, timestamp: number): void {
+  private addAlert(
+    type: string,
+    message: string,
+    severity: Severity,
+    timestamp: number
+  ): void {
     const existingAlert = this.metrics.performance.alerts.active.find(
       (alert) => alert.type === type
     );
@@ -1203,27 +1344,32 @@ export class ValidationCache {
     }
   }
 
-  private isAlertStillActive(alert: { type: string; severity: Severity }): boolean {
+  private isAlertStillActive(alert: {
+    type: string;
+    severity: Severity;
+  }): boolean {
     switch (alert.type) {
-      case 'HIGH_RESPONSE_TIME':
+      case "HIGH_RESPONSE_TIME":
         return (
           this.metrics.performance.averageResponseTime >=
           this.performanceConfig.alertThresholds.responseTime[
-            alert.severity === 'critical' ? 'critical' : 'warning'
+            alert.severity === "critical" ? "critical" : "warning"
           ]
         );
-      case 'HIGH_ERROR_RATE':
+      case "HIGH_ERROR_RATE":
         return (
           this.calculateErrorRate() >=
           this.performanceConfig.alertThresholds.errorRate[
-            alert.severity === 'critical' ? 'critical' : 'warning'
+            alert.severity === "critical" ? "critical" : "warning"
           ]
         );
-      case 'HIGH_MEMORY_USAGE':
+      case "HIGH_MEMORY_USAGE":
         return (
-          (this.metrics.memoryUsage / this.performanceThresholds.maxMemoryUsage) * 100 >=
+          (this.metrics.memoryUsage /
+            this.performanceThresholds.maxMemoryUsage) *
+            100 >=
           this.performanceConfig.alertThresholds.memoryUsage[
-            alert.severity === 'critical' ? 'critical' : 'warning'
+            alert.severity === "critical" ? "critical" : "warning"
           ]
         );
       default:
@@ -1232,7 +1378,7 @@ export class ValidationCache {
   }
 
   private async decompressData(data: string): Promise<string> {
-    const compressed = new Uint8Array(Buffer.from(data, 'base64'));
+    const compressed = new Uint8Array(Buffer.from(data, "base64"));
     return new Promise((resolve, reject) => {
       gunzip(compressed, (error, result) => {
         if (error) reject(new Error(error.message));
@@ -1258,7 +1404,9 @@ export class ValidationCache {
 
     const serializedData = JSON.stringify(validatedResult);
     const shouldCompress = this.shouldCompress(serializedData);
-    const dataToStore = shouldCompress ? await this.compressData(serializedData) : serializedData;
+    const dataToStore = shouldCompress
+      ? await this.compressData(serializedData)
+      : serializedData;
 
     if (shouldCompress) {
       validatedResult.metadata.compressed = true;

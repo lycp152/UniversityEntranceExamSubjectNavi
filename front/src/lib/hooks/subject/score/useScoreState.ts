@@ -4,9 +4,9 @@ import type {
   ScoreMetrics,
   ScoreValidationError,
   CategoryScore,
-} from "../../../../types/subject/score";
-import { validateScore } from "../../../../utils/subject/validation/validators/scoreValidator";
-import { ScoreAggregator } from "../../../features/subject/utils/calculations/scoreAggregator";
+} from "@/types/subject/score";
+import { validateScore } from "@/utils/subject/validation/validators/scoreValidator";
+import { ScoreAggregator } from "@/lib/features/subject/utils/calculations/scoreAggregator";
 
 interface ScoreState {
   scores: Score[];

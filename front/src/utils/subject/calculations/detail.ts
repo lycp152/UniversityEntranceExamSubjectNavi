@@ -1,15 +1,6 @@
-import { SubjectScores } from '@/lib/types/models';
-import { calculatePercentage } from './base';
-import { ScoreData } from '@/components/subject/score';
-import { validateSubjectScores } from '../../../../utils/subject/validation/validation';
-
-/**
- * テストタイプごとのスコアデータを計算する
- */
-const calculateScoreData = (score: number, totalScore: number): ScoreData => ({
-  score,
-  percentage: calculatePercentage(score, totalScore),
-});
+import { SubjectScores, ScoreValidationError } from "@/types/subject/score";
+import { calculatePercentage } from "./base";
+import { validateSubjectScores } from "@/utils/subject/validation/validation";
 
 /**
  * 各科目の詳細なスコア情報を計算する
@@ -19,23 +10,23 @@ const calculateScoreData = (score: number, totalScore: number): ScoreData => ({
  * @example
  * ```ts
  * const detailedScores = calculateSubjectScores(subjects);
- * // 結果例：
- * // {
- * //   '英語': {
- * //     commonTest: { score: 180, percentage: 90 },
- * //     secondTest: { score: 90, percentage: 90 },
- * //     total: { score: 270, percentage: 90 }
- * //   },
- * //   ...
- * // }
+ *  結果例：
+ *  {
+ *    '英語': {
+ *      commonTest: { score: 180, percentage: 90 },
+ *      secondTest: { score: 90, percentage: 90 },
+ *      total: { score: 270, percentage: 90 }
+ *    },
+ *    ...
+ *  }
  */
 export const calculateSubjectScores = (subjects: SubjectScores) => {
   const validationResult = validateSubjectScores(subjects);
   if (!validationResult.isValid || !validationResult.data) {
     throw new Error(
       `スコアの検証に失敗しました: ${validationResult.errors
-        .map((err) => `${err.field}: ${err.message}`)
-        .join(', ')}`
+        .map((err: ScoreValidationError) => `${err.field}: ${err.message}`)
+        .join(", ")}`
     );
   }
 
@@ -65,7 +56,10 @@ export const calculateSubjectScores = (subjects: SubjectScores) => {
         },
         total: {
           score: total,
-          percentage: calculatePercentage(total, totalCommonTest + totalSecondTest),
+          percentage: calculatePercentage(
+            total,
+            totalCommonTest + totalSecondTest
+          ),
         },
       };
 

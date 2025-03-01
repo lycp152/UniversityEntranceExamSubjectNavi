@@ -13,7 +13,6 @@ import type {
   APIUniversity,
   APIDepartment,
   APIMajor,
-  APIExamInfo,
   APIAdmissionSchedule,
   APITestType,
 } from "@/lib/types/university/api";
@@ -69,6 +68,7 @@ const ExamInfoPage = ({ params }: Props) => {
         const universityData = await UniversityService.getUniversity(
           universityId
         );
+        console.log("API Response:", universityData);
         const result = findDepartmentAndMajor(
           universityData,
           departmentId,
@@ -80,23 +80,37 @@ const ExamInfoPage = ({ params }: Props) => {
         }
 
         const { department, major } = result;
-        const examData = major.exam_infos?.find(
-          (e: APIExamInfo) => e.academic_year === parseInt(academicYear, 10)
-        );
-
-        if (!examData) {
-          throw new Error("Exam info not found");
-        }
-
-        const admissionScheduleData = examData.admissionSchedules.find(
+        const admissionSchedule = major.admission_schedules?.find(
           (s: APIAdmissionSchedule) => s.id === parseInt(schedule, 10)
         );
 
-        if (!admissionScheduleData) {
+        if (!admissionSchedule) {
           throw new Error("Admission schedule not found");
         }
 
-        const allSubjectsData = admissionScheduleData.test_types.flatMap(
+        console.log(
+          "Admission Schedule:",
+          JSON.stringify(admissionSchedule, null, 2)
+        );
+        console.log("Test Types:", admissionSchedule.test_types);
+
+        const admissionInfo = admissionSchedule.admission_infos?.[0];
+        console.log("Academic Year from URL:", academicYear);
+        console.log("Admission Infos:", admissionSchedule.admission_infos);
+        if (
+          !admissionInfo ||
+          admissionInfo.academic_year !== parseInt(academicYear, 10)
+        ) {
+          throw new Error(
+            "Admission info not found for the specified academic year"
+          );
+        }
+
+        if (!admissionSchedule.test_types) {
+          throw new Error("Test types not found in admission schedule");
+        }
+
+        const allSubjectsData = admissionSchedule.test_types.flatMap(
           (testType: APITestType) => testType.subjects
         );
 
@@ -110,8 +124,8 @@ const ExamInfoPage = ({ params }: Props) => {
           universityData,
           department,
           major,
-          examData,
-          admissionScheduleData
+          admissionInfo,
+          admissionSchedule
         );
 
         if (!transformedSubject) {

@@ -4,25 +4,17 @@ import type {
   Department,
   TestType,
   Subject,
+  Major,
+  AdmissionSchedule,
+  TestTypeName,
 } from "@/lib/types/university/university";
-import type {
-  APITestType,
-  APISubject,
-  APIAdmissionSchedule,
-} from "@/lib/types/university/api";
-import {
-  transformToAPITestType,
-  transformToAPISubject,
-  transformTestType,
-  transformSubject,
-} from "@/lib/utils/university/transform";
+import type { APITestType, APISubject } from "@/lib/types/university/api";
 import {
   ADMISSION_STATUS,
   UNIVERSITY_STATUS,
 } from "@/lib/config/university/status";
 import { useUniversityData } from "./useUniversityData";
 import { useSubjectData } from "../subject/useSubjectData";
-import { API_ENDPOINTS } from "../../config/admin/api";
 
 interface EditMode {
   universityId: number;
@@ -36,6 +28,46 @@ interface BackupState {
   university: University;
   department: Department;
 }
+
+const transformSubjectToAPI = (subject: Subject): APISubject => ({
+  id: subject.id,
+  test_type_id: subject.testTypeId,
+  name: subject.name,
+  score: subject.maxScore,
+  percentage: subject.weight,
+  display_order: 0,
+  created_at: subject.createdAt.toISOString(),
+  updated_at: subject.updatedAt.toISOString(),
+});
+
+const transformSubjectFromAPI = (subject: APISubject): Subject => ({
+  id: subject.id,
+  testTypeId: subject.test_type_id,
+  name: subject.name,
+  maxScore: subject.score,
+  minScore: 0,
+  weight: subject.percentage,
+  createdAt: new Date(subject.created_at ?? ""),
+  updatedAt: new Date(subject.updated_at ?? ""),
+});
+
+const transformTestTypeToAPI = (testType: TestType): APITestType => ({
+  id: testType.id,
+  admission_schedule_id: testType.admissionScheduleId,
+  name: testType.name,
+  subjects: testType.subjects.map(transformSubjectToAPI),
+  created_at: testType.createdAt.toISOString(),
+  updated_at: testType.updatedAt.toISOString(),
+});
+
+const transformTestTypeFromAPI = (testType: APITestType): TestType => ({
+  id: testType.id,
+  admissionScheduleId: testType.admission_schedule_id,
+  name: testType.name as TestTypeName,
+  subjects: testType.subjects.map(transformSubjectFromAPI),
+  createdAt: new Date(testType.created_at ?? ""),
+  updatedAt: new Date(testType.updated_at ?? ""),
+});
 
 export function useUniversityEditor() {
   const {
@@ -53,8 +85,7 @@ export function useUniversityEditor() {
     updateSubjects,
   } = useUniversityData();
 
-  const { calculateUpdatedSubjects, findTargetTestType, createNewSubject } =
-    useSubjectData();
+  const { calculateUpdatedSubjects, findTargetTestType } = useSubjectData();
 
   const [editMode, setEditMode] = useState<EditMode | null>(null);
   const [backupState, setBackupState] = useState<BackupState | null>(null);
@@ -65,14 +96,19 @@ export function useUniversityEditor() {
     value: string | number
   ) => {
     const major = department.majors[0];
-    const admissionInfo = major?.examInfos[0];
-    if (!major || !admissionInfo) return department;
+    const admissionSchedule = major?.admissionSchedules?.[0];
+    const admissionInfo = admissionSchedule?.admissionInfos?.[0];
+    if (!major || !admissionSchedule || !admissionInfo) return department;
 
     const updatedDepartment = { ...department };
     const updatedMajor = { ...major };
+    const updatedAdmissionSchedule = { ...admissionSchedule };
     const updatedAdmissionInfo = { ...admissionInfo };
 
     switch (field) {
+      case "universityName":
+        // 大学名は上位のhandleInfoChangeで処理
+        break;
       case "departmentName":
         updatedDepartment.name = value as string;
         break;
@@ -82,12 +118,16 @@ export function useUniversityEditor() {
       case "enrollment":
         updatedAdmissionInfo.enrollment = value as number;
         break;
+      case "schedule":
+        updatedAdmissionSchedule.name = value as string;
+        break;
       default:
         console.warn(`Unknown field: ${field}`);
         return department;
     }
 
-    updatedMajor.examInfos = [updatedAdmissionInfo];
+    updatedAdmissionSchedule.admissionInfos = [updatedAdmissionInfo];
+    updatedMajor.admissionSchedules = [updatedAdmissionSchedule];
     updatedDepartment.majors = [updatedMajor];
 
     return updatedDepartment;
@@ -103,6 +143,15 @@ export function useUniversityEditor() {
       prevUniversities.map((university) => {
         if (university.id !== universityId) return university;
 
+        // 大学名の更新
+        if (field === "universityName") {
+          return {
+            ...university,
+            name: value as string,
+          };
+        }
+
+        // 学部情報の更新
         const updatedDepartments = university.departments.map(
           (department: Department) => {
             if (department.id !== departmentId) return department;
@@ -125,43 +174,33 @@ export function useUniversityEditor() {
     isCommon: boolean
   ) => {
     const major = department.majors[0];
-    const admissionInfo = major?.examInfos[0];
-    if (!major || !admissionInfo) return department;
+    const admissionSchedule = major?.admissionSchedules?.[0];
+    if (!major || !admissionSchedule) return department;
 
-    const targetTestType = admissionInfo.admissionSchedules.reduce<
-      TestType | undefined
-    >((found: TestType | undefined, schedule) => {
-      if (found) return found;
-      return schedule.testTypes.find((type: TestType) =>
-        findTargetTestType(type, isCommon)
-      );
-    }, undefined);
+    const targetTestType = admissionSchedule.testTypes.find((type: TestType) =>
+      findTargetTestType(transformTestTypeToAPI(type), isCommon)
+    );
 
     if (!targetTestType) return department;
 
     const updatedSubjects = calculateUpdatedSubjects(
-      targetTestType.subjects,
+      targetTestType.subjects.map(transformSubjectToAPI),
       subjectId,
       value
-    );
+    ).map(transformSubjectFromAPI);
 
     return {
       ...department,
       majors: [
         {
           ...major,
-          examInfos: [
+          admissionSchedules: [
             {
-              ...admissionInfo,
-              admissionSchedules: admissionInfo.admissionSchedules.map(
-                (schedule) => ({
-                  ...schedule,
-                  testTypes: schedule.testTypes.map((type: TestType) =>
-                    type.id === targetTestType.id
-                      ? { ...type, subjects: updatedSubjects }
-                      : type
-                  ),
-                })
+              ...admissionSchedule,
+              testTypes: admissionSchedule.testTypes.map((type: TestType) =>
+                type.id === targetTestType.id
+                  ? { ...type, subjects: updatedSubjects }
+                  : type
               ),
             },
           ],
@@ -209,9 +248,9 @@ export function useUniversityEditor() {
   const handleAddSubject = (
     universityId: number,
     departmentId: number,
-    type: TestType
+    type: APITestType
   ) => {
-    const apiType = transformToAPITestType(type);
+    const internalType = transformTestTypeFromAPI(type);
 
     setUniversities((prevUniversities) =>
       prevUniversities.map((university) => {
@@ -219,99 +258,56 @@ export function useUniversityEditor() {
 
         return {
           ...university,
-          departments: (university.departments || []).map(
-            (department: Department) => {
-              if (department.id !== departmentId) return department;
+          departments: university.departments.map((department) => {
+            if (department.id !== departmentId) return department;
 
-              const admissionInfo = department.majors[0]?.examInfos[0];
-              if (!admissionInfo) return department;
+            const major = department.majors[0];
+            const admissionSchedule = major?.admissionSchedules?.[0];
+            if (!major || !admissionSchedule) return department;
 
-              const newSubject: APISubject = {
-                id: 0,
-                test_type_id: apiType.id,
-                name: `科目${apiType.subjects.length + 1}`,
-                score: 100,
-                percentage: 1,
-                display_order: apiType.subjects.length + 1,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-              };
+            const newSubject: Subject = {
+              id: 0,
+              testTypeId: internalType.id,
+              name: `科目${internalType.subjects.length + 1}`,
+              maxScore: 100,
+              minScore: 0,
+              weight: 1,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
 
-              return {
-                ...department,
-                majors: [
-                  {
-                    ...department.majors[0],
-                    examInfos: [
-                      {
-                        ...admissionInfo,
-                        admissionSchedules:
-                          admissionInfo.admissionSchedules.map((schedule) => {
-                            const apiSchedule: APIAdmissionSchedule = {
-                              id: schedule.id,
-                              admission_info_id: schedule.examInfoId,
-                              name: schedule.name,
-                              display_order: 0,
-                              test_types: schedule.testTypes.map((testType) => {
-                                const internalTestType: TestType = {
-                                  id: testType.id,
-                                  admissionScheduleId: schedule.id,
-                                  name: testType.name,
-                                  subjects: testType.subjects.map(
-                                    (subject) => ({
-                                      id: subject.id,
-                                      testTypeId: testType.id,
-                                      name: subject.name,
-                                      code: "",
-                                      maxScore: subject.maxScore || 100,
-                                      minScore: 0,
-                                      weight: subject.weight || 1,
-                                      createdAt: new Date(
-                                        subject.created_at ||
-                                          new Date().toISOString()
-                                      ),
-                                      updatedAt: new Date(
-                                        subject.updated_at ||
-                                          new Date().toISOString()
-                                      ),
-                                    })
-                                  ),
-                                  createdAt: new Date(
-                                    testType.created_at ||
-                                      new Date().toISOString()
-                                  ),
-                                  updatedAt: new Date(
-                                    testType.updated_at ||
-                                      new Date().toISOString()
-                                  ),
-                                };
+            const updatedTestTypes = admissionSchedule.testTypes.map(
+              (testType) => {
+                if (testType.id === internalType.id) {
+                  const updatedSubjects = [...testType.subjects, newSubject];
+                  return {
+                    id: testType.id,
+                    admissionScheduleId: testType.admissionScheduleId,
+                    name: testType.name,
+                    subjects: updatedSubjects,
+                    createdAt: testType.createdAt,
+                    updatedAt: testType.updatedAt,
+                  };
+                }
+                return testType;
+              }
+            );
 
-                                const apiTestType =
-                                  transformToAPITestType(internalTestType);
+            const updatedAdmissionSchedule: AdmissionSchedule = {
+              ...admissionSchedule,
+              testTypes: updatedTestTypes,
+            };
 
-                                if (apiTestType.id === apiType.id) {
-                                  return {
-                                    ...apiTestType,
-                                    subjects: [
-                                      ...apiTestType.subjects,
-                                      newSubject,
-                                    ],
-                                  };
-                                }
-                                return apiTestType;
-                              }),
-                              created_at: schedule.createdAt.toISOString(),
-                              updated_at: schedule.updatedAt.toISOString(),
-                            };
-                            return apiSchedule;
-                          }),
-                      },
-                    ],
-                  },
-                ],
-              };
-            }
-          ),
+            const updatedMajor: Major = {
+              ...major,
+              admissionSchedules: [updatedAdmissionSchedule],
+            };
+
+            return {
+              ...department,
+              majors: [updatedMajor],
+            };
+          }),
         };
       })
     );
@@ -333,31 +329,28 @@ export function useUniversityEditor() {
             (department: Department) => {
               if (department.id !== departmentId) return department;
 
-              const admissionInfo = department.majors[0]?.examInfos[0];
-              if (!admissionInfo) return department;
+              const admissionSchedule =
+                department.majors[0]?.admissionSchedules[0];
+              if (!admissionSchedule) return department;
 
               return {
                 ...department,
                 majors: [
                   {
                     ...department.majors[0],
-                    examInfos: [
+                    admissionSchedules: [
                       {
-                        ...admissionInfo,
-                        admissionSchedules:
-                          admissionInfo.admissionSchedules.map((schedule) => ({
-                            ...schedule,
-                            testTypes: schedule.testTypes.map(
-                              (testType: TestType) => ({
-                                ...testType,
-                                subjects: testType.subjects.map((subject) =>
-                                  subject.id === subjectId
-                                    ? { ...subject, name }
-                                    : subject
-                                ),
-                              })
+                        ...admissionSchedule,
+                        testTypes: admissionSchedule.testTypes.map(
+                          (testType: TestType) => ({
+                            ...testType,
+                            subjects: testType.subjects.map((subject) =>
+                              subject.id === subjectId
+                                ? { ...subject, name }
+                                : subject
                             ),
-                          })),
+                          })
+                        ),
                       },
                     ],
                   },
@@ -456,7 +449,6 @@ export function useUniversityEditor() {
     const emptyUniversity: University = {
       id: tempId,
       name: "",
-      code: "",
       createdAt: new Date(),
       updatedAt: new Date(),
       status: UNIVERSITY_STATUS.ACTIVE,
@@ -465,7 +457,6 @@ export function useUniversityEditor() {
           id: tempId + 1,
           name: "",
           universityId: tempId,
-          code: "",
           createdAt: new Date(),
           updatedAt: new Date(),
           majors: [
@@ -473,45 +464,36 @@ export function useUniversityEditor() {
               id: tempId + 2,
               name: "",
               departmentId: tempId + 1,
-              code: "",
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              examInfos: [
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              admissionSchedules: [
                 {
                   id: tempId + 3,
                   majorId: tempId + 2,
-                  enrollment: 0,
-                  year: new Date().getFullYear(),
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  admissionSchedules: [
+                  name: "前期",
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  startDate: new Date(),
+                  endDate: new Date(),
+                  status: ADMISSION_STATUS.UPCOMING,
+                  displayOrder: 0,
+                  admissionInfos: [],
+                  testTypes: [
                     {
-                      id: tempId + 4,
-                      examInfoId: tempId + 3,
-                      name: "前期",
+                      id: tempId + 5,
+                      admissionScheduleId: tempId + 4,
+                      name: "共通",
+                      subjects: [],
                       createdAt: new Date(),
                       updatedAt: new Date(),
-                      startDate: new Date(),
-                      endDate: new Date(),
-                      status: ADMISSION_STATUS.UPCOMING,
-                      testTypes: [
-                        {
-                          id: tempId + 5,
-                          admissionScheduleId: tempId + 4,
-                          name: "共通",
-                          subjects: [],
-                          createdAt: new Date(),
-                          updatedAt: new Date(),
-                        },
-                        {
-                          id: tempId + 6,
-                          admissionScheduleId: tempId + 4,
-                          name: "二次",
-                          subjects: [],
-                          createdAt: new Date(),
-                          updatedAt: new Date(),
-                        },
-                      ],
+                    },
+                    {
+                      id: tempId + 6,
+                      admissionScheduleId: tempId + 4,
+                      name: "二次",
+                      subjects: [],
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
                     },
                   ],
                 },

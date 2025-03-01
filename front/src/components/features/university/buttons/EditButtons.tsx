@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface EditButtonsProps {
   readonly isEditing: boolean;
@@ -7,9 +7,17 @@ interface EditButtonsProps {
   readonly onCancel: () => void;
 }
 
-const SaveButton = ({ onSave }: { readonly onSave: () => void }) => (
+interface SaveButtonProps {
+  onSave: () => void;
+}
+
+interface CancelButtonProps {
+  onCancel: () => void;
+}
+
+export const SaveButton = ({ onSave }: SaveButtonProps) => (
   <button
-    onClick={() => window.confirm('変更を保存しますか？') && onSave()}
+    onClick={() => window.confirm("変更を保存しますか？") && onSave()}
     className="p-1.5 rounded-full text-green-600 hover:text-green-800 hover:bg-green-50 transition-colors"
   >
     <svg
@@ -27,9 +35,11 @@ const SaveButton = ({ onSave }: { readonly onSave: () => void }) => (
   </button>
 );
 
-const CancelButton = ({ onCancel }: { readonly onCancel: () => void }) => (
+export const CancelButton = ({ onCancel }: CancelButtonProps) => (
   <button
-    onClick={() => window.confirm('変更は破棄されますが、よろしいですか？') && onCancel()}
+    onClick={() =>
+      window.confirm("変更は破棄されますが、よろしいですか？") && onCancel()
+    }
     className="p-1.5 rounded-full text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors"
   >
     <svg
@@ -63,7 +73,12 @@ const EditButton = ({ onEdit }: { readonly onEdit: () => void }) => (
   </button>
 );
 
-export const EditButtons = ({ isEditing, onEdit, onSave, onCancel }: EditButtonsProps) => {
+export const EditButtons = ({
+  isEditing,
+  onEdit,
+  onSave,
+  onCancel,
+}: EditButtonsProps) => {
   if (isEditing) {
     return (
       <div className="flex flex-col space-y-1">

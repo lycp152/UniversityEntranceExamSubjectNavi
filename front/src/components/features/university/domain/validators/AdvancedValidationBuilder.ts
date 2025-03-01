@@ -1,7 +1,7 @@
-import type { ValidationRule } from './validation';
-import { ValidationError, ValidationErrorDetail } from './ValidationError';
-import { ValidationRuleCache } from './ValidationRuleCache';
-import { ValidationCategory, ValidationSeverity } from './ValidationErrorTypes';
+import type { ValidationRule } from "@/types/validation";
+import { ValidationError, ValidationErrorDetail } from "./ValidationError";
+import { ValidationRuleCache } from "./ValidationRuleCache";
+import { ValidationCategory, ValidationSeverity } from "./ValidationErrorTypes";
 
 interface ConditionalRule<T> {
   condition: (value: T) => boolean;
@@ -10,7 +10,7 @@ interface ConditionalRule<T> {
 
 interface DependencyRule<T> {
   dependencies: string[];
-  validate: (value: T, dependencies: Record<string, any>) => boolean;
+  validate: (value: T, dependencies: Record<string, unknown>) => boolean;
   message: string;
   field: string;
 }
@@ -36,7 +36,10 @@ export class AdvancedValidationBuilder<T> {
     return this;
   }
 
-  addConditionalRules(condition: (value: T) => boolean, rules: ValidationRule<T>[]): this {
+  addConditionalRules(
+    condition: (value: T) => boolean,
+    rules: ValidationRule<T>[]
+  ): this {
     this.conditionalRules.push({ condition, rules });
     return this;
   }
@@ -50,7 +53,7 @@ export class AdvancedValidationBuilder<T> {
     return this.rules
       .filter((rule) => !rule.validate(value))
       .map((rule) => ({
-        field: rule.field,
+        field: rule.code,
         message: rule.message,
         category: ValidationCategory.FORMAT,
         severity: ValidationSeverity.ERROR,
@@ -64,7 +67,7 @@ export class AdvancedValidationBuilder<T> {
         rule.rules
           .filter((r) => !r.validate(value))
           .map((r) => ({
-            field: r.field,
+            field: r.code,
             message: r.message,
             category: ValidationCategory.FORMAT,
             severity: ValidationSeverity.ERROR,
@@ -74,7 +77,7 @@ export class AdvancedValidationBuilder<T> {
 
   private validateDependencyRules(
     value: T,
-    dependencies?: Record<string, any>
+    dependencies?: Record<string, unknown>
   ): ValidationErrorDetail[] {
     return this.dependencyRules
       .filter((rule) => !rule.validate(value, dependencies || {}))
@@ -86,7 +89,7 @@ export class AdvancedValidationBuilder<T> {
       }));
   }
 
-  validate(value: T, dependencies?: Record<string, any>): void {
+  validate(value: T, dependencies?: Record<string, unknown>): void {
     const errors: ValidationErrorDetail[] = [
       ...this.validateBasicRules(value),
       ...this.validateConditionalRules(value),
@@ -94,7 +97,7 @@ export class AdvancedValidationBuilder<T> {
     ];
 
     if (errors.length > 0) {
-      throw new ValidationError('バリデーションエラー', errors);
+      throw new ValidationError("バリデーションエラー", errors);
     }
 
     // キャッシュの更新

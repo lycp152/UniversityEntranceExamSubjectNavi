@@ -11,7 +11,9 @@ export const metadata: Metadata = {
   description: "大学受験の科目別配点割合をグラフ化・検索できるサイト",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="ja">
       <body suppressHydrationWarning className={inter.className}>

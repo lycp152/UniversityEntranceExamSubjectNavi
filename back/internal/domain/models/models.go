@@ -82,38 +82,37 @@ type Major struct {
 	DepartmentID    uint            `json:"department_id" gorm:"not null;index"`
 	Name            string          `json:"name" gorm:"not null;size:100;check:name <> ''"`
 	Department      Department      `json:"-" gorm:"foreignKey:DepartmentID"`
-	AdmissionInfos  []AdmissionInfo `json:"exam_infos,omitempty" gorm:"foreignKey:MajorID;constraint:OnDelete:CASCADE"`
-}
-
-// AdmissionInfo represents examination information for a major
-type AdmissionInfo struct {
-	BaseModel
-	MajorID           uint               `json:"major_id" gorm:"not null;index"`
-	Enrollment        int                `json:"enrollment" gorm:"not null;check:enrollment > 0 AND enrollment <= 9999"`
-	AcademicYear      int                `json:"academic_year" gorm:"not null;check:academic_year >= 2000 AND academic_year <= 2100"`
-	ValidFrom         time.Time          `json:"valid_from" gorm:"not null;check:valid_from <= valid_until"`
-	ValidUntil        time.Time          `json:"valid_until" gorm:"not null"`
-	Status            string             `json:"status" gorm:"type:varchar(20);default:'draft';check:status in ('draft','published','archived')"`
-	Major             Major              `json:"-" gorm:"foreignKey:MajorID"`
-	AdmissionSchedules []AdmissionSchedule `json:"admissionSchedules,omitempty" gorm:"foreignKey:AdmissionInfoID;constraint:OnDelete:CASCADE"`
-	CreatedBy         string             `json:"created_by" gorm:"size:100"`
-	UpdatedBy         string             `json:"updated_by" gorm:"size:100"`
+	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty" gorm:"foreignKey:MajorID;constraint:OnDelete:CASCADE"`
 }
 
 // AdmissionSchedule represents a admissionSchedule period
 type AdmissionSchedule struct {
 	BaseModel
-	AdmissionInfoID uint       `json:"exam_info_id" gorm:"not null;index"`
-	Name            string     `json:"name" gorm:"not null;size:50;check:name in ('前期','中期','後期')"`
-	DisplayOrder    int        `json:"display_order" gorm:"not null;default:0;check:display_order >= 0"`
-	AdmissionInfo   AdmissionInfo   `json:"-" gorm:"foreignKey:AdmissionInfoID"`
-	TestTypes       []TestType `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
+	MajorID    uint       `json:"major_id" gorm:"not null;index"`
+	Name       string     `json:"name" gorm:"not null;size:50;check:name in ('前期','中期','後期')"`
+	DisplayOrder int      `json:"display_order" gorm:"not null;default:0;check:display_order >= 0"`
+	Major      Major      `json:"-" gorm:"foreignKey:MajorID"`
+	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
+	TestTypes  []TestType `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
+}
+
+// AdmissionInfo represents examination information for a major
+type AdmissionInfo struct {
+	BaseModel
+	AdmissionScheduleID uint       `json:"admission_schedule_id" gorm:"not null;index"`
+	Enrollment        int         `json:"enrollment" gorm:"not null;check:enrollment > 0 AND enrollment <= 9999"`
+	AcademicYear      int         `json:"academic_year" gorm:"not null;check:academic_year >= 2000 AND academic_year <= 2100"`
+	ValidFrom         time.Time   `json:"valid_from" gorm:"not null;check:valid_from <= valid_until"`
+	ValidUntil        time.Time   `json:"valid_until" gorm:"not null"`
+	Status            string      `json:"status" gorm:"type:varchar(20);default:'draft';check:status in ('draft','published','archived')"`
+	AdmissionSchedule AdmissionSchedule `json:"-" gorm:"foreignKey:AdmissionScheduleID"`
+	TestTypes        []TestType   `json:"test_types,omitempty" gorm:"many2many:admission_info_test_types"`
 }
 
 // TestType represents a type of examination (共通 or 二次)
 type TestType struct {
 	BaseModel
-	AdmissionScheduleID uint      `json:"admissionSchedule_id" gorm:"not null;index"`
+	AdmissionScheduleID uint      `json:"admission_schedule_id" gorm:"not null;index"`
 	Name               string    `json:"name" gorm:"not null;type:varchar(10);check:name in ('共通','二次')"`
 	AdmissionSchedule  AdmissionSchedule  `json:"-" gorm:"foreignKey:AdmissionScheduleID"`
 	Subjects          []Subject `json:"subjects,omitempty" gorm:"foreignKey:TestTypeID;constraint:OnDelete:CASCADE"`

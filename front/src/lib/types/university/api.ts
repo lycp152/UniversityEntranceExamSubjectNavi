@@ -1,4 +1,10 @@
-import type { University, Department, Major, AdmissionInfo, AdmissionSchedule } from './university';
+import type {
+  University,
+  Department,
+  Major,
+  AdmissionInfo,
+  AdmissionSchedule,
+} from "./university";
 
 /**
  * 大学一覧取得APIのレスポンス型
@@ -89,7 +95,7 @@ export interface APIDepartment extends BaseModel {
 export interface APIMajor extends BaseModel {
   name: string;
   department_id: number;
-  exam_infos: APIExamInfo[];
+  admission_schedules?: APIAdmissionSchedule[];
 }
 
 export interface APIExamInfo extends BaseModel {
@@ -99,7 +105,6 @@ export interface APIExamInfo extends BaseModel {
   valid_from: string;
   valid_until: string;
   status: string;
-  admissionSchedules: APIAdmissionSchedule[];
   created_by?: string;
   updated_by?: string;
 }
@@ -113,14 +118,26 @@ export interface APISubject extends BaseModel {
 }
 
 export interface APITestType extends BaseModel {
-  admissionSchedule_id: number;
+  admission_schedule_id: number;
   name: string;
   subjects: APISubject[];
 }
 
 export interface APIAdmissionSchedule extends BaseModel {
-  admission_info_id: number;
+  major_id: number;
   name: string;
   display_order: number;
   test_types: APITestType[];
+  admission_infos: APIExamInfo[];
+}
+
+export interface APIAdmissionInfo extends BaseModel {
+  major_id: number;
+  enrollment: number;
+  academic_year: number;
+  valid_from: string;
+  valid_until: string;
+  status: string;
+  created_by?: string;
+  updated_by?: string;
 }

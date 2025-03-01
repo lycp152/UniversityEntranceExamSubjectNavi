@@ -3,10 +3,10 @@ import type {
   APIUniversity,
   APIDepartment,
   APIMajor,
-  APIExamInfo,
+  APIAdmissionInfo,
   APIAdmissionSchedule,
-} from '@/lib/types/university/api';
-import type { Subject as UISubject } from '@/lib/types/subject/subject';
+} from "@/lib/types/university/api";
+import type { Subject as UISubject } from "@/lib/types/subject/subject";
 
 export const transformSubjectData = (
   targetSubject: APISubject,
@@ -14,10 +14,17 @@ export const transformSubjectData = (
   university: APIUniversity,
   department: APIDepartment,
   major: APIMajor,
-  admissionInfo: APIExamInfo,
+  admissionInfo: APIAdmissionInfo,
   schedule: APIAdmissionSchedule
 ): UISubject | null => {
-  if (!targetSubject?.id || !university?.id || !department?.id || !major?.id || !schedule?.id) {
+  if (
+    !targetSubject?.id ||
+    !university?.id ||
+    !department?.id ||
+    !major?.id ||
+    !schedule?.id ||
+    !admissionInfo?.id
+  ) {
     return null;
   }
 
@@ -33,9 +40,11 @@ export const transformSubjectData = (
   // 全科目のスコアを設定
   for (const subject of allSubjects) {
     if (subject.name in subjects) {
-      const testType = schedule.test_types.find((tt) => tt.id === subject.test_type_id);
+      const testType = schedule.test_types.find(
+        (tt) => tt.id === subject.test_type_id
+      );
       if (testType) {
-        const isCommonTest = testType.name === '共通';
+        const isCommonTest = testType.name === "共通";
         const currentScores = subjects[subject.name as keyof typeof subjects];
         subjects[subject.name as keyof typeof subjects] = {
           commonTest: isCommonTest

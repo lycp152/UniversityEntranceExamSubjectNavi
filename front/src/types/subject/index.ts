@@ -2,8 +2,9 @@
 export const SUBJECT_CATEGORIES = {
   ENGLISH: "英語",
   MATH: "数学",
+  JAPANESE: "国語",
   SCIENCE: "理科",
-  SOCIAL: "社会",
+  HISTORY_GEOGRAPHY: "地歴公",
 } as const;
 
 export type SubjectCategory =

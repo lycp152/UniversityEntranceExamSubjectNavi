@@ -2,7 +2,7 @@ import { useState } from "react";
 import { TestScore } from "@/lib/types/score/index";
 import { Subject } from "@/lib/types/subject/subject";
 import { Department, University, Major } from "@/lib/types/university";
-import { ExamInfo } from "";
+import { APIExamInfo as ExamInfo } from "@/lib/types/university/api";
 import { ExamTable } from "../table/ExamTable";
 
 interface ExamFormProps {
@@ -16,13 +16,10 @@ const updateSubjectScore = (
   subjectId: number,
   value: number
 ) => {
-  if (subject.ID !== subjectId) return subject;
+  if (subject.id !== subjectId) return subject;
   return {
     ...subject,
-    test_scores: subject.test_scores.map((score: TestScore) => ({
-      ...score,
-      score: value,
-    })),
+    score: value,
   };
 };
 
@@ -105,26 +102,16 @@ export const ExamForm = ({
   const [editedDepartments, setEditedDepartments] =
     useState<Department[]>(departments);
 
-  const handleInfoChange =
-    (departmentId: number) => (field: string, value: string | number) => {
-      setEditedDepartments((prev) =>
-        prev.map((department) => {
-          if (department.ID !== departmentId) return department;
-
-          const major = department.majors[0];
-          const examInfo = major?.exam_infos[0];
-          if (!major || !examInfo) return department;
-
-          return updateDepartmentField(
-            department,
-            major,
-            examInfo,
-            field,
-            value
-          );
-        })
-      );
-    };
+  const handleInfoChange = (department: Department, value: string) => {
+    const updatedDepartments = departments.map((d) => {
+      if (d.id !== department.id) return d;
+      return {
+        ...d,
+        universityId: parseInt(value, 10),
+      };
+    });
+    onSave(updatedDepartments);
+  };
 
   const handleScoreChange = (
     departmentId: number,
@@ -133,13 +120,8 @@ export const ExamForm = ({
   ) => {
     setEditedDepartments((prev) =>
       prev.map((department) => {
-        if (department.ID !== departmentId) return department;
-        return {
-          ...department,
-          majors: department.majors.map((major) =>
-            updateMajor(major, subjectId, value)
-          ),
-        };
+        if (department.id !== departmentId) return department;
+        return department;
       })
     );
   };
@@ -155,22 +137,22 @@ export const ExamForm = ({
         {isEditing ? (
           <>
             <button
-              onClick={() => setIsEditing(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 mr-2"
-            >
-              キャンセル
-            </button>
-            <button
               onClick={handleSave}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700"
+              className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
             >
               保存
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              className="bg-gray-500 text-white px-4 py-2 rounded"
+            >
+              キャンセル
             </button>
           </>
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700"
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
             編集
           </button>
@@ -180,7 +162,12 @@ export const ExamForm = ({
         departments={editedDepartments}
         universities={universities}
         isEditing={isEditing}
-        onInfoChange={handleInfoChange}
+        onInfoChange={(departmentId) => (field, value) => {
+          const department = departments.find((d) => d.id === departmentId);
+          if (department) {
+            handleInfoChange(department, value.toString());
+          }
+        }}
         onScoreChange={handleScoreChange}
       />
     </div>

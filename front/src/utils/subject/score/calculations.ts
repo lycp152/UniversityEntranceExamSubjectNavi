@@ -1,18 +1,43 @@
-import { SubjectScores } from '@/lib/types/models';
-import { BaseSubjectScore, SubjectScoreDetail, TestType } from '../../../components/subject/score';
+import {
+  SubjectScores,
+  BaseSubjectScore,
+  TestType,
+} from "@/types/subject/score";
+
+interface SubjectScoreDetail {
+  subject: string;
+  commonTest: {
+    score: number;
+    percentage: number;
+  };
+  secondaryTest: {
+    score: number;
+    percentage: number;
+  };
+  total: {
+    score: number;
+    percentage: number;
+  };
+}
 
 /**
  * 全科目の合計点を計算する
  */
 const calculateTotalScore = (subjects: SubjectScores): number => {
   const scores = Object.values<BaseSubjectScore>(subjects);
-  return scores.reduce((sum, score) => sum + score.commonTest + score.secondTest, 0);
+  return scores.reduce(
+    (sum, score) => sum + score.commonTest + score.secondTest,
+    0
+  );
 };
 
 /**
  * 特定のカテゴリーの合計点を計算する
  */
-const calculateCategoryTotal = (subjects: SubjectScores, targetCategory: string): number => {
+const calculateCategoryTotal = (
+  subjects: SubjectScores,
+  targetCategory: string
+): number => {
   const entries = Object.entries<BaseSubjectScore>(subjects);
   return entries
     .filter(([key]) => key.startsWith(targetCategory))
@@ -29,14 +54,27 @@ const calculatePercentage = (value: number, total: number): number => {
 /**
  * 特定のテスト種別の合計点を計算する
  */
-const calculateTestTypeTotal = (subjects: SubjectScores, testType: TestType): number => {
-  return Object.values(subjects).reduce((sum, score) => sum + score[testType], 0);
+const calculateTestTypeTotal = (
+  subjects: SubjectScores,
+  testType: TestType
+): number => {
+  const testTypeMap = {
+    common: "commonTest",
+    individual: "secondTest",
+  } as const;
+
+  return Object.values(subjects).reduce(
+    (sum, score) => sum + score[testTypeMap[testType]],
+    0
+  );
 };
 
 /**
  * 科目ごとの詳細スコアを計算する
  */
-const calculateSubjectScores = (subjects: SubjectScores): SubjectScoreDetail[] => {
+const calculateSubjectScores = (
+  subjects: SubjectScores
+): SubjectScoreDetail[] => {
   const totalScore = calculateTotalScore(subjects);
 
   return Object.entries(subjects).map(([subject, scores]) => {

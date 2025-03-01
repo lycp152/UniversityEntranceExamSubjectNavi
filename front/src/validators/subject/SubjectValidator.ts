@@ -1,16 +1,14 @@
 import { AdvancedValidationBuilder } from "@/components/features/university/domain/validators/AdvancedValidationBuilder";
-import type { SubjectScore } from "../types/domain";
+import type { Score } from "@/types/subject/score";
 import type { ISubjectValidator } from "./ISubjectValidator";
-import { SCORE_CONSTRAINTS } from "../../constants/subject/scores";
+import { SCORE_CONSTRAINTS } from "@/lib/constants/subject/scores";
 import { SubjectError } from "../../errors/subject/SubjectError";
 
 export class SubjectValidator implements ISubjectValidator {
-  private readonly builder: AdvancedValidationBuilder<SubjectScore>;
+  private readonly builder: AdvancedValidationBuilder<Score>;
 
   constructor() {
-    this.builder = new AdvancedValidationBuilder<SubjectScore>(
-      "subject-validation"
-    );
+    this.builder = new AdvancedValidationBuilder<Score>("subject-validation");
     this.setupValidationRules();
   }
 
@@ -21,18 +19,18 @@ export class SubjectValidator implements ISubjectValidator {
           score.value >= SCORE_CONSTRAINTS.MIN_VALUE &&
           score.value <= score.maxValue,
         message: "点数は0から最大値の間で入力してください",
-        field: "value",
+        code: "INVALID_SCORE_RANGE",
       })
       .addRule({
         validate: (score) =>
           score.weight >= SCORE_CONSTRAINTS.MIN_WEIGHT &&
           score.weight <= SCORE_CONSTRAINTS.MAX_WEIGHT,
         message: "重みは0から1の間で入力してください",
-        field: "weight",
+        code: "INVALID_WEIGHT_RANGE",
       });
   }
 
-  validate(score: SubjectScore): void {
+  validate(score: Score): void {
     try {
       this.builder.validate(score);
     } catch (error) {
@@ -43,7 +41,7 @@ export class SubjectValidator implements ISubjectValidator {
     }
   }
 
-  validateBatch(scores: SubjectScore[]): void {
+  validateBatch(scores: Score[]): void {
     scores.forEach((score, index) => {
       try {
         this.validate(score);

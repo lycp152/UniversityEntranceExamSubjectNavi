@@ -1,9 +1,9 @@
 import {
   SubjectScores as LibSubjectScores,
   BaseSubjectScore as LibBaseSubjectScore,
-} from '@/lib/types/models';
+} from "@/shared/lib/types/score";
 
-export type TestType = 'commonTest' | 'secondTest';
+export type TestType = "commonTest" | "secondTest";
 
 export interface ScoreData {
   score: number;

@@ -1,8 +1,10 @@
 import { FC, memo } from "react";
-import type { SubjectScores, SubjectScoreDetail } from "@/lib/types/score";
+import type { SubjectScores } from "@/lib/types/score";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary/index";
-import { useScoreTable } from "@/hooks/subject/score/useScoreTable";
+import { useScoreTable } from "@/lib/hooks/subject/table/useScoreTable";
 import { useTableKeyboardNavigation } from "@/lib/hooks/subject/table/useTableKeyboardNavigation";
+import { TEST_TYPES } from "@/lib/types/score";
+import type { SubjectScoreDetail } from "@/shared/lib/types/score";
 import ScoreTableHeader from "./ScoreTableHeader";
 import ScoreTableBody from "./ScoreTableBody";
 
@@ -10,14 +12,16 @@ interface ScoreTableProps {
   scores: SubjectScores;
 }
 
+type ScoreTableTotals = {
+  [TEST_TYPES.COMMON]: number;
+  [TEST_TYPES.INDIVIDUAL]: number;
+  total: number;
+};
+
 interface ScoreTableContentProps extends ScoreTableProps {
   calculatedScores: Record<string, SubjectScoreDetail> | null;
   sortedSubjects: string[];
-  totals: {
-    commonTest: number;
-    individualTest: number;
-    total: number;
-  } | null;
+  totals: ScoreTableTotals | null;
 }
 
 const ScoreTableContent: FC<ScoreTableContentProps> = memo(
@@ -64,7 +68,13 @@ const ScoreTableContent: FC<ScoreTableContentProps> = memo(
 ScoreTableContent.displayName = "ScoreTableContent";
 
 const ScoreTable: FC<ScoreTableProps> = memo(({ scores }) => {
-  const { calculatedScores, sortedSubjects, totals } = useScoreTable(scores);
+  const { calculatedScores, sortedSubjects, totals } = useScoreTable(
+    scores
+  ) as {
+    calculatedScores: Record<string, SubjectScoreDetail> | null;
+    sortedSubjects: string[];
+    totals: ScoreTableTotals | null;
+  };
 
   return (
     <ErrorBoundary

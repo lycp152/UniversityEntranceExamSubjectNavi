@@ -1,6 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ScoreService } from "@/lib/services/subject/score/ScoreService";
-import type { BaseSubjectScore, SubjectScore } from "@/types/subject/score";
 import type {
   Score,
   ScoreMetrics,
@@ -9,7 +8,7 @@ import type {
 
 export const useScoreOperations = () => {
   const [error, setError] = useState<ScoreValidationError | null>(null);
-  const scoreService = new ScoreService();
+  const scoreService = useMemo(() => new ScoreService(), []);
 
   const calculateScore = useCallback(
     (scores: Score[]): ScoreMetrics | null => {
@@ -25,7 +24,7 @@ export const useScoreOperations = () => {
         const result = scoreService.calculateSubjectScore(scores);
         setError(null);
         return result;
-      } catch (err) {
+      } catch {
         setError({
           code: "CALCULATION_ERROR",
           message: "計算中にエラーが発生しました",

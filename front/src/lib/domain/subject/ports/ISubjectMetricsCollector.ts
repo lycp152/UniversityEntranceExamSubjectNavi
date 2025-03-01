@@ -1,8 +1,7 @@
 import type {
   SubjectScore,
-  SubjectMetrics,
   CalculationResult,
-} from '../../../../domain/subject/models/types';
+} from "@/domain/subject/models/types";
 
 export interface ISubjectMetricsCollector {
   collectMetrics(scores: SubjectScore[]): CalculationResult;

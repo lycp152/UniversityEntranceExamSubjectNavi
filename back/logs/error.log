@@ -14230,3 +14230,34 @@ ERROR: 2025/02/27 20:51:20 logger.go:53: Failed to fetch university with ID 1: U
 ERROR: 2025/02/27 20:52:48 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
 ERROR: 2025/02/27 20:52:48 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
 ERROR: 2025/02/27 20:52:53 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
+ERROR: 2025/02/28 00:16:45 logger.go:53: Failed to migrate database: ERROR: column "major_id" of relation "admission_infos" contains null values (SQLSTATE 23502)
+ERROR: 2025/02/28 00:41:03 logger.go:53: Failed to migrate database: ERROR: column "admission_info_id" of relation "admission_schedules" contains null values (SQLSTATE 23502)
+ERROR: 2025/02/28 01:12:25 logger.go:53: Failed to fetch universities: データベースエラー: AdmissionInfos: unsupported relations for schema Major
+ERROR: 2025/02/28 01:31:07 logger.go:53: Failed to fetch universities: データベースエラー: AdmissionInfos: unsupported relations for schema Major
+ERROR: 2025/02/28 01:31:11 logger.go:53: Failed to fetch universities: データベースエラー: AdmissionInfos: unsupported relations for schema Major
+ERROR: 2025/02/28 01:38:04 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 02:24:16 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 07:49:30 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 07:50:59 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 07:52:47 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 07:58:10 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 08:02:55 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 08:03:09 logger.go:53: Failed to fetch universities: データベースエラー: ERROR: column "display_order" does not exist (SQLSTATE 42703)
+ERROR: 2025/02/28 08:31:10 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: TestTypes: unsupported relations for schema AdmissionInfo
+ERROR: 2025/02/28 08:33:28 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: TestTypes: unsupported relations for schema AdmissionInfo
+ERROR: 2025/02/28 08:36:04 logger.go:53: Failed to fetch university with ID 1: database operation 'FindByID' failed: TestTypes: unsupported relations for schema AdmissionInfo
+ERROR: 2025/02/28 08:46:47 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
+ERROR: 2025/02/28 08:47:45 logger.go:53: Failed to fetch university with ID 1: University with ID 1 not found
+ERROR: 2025/02/28 20:38:05 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 20:38:05 logger.go:53: Failed to update department with ID 2: database operation 'UpdateDepartment' failed: ERROR: insert or update on table "departments" violates foreign key constraint "fk_universities_departments" (SQLSTATE 23503)
+ERROR: 2025/02/28 20:50:33 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 21:01:44 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 21:01:44 logger.go:53: Failed to update department with ID 2: database operation 'UpdateDepartment' failed: ERROR: insert or update on table "departments" violates foreign key constraint "fk_universities_departments" (SQLSTATE 23503)
+ERROR: 2025/02/28 21:16:24 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 21:26:22 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 21:36:03 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 21:44:07 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 21:49:28 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 21:53:57 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 22:06:25 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax
+ERROR: 2025/02/28 22:08:22 logger.go:53: Invalid schedule ID format: strconv.ParseUint: parsing "": invalid syntax

@@ -1,6 +1,9 @@
-import type { SubjectScore, SubjectMetrics } from '../../../../domain/subject/models/types';
-import type { ISubjectScoreCache } from '../../../../lib/domain/subject/ports/ISubjectScoreCache';
-import { SubjectError } from '../../../../domain/subject/errors/SubjectError';
+import type {
+  SubjectScore,
+  SubjectMetrics,
+} from "@/domain/subject/models/types";
+import type { ISubjectScoreCache } from "@/lib/domain/subject/ports/ISubjectScoreCache";
+import { SubjectError } from "@/domain/subject/errors/SubjectError";
 
 interface CacheEntry {
   scores: SubjectScore[];
@@ -42,7 +45,9 @@ export class SubjectScoreCache implements ISubjectScoreCache {
     return SubjectScoreCache.instance;
   }
 
-  get(key: string): { scores: SubjectScore[]; metrics: SubjectMetrics[] } | null {
+  get(
+    key: string
+  ): { scores: SubjectScore[]; metrics: SubjectMetrics[] } | null {
     const startTime = performance.now();
     this.stats.totalOperations++;
 
@@ -77,7 +82,7 @@ export class SubjectScoreCache implements ISubjectScoreCache {
         accessCount: 0,
       });
     } catch (error) {
-      throw SubjectError.cache('キャッシュの設定に失敗しました', { error });
+      throw SubjectError.cache("キャッシュの設定に失敗しました", { error });
     }
   }
 
@@ -104,7 +109,8 @@ export class SubjectScoreCache implements ISubjectScoreCache {
     const endTime = performance.now();
     const accessTime = endTime - startTime;
     this.stats.averageAccessTime =
-      (this.stats.averageAccessTime * (this.stats.totalOperations - 1) + accessTime) /
+      (this.stats.averageAccessTime * (this.stats.totalOperations - 1) +
+        accessTime) /
       this.stats.totalOperations;
   }
 

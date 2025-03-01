@@ -1,5 +1,6 @@
-import { z } from 'zod';
-import type { BaseSubjectScore, SubjectScores, ValidationResult } from '@/lib/types/models';
+import { z } from "zod";
+import type { BaseSubjectScore, SubjectScores } from "@/types/subject/score";
+import type { ValidationResult } from "@/types/validation";
 
 const SCORE_CONSTRAINTS = {
   MIN_SCORE: 0,
@@ -31,9 +32,9 @@ export const validateSubjectScore = (
         isValid: false,
         errors: [
           {
-            code: 'INVALID_SCORE',
-            message: '点数が無効です',
-            field: !isValidCommonTest ? 'commonTest' : 'secondTest',
+            code: "INVALID_SCORE",
+            message: "点数が無効です",
+            field: !isValidCommonTest ? "commonTest" : "secondTest",
           },
         ],
       };
@@ -49,9 +50,9 @@ export const validateSubjectScore = (
       return {
         isValid: false,
         errors: error.errors.map((err) => ({
-          code: 'VALIDATION_ERROR',
+          code: "VALIDATION_ERROR",
           message: err.message,
-          field: err.path.join('.'),
+          field: err.path.join("."),
         })),
       };
     }
@@ -59,8 +60,8 @@ export const validateSubjectScore = (
       isValid: false,
       errors: [
         {
-          code: 'UNKNOWN_ERROR',
-          message: '不明なエラーが発生しました',
+          code: "UNKNOWN_ERROR",
+          message: "不明なエラーが発生しました",
         },
       ],
     };
@@ -68,8 +69,10 @@ export const validateSubjectScore = (
 };
 
 // 全科目のスコアの検証
-export const validateSubjectScores = (subjects: SubjectScores): ValidationResult<SubjectScores> => {
-  const errors: ValidationResult<BaseSubjectScore>['errors'] = [];
+export const validateSubjectScores = (
+  subjects: SubjectScores
+): ValidationResult<SubjectScores> => {
+  const errors: ValidationResult<BaseSubjectScore>["errors"] = [];
   const validatedSubjects: Partial<SubjectScores> = {};
 
   for (const [subject, score] of Object.entries(subjects)) {
@@ -88,7 +91,8 @@ export const validateSubjectScores = (subjects: SubjectScores): ValidationResult
 
   return {
     isValid: errors.length === 0,
-    data: errors.length === 0 ? (validatedSubjects as SubjectScores) : undefined,
+    data:
+      errors.length === 0 ? (validatedSubjects as SubjectScores) : undefined,
     errors,
   };
 };

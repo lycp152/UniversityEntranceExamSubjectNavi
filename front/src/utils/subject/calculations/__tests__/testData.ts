@@ -1,4 +1,4 @@
-import { SubjectScores } from '@/lib/types/models';
+import { SubjectScores } from "@/types/subject/score";
 
 export interface TestScores {
   subjects: SubjectScores;
@@ -18,12 +18,30 @@ export interface TestScores {
 
 export const testData: TestScores = {
   subjects: {
-    英語R: { commonTest: 100, secondTest: 200, maxCommonTest: 200, maxSecondTest: 300 },
-    英語L: { commonTest: 50, secondTest: 150, maxCommonTest: 100, maxSecondTest: 200 },
-    数学: { commonTest: 200, secondTest: 300, maxCommonTest: 200, maxSecondTest: 400 },
-    国語: { commonTest: 0, secondTest: 0, maxCommonTest: 200, maxSecondTest: 200 },
-    理科: { commonTest: 0, secondTest: 0, maxCommonTest: 200, maxSecondTest: 200 },
-    地歴公: { commonTest: 0, secondTest: 0, maxCommonTest: 100, maxSecondTest: 100 },
+    英語R: {
+      commonTest: 100,
+      secondTest: 200,
+    },
+    英語L: {
+      commonTest: 50,
+      secondTest: 150,
+    },
+    数学: {
+      commonTest: 200,
+      secondTest: 300,
+    },
+    国語: {
+      commonTest: 0,
+      secondTest: 0,
+    },
+    理科: {
+      commonTest: 0,
+      secondTest: 0,
+    },
+    地歴公: {
+      commonTest: 0,
+      secondTest: 0,
+    },
   },
   totals: {
     all: 1000, // (100 + 200) + (50 + 150) + (200 + 300)

@@ -1,4 +1,4 @@
-import { ValidationResult } from "../types/validation";
+import { ValidationResult } from "@/components/features/charts/subject/donut/types/validation";
 import {
   ValidationMetadata,
   ValidationErrorCodes,

@@ -1,6 +1,10 @@
-import { useState, useCallback } from 'react';
-import type { SubjectScore, SubjectMetrics, SubjectValidationError } from '../../types/domain';
-import { ScoreServiceFactory } from '../../../../factories/subject/ScoreServiceFactory';
+import { useState, useCallback } from "react";
+import type {
+  SubjectScore,
+  SubjectMetrics,
+  SubjectValidationError,
+} from "../../types/domain";
+import { ScoreServiceFactory } from "../../../../factories/subject/ScoreServiceFactory";
 
 interface UseSubjectScoresResult {
   scores: SubjectScore[];
@@ -42,10 +46,10 @@ export const useSubjectScores = (): UseSubjectScoresResult => {
       setError(null);
     } catch (err) {
       setError({
-        code: 'CALCULATION_ERROR',
-        message: '計算中にエラーが発生しました',
-        field: 'scores',
-        severity: 'error',
+        code: "CALCULATION_ERROR",
+        message: "計算中にエラーが発生しました",
+        field: "scores",
+        severity: "error",
       });
     }
   }, [scores, scoreService]);

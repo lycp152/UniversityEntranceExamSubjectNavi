@@ -1,44 +1,52 @@
-import { SubjectScores } from '@/lib/types/models';
-import { calculateTotalScore, calculateTestTypeTotal, calculatePercentage } from '../base';
-import { testData } from './testData';
+import { describe, it, expect } from "vitest";
+import { SubjectScores, TestType, TEST_TYPES } from "@/types/subject/score";
+import {
+  calculateTotalScore,
+  calculateTestTypeTotal,
+  calculatePercentage,
+} from "../base";
+import { testData } from "./testData";
 
-describe('base calculations', () => {
-  describe('calculateTotalScore', () => {
-    it('全科目の合計点を正しく計算する', () => {
+describe("base calculations", () => {
+  describe("calculateTotalScore", () => {
+    it("全科目の合計点を正しく計算する", () => {
       const result = calculateTotalScore(testData.subjects);
       expect(result).toBe(testData.totals.all);
     });
 
-    it('空のオブジェクトの場合は0を返す', () => {
+    it("空のオブジェクトの場合は0を返す", () => {
       const result = calculateTotalScore({} as SubjectScores);
       expect(result).toBe(0);
     });
   });
 
-  describe('calculateTestTypeTotal', () => {
+  describe("calculateTestTypeTotal", () => {
     it.each([
-      ['commonTest', testData.totals.commonTest],
-      ['secondTest', testData.totals.secondTest],
-    ])('%sの合計点を正しく計算する', (testType, expected) => {
+      [TEST_TYPES.COMMON, testData.totals.commonTest],
+      [TEST_TYPES.INDIVIDUAL, testData.totals.secondTest],
+    ])("%sの合計点を正しく計算する", (testType, expected) => {
       const result = calculateTestTypeTotal(
         testData.subjects,
-        testType as 'commonTest' | 'secondTest'
+        testType as TestType
       );
       expect(result).toBe(expected);
     });
 
-    it('空のオブジェクトの場合は0を返す', () => {
-      const result = calculateTestTypeTotal({} as SubjectScores, 'commonTest');
+    it("空のオブジェクトの場合は0を返す", () => {
+      const result = calculateTestTypeTotal(
+        {} as SubjectScores,
+        TEST_TYPES.COMMON
+      );
       expect(result).toBe(0);
     });
   });
 
-  describe('calculatePercentage', () => {
+  describe("calculatePercentage", () => {
     it.each([
       [25, 100, 25],
       [33, 100, 33],
       [25, 0, 0],
-    ])('値: %i, 合計: %i の場合、%i%を返す', (value, total, expected) => {
+    ])("値: %i, 合計: %i の場合、%i%を返す", (value, total, expected) => {
       const result = calculatePercentage(value, total);
       expect(result).toBe(expected);
     });

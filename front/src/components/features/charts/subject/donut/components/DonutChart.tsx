@@ -6,7 +6,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { SubjectScore } from "";
+import { SubjectScore } from "@/types/subject/score";
 import CustomLabel from "./CustomLabel";
 import Patterns from "@/components/features/charts/subject/donut/patterns";
 import {

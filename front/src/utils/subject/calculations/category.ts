@@ -1,6 +1,10 @@
-import { SubjectScores, BaseSubjectScore } from "@/lib/types/models";
+import {
+  SubjectScores,
+  BaseSubjectScore,
+  TestType,
+  TEST_TYPES,
+} from "@/types/subject/score";
 import { calculateTestTypeTotal } from "./base";
-import { TestType } from "@/types/subject/score";
 
 /**
  * 特定のカテゴリーの合計点を計算する
@@ -39,7 +43,7 @@ export const calculateCategoryTotal = (
   }
 
   return (
-    calculateTestTypeTotal(categorySubjects, "commonTest") +
-    calculateTestTypeTotal(categorySubjects, "secondTest")
+    calculateTestTypeTotal(categorySubjects, TEST_TYPES.COMMON) +
+    calculateTestTypeTotal(categorySubjects, TEST_TYPES.INDIVIDUAL)
   );
 };

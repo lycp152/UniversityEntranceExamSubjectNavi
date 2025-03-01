@@ -1,8 +1,12 @@
 import type { DepartmentRowProps } from "@/lib/types/university/list";
-import { EditButtons } from "@/components/common/EditButtons";
+import { EditButtons } from "@/components/features/university/buttons/EditButtons";
 import { DepartmentInfo } from "../department/info";
 import { ExamSections } from "@/components/features/exam/sections/ExamSections";
-import type { APIExamInfo as AdmissionInfo } from "@/lib/types/university/api";
+import type {
+  APIExamInfo,
+  APITestType,
+  APISubject,
+} from "@/lib/types/university/api";
 
 export const DepartmentRow = ({
   university,
@@ -17,9 +21,17 @@ export const DepartmentRow = ({
   onSubjectNameChange,
 }: DepartmentRowProps) => {
   const major = department.majors[0];
-  const admissionInfo = major?.exam_infos[0];
+  const admissionSchedule = major?.admissionSchedules?.[0];
+  const admissionInfo = admissionSchedule?.admissionInfos?.[0];
 
-  if (!major || !admissionInfo) return null;
+  console.log("DepartmentRow Data:", {
+    department,
+    major,
+    admissionSchedule,
+    admissionInfo,
+  });
+
+  if (!major || !admissionSchedule || !admissionInfo) return null;
 
   const handleScoreChange = (
     subjectId: number,
@@ -27,10 +39,44 @@ export const DepartmentRow = ({
     isCommon: boolean
   ) => onScoreChange(university.id, department.id, subjectId, value, isCommon);
 
+  // Convert TestType and Subject to their API counterparts
+  const mappedTestTypes: APITestType[] = admissionSchedule.testTypes.map(
+    (testType) => ({
+      id: testType.id,
+      admission_schedule_id: testType.admissionScheduleId,
+      name: testType.name,
+      subjects: testType.subjects.map((subject) => ({
+        id: subject.id,
+        test_type_id: testType.id,
+        name: subject.name,
+        score: subject.maxScore || 0,
+        percentage: subject.weight || 0,
+        display_order: 0,
+        created_at: subject.createdAt.toISOString(),
+        updated_at: subject.updatedAt.toISOString(),
+      })) as APISubject[],
+      created_at: testType.createdAt.toISOString(),
+      updated_at: testType.updatedAt.toISOString(),
+    })
+  );
+
+  const mappedAdmissionInfo: APIExamInfo & { testTypes?: APITestType[] } = {
+    id: admissionInfo.id,
+    major_id: admissionInfo.majorId,
+    enrollment: admissionInfo.enrollment,
+    academic_year: admissionInfo.academicYear,
+    valid_from: admissionInfo.validFrom,
+    valid_until: admissionInfo.validUntil,
+    status: admissionInfo.status,
+    created_at: admissionInfo.created_at,
+    updated_at: admissionInfo.updated_at,
+    testTypes: mappedTestTypes,
+  };
+
   return (
     <div className="px-4 py-3 hover:bg-gray-50 transition-colors">
       <div className="flex items-start min-w-max">
-        <div className="px-3 flex items-center h-full">
+        <div className="flex-shrink-0 pr-4">
           <EditButtons
             isEditing={isEditing}
             onEdit={() => onEdit(university, department)}
@@ -48,7 +94,7 @@ export const DepartmentRow = ({
             }
           />
           <ExamSections
-            admissionInfo={admissionInfo as unknown as AdmissionInfo}
+            admissionInfo={mappedAdmissionInfo}
             isEditing={isEditing}
             onScoreChange={handleScoreChange}
             onAddSubject={onAddSubject}

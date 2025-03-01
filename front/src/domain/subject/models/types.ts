@@ -1,5 +1,8 @@
-import type { TestTypeName } from '@/lib/types/university/university';
-import type { SubjectName, SubjectCategory } from '../../../constants/subject/subjects';
+import type { TestTypeName } from "@/lib/types/university/university";
+import type {
+  SubjectName,
+  SubjectCategory,
+} from "@/lib/constants/subject/subjects";
 
 // 基本的なスコア型
 export interface BaseScore {
@@ -45,7 +48,7 @@ export interface ValidationError {
   readonly code: string;
   readonly message: string;
   readonly field: string;
-  readonly severity: 'error' | 'warning' | 'info';
+  readonly severity: "error" | "warning" | "info";
   readonly context?: Record<string, unknown>;
 }
 

@@ -1,6 +1,12 @@
-import { Department, University } from "@/lib/types/university";
+import {
+  Department,
+  University,
+  Subject,
+  TestType,
+} from "@/lib/types/university";
 import { DepartmentInfo } from "../../university/department/info";
 import { ExamSection } from "../sections/ExamSection";
+import { APISubject, APITestType } from "@/lib/types/university/api";
 
 interface ExamTableProps {
   departments: Department[];
@@ -15,6 +21,26 @@ interface ExamTableProps {
     value: number
   ) => void;
 }
+
+const transformToAPISubject = (subject: Subject): APISubject => ({
+  id: subject.id,
+  test_type_id: subject.testTypeId,
+  name: subject.name,
+  score: subject.maxScore,
+  percentage: subject.weight,
+  display_order: 0,
+  created_at: subject.createdAt.toISOString(),
+  updated_at: subject.updatedAt.toISOString(),
+});
+
+const transformToAPITestType = (testType: TestType): APITestType => ({
+  id: testType.id,
+  admission_schedule_id: testType.admissionScheduleId,
+  name: testType.name,
+  subjects: testType.subjects.map(transformToAPISubject),
+  created_at: testType.createdAt.toISOString(),
+  updated_at: testType.updatedAt.toISOString(),
+});
 
 export const ExamTable = ({
   departments,
@@ -44,11 +70,26 @@ export const ExamTable = ({
       {departments.map((department) => {
         const university = getUniversity(department.id);
         const major = department.majors[0];
-        const examInfo = major?.examInfos[0];
+        const schedule = major?.admissionSchedules?.[0];
+        const examInfo = schedule?.admissionInfos?.[0];
+        const commonType = schedule?.testTypes?.find((t) => t.name === "共通");
+        const secondaryType = schedule?.testTypes?.find(
+          (t) => t.name === "二次"
+        );
 
-        if (!university || !major || !examInfo) {
+        if (
+          !university ||
+          !major ||
+          !schedule ||
+          !examInfo ||
+          !commonType ||
+          !secondaryType
+        ) {
           return null;
         }
+
+        const commonApiType = transformToAPITestType(commonType);
+        const secondaryApiType = transformToAPITestType(secondaryType);
 
         return (
           <div
@@ -62,14 +103,14 @@ export const ExamTable = ({
               onInfoChange={handleInfoChange(department.id)}
             />
             <ExamSection
-              subjects={examInfo.subjects}
-              type="共通"
+              subjects={commonApiType.subjects}
+              type={commonApiType}
               isEditing={isEditing}
               onScoreChange={handleScoreChange(department.id)}
             />
             <ExamSection
-              subjects={examInfo.subjects}
-              type="二次"
+              subjects={secondaryApiType.subjects}
+              type={secondaryApiType}
               isEditing={isEditing}
               onScoreChange={handleScoreChange(department.id)}
             />

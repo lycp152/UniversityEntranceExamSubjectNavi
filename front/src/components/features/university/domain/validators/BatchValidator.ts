@@ -1,5 +1,5 @@
-import { ValidationError } from './ValidationError';
-import { ValidationCategory, ValidationSeverity } from './ValidationErrorTypes';
+import { ValidationError } from "./ValidationError";
+import { ValidationCategory, ValidationSeverity } from "./ValidationErrorTypes";
 
 interface BatchValidationResult<T> {
   item: T;
@@ -38,6 +38,55 @@ export class BatchValidator {
     batchSize: 5,
   };
 
+  private static handleValidationError(
+    error: unknown,
+    item: unknown,
+    processingTime: number,
+    stopOnFirstError: boolean
+  ): BatchValidationResult<unknown> {
+    if (error instanceof ValidationError) {
+      if (stopOnFirstError) {
+        throw error;
+      }
+      return { item, errors: [error], processingTime };
+    }
+
+    if (error instanceof Array) {
+      const validationErrors = error.map((err) =>
+        err instanceof ValidationError
+          ? err
+          : new ValidationError("バリデーションエラー", [
+              {
+                field: "unknown",
+                message: err.message || "不明なエラー",
+                category: ValidationCategory.SYSTEM,
+                severity: ValidationSeverity.ERROR,
+              },
+            ])
+      );
+      if (stopOnFirstError) {
+        throw validationErrors[0];
+      }
+      return { item, errors: validationErrors, processingTime };
+    }
+
+    const validationError = new ValidationError(
+      "バリデーション中に予期せぬエラーが発生しました",
+      [
+        {
+          field: "unknown",
+          message: error instanceof Error ? error.message : "不明なエラー",
+          category: ValidationCategory.SYSTEM,
+          severity: ValidationSeverity.ERROR,
+        },
+      ]
+    );
+    if (stopOnFirstError) {
+      throw validationError;
+    }
+    return { item, errors: [validationError], processingTime };
+  }
+
   static async validateBatch<T>(
     items: T[],
     validator: (item: T) => Promise<void> | void,
@@ -63,45 +112,13 @@ export class BatchValidator {
           results.push({ item, errors: [], processingTime });
         } catch (error) {
           const processingTime = Date.now() - itemStartTime;
-          if (error instanceof ValidationError) {
-            results.push({ item, errors: [error], processingTime });
-            if (mergedOptions.stopOnFirstError) {
-              throw error;
-            }
-          } else if (error instanceof Array) {
-            const validationErrors = error.map((err) =>
-              err instanceof ValidationError
-                ? err
-                : new ValidationError('バリデーションエラー', [
-                    {
-                      field: 'unknown',
-                      message: err.message || '不明なエラー',
-                      category: ValidationCategory.SYSTEM,
-                      severity: ValidationSeverity.ERROR,
-                    },
-                  ])
-            );
-            results.push({ item, errors: validationErrors, processingTime });
-            if (mergedOptions.stopOnFirstError) {
-              throw validationErrors[0];
-            }
-          } else {
-            const validationError = new ValidationError(
-              'バリデーション中に予期せぬエラーが発生しました',
-              [
-                {
-                  field: 'unknown',
-                  message: error instanceof Error ? error.message : '不明なエラー',
-                  category: ValidationCategory.SYSTEM,
-                  severity: ValidationSeverity.ERROR,
-                },
-              ]
-            );
-            results.push({ item, errors: [validationError], processingTime });
-            if (mergedOptions.stopOnFirstError) {
-              throw validationError;
-            }
-          }
+          const result = this.handleValidationError(
+            error,
+            item,
+            processingTime,
+            mergedOptions.stopOnFirstError!
+          );
+          results.push(result as BatchValidationResult<T>);
         }
       });
 
@@ -113,7 +130,7 @@ export class BatchValidator {
         if (mergedOptions.adaptiveBatchSize) {
           this.updateMetrics(results, chunkProcessingTime, chunk.length);
         }
-      } catch (error) {
+      } catch {
         if (mergedOptions.stopOnFirstError) {
           break;
         }
@@ -124,7 +141,9 @@ export class BatchValidator {
     return results;
   }
 
-  private static calculateOptimalBatchSize(options: BatchValidationOptions): number {
+  private static calculateOptimalBatchSize(
+    options: BatchValidationOptions
+  ): number {
     if (!options.adaptiveBatchSize) {
       return options.maxConcurrent!;
     }
@@ -132,7 +151,10 @@ export class BatchValidator {
     // メトリクスに基づいて最適なバッチサイズを計算
     const baseSize = options.maxConcurrent!;
     const successFactor = Math.min(this.metrics.successRate * 1.5, 1);
-    const timingFactor = Math.max(1 - this.metrics.averageProcessingTime / options.timeoutMs!, 0.5);
+    const timingFactor = Math.max(
+      1 - this.metrics.averageProcessingTime / options.timeoutMs!,
+      0.5
+    );
 
     return Math.max(Math.floor(baseSize * successFactor * timingFactor), 1);
   }
@@ -147,8 +169,12 @@ export class BatchValidator {
 
     this.metrics = {
       totalProcessingTime: this.metrics.totalProcessingTime + processingTime,
-      averageProcessingTime: (this.metrics.averageProcessingTime + processingTime / batchSize) / 2,
-      maxProcessingTime: Math.max(this.metrics.maxProcessingTime, processingTime),
+      averageProcessingTime:
+        (this.metrics.averageProcessingTime + processingTime / batchSize) / 2,
+      maxProcessingTime: Math.max(
+        this.metrics.maxProcessingTime,
+        processingTime
+      ),
       successRate: (this.metrics.successRate + newSuccessRate) / 2,
       batchSize: Math.round((this.metrics.batchSize + batchSize) / 2),
     };
@@ -177,7 +203,11 @@ export class BatchValidator {
 
   private static createTimeout(ms: number): Promise<never> {
     return new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`バリデーションがタイムアウトしました (${ms}ms)`)), ms)
+      setTimeout(
+        () =>
+          reject(new Error(`バリデーションがタイムアウトしました (${ms}ms)`)),
+        ms
+      )
     );
   }
 
@@ -215,7 +245,7 @@ export class BatchValidator {
         for (const error of result.errors) {
           const details = error.details || [];
           for (const detail of details) {
-            const field = detail.field || 'unknown';
+            const field = detail.field ?? "unknown";
             summary.errors[field] = (summary.errors[field] || 0) + 1;
           }
         }

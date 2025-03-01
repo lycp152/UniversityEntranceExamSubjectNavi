@@ -1,5 +1,6 @@
 import type { ExamSectionsProps } from "@/lib/types/exam/sections";
 import { ExamSection } from "@/components/features/exam/sections/ExamSection";
+import type { APITestType } from "@/lib/types/university/api";
 
 export const ExamSections = ({
   admissionInfo,
@@ -8,14 +9,11 @@ export const ExamSections = ({
   onSubjectNameChange,
   onScoreChange,
 }: ExamSectionsProps) => {
-  const firstAdmissionSchedule = admissionInfo.admissionSchedules[0];
-  if (!firstAdmissionSchedule) return null;
-
-  const commonType = firstAdmissionSchedule.test_types.find(
-    (t) => t.name === "共通"
+  const commonType = admissionInfo.testTypes?.find(
+    (t: APITestType) => t.name === "共通"
   );
-  const secondaryType = firstAdmissionSchedule.test_types.find(
-    (t) => t.name === "二次"
+  const secondaryType = admissionInfo.testTypes?.find(
+    (t: APITestType) => t.name === "二次"
   );
 
   return (

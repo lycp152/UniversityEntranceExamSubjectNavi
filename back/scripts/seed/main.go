@@ -148,113 +148,122 @@ func main() {
 								Version: 1,
 							},
 							Name: "医学科",
-							AdmissionInfos: []models.AdmissionInfo{
+							AdmissionSchedules: []models.AdmissionSchedule{
 								{
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									Enrollment:   100,
-									AcademicYear: currentYear,
-									ValidFrom:    validFrom,
-									ValidUntil:   validUntil,
-									Status:       "published",
-									CreatedBy:    "system",
-									UpdatedBy:    "system",
-									AdmissionSchedules: []models.AdmissionSchedule{
+									MajorID:      1,
+									Name:         "前期",
+									DisplayOrder: 1,
+									AdmissionInfos: []models.AdmissionInfo{
 										{
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											Name:         "前期",
-											DisplayOrder: 1,
-											TestTypes: []models.TestType{
+											AdmissionScheduleID: 1,
+											Enrollment:          100,
+											AcademicYear:        currentYear,
+											ValidFrom:           validFrom,
+											ValidUntil:          validUntil,
+											Status:              "published",
+										},
+									},
+									TestTypes: []models.TestType{
+										{
+											BaseModel: models.BaseModel{
+												Version: 1,
+											},
+											AdmissionScheduleID: 1,
+											Name:                "共通",
+											Subjects: []models.Subject{
 												{
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name: "共通",
-													Subjects: []models.Subject{
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "英語L",
-															Score:        50,
-															Percentage:   5.88,
-															DisplayOrder: 1,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "英語R",
-															Score:        50,
-															Percentage:   5.88,
-															DisplayOrder: 2,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "数学",
-															Score:        100,
-															Percentage:   11.76,
-															DisplayOrder: 3,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "国語",
-															Score:        100,
-															Percentage:   11.76,
-															DisplayOrder: 4,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "理科",
-															Score:        200,
-															Percentage:   23.53,
-															DisplayOrder: 5,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "地歴公",
-															Score:        50,
-															Percentage:   5.88,
-															DisplayOrder: 6,
-														},
-													},
+													TestTypeID:    1,
+													Name:         "英語L",
+													Score:        50,
+													Percentage:   5.88,
+													DisplayOrder: 1,
 												},
 												{
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name: "二次",
-													Subjects: []models.Subject{
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "英語R",
-															Score:        150,
-															Percentage:   17.65,
-															DisplayOrder: 1,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "数学",
-															Score:        150,
-															Percentage:   17.65,
-															DisplayOrder: 2,
-														},
+													TestTypeID:    1,
+													Name:         "英語R",
+													Score:        50,
+													Percentage:   5.88,
+													DisplayOrder: 2,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
 													},
+													TestTypeID:    1,
+													Name:         "数学",
+													Score:        100,
+													Percentage:   11.76,
+													DisplayOrder: 3,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													TestTypeID:    1,
+													Name:         "国語",
+													Score:        100,
+													Percentage:   11.76,
+													DisplayOrder: 4,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													TestTypeID:    1,
+													Name:         "理科",
+													Score:        200,
+													Percentage:   23.53,
+													DisplayOrder: 5,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													TestTypeID:    1,
+													Name:         "地歴公",
+													Score:        50,
+													Percentage:   5.88,
+													DisplayOrder: 6,
+												},
+											},
+										},
+										{
+											BaseModel: models.BaseModel{
+												Version: 1,
+											},
+											AdmissionScheduleID: 1,
+											Name:                "二次",
+											Subjects: []models.Subject{
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													TestTypeID:    2,
+													Name:         "英語R",
+													Score:        150,
+													Percentage:   17.65,
+													DisplayOrder: 1,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "数学",
+													Score:        150,
+													Percentage:   17.65,
+													DisplayOrder: 2,
 												},
 											},
 										},
@@ -283,149 +292,151 @@ func main() {
 								Version: 1,
 							},
 							Name: "機械工学科",
-							AdmissionInfos: []models.AdmissionInfo{
+							AdmissionSchedules: []models.AdmissionSchedule{
 								{
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									Enrollment:   150,
-									AcademicYear: currentYear,
-									ValidFrom:    validFrom,
-									ValidUntil:   validUntil,
-									Status:       "published",
-									CreatedBy:    "system",
-									UpdatedBy:    "system",
-									AdmissionSchedules: []models.AdmissionSchedule{
+									MajorID:      2,
+									Name:         "前期",
+									DisplayOrder: 1,
+									AdmissionInfos: []models.AdmissionInfo{
 										{
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											Name:         "後期",
-											DisplayOrder: 3,
-											TestTypes: []models.TestType{
+											AdmissionScheduleID: 2,
+											Enrollment:          150,
+											AcademicYear:        currentYear,
+											ValidFrom:           validFrom,
+											ValidUntil:          validUntil,
+											Status:              "published",
+										},
+									},
+									TestTypes: []models.TestType{
+										{
+											BaseModel: models.BaseModel{
+												Version: 1,
+											},
+											AdmissionScheduleID: 2,
+											Name:                "共通",
+											Subjects: []models.Subject{
 												{
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name: "共通",
-													Subjects: []models.Subject{
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "英語L",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 1,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "英語R",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 2,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "数学",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 3,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "国語",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 4,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "理科",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 5,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "地歴公",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 6,
-														},
-													},
+													Name:         "英語L",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 1,
 												},
 												{
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name: "二次",
-													Subjects: []models.Subject{
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "英語L",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 1,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "英語R",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 2,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "数学",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 3,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "国語",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 4,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "理科",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 5,
-														},
-														{
-															BaseModel: models.BaseModel{
-																Version: 1,
-															},
-															Name:         "地歴公",
-															Score:        100,
-															Percentage:   8.33,
-															DisplayOrder: 6,
-														},
+													Name:         "英語R",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 2,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
 													},
+													Name:         "数学",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 3,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "国語",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 4,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "理科",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 5,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "地歴公",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 6,
+												},
+											},
+										},
+										{
+											BaseModel: models.BaseModel{
+												Version: 1,
+											},
+											AdmissionScheduleID: 2,
+											Name:                "二次",
+											Subjects: []models.Subject{
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "英語L",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 1,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "英語R",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 2,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "数学",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 3,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "国語",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 4,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "理科",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 5,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "地歴公",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 6,
 												},
 											},
 										},

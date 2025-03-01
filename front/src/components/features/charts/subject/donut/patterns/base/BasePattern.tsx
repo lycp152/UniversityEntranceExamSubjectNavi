@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { COLORS } from "@/lib/constants/subject";
 import { PATTERN_DIMENSIONS } from "@/components/features/charts/subject/donut/patterns/constants/dimensions";
-import { BasePatternProps } from "";
+import { BasePatternProps } from "../types";
 
 const BasePattern: FC<BasePatternProps> = ({
   id,

@@ -39,43 +39,36 @@ export interface Department extends BaseModel {
  * 学科の型定義
  */
 export interface Major extends BaseModel {
-  id: number;
   name: string;
   departmentId: number;
-  examInfos: AdmissionInfo[];
-  createdAt: Date;
-  updatedAt: Date;
+  admissionSchedules: AdmissionSchedule[];
 }
 
 /**
  * 入試情報の型定義
  */
 export interface AdmissionInfo extends BaseModel {
-  id: number;
   majorId: number;
   enrollment: number;
   academicYear: number;
   validFrom: string;
   validUntil: string;
   status: string;
-  admissionSchedules: AdmissionSchedule[];
-  createdBy?: string;
-  updatedBy?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 /**
  * 入試日程の型定義
  */
 export interface AdmissionSchedule extends BaseModel {
-  id: number;
-  examInfoId: number;
+  majorId: number;
   name: string;
   displayOrder: number;
   testTypes: TestType[];
+  admissionInfos: AdmissionInfo[];
   startDate: Date;
   endDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
   status: AdmissionScheduleStatus;
 }
 

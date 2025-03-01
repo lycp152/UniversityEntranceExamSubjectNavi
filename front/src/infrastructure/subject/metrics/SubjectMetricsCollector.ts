@@ -2,10 +2,10 @@ import type {
   SubjectScore,
   SubjectMetrics,
   CalculationResult,
-} from "../../../../domain/subject/models/types";
-import type { ISubjectMetricsCollector } from "../../../../lib/domain/subject/ports/ISubjectMetricsCollector";
-import { SubjectError } from "../../../../domain/subject/errors/SubjectError";
-import { Subject } from "@/lib/types/subject";
+} from "@/domain/subject/models/types";
+import type { ISubjectMetricsCollector } from "@/lib/domain/subject/ports/ISubjectMetricsCollector";
+import { SubjectError } from "@/domain/subject/errors/SubjectError";
+import { Subject } from "@/domain/subject/models/Subject";
 
 interface MetricsEntry {
   metrics: SubjectMetrics[];
@@ -60,6 +60,7 @@ export class SubjectMetricsCollector implements ISubjectMetricsCollector {
         metadata: {
           processingTime,
           cacheHit: false,
+          calculationMethod: "standard",
         },
       };
     } catch (error) {
@@ -80,6 +81,7 @@ export class SubjectMetricsCollector implements ISubjectMetricsCollector {
       metadata: {
         processingTime: entry.processingTime,
         cacheHit: true,
+        calculationMethod: "cached",
       },
     };
   }

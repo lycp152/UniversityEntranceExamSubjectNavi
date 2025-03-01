@@ -84,9 +84,14 @@ func TestInputValidation(t *testing.T) {
 						Majors: []models.Major{
 							{
 								Name: "テスト学科",
-								AdmissionInfos: []models.AdmissionInfo{
+								AdmissionSchedules: []models.AdmissionSchedule{
 									{
-										Enrollment: -1,
+										Name: "前期",
+										AdmissionInfos: []models.AdmissionInfo{
+											{
+												Enrollment: -1,
+											},
+										},
 									},
 								},
 							},
@@ -109,21 +114,21 @@ func TestInputValidation(t *testing.T) {
 						Majors: []models.Major{
 							{
 								Name: "テスト学科",
-								AdmissionInfos: []models.AdmissionInfo{
+								AdmissionSchedules: []models.AdmissionSchedule{
 									{
-										Enrollment: 100,
-										AdmissionSchedules: []models.AdmissionSchedule{
+										Name: "前期",
+										AdmissionInfos: []models.AdmissionInfo{
 											{
-												Name: "前期",
-												TestTypes: []models.TestType{
+												Enrollment: 100,
+											},
+										},
+										TestTypes: []models.TestType{
+											{
+												Name: "一般選抜",
+												Subjects: []models.Subject{
 													{
-														Name: "一般選抜",
-														Subjects: []models.Subject{
-															{
-																Name:  "テスト科目",
-																Score: -10,
-															},
-														},
+														Name:  "テスト科目",
+														Score: -10,
 													},
 												},
 											},

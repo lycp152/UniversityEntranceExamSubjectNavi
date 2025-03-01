@@ -25,30 +25,28 @@ func TestDataIntegrity(t *testing.T) {
 				Majors: []models.Major{
 					{
 						Name: "テスト学科",
-						AdmissionInfos: []models.AdmissionInfo{
+						AdmissionSchedules: []models.AdmissionSchedule{
 							{
-								Enrollment:   100,
-								AcademicYear: time.Now().Year(),
-								ValidFrom:    time.Now(),
-								ValidUntil:   time.Now().AddDate(1, 0, 0),
-								Status:       "draft",
-								CreatedBy:    "system",
-								UpdatedBy:    "system",
-								AdmissionSchedules: []models.AdmissionSchedule{
+								Name:         "前期",
+								DisplayOrder: 1,
+								AdmissionInfos: []models.AdmissionInfo{
 									{
-										Name:         "前期",
-										DisplayOrder: 1,
-										TestTypes: []models.TestType{
+										Enrollment:   100,
+										AcademicYear: time.Now().Year(),
+										ValidFrom:    time.Now(),
+										ValidUntil:   time.Now().AddDate(1, 0, 0),
+										Status:       "draft",
+									},
+								},
+								TestTypes: []models.TestType{
+									{
+										Name: "共通",
+										Subjects: []models.Subject{
 											{
-												Name: "共通",
-												Subjects: []models.Subject{
-													{
-														Name:         "数学",
-														Score:        200,
-														Percentage:   20.0,
-														DisplayOrder: 1,
-													},
-												},
+												Name:         "数学",
+												Score:        200,
+												Percentage:   20.0,
+												DisplayOrder: 1,
 											},
 										},
 									},
@@ -98,22 +96,22 @@ func TestDataIntegrity(t *testing.T) {
 	}
 
 	// 入試情報の検証
-	if len(major.AdmissionInfos) != 1 {
-		t.Fatalf("入試情報数が一致しません: got %v want 1", len(major.AdmissionInfos))
+	if len(major.AdmissionSchedules) != 1 {
+		t.Fatalf("入試スケジュール数が一致しません: got %v want 1", len(major.AdmissionSchedules))
 	}
 
-	info := major.AdmissionInfos[0]
-	if info.Enrollment != university.Departments[0].Majors[0].AdmissionInfos[0].Enrollment {
+	schedule := major.AdmissionSchedules[0]
+	info := schedule.AdmissionInfos[0]
+	if info.Enrollment != university.Departments[0].Majors[0].AdmissionSchedules[0].AdmissionInfos[0].Enrollment {
 		t.Errorf("募集人数が一致しません: got %v want %v", info.Enrollment,
-			university.Departments[0].Majors[0].AdmissionInfos[0].Enrollment)
+			university.Departments[0].Majors[0].AdmissionSchedules[0].AdmissionInfos[0].Enrollment)
 	}
 
 	// 科目情報の検証
-	schedule := info.AdmissionSchedules[0]
 	testType := schedule.TestTypes[0]
 	subject := testType.Subjects[0]
 
-	expectedSubject := university.Departments[0].Majors[0].AdmissionInfos[0].AdmissionSchedules[0].TestTypes[0].Subjects[0]
+	expectedSubject := university.Departments[0].Majors[0].AdmissionSchedules[0].TestTypes[0].Subjects[0]
 	if subject.Name != expectedSubject.Name {
 		t.Errorf("科目名が一致しません: got %v want %v", subject.Name, expectedSubject.Name)
 	}

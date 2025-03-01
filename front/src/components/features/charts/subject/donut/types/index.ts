@@ -9,3 +9,11 @@ export interface CustomLabelProps {
   displayName?: string;
   isRightChart: boolean;
 }
+
+export type SubjectCategory =
+  | "english"
+  | "math"
+  | "science"
+  | "japanese"
+  | "social"
+  | "other";

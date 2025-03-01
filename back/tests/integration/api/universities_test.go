@@ -43,30 +43,28 @@ func createTestData(db *gorm.DB) error {
 				Majors: []models.Major{
 					{
 						Name: "テスト学科",
-						AdmissionInfos: []models.AdmissionInfo{
+						AdmissionSchedules: []models.AdmissionSchedule{
 							{
-								Enrollment:   100,
-								AcademicYear: 2024,
-								ValidFrom:    time.Now(),
-								ValidUntil:   time.Now().AddDate(1, 0, 0),
-								Status:       "active",
-								CreatedBy:    "system",
-								UpdatedBy:    "system",
-								AdmissionSchedules: []models.AdmissionSchedule{
+								Name:         "前期",
+								DisplayOrder: 1,
+								AdmissionInfos: []models.AdmissionInfo{
 									{
-										Name:         "前期",
-										DisplayOrder: 1,
-										TestTypes: []models.TestType{
+										Enrollment:   100,
+										AcademicYear: 2024,
+										ValidFrom:    time.Now(),
+										ValidUntil:   time.Now().AddDate(1, 0, 0),
+										Status:       "active",
+									},
+								},
+								TestTypes: []models.TestType{
+									{
+										Name: "共通",
+										Subjects: []models.Subject{
 											{
-												Name: "共通",
-												Subjects: []models.Subject{
-													{
-														Name:         "テスト科目1",
-														Score:        80,
-														Percentage:   20.0,
-														DisplayOrder: 1,
-													},
-												},
+												Name:         "テスト科目1",
+												Score:        80,
+												Percentage:   20.0,
+												DisplayOrder: 1,
 											},
 										},
 									},

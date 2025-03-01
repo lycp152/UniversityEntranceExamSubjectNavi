@@ -1,6 +1,6 @@
-import type { SubjectScore, ValidationResult } from '../models/types';
-import { SubjectError } from '../errors/SubjectError';
-import { SCORE_CONSTRAINTS } from '../../../constants/subject/scores';
+import type { SubjectScore, ValidationResult } from "../models/types";
+import { SubjectError } from "../errors/SubjectError";
+import { SCORE_CONSTRAINTS } from "@/lib/constants/subject/scores";
 
 export class SubjectValidator {
   private static validateValue(value: number, maxValue: number): boolean {
@@ -12,7 +12,10 @@ export class SubjectValidator {
   }
 
   private static validateWeight(weight: number): boolean {
-    return weight >= SCORE_CONSTRAINTS.MIN_WEIGHT && weight <= SCORE_CONSTRAINTS.MAX_WEIGHT;
+    return (
+      weight >= SCORE_CONSTRAINTS.MIN_WEIGHT &&
+      weight <= SCORE_CONSTRAINTS.MAX_WEIGHT
+    );
   }
 
   validate(score: SubjectScore): ValidationResult {
@@ -22,23 +25,23 @@ export class SubjectValidator {
     try {
       if (!SubjectValidator.validateValue(score.value, score.maxValue)) {
         errors.push({
-          code: 'INVALID_VALUE',
-          message: '点数が有効範囲外です',
-          field: 'value',
-          severity: 'error' as const,
+          code: "INVALID_VALUE",
+          message: "点数が有効範囲外です",
+          field: "value",
+          severity: "error" as const,
         });
       }
-      validatedFields.push('value');
+      validatedFields.push("value");
 
       if (!SubjectValidator.validateWeight(score.weight)) {
         errors.push({
-          code: 'INVALID_WEIGHT',
-          message: '重みが有効範囲外です',
-          field: 'weight',
-          severity: 'error' as const,
+          code: "INVALID_WEIGHT",
+          message: "重みが有効範囲外です",
+          field: "weight",
+          severity: "error" as const,
         });
       }
-      validatedFields.push('weight');
+      validatedFields.push("weight");
 
       return {
         isValid: errors.length === 0,
@@ -49,7 +52,9 @@ export class SubjectValidator {
         },
       };
     } catch (error) {
-      throw SubjectError.validation('バリデーション中にエラーが発生しました', { error });
+      throw SubjectError.validation("バリデーション中にエラーが発生しました", {
+        error,
+      });
     }
   }
 

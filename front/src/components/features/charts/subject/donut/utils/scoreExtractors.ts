@@ -12,9 +12,8 @@ export const extractScores = (
   scores: { commonTest: number; secondTest: number },
   subjectName: string
 ): (SubjectScore | SubjectScoreError)[] => {
-  const normalizedSubjectName = subjectName.startsWith("英語")
-    ? "英語"
-    : (subjectName as SubjectName);
+  // 英語の場合はL/Rの接尾辞を保持
+  const normalizedSubjectName = subjectName as SubjectName;
 
   if (!scores) {
     return [

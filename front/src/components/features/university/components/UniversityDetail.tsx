@@ -1,4 +1,4 @@
-import { useUniversity } from "@/lib/hooks/university/useUniversities";
+import { useUniversity } from "@/hooks/university/useUniversities";
 import {
   Card,
   CardContent,

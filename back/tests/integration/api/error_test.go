@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 	"university-exam-api/internal/errors"
-	"university-exam-api/internal/interfaces/handlers"
+	"university-exam-api/internal/handlers"
 	"university-exam-api/internal/repositories"
 
 	"github.com/labstack/echo/v4"

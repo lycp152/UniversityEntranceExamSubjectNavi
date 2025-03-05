@@ -1,9 +1,6 @@
 import { FC, memo } from "react";
 import type { SubjectScores } from "@/lib/types/score";
-import type {
-  ScoreMetrics,
-  SubjectScoreDetail,
-} from "@/shared/lib/types/score";
+import type { ScoreMetrics, SubjectScoreDetail } from "@/types/score";
 import { TEST_TYPES } from "@/lib/types/score";
 
 interface ScoreTableBodyProps {

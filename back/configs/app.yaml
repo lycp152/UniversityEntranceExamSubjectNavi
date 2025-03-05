@@ -1,0 +1,22 @@
+server:
+  port: 8080
+  environment: development
+  timeout: 30s
+  allowed_origins:
+    - http://localhost:3000
+
+database:
+  max_connections: 100
+  idle_timeout: 10m
+  connection_timeout: 5s
+  schema: public
+
+security:
+  jwt_expiration: 24h
+  csrf_enabled: true
+  secure_cookie: false # development環境ではfalse
+
+logging:
+  level: debug
+  file_path: logs/app.log
+  format: json

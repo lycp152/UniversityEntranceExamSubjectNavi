@@ -1,6 +1,8 @@
 module university-exam-api
 
-go 1.21
+go 1.22.0
+
+toolchain go1.24.0
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1

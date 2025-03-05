@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"university-exam-api/internal/handlers"
 	"university-exam-api/internal/infrastructure/database"
-	"university-exam-api/internal/interfaces/handlers"
-	custommiddleware "university-exam-api/internal/interfaces/middleware"
+	custommiddleware "university-exam-api/internal/middleware"
 	"university-exam-api/internal/repositories"
 	"university-exam-api/pkg/logger"
 

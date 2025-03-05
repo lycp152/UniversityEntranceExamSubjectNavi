@@ -129,25 +129,6 @@ type Subject struct {
 	TestType      TestType  `json:"-" gorm:"foreignKey:TestTypeID"`
 }
 
-// DepartmentSubjects represents all subjects for a department (legacy table)
-type DepartmentSubjects struct {
-	gorm.Model
-	DepartmentID uint     `json:"department_id" gorm:"not null;index"`
-	Department   Department `json:"-" gorm:"foreignKey:DepartmentID"`
-
-	// 英語L
-	EnglishLCommonScore int     `json:"english_l_common_score" gorm:"not null;default:0"`
-	EnglishLCommonPercentage float64 `json:"english_l_common_percentage" gorm:"not null;default:0"`
-	EnglishLSecondaryScore int     `json:"english_l_secondary_score" gorm:"not null;default:0"`
-	EnglishLSecondaryPercentage float64 `json:"english_l_secondary_percentage" gorm:"not null;default:0"`
-
-	// 英語R
-	EnglishRCommonScore int     `json:"english_r_common_score" gorm:"not null;default:0"`
-	EnglishRCommonPercentage float64 `json:"english_r_common_percentage" gorm:"not null;default:0"`
-	EnglishRSecondaryScore int     `json:"english_r_secondary_score" gorm:"not null;default:0"`
-	EnglishRSecondaryPercentage float64 `json:"english_r_secondary_percentage" gorm:"not null;default:0"`
-}
-
 // TestEnv はテスト環境の設定を表現する構造体です
 type TestEnv struct {
 	DB        *gorm.DB

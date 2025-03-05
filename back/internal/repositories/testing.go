@@ -42,6 +42,13 @@ func SetupTestDB() *gorm.DB {
 		return nil
 	}
 
+	// マイグレーションを実行
+	if err := database.RunMigrations(db); err != nil {
+		log.Printf("マイグレーションに失敗: %v", err)
+		return nil
+	}
+
+	// 検索パスを設定
 	if err := db.Exec("SET search_path TO test_schema").Error; err != nil {
 		log.Printf("検索パスの設定に失敗: %v", err)
 		return nil
@@ -50,12 +57,6 @@ func SetupTestDB() *gorm.DB {
 	// データベースのエンコーディングを設定
 	if err := db.Exec("SET client_encoding TO 'UTF8'").Error; err != nil {
 		log.Printf("クライアントエンコーディングの設定に失敗: %v", err)
-		return nil
-	}
-
-	// マイグレーションを実行
-	if err := database.RunMigrations(db); err != nil {
-		log.Printf("マイグレーションに失敗: %v", err)
 		return nil
 	}
 
@@ -73,19 +74,34 @@ func createTestData(db *gorm.DB) (*models.University, error) {
 	validUntil := validFrom.AddDate(1, 0, 0)
 
 	university := &models.University{
+		BaseModel: models.BaseModel{
+			Version: 1,
+		},
 		Name: "テスト大学",
 		Departments: []models.Department{
 			{
+				BaseModel: models.BaseModel{
+					Version: 1,
+				},
 				Name: "テスト学部",
 				Majors: []models.Major{
 					{
+						BaseModel: models.BaseModel{
+							Version: 1,
+						},
 						Name: "テスト学科",
 						AdmissionSchedules: []models.AdmissionSchedule{
 							{
+								BaseModel: models.BaseModel{
+									Version: 1,
+								},
 								Name:         "前期",
 								DisplayOrder: 1,
 								AdmissionInfos: []models.AdmissionInfo{
 									{
+										BaseModel: models.BaseModel{
+											Version: 1,
+										},
 										Enrollment:   100,
 										AcademicYear: currentYear,
 										ValidFrom:    validFrom,
@@ -95,9 +111,15 @@ func createTestData(db *gorm.DB) (*models.University, error) {
 								},
 								TestTypes: []models.TestType{
 									{
+										BaseModel: models.BaseModel{
+											Version: 1,
+										},
 										Name: "共通",
 										Subjects: []models.Subject{
 											{
+												BaseModel: models.BaseModel{
+													Version: 1,
+												},
 												Name:         "数学",
 												Score:        200,
 												Percentage:   20.0,

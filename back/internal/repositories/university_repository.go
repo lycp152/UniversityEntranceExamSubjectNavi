@@ -118,8 +118,9 @@ func (r *universityRepository) getUniversityFromCache(id uint) (*models.Universi
 	cacheKey := fmt.Sprintf(cacheKeyUniversityFormat, id)
 	if cached, found := r.getFromCache(cacheKey); found {
 		logger.Info("Cache hit for FindByID: %d", id)
-		university := cached.(models.University)
-		return &university, true
+		if university, ok := cached.(*models.University); ok {
+			return university, true
+		}
 	}
 	return nil, false
 }
@@ -146,7 +147,7 @@ func (r *universityRepository) FindByID(id uint) (*models.University, error) {
 	}
 
 	cacheKey := fmt.Sprintf(cacheKeyUniversityFormat, id)
-	r.setCache(cacheKey, *university)
+	r.setCache(cacheKey, university)
 	logger.Info("Cached university with ID: %d", id)
 
 	return university, nil
@@ -166,8 +167,9 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 	err := r.db.Preload(preloadPath).
 		Where("universities.name LIKE ?", "%"+query+"%").
 		Or("departments.name LIKE ?", "%"+query+"%").
-		Or("departments.major LIKE ?", "%"+query+"%").
+		Or("majors.name LIKE ?", "%"+query+"%").
 		Joins("LEFT JOIN departments ON departments.university_id = universities.id").
+		Joins("LEFT JOIN majors ON majors.department_id = departments.id").
 		Group("universities.id").
 		Find(&universities).Error
 
@@ -192,10 +194,7 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 	}
 
 	var department models.Department
-	err := r.db.Preload("Subjects", func(db *gorm.DB) *gorm.DB {
-		return db.Order(displayOrderASC)
-	}).
-		Where("university_id = ? AND id = ?", universityID, departmentID).
+	err := r.db.Where("university_id = ? AND id = ?", universityID, departmentID).
 		First(&department).Error
 
 	if err != nil {

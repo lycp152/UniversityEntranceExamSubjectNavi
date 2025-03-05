@@ -1,37 +1,24 @@
-# ビルドステージ
+# Build stage
 FROM golang:1.21-alpine AS builder
-
-WORKDIR /app
-
-# 必要なパッケージをインストール
-RUN apk add --no-cache git
-
-# 依存関係をコピーしてダウンロード
+WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
-
-# ソースコードをコピー
 COPY . .
-
-# アプリケーションをビルド
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
 
-# 実行ステージ
-FROM alpine:3.21
-
+# Development stage
+FROM golang:1.21-alpine AS development
 WORKDIR /app
+RUN apk add --no-cache git
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+CMD ["go", "run", "./cmd/api/main.go"]
 
-# タイムゾーンデータをコピー
-COPY --from=builder /usr/local/go/lib/time/zoneinfo.zip /usr/local/go/lib/time/zoneinfo.zip
-
-# ビルドしたバイナリをコピー
-COPY --from=builder /app/main .
-COPY --from=builder /app/.env .
-
-# 必要な環境変数を設定
-ENV TZ=Asia/Tokyo
-ENV GO_ENVIRONMENT=production
-
-EXPOSE 8080
-
+# Production stage
+FROM alpine:3.19 AS production
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /build/main .
+COPY configs ./configs
 CMD ["./main"]

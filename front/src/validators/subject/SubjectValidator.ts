@@ -2,7 +2,7 @@ import { AdvancedValidationBuilder } from "@/components/features/university/doma
 import type { Score } from "@/types/subject/score";
 import type { ISubjectValidator } from "./ISubjectValidator";
 import { SCORE_CONSTRAINTS } from "@/lib/constants/subject/scores";
-import { SubjectError } from "../../errors/subject/SubjectError";
+import { SubjectError } from "@/lib/errors/subject/SubjectError";
 
 export class SubjectValidator implements ISubjectValidator {
   private readonly builder: AdvancedValidationBuilder<Score>;

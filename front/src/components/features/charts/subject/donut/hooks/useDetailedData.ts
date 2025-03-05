@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { Subject } from "@/lib/types/subject/subject";
-import { SUBJECT_DISPLAY_ORDER } from "@/shared/lib/constants/subjects";
+import { SUBJECT_DISPLAY_ORDER } from "@/lib/constants/subjects";
 import {
   ERROR_CODES,
   ERROR_MESSAGES,

@@ -1,4 +1,4 @@
-import { EXAM_TYPE_OPTIONS } from "@/shared/lib/constants/subjects";
+import { EXAM_TYPE_OPTIONS } from "@/lib/constants/subjects";
 import type { BaseSubjectScore } from "@/lib/types/score/score";
 import type { SubjectName } from "@/lib/constants/subject";
 import type { SubjectScoreError } from "@/components/features/charts/subject/donut/types/subjects";

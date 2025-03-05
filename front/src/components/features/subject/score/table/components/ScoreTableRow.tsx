@@ -1,6 +1,6 @@
 import { FC } from "react";
-import type { SubjectScores } from "@/shared/lib/types/score";
-import { TEST_TYPES } from "@/shared/lib/types/score";
+import type { SubjectScores } from "@/types/score";
+import { TEST_TYPES } from "@/types/score";
 
 interface ScoreTableRowProps {
   label: string;

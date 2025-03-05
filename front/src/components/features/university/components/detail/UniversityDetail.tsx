@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button/page";
-import { useUniversity } from "@/lib/hooks/university/useUniversities";
+import { useUniversity } from "@/hooks/university/useUniversities";
 import { UniversityDetailSkeleton } from "./UniversityDetailSkeleton";
 import { ErrorState } from "./ErrorState";
 import { UniversityInfoCard } from "./UniversityInfoCard";

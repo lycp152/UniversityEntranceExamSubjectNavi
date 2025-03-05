@@ -1,7 +1,7 @@
 import {
   SubjectScores as LibSubjectScores,
   BaseSubjectScore as LibBaseSubjectScore,
-} from "@/shared/lib/types/score";
+} from "@/types/score";
 
 export type TestType = "commonTest" | "secondTest";
 

@@ -1,8 +1,8 @@
-import { useUniversities } from '@/lib/hooks/university/useUniversities';
-import { UniversityListSkeleton } from './UniversityListSkeleton';
-import { ErrorState } from '../detail/ErrorState';
-import { UniversityCard } from './UniversityCard';
-import { UniversityErrorBoundary } from '../error/ErrorBoundary';
+import { useUniversities } from "@/hooks/university/useUniversities";
+import { UniversityListSkeleton } from "./UniversityListSkeleton";
+import { ErrorState } from "../detail/ErrorState";
+import { UniversityCard } from "./UniversityCard";
+import { UniversityErrorBoundary } from "../error/ErrorBoundary";
 
 const UniversityListContent = () => {
   const { data: universities, isLoading, error } = useUniversities();
@@ -23,7 +23,10 @@ const UniversityListContent = () => {
 
   if (!universities?.length) {
     return (
-      <ErrorState title="大学が見つかりません" message="現在、表示できる大学情報がありません。" />
+      <ErrorState
+        title="大学が見つかりません"
+        message="現在、表示できる大学情報がありません。"
+      />
     );
   }
 

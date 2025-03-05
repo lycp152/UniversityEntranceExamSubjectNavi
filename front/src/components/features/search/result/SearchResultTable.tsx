@@ -14,82 +14,103 @@ import { transformSubjectData } from "@/lib/utils/subject/transform";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorMessage } from "@/components/common/ErrorMessage";
 
+const processTestTypes = (
+  testType: APITestType,
+  apiUniversity: APIUniversity,
+  department: APIDepartment,
+  major: APIMajor,
+  schedule: APIAdmissionSchedule
+) => {
+  if (!testType?.subjects?.length) {
+    console.log("No subjects for test type:", testType.name);
+    return null;
+  }
+  const admissionInfo = schedule.admission_infos?.[0];
+  if (!admissionInfo) {
+    console.log("No admission info for schedule:", schedule.name);
+    return null;
+  }
+  return transformSubjectData(
+    testType.subjects[0],
+    testType.subjects,
+    apiUniversity,
+    department,
+    major,
+    admissionInfo,
+    schedule
+  );
+};
+
+const processSchedule = (
+  schedule: APIAdmissionSchedule,
+  apiUniversity: APIUniversity,
+  department: APIDepartment,
+  major: APIMajor
+) => {
+  if (!schedule?.test_types) {
+    console.log("No test types for schedule:", schedule.name);
+    return [];
+  }
+  return schedule.test_types
+    .map((testType) =>
+      processTestTypes(testType, apiUniversity, department, major, schedule)
+    )
+    .filter((subject): subject is UISubject => subject !== null);
+};
+
+const processMajor = (
+  major: APIMajor,
+  apiUniversity: APIUniversity,
+  department: APIDepartment
+): UISubject[] => {
+  if (!major.admission_schedules?.length) {
+    console.log("No admission schedules found for major:", major.name);
+    return [];
+  }
+  return major.admission_schedules.flatMap((schedule) =>
+    processSchedule(schedule, apiUniversity, department, major)
+  );
+};
+
+const processDepartment = (
+  department: APIDepartment,
+  apiUniversity: APIUniversity
+): UISubject[] => {
+  if (!department?.majors) {
+    console.log("No majors for department:", department.name);
+    return [];
+  }
+  return department.majors.flatMap((major) =>
+    processMajor(major, apiUniversity, department)
+  );
+};
+
 const transformUniversityData = (
   universities: APIUniversity[]
 ): UISubject[] => {
-  console.log("Input universities:", universities); // デバッグ用
+  console.log("Input universities:", universities);
   const transformedSubjectsMap = new Map<string, UISubject>();
 
   universities.forEach((apiUniversity) => {
     if (!apiUniversity?.departments) {
-      console.log("No departments for university:", apiUniversity.name); // デバッグ用
+      console.log("No departments for university:", apiUniversity.name);
       return;
     }
 
-    apiUniversity.departments.forEach((department: APIDepartment) => {
-      if (!department?.majors) {
-        console.log("No majors for department:", department.name); // デバッグ用
-        return;
+    const subjects = apiUniversity.departments.flatMap((department) =>
+      processDepartment(department, apiUniversity)
+    );
+
+    subjects.forEach((subject) => {
+      const key = `${subject.universityId}-${subject.departmentId}-${subject.majorId}-${subject.admissionScheduleId}`;
+      if (!transformedSubjectsMap.has(key)) {
+        transformedSubjectsMap.set(key, subject);
       }
-
-      department.majors.forEach((major: APIMajor) => {
-        console.log("Major data:", {
-          name: major.name,
-          id: major.id,
-          department_id: major.department_id,
-          admission_schedules: major.admission_schedules,
-        }); // デバッグ用
-
-        if (!major.admission_schedules?.length) {
-          console.log("No admission schedules found for major:", major.name); // デバッグ用
-          return;
-        }
-
-        const subjects = major.admission_schedules.flatMap(
-          (schedule: APIAdmissionSchedule) => {
-            if (!schedule?.test_types) {
-              console.log("No test types for schedule:", schedule.name); // デバッグ用
-              return [];
-            }
-            return schedule.test_types
-              .map((testType: APITestType) => {
-                if (!testType?.subjects?.length) {
-                  console.log("No subjects for test type:", testType.name); // デバッグ用
-                  return null;
-                }
-                const admissionInfo = schedule.admission_infos?.[0];
-                if (!admissionInfo) {
-                  console.log("No admission info for schedule:", schedule.name); // デバッグ用
-                  return null;
-                }
-                const result = transformSubjectData(
-                  testType.subjects[0],
-                  testType.subjects,
-                  apiUniversity,
-                  department,
-                  major,
-                  admissionInfo,
-                  schedule
-                );
-                console.log("Transformed subject data:", result); // デバッグ用
-                return result;
-              })
-              .filter((subject): subject is UISubject => subject !== null);
-          }
-        );
-
-        subjects.forEach((subject) => {
-          const key = `${subject.universityId}-${subject.departmentId}-${subject.majorId}-${subject.admissionScheduleId}`;
-          if (!transformedSubjectsMap.has(key)) {
-            transformedSubjectsMap.set(key, subject);
-          }
-        });
-      });
     });
   });
 
   const result = Array.from(transformedSubjectsMap.values());
-  console.log("Final transformed data:", result); // デバッグ用
+  console.log("Final transformed data:", result);
   return result;
 };
 
@@ -107,11 +128,11 @@ const SearchResultTable = () => {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/universities`
         );
-        const data = await response.json();
-        console.log("Raw API response:", data); // デバッグ用
+        const responseData = await response.json();
+        const data = responseData.data || responseData; // データが.dataプロパティにある場合とない場合の両方に対応
 
         if (!Array.isArray(data)) {
-          console.error("Data is not an array:", typeof data); // デバッグ用
+          console.error("Data is not an array:", typeof data, data); // より詳細なデバッグ情報
           throw new Error("Invalid response format");
         }
 

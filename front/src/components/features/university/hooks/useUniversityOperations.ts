@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useErrorHandler } from "@/shared/hooks/useErrorHandler";
+import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useUpdateUniversity } from "../api/mutations";
 import type { University } from "@/lib/types/university/university";
 import type { UniversityOperationResult } from "../types";

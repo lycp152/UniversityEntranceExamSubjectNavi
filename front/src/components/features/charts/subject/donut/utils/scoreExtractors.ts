@@ -1,4 +1,4 @@
-import { EXAM_TYPE_OPTIONS } from "@/shared/lib/constants/subjects";
+import { EXAM_TYPE_OPTIONS } from "@/lib/constants/subjects";
 import type { SubjectScore } from "../types/subjects";
 import type { SubjectName } from "@/lib/constants/subject";
 

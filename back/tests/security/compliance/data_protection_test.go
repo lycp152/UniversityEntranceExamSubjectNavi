@@ -47,8 +47,8 @@ func TestDataRetentionPolicy(t *testing.T) {
 }
 
 func validateDataRetention(info *models.AdmissionInfo) error {
-	// データ保持期間のチェック（2年以上前のデータは保持しない）
-	if time.Since(info.ValidUntil) > time.Hour*24*365*2 {
+	// データ保持期間のチェック（1年以上前のデータは保持しない）
+	if time.Since(info.ValidUntil) > time.Hour*24*365 {
 		return models.ErrDataRetentionPeriodExceeded
 	}
 	return nil

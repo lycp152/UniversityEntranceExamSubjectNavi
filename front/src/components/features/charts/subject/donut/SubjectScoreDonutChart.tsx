@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Subject } from "@/lib/types/subject";
-import { useSubjectChart } from "@/lib/hooks/subject/chart/useSubjectChart";
+import { useSubjectChart } from "@/hooks/subject/chart/useSubjectChart";
 import { containerStyles, containerClassName, pieChartStyles } from "./styles";
 import { DonutChart } from "./components/DonutChart";
 

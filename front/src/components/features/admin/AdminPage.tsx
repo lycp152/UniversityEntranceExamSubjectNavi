@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import type { APITestType } from "@/lib/types/university/api";
-import { useUniversityEditor } from "@/lib/hooks/university/useUniversityEditor";
+import { useUniversityEditor } from "@/hooks/university/useUniversityEditor";
 import { UniversityList } from "@/components/features/university/list/UniversityList";
 import { AdminLayout } from "@/components/layout/admin/AdminLayout";
 

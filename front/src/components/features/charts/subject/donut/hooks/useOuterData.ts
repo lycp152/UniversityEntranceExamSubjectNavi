@@ -1,8 +1,8 @@
 import type { Subject } from "@/lib/types/subject/subject";
-import { SUBJECT_DISPLAY_ORDER } from "@/shared/lib/constants/subjects";
+import { SUBJECT_DISPLAY_ORDER } from "@/lib/constants/subjects";
 import { PieData } from "@/types/subject/chart";
 import { createOuterPieData } from "@/components/features/charts/subject/donut/utils/pieChartTransformers";
-import { extractSubjectMainCategory } from "@/shared/lib/utils/subjectNameUtils";
+import { extractSubjectMainCategory } from "@/utils/subjectNameUtils";
 
 export const useOuterData = (
   subjectData: Subject,

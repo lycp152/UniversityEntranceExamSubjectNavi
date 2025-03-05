@@ -8,7 +8,7 @@ import SubjectScoreTable from "@/components/features/subject/score/table";
 import { ErrorMessage } from "@/components/common/ErrorMessage";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { transformSubjectData } from "@/lib/utils/subject/transform";
-import { UniversityService } from "@/shared/api/services/university";
+import { UniversityService } from "@/api/services/university";
 import type {
   APIUniversity,
   APIDepartment,

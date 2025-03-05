@@ -18,19 +18,34 @@ func TestDataIntegrity(t *testing.T) {
 
 	// テストデータの作成
 	university := &models.University{
+		BaseModel: models.BaseModel{
+			Version: 1,
+		},
 		Name: "テスト大学",
 		Departments: []models.Department{
 			{
+				BaseModel: models.BaseModel{
+					Version: 1,
+				},
 				Name: "テスト学部",
 				Majors: []models.Major{
 					{
+						BaseModel: models.BaseModel{
+							Version: 1,
+						},
 						Name: "テスト学科",
 						AdmissionSchedules: []models.AdmissionSchedule{
 							{
+								BaseModel: models.BaseModel{
+									Version: 1,
+								},
 								Name:         "前期",
 								DisplayOrder: 1,
 								AdmissionInfos: []models.AdmissionInfo{
 									{
+										BaseModel: models.BaseModel{
+											Version: 1,
+										},
 										Enrollment:   100,
 										AcademicYear: time.Now().Year(),
 										ValidFrom:    time.Now(),
@@ -40,9 +55,15 @@ func TestDataIntegrity(t *testing.T) {
 								},
 								TestTypes: []models.TestType{
 									{
+										BaseModel: models.BaseModel{
+											Version: 1,
+										},
 										Name: "共通",
 										Subjects: []models.Subject{
 											{
+												BaseModel: models.BaseModel{
+													Version: 1,
+												},
 												Name:         "数学",
 												Score:        200,
 												Percentage:   20.0,

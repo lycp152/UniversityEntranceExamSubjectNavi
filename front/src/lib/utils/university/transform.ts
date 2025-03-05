@@ -115,67 +115,72 @@ export function transformSubject(apiSubject: APISubject): Subject {
 }
 
 export const transformAPIResponse = (data: APIUniversity[]): University[] => {
-  return data.map((university) => ({
-    id: university.id,
-    name: university.name,
-    departments: university.departments?.map((department) => ({
-      id: department.id,
-      name: department.name,
-      universityId: department.university_id,
-      majors: department.majors?.map((major) => ({
-        id: major.id,
-        name: major.name,
-        departmentId: major.department_id,
-        admissionSchedules: (major.admission_schedules || []).map(
-          (schedule) => ({
-            id: schedule.id,
-            name: schedule.name,
-            majorId: schedule.major_id,
-            displayOrder: schedule.display_order,
-            admissionInfos: (schedule.admission_infos || []).map((info) => ({
-              id: info.id,
-              majorId: info.major_id,
-              academicYear: info.academic_year,
-              enrollment: info.enrollment,
-              validFrom: info.valid_from,
-              validUntil: info.valid_until,
-              status: info.status,
-            })),
-            testTypes: (schedule.test_types || []).map((type) => ({
-              id: type.id,
-              name: type.name as TestTypeName,
-              admissionScheduleId: type.admission_schedule_id,
-              subjects: (type.subjects || []).map((subject) => ({
-                id: subject.id,
-                name: subject.name,
-                testTypeId: subject.test_type_id,
-                maxScore: subject.score,
-                minScore: 0,
-                weight: subject.percentage,
-                createdAt: new Date(subject.created_at || new Date()),
-                updatedAt: new Date(subject.updated_at || new Date()),
-              })),
-              createdAt: new Date(type.created_at || new Date()),
-              updatedAt: new Date(type.updated_at || new Date()),
-            })),
-            startDate: new Date(),
-            endDate: new Date(),
-            status: ADMISSION_STATUS.UPCOMING,
-            createdAt: new Date(schedule.created_at || new Date()),
-            updatedAt: new Date(schedule.updated_at || new Date()),
-          })
-        ),
-        createdAt: new Date(major.created_at || new Date()),
-        updatedAt: new Date(major.updated_at || new Date()),
-      })),
-      createdAt: new Date(department.created_at || new Date()),
-      updatedAt: new Date(department.updated_at || new Date()),
-    })),
-    createdAt: new Date(university.created_at || new Date()),
-    updatedAt: new Date(university.updated_at || new Date()),
-    status: UNIVERSITY_STATUS.ACTIVE,
-  }));
+  return data.map(transformUniversityFromAPI);
 };
+
+const transformUniversityFromAPI = (university: APIUniversity): University => ({
+  id: university.id,
+  name: university.name,
+  departments: university.departments?.map(transformDepartmentFromAPI) ?? [],
+  createdAt: new Date(university.created_at ?? new Date()),
+  updatedAt: new Date(university.updated_at ?? new Date()),
+  status: UNIVERSITY_STATUS.ACTIVE,
+});
+
+const transformDepartmentFromAPI = (department: APIDepartment): Department => ({
+  id: department.id,
+  name: department.name,
+  universityId: department.university_id,
+  majors: department.majors?.map(transformMajorFromAPI) ?? [],
+  createdAt: new Date(department.created_at ?? new Date()),
+  updatedAt: new Date(department.updated_at ?? new Date()),
+});
+
+const transformMajorFromAPI = (major: APIMajor): Major => ({
+  id: major.id,
+  name: major.name,
+  departmentId: major.department_id,
+  admissionSchedules:
+    major.admission_schedules?.map(transformScheduleFromAPI) ?? [],
+  created_at: major.created_at ?? "",
+  updated_at: major.updated_at ?? "",
+});
+
+const transformScheduleFromAPI = (
+  schedule: APIAdmissionSchedule
+): AdmissionSchedule => ({
+  id: schedule.id,
+  name: schedule.name,
+  majorId: schedule.major_id,
+  displayOrder: schedule.display_order,
+  admissionInfos: schedule.admission_infos?.map(transformExamInfo) ?? [],
+  testTypes: schedule.test_types?.map(transformTestTypeFromAPI) ?? [],
+  startDate: new Date(),
+  endDate: new Date(),
+  status: ADMISSION_STATUS.UPCOMING,
+  created_at: schedule.created_at ?? "",
+  updated_at: schedule.updated_at ?? "",
+});
+
+const transformTestTypeFromAPI = (type: APITestType): TestType => ({
+  id: type.id,
+  name: type.name as TestTypeName,
+  admissionScheduleId: type.admission_schedule_id,
+  subjects: type.subjects?.map(transformSubjectFromAPI) ?? [],
+  createdAt: new Date(type.created_at ?? new Date()),
+  updatedAt: new Date(type.updated_at ?? new Date()),
+});
+
+const transformSubjectFromAPI = (subject: APISubject): Subject => ({
+  id: subject.id,
+  name: subject.name,
+  testTypeId: subject.test_type_id,
+  maxScore: subject.score,
+  minScore: 0,
+  weight: subject.percentage,
+  createdAt: new Date(subject.created_at ?? new Date()),
+  updatedAt: new Date(subject.updated_at ?? new Date()),
+});
 
 export function transformToAPITestType(testType: TestType): APITestType {
   return {
@@ -193,8 +198,8 @@ export function transformToAPISubject(subject: Subject): APISubject {
     id: subject.id,
     test_type_id: subject.testTypeId,
     name: subject.name,
-    score: subject.maxScore,
-    percentage: subject.weight,
+    score: Number(subject.maxScore) || 0,
+    percentage: Number(subject.weight) || 0,
     display_order: 0,
     created_at: subject.createdAt.toISOString(),
     updated_at: subject.updatedAt.toISOString(),

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 	"university-exam-api/internal/domain/models"
-	"university-exam-api/internal/interfaces/handlers"
+	"university-exam-api/internal/handlers"
 	"university-exam-api/internal/repositories"
 	"university-exam-api/pkg/logger"
 
@@ -36,19 +36,34 @@ func createScheduleData(db *gorm.DB) error {
 // createTestData はテスト用の大学データを作成します
 func createTestData(db *gorm.DB) error {
 	university := &models.University{
+		BaseModel: models.BaseModel{
+			Version: 1,
+		},
 		Name: "テスト大学",
 		Departments: []models.Department{
 			{
+				BaseModel: models.BaseModel{
+					Version: 1,
+				},
 				Name: "テスト学部",
 				Majors: []models.Major{
 					{
+						BaseModel: models.BaseModel{
+							Version: 1,
+						},
 						Name: "テスト学科",
 						AdmissionSchedules: []models.AdmissionSchedule{
 							{
+								BaseModel: models.BaseModel{
+									Version: 1,
+								},
 								Name:         "前期",
 								DisplayOrder: 1,
 								AdmissionInfos: []models.AdmissionInfo{
 									{
+										BaseModel: models.BaseModel{
+											Version: 1,
+										},
 										Enrollment:   100,
 										AcademicYear: 2024,
 										ValidFrom:    time.Now(),
@@ -58,9 +73,15 @@ func createTestData(db *gorm.DB) error {
 								},
 								TestTypes: []models.TestType{
 									{
+										BaseModel: models.BaseModel{
+											Version: 1,
+										},
 										Name: "共通",
 										Subjects: []models.Subject{
 											{
+												BaseModel: models.BaseModel{
+													Version: 1,
+												},
 												Name:         "テスト科目1",
 												Score:        80,
 												Percentage:   20.0,

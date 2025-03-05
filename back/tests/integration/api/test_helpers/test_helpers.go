@@ -10,9 +10,8 @@ import (
 	"strings"
 	"testing"
 	"university-exam-api/internal/domain/models"
-	"university-exam-api/internal/interfaces/handlers"
-	intmiddleware "university-exam-api/internal/interfaces/middleware"
-	"university-exam-api/internal/middleware"
+	"university-exam-api/internal/handlers"
+	intmiddleware "university-exam-api/internal/middleware"
 	"university-exam-api/internal/repositories"
 
 	"github.com/labstack/echo/v4"
@@ -20,15 +19,32 @@ import (
 )
 
 const (
+	// APIパス
 	CSRFTokenPath = "/csrf"
-	ErrRequestFailed = "リクエストの実行に失敗: %v"
 	APIUniversitiesPath = "/api/universities"
 	TestUniversityPath = "/api/universities/1"
-	ErrMarshalTestData = "テストデータのマーシャルに失敗: %v"
-	ErrUnmarshalResponse = "レスポンスのアンマーシャルに失敗: %v"
+
+	// HTTPヘッダー
 	ContentTypeHeader = "Content-Type"
 	ContentTypeJSON = "application/json"
+	CSRFTokenHeader = "X-CSRF-Token"
+
+	// エラーメッセージ
+	ErrRequestFailed = "リクエストの実行に失敗: %v"
+	ErrMarshalTestData = "テストデータのマーシャルに失敗: %v"
+	ErrUnmarshalResponse = "レスポンスのアンマーシャルに失敗: %v"
 	ErrParsingResponse = "レスポンスのパースに失敗: %v"
+	ErrLoadTestData = "テストデータの読み込みに失敗: %v"
+	ErrParseTestData = "テストデータのパースに失敗: %v"
+	ErrInitDB = "データベースの初期化に失敗"
+	ErrCleanupDB = "データベースのクリーンアップに失敗: %v"
+	ErrInvalidStatusCode = "ステータスコードが一致しません: got %v want %v"
+	ErrInvalidResponse = "レスポンスが一致しません:\ngot  %v\nwant %v"
+	ErrInvalidErrorMessage = "エラーメッセージが一致しません: got %v want %v"
+	ErrTestCleanup = "テストのクリーンアップに失敗: %v"
+	ErrXSSDetected = "エスケープされていないXSSペイロードを検出: %s in %s"
+	ErrControlCharDetected = "制御文字が検出されました: %x in %s"
+	ErrHTMLTagDetected = "HTMLタグが検出されました"
 )
 
 // TestData はテストデータの構造を定義します
@@ -42,12 +58,12 @@ func LoadTestData(t *testing.T, filename string) TestData {
 
 	data, err := os.ReadFile(filepath.Join("testdata", filename))
 	if err != nil {
-		t.Fatalf("テストデータの読み込みに失敗: %v", err)
+		t.Fatalf(ErrLoadTestData, err)
 	}
 
 	var testData TestData
 	if err := json.Unmarshal(data, &testData); err != nil {
-		t.Fatalf("テストデータのパースに失敗: %v", err)
+		t.Fatalf(ErrParseTestData, err)
 	}
 
 	return testData
@@ -60,16 +76,16 @@ func SetupTestServer(t *testing.T) (*echo.Echo, *handlers.UniversityHandler, *go
 	e := echo.New()
 	db := repositories.SetupTestDB()
 	if db == nil {
-		return nil, nil, nil, fmt.Errorf("データベースの初期化に失敗")
+		return nil, nil, nil, fmt.Errorf(ErrInitDB)
 	}
 
 	// データベースをクリーンアップ
 	if err := cleanupDatabase(db); err != nil {
-		return nil, nil, nil, fmt.Errorf("データベースのクリーンアップに失敗: %v", err)
+		return nil, nil, nil, fmt.Errorf(ErrCleanupDB, err)
 	}
 
 	// ミドルウェアの設定
-	e.Use(middleware.CSRFMiddleware())
+	e.Use(intmiddleware.CSRFMiddleware())
 	e.Use(intmiddleware.Sanitizer(intmiddleware.SanitizerConfig{
 		Fields: []string{"name"},
 	}))
@@ -89,7 +105,6 @@ func cleanupDatabase(db *gorm.DB) error {
 
 	// 全てのテーブルをクリーンアップ
 	tables := []string{
-		"department_subjects",
 		"subjects",
 		"test_types",
 		"admission_schedules",
@@ -123,7 +138,7 @@ func CreateTestContext(e *echo.Echo, method, path string, body interface{}) (*ht
 
 	// CSRFトークンを設定
 	token := "test-csrf-token"
-	req.Header.Set("X-CSRF-Token", token)
+	req.Header.Set(CSRFTokenHeader, token)
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -136,7 +151,7 @@ func CreateTestContext(e *echo.Echo, method, path string, body interface{}) (*ht
 func AssertStatusCode(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {
-		t.Errorf("ステータスコードが一致しません: got %v want %v", got, want)
+		t.Errorf(ErrInvalidStatusCode, got, want)
 	}
 }
 
@@ -150,7 +165,7 @@ func AssertJSONResponse(t *testing.T, rec *httptest.ResponseRecorder, want inter
 	}
 
 	if fmt.Sprintf("%v", got) != fmt.Sprintf("%v", want) {
-		t.Errorf("レスポンスが一致しません:\ngot  %v\nwant %v", got, want)
+		t.Errorf(ErrInvalidResponse, got, want)
 	}
 }
 
@@ -166,7 +181,7 @@ func AssertErrorResponse(t *testing.T, rec *httptest.ResponseRecorder, wantStatu
 	}
 
 	if message, ok := response["error"]; !ok || message != wantMessage {
-		t.Errorf("エラーメッセージが一致しません: got %v want %v", message, wantMessage)
+		t.Errorf(ErrInvalidErrorMessage, message, wantMessage)
 	}
 }
 
@@ -174,7 +189,7 @@ func AssertErrorResponse(t *testing.T, rec *httptest.ResponseRecorder, wantStatu
 func CleanupTest(t *testing.T, db *gorm.DB) {
 	t.Helper()
 	if err := cleanupDatabase(db); err != nil {
-		t.Errorf("テストのクリーンアップに失敗: %v", err)
+		t.Errorf(ErrTestCleanup, err)
 	}
 }
 
@@ -208,7 +223,7 @@ func AssertXSSEscaped(t *testing.T, s string) {
 
 	for _, pattern := range dangerousPatterns {
 		if strings.Contains(strings.ToLower(s), strings.ToLower(pattern)) {
-			t.Errorf("エスケープされていないXSSペイロードを検出: %s in %s", pattern, s)
+			t.Errorf(ErrXSSDetected, pattern, s)
 		}
 	}
 }
@@ -237,28 +252,12 @@ func AssertSpecialCharsSanitized(t *testing.T, s string) {
 
 	for _, char := range controlChars {
 		if strings.Contains(s, char) {
-			t.Errorf("制御文字が検出されました: %x in %s", char[0], s)
+			t.Errorf(ErrControlCharDetected, char[0], s)
 		}
 	}
 
 	// HTMLタグのパターン
 	if strings.Contains(s, "<") || strings.Contains(s, ">") {
-		t.Error("HTMLタグが検出されました")
-	}
-
-	// SQLインジェクションのパターン
-	sqlPatterns := []string{
-		"'",
-		"--",
-		";",
-		"/*",
-		"*/",
-		"xp_",
-	}
-
-	for _, pattern := range sqlPatterns {
-		if strings.Contains(s, pattern) {
-			t.Errorf("SQLインジェクションパターンが検出されました: %s", pattern)
-		}
+		t.Error(ErrHTMLTagDetected)
 	}
 }

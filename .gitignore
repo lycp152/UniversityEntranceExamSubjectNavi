@@ -27,7 +27,8 @@ back/vendor/
 back/tmp/*
 back/dist/
 back/**/*.log
-back/logs/*
+back/logs/
+!back/logs/.gitkeep
 back/bin/*
 
 # Frontend

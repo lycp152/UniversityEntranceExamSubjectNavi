@@ -3,6 +3,7 @@ package logger
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -16,27 +17,28 @@ var (
 
 // InitLoggers はロガーを初期化します
 func InitLoggers() {
-	// ログファイルのディレクトリを作成
-	if err := os.MkdirAll("logs", 0755); err != nil {
+	// ログディレクトリを作成
+	logDir := "logs"
+	if err := os.MkdirAll(logDir, 0755); err != nil {
 		log.Fatal("Failed to create logs directory:", err)
 	}
 
 	// 情報ログの設定
-	infoFile, err := os.OpenFile("logs/info.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	infoFile, err := os.OpenFile(filepath.Join(logDir, "info.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal("Failed to open info log file:", err)
 	}
 	infoLogger = log.New(infoFile, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// エラーログの設定
-	errorFile, err := os.OpenFile("logs/error.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	errorFile, err := os.OpenFile(filepath.Join(logDir, "error.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal("Failed to open error log file:", err)
 	}
 	errorLogger = log.New(errorFile, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// アクセスログの設定
-	accessFile, err := os.OpenFile("logs/access.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	accessFile, err := os.OpenFile(filepath.Join(logDir, "access.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal("Failed to open access log file:", err)
 	}

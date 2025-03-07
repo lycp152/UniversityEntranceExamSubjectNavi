@@ -14,6 +14,8 @@ import (
 	intmiddleware "university-exam-api/internal/middleware"
 	"university-exam-api/internal/repositories"
 
+	"errors"
+
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
@@ -28,6 +30,10 @@ const (
 	ContentTypeHeader = "Content-Type"
 	ContentTypeJSON = "application/json"
 	CSRFTokenHeader = "X-CSRF-Token"
+
+	// テストデータ
+	TestUniversityName = "CSRFテスト大学"
+	TestDepartmentName = "CSRFテスト学部"
 
 	// エラーメッセージ
 	ErrRequestFailed = "リクエストの実行に失敗: %v"
@@ -76,7 +82,7 @@ func SetupTestServer(t *testing.T) (*echo.Echo, *handlers.UniversityHandler, *go
 	e := echo.New()
 	db := repositories.SetupTestDB()
 	if db == nil {
-		return nil, nil, nil, fmt.Errorf(ErrInitDB)
+		return nil, nil, nil, errors.New(ErrInitDB)
 	}
 
 	// データベースをクリーンアップ

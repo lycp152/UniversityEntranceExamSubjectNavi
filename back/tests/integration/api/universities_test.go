@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 	"university-exam-api/internal/domain/models"
 	"university-exam-api/internal/handlers"
 	"university-exam-api/internal/repositories"
@@ -66,8 +65,6 @@ func createTestData(db *gorm.DB) error {
 										},
 										Enrollment:   100,
 										AcademicYear: 2024,
-										ValidFrom:    time.Now(),
-										ValidUntil:   time.Now().AddDate(1, 0, 0),
 										Status:       "active",
 									},
 								},

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 	"university-exam-api/internal/domain/models"
 
 	"gorm.io/driver/postgres"
@@ -28,14 +29,35 @@ func NewDB() *gorm.DB {
 		schema,
 	)
 
-	config := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		PrepareStmt: true,
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				SlowThreshold:             time.Second,
+				LogLevel:                  logger.Info,
+				IgnoreRecordNotFoundError: true,
+				Colorful:                  true,
+			},
+		),
+	})
+
+	if err != nil {
+		log.Fatalf("failed to connect database: %v", err)
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn), config)
+	// コネクションプールの設定
+	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("データベースへの接続に失敗: %v", err)
+		log.Fatalf("failed to get database instance: %v", err)
 	}
+
+	// アイドル状態の最大接続数
+	sqlDB.SetMaxIdleConns(10)
+	// 最大接続数
+	sqlDB.SetMaxOpenConns(100)
+	// 接続の最大生存時間
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	// スキーマの設定
 	if err := db.Exec(fmt.Sprintf("SET search_path TO %s", schema)).Error; err != nil {

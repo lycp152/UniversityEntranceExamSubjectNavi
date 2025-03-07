@@ -39,6 +39,10 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	if duration == 0 {
+		duration = defaultExpiration
+	}
+
 	expiration := time.Now().Add(duration)
 	c.items[key] = cacheItem{
 		value:      value,

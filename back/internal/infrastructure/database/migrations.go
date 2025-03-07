@@ -31,16 +31,16 @@ func RunMigrations(db *gorm.DB) error {
 		return fmt.Errorf("admission_schedulesテーブルのマイグレーションに失敗: %w", err)
 	}
 
+	if err := db.AutoMigrate(&models.AdmissionInfo{}); err != nil {
+		return fmt.Errorf("admission_infosテーブルのマイグレーションに失敗: %w", err)
+	}
+
 	if err := db.AutoMigrate(&models.TestType{}); err != nil {
 		return fmt.Errorf("test_typesテーブルのマイグレーションに失敗: %w", err)
 	}
 
 	if err := db.AutoMigrate(&models.Subject{}); err != nil {
 		return fmt.Errorf("subjectsテーブルのマイグレーションに失敗: %w", err)
-	}
-
-	if err := db.AutoMigrate(&models.AdmissionInfo{}); err != nil {
-		return fmt.Errorf("admission_infosテーブルのマイグレーションに失敗: %w", err)
 	}
 
 	return nil

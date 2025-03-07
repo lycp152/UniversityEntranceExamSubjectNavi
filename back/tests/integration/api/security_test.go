@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 	"university-exam-api/internal/domain/models"
-	"university-exam-api/tests/integration/api/config"
+	"university-exam-api/internal/middleware"
 	"university-exam-api/tests/integration/api/test_helpers"
 
 	"github.com/labstack/echo/v4"
@@ -69,6 +69,13 @@ const (
 	errSanitizationVerification = "サニタイズの検証に失敗: %v"
 	errSanitizationNameMismatch = "大学名が正しくサニタイズされていません: got %s, want %s"
 	errSanitizationDeptNameMismatch = "学部名が正しくサニタイズされていません: got %s, want %s"
+	errUnexpectedError = "予期しないエラーが発生: %v"
+
+	// テストデータ用の定数
+	testAuthUniversityName = "認証テスト大学"
+	testAuthDepartmentName = "認証テスト学部"
+	testAuthzUniversityName = "認可テスト大学"
+	testAuthzDepartmentName = "認可テスト学部"
 )
 
 // TestEnvironment はテスト環境の設定を保持します
@@ -121,12 +128,12 @@ func TestInputValidation(t *testing.T) {
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
 				university := models.University{
-				Name: "",
-				Departments: []models.Department{
-					{
-						Name: "テスト学部",
+					Name: "",
+					Departments: []models.Department{
+						{
+							Name: "テスト学部",
+						},
 					},
-				},
 				}
 				jsonData, err := json.Marshal(university)
 				if err != nil {
@@ -144,12 +151,12 @@ func TestInputValidation(t *testing.T) {
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
 				university := models.University{
-				Name: "テスト大学",
-				Departments: []models.Department{
-					{
-						Name: strings.Repeat("あ", 101), // 100文字制限を超える
+					Name: "テスト大学",
+					Departments: []models.Department{
+						{
+							Name: strings.Repeat("あ", 101),
+						},
 					},
-				},
 				}
 				jsonData, err := json.Marshal(university)
 				if err != nil {
@@ -167,19 +174,20 @@ func TestInputValidation(t *testing.T) {
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
 				university := models.University{
-				Name: "テスト大学",
-				Departments: []models.Department{
-					{
-						Name: "テスト学部",
-						Majors: []models.Major{
-							{
-								Name: "テスト学科",
-								AdmissionSchedules: []models.AdmissionSchedule{
-									{
-										Name: "前期",
-										AdmissionInfos: []models.AdmissionInfo{
-											{
-												Enrollment: -1,
+					Name: "テスト大学",
+					Departments: []models.Department{
+						{
+							Name: "テスト学部",
+							Majors: []models.Major{
+								{
+									Name: "テスト学科",
+									AdmissionSchedules: []models.AdmissionSchedule{
+										{
+											Name: "前期",
+											AdmissionInfos: []models.AdmissionInfo{
+												{
+													Enrollment: -1,
+												},
 											},
 										},
 									},
@@ -187,7 +195,6 @@ func TestInputValidation(t *testing.T) {
 							},
 						},
 					},
-				},
 				}
 				jsonData, err := json.Marshal(university)
 				if err != nil {
@@ -205,139 +212,6 @@ func TestInputValidation(t *testing.T) {
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
 				university := models.University{
-				Name: "テスト大学",
-				Departments: []models.Department{
-					{
-						Name: "テスト学部",
-						Majors: []models.Major{
-							{
-								Name: "テスト学科",
-								AdmissionSchedules: []models.AdmissionSchedule{
-									{
-										Name: "前期",
-										AdmissionInfos: []models.AdmissionInfo{
-											{
-												Enrollment: 100,
-											},
-										},
-										TestTypes: []models.TestType{
-											{
-												Name: "一般選抜",
-												Subjects: []models.Subject{
-													{
-														Name:  "テスト科目",
-														Score: -10,
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				}
-				jsonData, err := json.Marshal(university)
-				if err != nil {
-					t.Fatalf(errMarshalTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-			},
-			ExpectedStatus: http.StatusBadRequest,
-			ExpectedError:  errScoreMustBeNonNegative,
-		},
-		{
-			Name:   "学部名が空",
-			Method: http.MethodPost,
-			Path:   test_helpers.APIUniversitiesPath,
-			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := models.University{
-					Name: "テスト大学",
-					Departments: []models.Department{
-						{
-							Name: "",
-						},
-					},
-				}
-				jsonData, err := json.Marshal(university)
-			if err != nil {
-					t.Fatalf(errMarshalTestData, err)
-			}
-			c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-			c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-			},
-			ExpectedStatus: http.StatusBadRequest,
-			ExpectedError:  "学部名は必須です",
-		},
-		{
-			Name:   "学科名が空",
-			Method: http.MethodPost,
-			Path:   test_helpers.APIUniversitiesPath,
-			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := models.University{
-					Name: "テスト大学",
-					Departments: []models.Department{
-						{
-							Name: "テスト学部",
-							Majors: []models.Major{
-								{
-									Name: "",
-								},
-							},
-						},
-					},
-				}
-				jsonData, err := json.Marshal(university)
-			if err != nil {
-					t.Fatalf(errMarshalTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-			},
-			ExpectedStatus: http.StatusBadRequest,
-			ExpectedError:  "学科名は必須です",
-		},
-		{
-			Name:   "入試スケジュール名が空",
-			Method: http.MethodPost,
-			Path:   test_helpers.APIUniversitiesPath,
-			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := models.University{
-					Name: "テスト大学",
-					Departments: []models.Department{
-						{
-							Name: "テスト学部",
-							Majors: []models.Major{
-								{
-									Name: "テスト学科",
-									AdmissionSchedules: []models.AdmissionSchedule{
-										{
-											Name: "",
-										},
-									},
-								},
-							},
-						},
-					},
-				}
-				jsonData, err := json.Marshal(university)
-				if err != nil {
-					t.Fatalf(errMarshalTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-			},
-			ExpectedStatus: http.StatusBadRequest,
-			ExpectedError:  "入試スケジュール名は必須です",
-		},
-		{
-			Name:   "入試種別名が空",
-			Method: http.MethodPost,
-			Path:   test_helpers.APIUniversitiesPath,
-			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := models.University{
 					Name: "テスト大学",
 					Departments: []models.Department{
 						{
@@ -348,50 +222,18 @@ func TestInputValidation(t *testing.T) {
 									AdmissionSchedules: []models.AdmissionSchedule{
 										{
 											Name: "前期",
-											TestTypes: []models.TestType{
+											AdmissionInfos: []models.AdmissionInfo{
 												{
-													Name: "",
+													Enrollment: 100,
 												},
 											},
-										},
-									},
-								},
-							},
-						},
-					},
-				}
-				jsonData, err := json.Marshal(university)
-				if err != nil {
-					t.Fatalf(errMarshalTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-			},
-			ExpectedStatus: http.StatusBadRequest,
-			ExpectedError:  "入試種別名は必須です",
-		},
-		{
-			Name:   "科目名が空",
-			Method: http.MethodPost,
-			Path:   test_helpers.APIUniversitiesPath,
-			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := models.University{
-					Name: "テスト大学",
-					Departments: []models.Department{
-						{
-							Name: "テスト学部",
-							Majors: []models.Major{
-								{
-									Name: "テスト学科",
-									AdmissionSchedules: []models.AdmissionSchedule{
-										{
-											Name: "前期",
 											TestTypes: []models.TestType{
 												{
 													Name: "一般選抜",
 													Subjects: []models.Subject{
 														{
-															Name: "",
+															Name:  "テスト科目",
+															Score: -10,
 														},
 													},
 												},
@@ -411,17 +253,22 @@ func TestInputValidation(t *testing.T) {
 				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
 			},
 			ExpectedStatus: http.StatusBadRequest,
-			ExpectedError:  "科目名は必須です",
+			ExpectedError:  errScoreMustBeNonNegative,
 		},
 	}
 
+	runInputValidationTestCases(t, env, testCases)
+}
+
+// runInputValidationTestCases は入力値検証のテストケースを実行します
+func runInputValidationTestCases(t *testing.T, env *TestEnvironment, testCases []TestCase) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
 			tc.Setup(rec, c)
 
 			if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
-				t.Errorf("予期しないエラーが発生: %v", err)
+				t.Errorf(errUnexpectedError, err)
 			}
 
 			test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
@@ -637,6 +484,11 @@ func TestErrorHandling(t *testing.T) {
 		},
 	}
 
+	runErrorHandlingTestCases(t, env, testCases)
+}
+
+// runErrorHandlingTestCases はエラーハンドリングのテストケースを実行します
+func runErrorHandlingTestCases(t *testing.T, env *TestEnvironment, testCases []TestCase) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
@@ -655,7 +507,7 @@ func TestErrorHandling(t *testing.T) {
 			}
 
 			if err != nil {
-				t.Errorf("予期しないエラーが発生: %v", err)
+				t.Errorf(errUnexpectedError, err)
 			}
 
 			test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
@@ -670,7 +522,7 @@ func TestRateLimiting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rateConfig := config.LoadTestConfig()
+	rateConfig := middleware.LoadTestConfig()
 
 	testCases := []TestCase{
 		{
@@ -678,9 +530,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, rateConfig.TestNumRequests, rateConfig.TestTimeWindow)
-				expectedMinLimited := rateConfig.TestNumRequests - rateConfig.TestMaxRequests
-				test_helpers.AssertRateLimitResult(t, result, expectedMinLimited, rateConfig.TestMaxRequests)
+				runBasicRateLimitTest(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -690,16 +540,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				// 最初のバースト
-				result1 := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, rateConfig.TestNumRequests, rateConfig.TestTimeWindow)
-				t.Logf("1回目のバースト: 制限されたリクエスト数: %d", result1.LimitedRequests)
-
-				// クールダウン期間を待つ
-				time.Sleep(rateConfig.TestCooldownTime)
-
-				// 2回目のバースト
-				result2 := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, rateConfig.TestNumRequests, rateConfig.TestTimeWindow)
-				t.Logf("2回目のバースト: 制限されたリクエスト数: %d", result2.LimitedRequests)
+				runCooldownTest(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -707,31 +548,9 @@ func TestRateLimiting(t *testing.T) {
 		{
 			Name:   "異なるIPアドレスからのリクエスト",
 			Method: http.MethodGet,
-				Path:   test_helpers.APIUniversitiesPath,
+			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				ipAddresses := test_helpers.GenerateTestIPAddresses(3)
-				results := make([]int, len(ipAddresses))
-				responseTimes := make([]float64, len(ipAddresses))
-
-				for i, ip := range ipAddresses {
-					start := time.Now()
-					rec, c := test_helpers.CreateTestContext(env.E, http.MethodGet, test_helpers.APIUniversitiesPath, nil)
-					c.Request().Header.Set("X-Forwarded-For", ip)
-					if err := env.Handler.(interface{ GetUniversities(echo.Context) error }).GetUniversities(c); err != nil {
-						t.Errorf(errRequestFailed, err)
-					}
-					results[i] = rec.Code
-					responseTimes[i] = float64(time.Since(start).Milliseconds())
-					time.Sleep(100 * time.Millisecond)
-				}
-
-				result := test_helpers.AnalyzeRateLimitResults(results, responseTimes)
-				if result.LimitedRequests > 0 {
-					t.Errorf("異なるIPアドレスからのリクエストが制限されています: %d", result.LimitedRequests)
-				}
-
-				t.Logf("異なるIPアドレスからのリクエスト: 制限されたリクエスト数: %d", result.LimitedRequests)
-				t.Logf("平均レスポンス時間: %.2f ms", result.AverageResponse)
+				runDifferentIPsTest(t, env)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -741,28 +560,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				endpoints := test_helpers.GenerateTestEndpoints()
-				results := make([]int, len(endpoints))
-				responseTimes := make([]float64, len(endpoints))
-
-				for i, endpoint := range endpoints {
-					start := time.Now()
-					rec, c := test_helpers.CreateTestContext(env.E, http.MethodGet, endpoint, nil)
-					if err := env.Handler.(interface{ GetUniversities(echo.Context) error }).GetUniversities(c); err != nil {
-						t.Errorf(errRequestFailed, err)
-					}
-		results[i] = rec.Code
-					responseTimes[i] = float64(time.Since(start).Milliseconds())
-					time.Sleep(100 * time.Millisecond)
-				}
-
-				result := test_helpers.AnalyzeRateLimitResults(results, responseTimes)
-				if result.LimitedRequests > 0 {
-					t.Errorf("異なるエンドポイントへのリクエストが制限されています: %d", result.LimitedRequests)
-				}
-
-				t.Logf("異なるエンドポイントへのリクエスト: 制限されたリクエスト数: %d", result.LimitedRequests)
-				t.Logf("平均レスポンス時間: %.2f ms", result.AverageResponse)
+				runDifferentEndpointsTest(t, env)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -772,30 +570,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, rateConfig.TestNumRequests, rateConfig.TestTimeWindow)
-
-				if result.LimitedRequests == 0 {
-					t.Error(errRateLimitNotWorking)
-				}
-
-				if result.SuccessRequests == 0 {
-					t.Error(errAllRequestsLimited)
-				}
-
-				// レート制限の統計を検証
-				expectedMinLimited := result.TotalRequests - rateConfig.TestMaxRequests
-				if result.LimitedRequests < expectedMinLimited {
-					t.Errorf("レート制限の統計が期待値を下回っています: got %d, want at least %d", result.LimitedRequests, expectedMinLimited)
-				}
-
-				// レスポンス時間の統計を出力
-				t.Logf("レート制限テスト結果:")
-				t.Logf("  総リクエスト数: %d", result.TotalRequests)
-				t.Logf("  制限されたリクエスト: %d", result.LimitedRequests)
-				t.Logf("  成功したリクエスト: %d", result.SuccessRequests)
-				t.Logf("  平均レスポンス時間: %.2f ms", result.AverageResponse)
-				t.Logf("  最大レスポンス時間: %.2f ms", result.MaxResponseTime)
-				t.Logf("  最小レスポンス時間: %.2f ms", result.MinResponseTime)
+				runStatisticsTest(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -805,8 +580,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, 1, rateConfig.TestTimeWindow)
-				test_helpers.AssertRateLimitResult(t, result, 0, 1)
+				runEdgeCaseMinRequestsTest(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -816,9 +590,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, rateConfig.TestMaxRequests*2, rateConfig.TestTimeWindow)
-				expectedMinLimited := rateConfig.TestMaxRequests
-				test_helpers.AssertRateLimitResult(t, result, expectedMinLimited, rateConfig.TestMaxRequests)
+				runEdgeCaseMaxRequestsTest(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -828,17 +600,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, rateConfig.TestNumRequests, rateConfig.TestTimeWindow)
-
-				// レスポンス時間の検証
-				if result.AverageResponse > 1000 { // 1秒以上かかる場合は警告
-					t.Logf("警告: 平均レスポンス時間が1秒を超えています: %.2f ms", result.AverageResponse)
-				}
-
-				// 最大レスポンス時間の検証
-				if result.MaxResponseTime > 2000 { // 2秒以上かかる場合は警告
-					t.Logf("警告: 最大レスポンス時間が2秒を超えています: %.2f ms", result.MaxResponseTime)
-				}
+				runPerformanceTest(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -848,9 +610,7 @@ func TestRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   "/invalid/endpoint",
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, rateConfig.TestNumRequests, rateConfig.TestTimeWindow)
-				// エラーエンドポイントでもレート制限が機能することを確認
-				test_helpers.AssertRateLimitResult(t, result, rateConfig.TestNumRequests-rateConfig.TestMaxRequests, rateConfig.TestMaxRequests)
+				runInvalidEndpointTest(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusNotFound,
 			ExpectedError:  "エンドポイントが見つかりません",
@@ -869,6 +629,135 @@ func TestRateLimiting(t *testing.T) {
 			}
 		})
 	}
+}
+
+// runBasicRateLimitTest は基本的なレート制限テストを実行します
+func runBasicRateLimitTest(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, config.TestNumRequests, config.TestTimeWindow)
+	expectedMinLimited := config.TestNumRequests - config.TestMaxRequests
+	test_helpers.AssertRateLimitResult(t, result, expectedMinLimited, config.TestMaxRequests)
+}
+
+// runCooldownTest はクールダウン後のリクエストテストを実行します
+func runCooldownTest(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	result1 := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, config.TestNumRequests, config.TestTimeWindow)
+	t.Logf("1回目のバースト: 制限されたリクエスト数: %d", result1.LimitedRequests)
+
+	time.Sleep(config.TestCooldownTime)
+
+	result2 := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, config.TestNumRequests, config.TestTimeWindow)
+	t.Logf("2回目のバースト: 制限されたリクエスト数: %d", result2.LimitedRequests)
+}
+
+// runDifferentIPsTest は異なるIPアドレスからのリクエストテストを実行します
+func runDifferentIPsTest(t *testing.T, env *TestEnvironment) {
+	ipAddresses := test_helpers.GenerateTestIPAddresses(3)
+	results := make([]int, len(ipAddresses))
+	responseTimes := make([]float64, len(ipAddresses))
+
+	for i, ip := range ipAddresses {
+		start := time.Now()
+		rec, c := test_helpers.CreateTestContext(env.E, http.MethodGet, test_helpers.APIUniversitiesPath, nil)
+		c.Request().Header.Set("X-Forwarded-For", ip)
+		if err := env.Handler.(interface{ GetUniversities(echo.Context) error }).GetUniversities(c); err != nil {
+			t.Errorf(errRequestFailed, err)
+		}
+		results[i] = rec.Code
+		responseTimes[i] = float64(time.Since(start).Milliseconds())
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	result := test_helpers.AnalyzeRateLimitResults(results, responseTimes)
+	if result.LimitedRequests > 0 {
+		t.Errorf("異なるIPアドレスからのリクエストが制限されています: %d", result.LimitedRequests)
+	}
+
+	t.Logf("異なるIPアドレスからのリクエスト: 制限されたリクエスト数: %d", result.LimitedRequests)
+	t.Logf("平均レスポンス時間: %.2f ms", result.AverageResponse)
+}
+
+// runDifferentEndpointsTest は異なるエンドポイントのレート制限テストを実行します
+func runDifferentEndpointsTest(t *testing.T, env *TestEnvironment) {
+	endpoints := test_helpers.GenerateTestEndpoints()
+	results := make([]int, len(endpoints))
+	responseTimes := make([]float64, len(endpoints))
+
+	for i, endpoint := range endpoints {
+		start := time.Now()
+		rec, c := test_helpers.CreateTestContext(env.E, http.MethodGet, endpoint, nil)
+		if err := env.Handler.(interface{ GetUniversities(echo.Context) error }).GetUniversities(c); err != nil {
+			t.Errorf(errRequestFailed, err)
+		}
+		results[i] = rec.Code
+		responseTimes[i] = float64(time.Since(start).Milliseconds())
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	result := test_helpers.AnalyzeRateLimitResults(results, responseTimes)
+	if result.LimitedRequests > 0 {
+		t.Errorf("異なるエンドポイントへのリクエストが制限されています: %d", result.LimitedRequests)
+	}
+
+	t.Logf("異なるエンドポイントへのリクエスト: 制限されたリクエスト数: %d", result.LimitedRequests)
+	t.Logf("平均レスポンス時間: %.2f ms", result.AverageResponse)
+}
+
+// runStatisticsTest はレート制限の統計情報テストを実行します
+func runStatisticsTest(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, config.TestNumRequests, config.TestTimeWindow)
+
+	if result.LimitedRequests == 0 {
+		t.Error("レート制限が機能していません")
+	}
+
+	if result.SuccessRequests == 0 {
+		t.Error(errAllRequestsLimited)
+	}
+
+	expectedMinLimited := result.TotalRequests - config.TestMaxRequests
+	if result.LimitedRequests < expectedMinLimited {
+		t.Errorf("レート制限の統計が期待値を下回っています: got %d, want at least %d", result.LimitedRequests, expectedMinLimited)
+	}
+
+	t.Logf("レート制限テスト結果:")
+	t.Logf("  総リクエスト数: %d", result.TotalRequests)
+	t.Logf("  制限されたリクエスト: %d", result.LimitedRequests)
+	t.Logf("  成功したリクエスト: %d", result.SuccessRequests)
+	t.Logf("  平均レスポンス時間: %.2f ms", result.AverageResponse)
+	t.Logf("  最大レスポンス時間: %.2f ms", result.MaxResponseTime)
+	t.Logf("  最小レスポンス時間: %.2f ms", result.MinResponseTime)
+}
+
+// runEdgeCaseMinRequestsTest は最小リクエスト数のエッジケーステストを実行します
+func runEdgeCaseMinRequestsTest(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, 1, config.TestTimeWindow)
+	test_helpers.AssertRateLimitResult(t, result, 0, 1)
+}
+
+// runEdgeCaseMaxRequestsTest は最大リクエスト数のエッジケーステストを実行します
+func runEdgeCaseMaxRequestsTest(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, config.TestMaxRequests*2, config.TestTimeWindow)
+	expectedMinLimited := config.TestMaxRequests
+	test_helpers.AssertRateLimitResult(t, result, expectedMinLimited, config.TestMaxRequests)
+}
+
+// runPerformanceTest はパフォーマンステストを実行します
+func runPerformanceTest(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, config.TestNumRequests, config.TestTimeWindow)
+
+	if result.AverageResponse > 1000 {
+		t.Logf("警告: 平均レスポンス時間が1秒を超えています: %.2f ms", result.AverageResponse)
+	}
+
+	if result.MaxResponseTime > 2000 {
+		t.Logf("警告: 最大レスポンス時間が2秒を超えています: %.2f ms", result.MaxResponseTime)
+	}
+}
+
+// runInvalidEndpointTest は無効なエンドポイントのテストを実行します
+func runInvalidEndpointTest(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	result := test_helpers.ExecuteRateLimitTest(t, env.Handler, env.E, config.TestNumRequests, config.TestTimeWindow)
+	test_helpers.AssertRateLimitResult(t, result, config.TestNumRequests-config.TestMaxRequests, config.TestMaxRequests)
 }
 
 // executeRequest は単一のリクエストを実行し、ステータスコードを返します
@@ -898,6 +787,19 @@ func makeRequests(t *testing.T, handler interface{}, e *echo.Echo, numRequests i
 	return results
 }
 
+// runConcurrentTest は並行テストケースを実行します
+func runConcurrentTest(t *testing.T, env *TestEnvironment, tc TestCase) {
+	rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
+	tc.Setup(rec, c)
+
+	if tc.ExpectedError != "" {
+		test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
+		return
+	}
+
+	test_helpers.AssertStatusCode(t, rec.Code, tc.ExpectedStatus)
+}
+
 // TestConcurrentRateLimiting は並行アクセス時のレート制限をテストします
 func TestConcurrentRateLimiting(t *testing.T) {
 	env, err := setupTestEnvironment(t)
@@ -905,7 +807,7 @@ func TestConcurrentRateLimiting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rateConfig := config.LoadTestConfig()
+	rateConfig := middleware.LoadTestConfig()
 
 	testCases := []TestCase{
 		{
@@ -913,42 +815,8 @@ func TestConcurrentRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-	var (
-		wg      sync.WaitGroup
-					results = make([][]int, rateConfig.TestNumGoroutines)
-	)
-
-				// 並行リクエストの実行
-				for i := 0; i < rateConfig.TestNumGoroutines; i++ {
-		wg.Add(1)
-		go func(index int) {
-			defer wg.Done()
-						results[index] = makeRequests(t, env.Handler, env.E, rateConfig.TestNumRequests)
-					}(i)
-				}
-
-				wg.Wait()
-
-				// 結果の分析
-				totalRequests, limitedRequests, successRequests := analyzeResults(results)
-
-				// レート制限の検証
-				if limitedRequests == 0 {
-					t.Error(errConcurrentRateLimitNotWorking)
-				}
-
-				if successRequests == 0 {
-					t.Error(errAllRequestsLimited)
-				}
-
-				// 統計情報の出力
-				t.Logf(errRequestStats, totalRequests, limitedRequests, successRequests)
-
-				// レート制限の統計を検証
-				expectedMinLimited := totalRequests - (rateConfig.TestMaxRequests * rateConfig.TestNumGoroutines)
-				if limitedRequests < expectedMinLimited {
-					t.Errorf("レート制限の統計が期待値を下回っています: got %d, want at least %d", limitedRequests, expectedMinLimited)
-				}
+				results := executeConcurrentRequests(t, env, rateConfig)
+				verifyConcurrentResults(t, results, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -958,32 +826,8 @@ func TestConcurrentRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				var (
-					wg      sync.WaitGroup
-					results = make([][]int, rateConfig.TestNumGoroutines)
-				)
-
-				// 異なるIPアドレスからの並行リクエスト
-				for i := 0; i < rateConfig.TestNumGoroutines; i++ {
-					wg.Add(1)
-					go func(index int) {
-						defer wg.Done()
-						_, c := test_helpers.CreateTestContext(env.E, http.MethodGet, test_helpers.APIUniversitiesPath, nil)
-						c.Request().Header.Set("X-Forwarded-For", fmt.Sprintf("192.168.1.%d", index+1))
-						results[index] = makeRequests(t, env.Handler, env.E, rateConfig.TestNumRequests)
-		}(i)
-	}
-
-	wg.Wait()
-
-	// 結果の分析
-				_, _, successRequests := analyzeResults(results)
-
-				// 異なるIPアドレスからのリクエストは、それぞれ独立してレート制限されるべき
-				expectedMinSuccess := rateConfig.TestNumRequests * rateConfig.TestNumGoroutines / 2
-				if successRequests < expectedMinSuccess {
-					t.Errorf("異なるIPアドレスからのリクエストの成功率が低すぎます: got %d, want at least %d", successRequests, expectedMinSuccess)
-				}
+				results := executeConcurrentRequestsWithDifferentIPs(t, env, rateConfig)
+				verifyConcurrentIPResults(t, results, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -993,61 +837,18 @@ func TestConcurrentRateLimiting(t *testing.T) {
 			Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				// 最初のバースト
-				results1 := makeRequests(t, env.Handler, env.E, rateConfig.TestNumRequests)
-
-				// クールダウン期間を待つ
-				time.Sleep(rateConfig.TestCooldownTime)
-
-				// 2回目のバースト
-				results2 := makeRequests(t, env.Handler, env.E, rateConfig.TestNumRequests)
-
-				// 結果を分析
-				limited1 := countLimitedRequests(results1)
-				limited2 := countLimitedRequests(results2)
-
-				if limited1 == 0 || limited2 == 0 {
-					t.Error("レート制限のリセットが正しく機能していません")
-				}
-
-				// 統計情報の出力
-				t.Logf("1回目のバースト: 制限されたリクエスト数: %d", limited1)
-				t.Logf("2回目のバースト: 制限されたリクエスト数: %d", limited2)
+				verifyRateLimitReset(t, env, rateConfig)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
 		},
 		{
 			Name:   "レート制限の時間枠",
-			Method: http.MethodGet,
+				Method: http.MethodGet,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				var (
-					wg      sync.WaitGroup
-					results = make([][]int, rateConfig.TestNumGoroutines)
-				)
-
-				// 時間枠内での並行リクエスト
-				for i := 0; i < rateConfig.TestNumGoroutines; i++ {
-					wg.Add(1)
-					go func(index int) {
-						defer wg.Done()
-						results[index] = makeRequests(t, env.Handler, env.E, rateConfig.TestNumRequests)
-					}(i)
-				}
-
-				wg.Wait()
-
-				// 結果の分析
-				totalRequests, limitedRequests, successRequests := analyzeResults(results)
-
-				// 時間枠内でのレート制限を検証
-				if limitedRequests == 0 {
-					t.Error("時間枠内でのレート制限が機能していません")
-				}
-
-				// 統計情報の出力
-				t.Logf(errRequestStats, totalRequests, limitedRequests, successRequests)
+				results := executeConcurrentRequests(t, env, rateConfig)
+				verifyTimeWindowResults(t, results)
 			},
 			ExpectedStatus: http.StatusOK,
 			ExpectedError:  "",
@@ -1056,15 +857,64 @@ func TestConcurrentRateLimiting(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
-			tc.Setup(rec, c)
-
-			if tc.ExpectedError != "" {
-				test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
-			} else {
-				test_helpers.AssertStatusCode(t, rec.Code, tc.ExpectedStatus)
-			}
+			runConcurrentTest(t, env, tc)
 		})
+	}
+}
+
+// executeConcurrentRequests は並行リクエストを実行します
+func executeConcurrentRequests(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) [][]int {
+	var wg sync.WaitGroup
+	results := make([][]int, config.TestNumGoroutines)
+
+	for i := 0; i < config.TestNumGoroutines; i++ {
+		wg.Add(1)
+		go func(index int) {
+			defer wg.Done()
+			results[index] = makeRequests(t, env.Handler, env.E, config.TestNumRequests)
+		}(i)
+	}
+
+	wg.Wait()
+	return results
+}
+
+// executeConcurrentRequestsWithDifferentIPs は異なるIPアドレスからの並行リクエストを実行します
+func executeConcurrentRequestsWithDifferentIPs(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) [][]int {
+	var wg sync.WaitGroup
+	results := make([][]int, config.TestNumGoroutines)
+
+	for i := 0; i < config.TestNumGoroutines; i++ {
+		wg.Add(1)
+		go func(index int) {
+			defer wg.Done()
+			_, c := test_helpers.CreateTestContext(env.E, http.MethodGet, test_helpers.APIUniversitiesPath, nil)
+			c.Request().Header.Set("X-Forwarded-For", fmt.Sprintf("192.168.1.%d", index+1))
+			results[index] = makeRequests(t, env.Handler, env.E, config.TestNumRequests)
+		}(i)
+	}
+
+	wg.Wait()
+	return results
+}
+
+// verifyConcurrentResults は並行リクエストの結果を検証します
+func verifyConcurrentResults(t *testing.T, results [][]int, config *middleware.RateLimitConfig) {
+	totalRequests, limitedRequests, successRequests := analyzeResults(results)
+
+	if limitedRequests == 0 {
+		t.Error(errConcurrentRateLimitNotWorking)
+	}
+
+	if successRequests == 0 {
+		t.Error(errAllRequestsLimited)
+	}
+
+	t.Logf(errRequestStats, totalRequests, limitedRequests, successRequests)
+
+	expectedMinLimited := totalRequests - (config.TestMaxRequests * config.TestNumGoroutines)
+	if limitedRequests < expectedMinLimited {
+		t.Errorf("レート制限の統計が期待値を下回っています: got %d, want at least %d", limitedRequests, expectedMinLimited)
 	}
 }
 
@@ -1097,6 +947,29 @@ func analyzeResults(results [][]int) (int, int, int) {
 	return totalRequests, limitedRequests, successRequests
 }
 
+// executeAuthTestCase は個々の認証テストケースを実行します
+func executeAuthTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
+	rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
+	tc.Setup(rec, c)
+
+	if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
+		t.Errorf(errUnexpectedError, err)
+	}
+
+	if tc.ExpectedError != "" {
+		test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
+		return
+	}
+
+	var university models.University
+	if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
+		t.Fatalf(errAuthUnmarshal, err)
+	}
+	if err := verifyAuthentication(rec, tc.ExpectedStatus, tc.ExpectedError); err != nil {
+		t.Errorf(errAuthVerification, err)
+	}
+}
+
 // TestAuthentication は認証機能をテストします
 func TestAuthentication(t *testing.T) {
 	env, err := setupTestEnvironment(t)
@@ -1110,7 +983,7 @@ func TestAuthentication(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認証テスト大学", "認証テスト学部")
+				university := test_helpers.CreateTestUniversity(testAuthUniversityName, testAuthDepartmentName)
 				jsonData, err := json.Marshal(university)
 				if err != nil {
 					t.Fatalf(errAuthTestData, err)
@@ -1126,7 +999,7 @@ func TestAuthentication(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認証テスト大学", "認証テスト学部")
+				university := test_helpers.CreateTestUniversity(testAuthUniversityName, testAuthDepartmentName)
 				jsonData, err := json.Marshal(university)
 				if err != nil {
 					t.Fatalf(errAuthTestData, err)
@@ -1143,7 +1016,7 @@ func TestAuthentication(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認証テスト大学", "認証テスト学部")
+				university := test_helpers.CreateTestUniversity(testAuthUniversityName, testAuthDepartmentName)
 				jsonData, err := json.Marshal(university)
 				if err != nil {
 					t.Fatalf(errAuthTestData, err)
@@ -1160,7 +1033,7 @@ func TestAuthentication(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認証テスト大学", "認証テスト学部")
+				university := test_helpers.CreateTestUniversity(testAuthUniversityName, testAuthDepartmentName)
 				jsonData, err := json.Marshal(university)
 				if err != nil {
 					t.Fatalf(errAuthTestData, err)
@@ -1176,30 +1049,13 @@ func TestAuthentication(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
-			tc.Setup(rec, c)
-
-			if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
-				t.Errorf(errAuthRequest, err)
-			}
-
-			if tc.ExpectedError != "" {
-				test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
-			} else {
-				var university models.University
-				if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
-					t.Fatalf(errAuthUnmarshal, err)
-				}
-				if err := verifyAuthentication(t, rec, tc.ExpectedStatus, tc.ExpectedError); err != nil {
-					t.Errorf(errAuthVerification, err)
-				}
-			}
+			executeAuthTestCase(t, env, tc)
 		})
 	}
 }
 
 // verifyAuthentication は認証テストのレスポンスを検証します
-func verifyAuthentication(t *testing.T, rec *httptest.ResponseRecorder, expectedStatus int, expectedError string) error {
+func verifyAuthentication(rec *httptest.ResponseRecorder, expectedStatus int, expectedError string) error {
 	if expectedError != "" {
 		var response map[string]string
 		if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
@@ -1216,6 +1072,43 @@ func verifyAuthentication(t *testing.T, rec *httptest.ResponseRecorder, expected
 	return nil
 }
 
+// setupAuthzTestCase は認可テストケースのセットアップを行います
+func setupAuthzTestCase(t *testing.T, c echo.Context, universityName, departmentName, token string) {
+	university := test_helpers.CreateTestUniversity(universityName, departmentName)
+	jsonData, err := json.Marshal(university)
+	if err != nil {
+		t.Fatalf(errAuthzTestData, err)
+	}
+	c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
+	c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
+	if token != "" {
+		c.Request().Header.Set("Authorization", token)
+	}
+}
+
+// executeAuthzTestCase は個々の認可テストケースを実行します
+func executeAuthzTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
+	rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
+	tc.Setup(rec, c)
+
+	if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
+		t.Errorf(errUnexpectedError, err)
+	}
+
+	if tc.ExpectedError != "" {
+		test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
+		return
+	}
+
+	var university models.University
+	if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
+		t.Fatalf(errAuthzUnmarshal, err)
+	}
+	if err := verifyAuthorization(rec, tc.ExpectedStatus, tc.ExpectedError); err != nil {
+		t.Errorf(errAuthzVerification, err)
+	}
+}
+
 // TestAuthorization は認可機能をテストします
 func TestAuthorization(t *testing.T) {
 	env, err := setupTestEnvironment(t)
@@ -1229,14 +1122,7 @@ func TestAuthorization(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認可テスト大学", "認可テスト学部")
-				jsonData, err := json.Marshal(university)
-	if err != nil {
-					t.Fatalf(errAuthzTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-				c.Request().Header.Set("Authorization", "Bearer no-permission-token")
+				setupAuthzTestCase(t, c, testAuthUniversityName, testAuthDepartmentName, "Bearer no-permission-token")
 			},
 			ExpectedStatus: http.StatusForbidden,
 			ExpectedError:  errNoPermission,
@@ -1246,14 +1132,7 @@ func TestAuthorization(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認可テスト大学", "認可テスト学部")
-				jsonData, err := json.Marshal(university)
-				if err != nil {
-					t.Fatalf(errAuthzTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-				c.Request().Header.Set("Authorization", "Bearer user-token")
+				setupAuthzTestCase(t, c, testAuthUniversityName, testAuthDepartmentName, "Bearer user-token")
 			},
 			ExpectedStatus: http.StatusForbidden,
 			ExpectedError:  errNoPermission,
@@ -1263,14 +1142,7 @@ func TestAuthorization(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認可テスト大学", "認可テスト学部")
-				jsonData, err := json.Marshal(university)
-				if err != nil {
-					t.Fatalf(errAuthzTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-				c.Request().Header.Set("Authorization", "Bearer editor-token")
+				setupAuthzTestCase(t, c, testAuthUniversityName, testAuthDepartmentName, "Bearer editor-token")
 			},
 			ExpectedStatus: http.StatusCreated,
 			ExpectedError:  "",
@@ -1280,14 +1152,7 @@ func TestAuthorization(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認可テスト大学", "認可テスト学部")
-				jsonData, err := json.Marshal(university)
-				if err != nil {
-					t.Fatalf(errAuthzTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-				c.Request().Header.Set("Authorization", "Bearer admin-token")
+				setupAuthzTestCase(t, c, testAuthUniversityName, testAuthDepartmentName, "Bearer admin-token")
 			},
 			ExpectedStatus: http.StatusCreated,
 			ExpectedError:  "",
@@ -1297,14 +1162,7 @@ func TestAuthorization(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("認可テスト大学", "認可テスト学部")
-				jsonData, err := json.Marshal(university)
-				if err != nil {
-					t.Fatalf(errAuthzTestData, err)
-				}
-				c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-				c.Request().Header.Set(test_helpers.ContentTypeHeader, test_helpers.ContentTypeJSON)
-				c.Request().Header.Set("Authorization", "Bearer super-admin-token")
+				setupAuthzTestCase(t, c, testAuthzUniversityName, testAuthzDepartmentName, "Bearer super-admin-token")
 			},
 			ExpectedStatus: http.StatusCreated,
 			ExpectedError:  "",
@@ -1313,30 +1171,13 @@ func TestAuthorization(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
-			tc.Setup(rec, c)
-
-			if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
-				t.Errorf(errAuthzRequest, err)
-			}
-
-			if tc.ExpectedError != "" {
-				test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
-			} else {
-				var university models.University
-				if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
-					t.Fatalf(errAuthzUnmarshal, err)
-				}
-				if err := verifyAuthorization(t, rec, tc.ExpectedStatus, tc.ExpectedError); err != nil {
-					t.Errorf(errAuthzVerification, err)
-				}
-			}
+			executeAuthzTestCase(t, env, tc)
 		})
 	}
 }
 
 // verifyAuthorization は認可テストのレスポンスを検証します
-func verifyAuthorization(t *testing.T, rec *httptest.ResponseRecorder, expectedStatus int, expectedError string) error {
+func verifyAuthorization(rec *httptest.ResponseRecorder, expectedStatus int, expectedError string) error {
 	if expectedError != "" {
 		var response map[string]string
 		if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
@@ -1424,6 +1265,32 @@ func verifyXSSEscaping(t *testing.T, handler interface{}, e *echo.Echo, universi
 	return nil
 }
 
+// executeXSSTestCase は個々のXSSテストケースを実行します
+func executeXSSTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
+	rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
+	tc.Setup(rec, c)
+
+	var university models.University
+	if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
+		t.Fatalf(errXSSUnmarshal, err)
+	}
+
+	createdUniversity, err := runXSSTest(t, env.Handler, env.E, university)
+	if err != nil {
+		t.Errorf(errXSSRequest, err)
+		return
+	}
+
+	if tc.ExpectedError != "" {
+		test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
+		return
+	}
+
+	if err := verifyXSSEscaping(t, env.Handler, env.E, createdUniversity); err != nil {
+		t.Errorf(errXSSVerification, err)
+	}
+}
+
 // TestXSSPrevention はXSS攻撃対策を検証します
 func TestXSSPrevention(t *testing.T) {
 	env, err := setupTestEnvironment(t)
@@ -1484,69 +1351,51 @@ func TestXSSPrevention(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
-			tc.Setup(rec, c)
-
-			if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
-				t.Errorf(errXSSRequest, err)
-			}
-
-			if tc.ExpectedError != "" {
-				test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
-			} else {
-				var university models.University
-				if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
-					t.Fatalf(errXSSUnmarshal, err)
-				}
-				if err := verifyXSSEscaping(t, env.Handler, env.E, &university); err != nil {
-					t.Errorf(errXSSVerification, err)
-				}
-			}
+			executeXSSTestCase(t, env, tc)
 		})
 	}
 }
 
-// runCSRFTest はCSRFテストケースを実行します
-func runCSRFTest(_ *testing.T, handler interface{}, e *echo.Echo, method string, setupCSRF func(*httptest.ResponseRecorder, echo.Context)) (*httptest.ResponseRecorder, error) {
-			university := &models.University{
-				Name: "CSRFテスト大学",
-		Departments: []models.Department{{
-						Name: "CSRFテスト学部",
-			Majors: []models.Major{{
-								Name: "CSRFテスト学科",
-			}},
-		}},
-			}
+// executeCSRFTestCase は個々のCSRFテストケースを実行します
+func executeCSRFTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
+	rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
+	tc.Setup(rec, c)
 
-			jsonData, err := json.Marshal(university)
-			if err != nil {
-		return nil, fmt.Errorf(errMarshalTestData, err)
-			}
+	if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
+		t.Errorf(errCSRFRequest, err)
+	}
 
-	rec, c := test_helpers.CreateTestContext(e, method, "/api/v1/universities", nil)
-			c.Request().Body = io.NopCloser(bytes.NewBuffer(jsonData))
-			c.Request().Header.Set("Content-Type", "application/json")
+	if tc.ExpectedError != "" {
+		test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
+		return
+	}
 
-	setupCSRF(rec, c)
-	err = handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c)
-	return rec, err
+	var university models.University
+	if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
+		t.Fatalf(errCSRFUnmarshal, err)
+	}
+	if err := verifyCSRFResponse(rec, tc.ExpectedStatus, tc.ExpectedError); err != nil {
+		t.Errorf(errCSRFVerification, err)
+	}
 }
 
 // verifyCSRFResponse はCSRFテストのレスポンスを検証します
-func verifyCSRFResponse(t *testing.T, rec *httptest.ResponseRecorder, expectedStatus int, expectedError string) error {
+func verifyCSRFResponse(rec *httptest.ResponseRecorder, expectedStatus int, expectedError string) error {
+	if rec.Code != expectedStatus {
+		return fmt.Errorf(test_helpers.ErrInvalidStatusCode, rec.Code, expectedStatus)
+	}
+
 	if expectedError != "" {
-				var response map[string]string
-				if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
-			return fmt.Errorf("レスポンスのアンマーシャルに失敗しました: %v", err)
+		var response map[string]string
+		if err := json.Unmarshal(rec.Body.Bytes(), &response); err != nil {
+			return fmt.Errorf("レスポンスのパースに失敗: %v", err)
 		}
-		if response["error"] != expectedError {
-			return fmt.Errorf("エラーメッセージが一致しません: got %v want %v", response["error"], expectedError)
+
+		if message, ok := response["error"]; !ok || message != expectedError {
+			return fmt.Errorf("CSRFエラーメッセージが一致しません: got %v want %v", message, expectedError)
 		}
 	}
 
-	if rec.Code != expectedStatus {
-		return fmt.Errorf("ステータスコードが一致しません: got %v want %v", rec.Code, expectedStatus)
-	}
 	return nil
 }
 
@@ -1563,7 +1412,7 @@ func TestCSRFProtection(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("CSRFテスト大学", "CSRFテスト学部")
+				university := test_helpers.CreateTestUniversity(test_helpers.TestUniversityName, test_helpers.TestDepartmentName)
 				jsonData, err := json.Marshal(university)
 				if err != nil {
 					t.Fatalf(errCSRFTestData, err)
@@ -1579,7 +1428,7 @@ func TestCSRFProtection(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("CSRFテスト大学", "CSRFテスト学部")
+				university := test_helpers.CreateTestUniversity(test_helpers.TestUniversityName, test_helpers.TestDepartmentName)
 				jsonData, err := json.Marshal(university)
 				if err != nil {
 					t.Fatalf(errCSRFTestData, err)
@@ -1596,7 +1445,7 @@ func TestCSRFProtection(t *testing.T) {
 			Method: http.MethodPost,
 			Path:   test_helpers.APIUniversitiesPath,
 			Setup: func(rec *httptest.ResponseRecorder, c echo.Context) {
-				university := test_helpers.CreateTestUniversity("CSRFテスト大学", "CSRFテスト学部")
+				university := test_helpers.CreateTestUniversity(test_helpers.TestUniversityName, test_helpers.TestDepartmentName)
 				jsonData, err := json.Marshal(university)
 				if err != nil {
 					t.Fatalf(errCSRFTestData, err)
@@ -1614,24 +1463,7 @@ func TestCSRFProtection(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
-			tc.Setup(rec, c)
-
-			if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
-				t.Errorf(errCSRFRequest, err)
-			}
-
-			if tc.ExpectedError != "" {
-				test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
-			} else {
-				var university models.University
-				if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
-					t.Fatalf(errCSRFUnmarshal, err)
-				}
-				if err := verifyCSRFResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError); err != nil {
-					t.Errorf(errCSRFVerification, err)
-				}
-			}
+			executeCSRFTestCase(t, env, tc)
 		})
 	}
 }
@@ -1646,7 +1478,7 @@ func TestCSRFTokenRefresh(t *testing.T) {
 	// 初回トークンの取得
 	rec1, c1 := test_helpers.CreateTestContext(env.E, http.MethodGet, test_helpers.CSRFTokenPath, nil)
 	if err := env.Handler.(interface{ GetCSRFToken(echo.Context) error }).GetCSRFToken(c1); err != nil {
-		t.Errorf("予期しないエラーが発生: %v", err)
+		t.Errorf(errUnexpectedError, err)
 	}
 
 	var token1 struct {
@@ -1659,7 +1491,7 @@ func TestCSRFTokenRefresh(t *testing.T) {
 	// 2回目のトークン取得
 	rec2, c2 := test_helpers.CreateTestContext(env.E, http.MethodGet, test_helpers.CSRFTokenPath, nil)
 	if err := env.Handler.(interface{ GetCSRFToken(echo.Context) error }).GetCSRFToken(c2); err != nil {
-		t.Errorf("予期しないエラーが発生: %v", err)
+		t.Errorf(errUnexpectedError, err)
 	}
 
 	var token2 struct {
@@ -1765,27 +1597,38 @@ func TestInputSanitization(t *testing.T) {
 		},
 	}
 
+	runSanitizationTestCases(t, env, testCases)
+}
+
+// executeSanitizationTestCase は個々のサニタイズテストケースを実行します
+func executeSanitizationTestCase(t *testing.T, env *TestEnvironment, tc TestCase) {
+	rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
+	tc.Setup(rec, c)
+
+	if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
+		t.Errorf(errSanitizationRequest, err)
+	}
+
+	if tc.ExpectedError != "" {
+		test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
+		return
+	}
+
+	var university models.University
+	if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
+		t.Fatalf(errSanitizationUnmarshal, err)
+	}
+
+	if err := verifySanitization(t, &university, tc.Name); err != nil {
+		t.Errorf(errSanitizationVerification, err)
+	}
+}
+
+// runSanitizationTestCases はサニタイズテストケースを実行します
+func runSanitizationTestCases(t *testing.T, env *TestEnvironment, testCases []TestCase) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
-			tc.Setup(rec, c)
-
-			if err := env.Handler.(interface{ CreateUniversity(echo.Context) error }).CreateUniversity(c); err != nil {
-				t.Errorf(errSanitizationRequest, err)
-			}
-
-			if tc.ExpectedError != "" {
-				test_helpers.AssertErrorResponse(t, rec, tc.ExpectedStatus, tc.ExpectedError)
-			} else {
-				var university models.University
-				if err := json.Unmarshal(rec.Body.Bytes(), &university); err != nil {
-					t.Fatalf(errSanitizationUnmarshal, err)
-				}
-
-				if err := verifySanitization(t, &university, tc.Name); err != nil {
-					t.Errorf(errSanitizationVerification, err)
-				}
-			}
+			executeSanitizationTestCase(t, env, tc)
 		})
 	}
 }
@@ -1796,21 +1639,12 @@ func verifySanitization(t *testing.T, university *models.University, testCaseNam
 	expectedDeptName := "テスト学部"
 
 	switch testCaseName {
-	case "HTMLタグの除去":
-		expectedName = "テスト大学"
-		expectedDeptName = "テスト学部"
-	case "制御文字の除去":
+	case "HTMLタグの除去", "XSS攻撃文字の除去", "制御文字の除去", "SQLインジェクション文字の除去":
 		expectedName = "テスト大学"
 		expectedDeptName = "テスト学部"
 	case "全角スペースの正規化":
 		expectedName = "テスト 大学"
 		expectedDeptName = "テスト 学部"
-	case "SQLインジェクション文字の除去":
-		expectedName = "テスト大学"
-		expectedDeptName = "テスト学部"
-	case "XSS攻撃文字の除去":
-		expectedName = "テスト大学"
-		expectedDeptName = "テスト学部"
 	}
 
 	if university.Name != expectedName {
@@ -1829,4 +1663,41 @@ func verifySanitization(t *testing.T, university *models.University, testCaseNam
 			}
 
 	return nil
+}
+
+// verifyConcurrentIPResults は異なるIPアドレスからの並行リクエストの結果を検証します
+func verifyConcurrentIPResults(t *testing.T, results [][]int, config *middleware.RateLimitConfig) {
+	_, _, successRequests := analyzeResults(results)
+	expectedMinSuccess := config.TestNumRequests * config.TestNumGoroutines / 2
+	if successRequests < expectedMinSuccess {
+		t.Errorf("異なるIPアドレスからのリクエストの成功率が低すぎます: got %d, want at least %d", successRequests, expectedMinSuccess)
+	}
+}
+
+// verifyRateLimitReset はレート制限のリセットを検証します
+func verifyRateLimitReset(t *testing.T, env *TestEnvironment, config *middleware.RateLimitConfig) {
+	results1 := makeRequests(t, env.Handler, env.E, config.TestNumRequests)
+	time.Sleep(config.TestCooldownTime)
+	results2 := makeRequests(t, env.Handler, env.E, config.TestNumRequests)
+
+	limited1 := countLimitedRequests(results1)
+	limited2 := countLimitedRequests(results2)
+
+	if limited1 == 0 || limited2 == 0 {
+		t.Error("レート制限のリセットが正しく機能していません")
+	}
+
+	t.Logf("1回目のバースト: 制限されたリクエスト数: %d", limited1)
+	t.Logf("2回目のバースト: 制限されたリクエスト数: %d", limited2)
+}
+
+// verifyTimeWindowResults は時間枠内のレート制限結果を検証します
+func verifyTimeWindowResults(t *testing.T, results [][]int) {
+	totalRequests, limitedRequests, successRequests := analyzeResults(results)
+
+	if limitedRequests == 0 {
+		t.Error("時間枠内でのレート制限が機能していません")
+	}
+
+	t.Logf(errRequestStats, totalRequests, limitedRequests, successRequests)
 }

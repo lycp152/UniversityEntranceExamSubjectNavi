@@ -1,8 +1,0 @@
-INFO: 2025/02/15 20:46:58 logger.go:48: Cache: Set item with key: test_key
-INFO: 2025/02/15 20:46:58 logger.go:48: Cache: Hit for key: test_key
-INFO: 2025/02/15 20:46:58 logger.go:48: Cache: Deleted item with key: test_key
-INFO: 2025/02/15 20:46:58 logger.go:48: Cache: Set item with key: test_key
-INFO: 2025/02/19 13:28:32 logger.go:48: Cache: Set item with key: test_key
-INFO: 2025/02/19 13:28:32 logger.go:48: Cache: Hit for key: test_key
-INFO: 2025/02/19 13:28:32 logger.go:48: Cache: Deleted item with key: test_key
-INFO: 2025/02/19 13:28:32 logger.go:48: Cache: Set item with key: test_key

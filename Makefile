@@ -26,7 +26,6 @@ check-deps: ## 必要な依存関係をチェック
 .PHONY: verify
 verify: ## 開発環境の状態を検証
 	@echo "🔍 開発環境を検証しています..."
-	@$(DOCKER_COMPOSE) ps | grep -q "postgres" || (echo "❌ データベースが実行されていません" && exit 1)
 	@test -d front/node_modules || (echo "❌ フロントエンドの依存関係がインストールされていません" && exit 1)
 	@echo "✅ 検証が完了しました"
 

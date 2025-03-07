@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 	"university-exam-api/internal/domain/models"
 	"university-exam-api/internal/infrastructure/database"
 
@@ -126,8 +125,6 @@ func main() {
 
 	// 現在の年度と有効期間を設定
 	currentYear := 2024
-	validFrom := time.Date(2024, 4, 1, 0, 0, 0, 0, time.Local)
-	validUntil := time.Date(2025, 3, 31, 23, 59, 59, 0, time.Local)
 
 	// Sample data
 	universities := []models.University{
@@ -135,7 +132,7 @@ func main() {
 			BaseModel: models.BaseModel{
 				Version: 1,
 			},
-			Name: "〇〇大学",
+			Name: "津々大学",
 			Departments: []models.Department{
 				{
 					BaseModel: models.BaseModel{
@@ -164,8 +161,6 @@ func main() {
 											AdmissionScheduleID: 1,
 											Enrollment:          100,
 											AcademicYear:        currentYear,
-											ValidFrom:           validFrom,
-											ValidUntil:          validUntil,
 											Status:              "published",
 										},
 									},
@@ -176,68 +171,14 @@ func main() {
 											},
 											AdmissionScheduleID: 1,
 											Name:                "共通",
-											Subjects: []models.Subject{
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													TestTypeID:    1,
-													Name:         "英語L",
-													Score:        50,
-													Percentage:   5.88,
-													DisplayOrder: 1,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													TestTypeID:    1,
-													Name:         "英語R",
-													Score:        50,
-													Percentage:   5.88,
-													DisplayOrder: 2,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													TestTypeID:    1,
-													Name:         "数学",
-													Score:        100,
-													Percentage:   11.76,
-													DisplayOrder: 3,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													TestTypeID:    1,
-													Name:         "国語",
-													Score:        100,
-													Percentage:   11.76,
-													DisplayOrder: 4,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													TestTypeID:    1,
-													Name:         "理科",
-													Score:        200,
-													Percentage:   23.53,
-													DisplayOrder: 5,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													TestTypeID:    1,
-													Name:         "地歴公",
-													Score:        50,
-													Percentage:   5.88,
-													DisplayOrder: 6,
-												},
-											},
+											Subjects: createSubjectsWithScores([]SubjectData{
+												{Name: "英語L", Order: 1, CommonScore: 50},
+												{Name: "英語R", Order: 2, CommonScore: 50},
+												{Name: "数学", Order: 3, CommonScore: 100},
+												{Name: "国語", Order: 4, CommonScore: 100},
+												{Name: "理科", Order: 5, CommonScore: 200},
+												{Name: "地歴公", Order: 6, CommonScore: 50},
+											}),
 										},
 										{
 											BaseModel: models.BaseModel{
@@ -245,27 +186,10 @@ func main() {
 											},
 											AdmissionScheduleID: 1,
 											Name:                "二次",
-											Subjects: []models.Subject{
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													TestTypeID:    2,
-													Name:         "英語R",
-													Score:        150,
-													Percentage:   17.65,
-													DisplayOrder: 1,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "数学",
-													Score:        150,
-													Percentage:   17.65,
-													DisplayOrder: 2,
-												},
-											},
+											Subjects: createSubjectsWithScores([]SubjectData{
+												{Name: "英語R", Order: 1, SecondaryScore: 150},
+												{Name: "数学", Order: 2, SecondaryScore: 150},
+											}),
 										},
 									},
 								},
@@ -279,7 +203,7 @@ func main() {
 			BaseModel: models.BaseModel{
 				Version: 1,
 			},
-			Name: "△△大学",
+			Name: "浦々大学",
 			Departments: []models.Department{
 				{
 					BaseModel: models.BaseModel{
@@ -298,7 +222,7 @@ func main() {
 										Version: 1,
 									},
 									MajorID:      2,
-									Name:         "前期",
+									Name:         "後期",
 									DisplayOrder: 1,
 									AdmissionInfos: []models.AdmissionInfo{
 										{
@@ -308,8 +232,6 @@ func main() {
 											AdmissionScheduleID: 2,
 											Enrollment:          150,
 											AcademicYear:        currentYear,
-											ValidFrom:           validFrom,
-											ValidUntil:          validUntil,
 											Status:              "published",
 										},
 									},

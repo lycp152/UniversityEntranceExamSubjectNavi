@@ -3,7 +3,6 @@ package database
 import (
 	"os"
 	"testing"
-	"university-exam-api/internal/infrastructure/database"
 	"university-exam-api/pkg/logger"
 )
 
@@ -20,7 +19,7 @@ func TestDatabaseConnection(t *testing.T) {
 	os.Setenv("DB_SCHEMA", "test_schema")
 
 	// データベース接続のテスト
-	db := database.NewDB()
+	db := NewDB()
 	sqlDB, err := db.DB()
 	if err != nil {
 		t.Fatalf("Failed to get database instance: %v", err)
@@ -37,7 +36,7 @@ func TestDatabaseConnection(t *testing.T) {
 	}
 
 	// マイグレーションのテスト
-	if err := database.RunMigrations(db); err != nil {
+	if err := RunMigrations(db); err != nil {
 		t.Fatalf("Failed to run migrations: %v", err)
 	}
 }

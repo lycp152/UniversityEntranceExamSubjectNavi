@@ -1,5 +1,11 @@
 import { useState, useCallback } from "react";
-import type { University, Department } from "@/lib/types/university/university";
+import type {
+  University,
+  Department,
+  Major,
+  AdmissionSchedule,
+  AdmissionInfo,
+} from "@/lib/types/university/university";
 import {
   transformAPIResponse,
   transformToAPITestType,
@@ -11,6 +17,12 @@ const API_ENDPOINTS = {
     `${process.env.NEXT_PUBLIC_API_URL}/universities/${universityId}/departments/${departmentId}`,
   SUBJECTS_BATCH: (universityId: number, departmentId: number) =>
     `${process.env.NEXT_PUBLIC_API_URL}/universities/${universityId}/departments/${departmentId}/subjects/batch`,
+  MAJOR: (departmentId: number, majorId: number) =>
+    `${process.env.NEXT_PUBLIC_API_URL}/departments/${departmentId}/majors/${majorId}`,
+  ADMISSION_SCHEDULE: (majorId: number, scheduleId: number) =>
+    `${process.env.NEXT_PUBLIC_API_URL}/majors/${majorId}/schedules/${scheduleId}`,
+  ADMISSION_INFO: (scheduleId: number, infoId: number) =>
+    `${process.env.NEXT_PUBLIC_API_URL}/schedules/${scheduleId}/info/${infoId}`,
 } as const;
 
 interface APIError {
@@ -196,6 +208,103 @@ export const useUniversityData = () => {
     [handleAPIError]
   );
 
+  const updateMajor = useCallback(
+    async (departmentId: number, major: Major, headers: HeadersInit) => {
+      try {
+        const response = await fetch(
+          API_ENDPOINTS.MAJOR(departmentId, major.id),
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              ...headers,
+            },
+            body: JSON.stringify(major),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `APIエラー: ${response.status} ${response.statusText}`
+          );
+        }
+
+        return await response.json();
+      } catch (error) {
+        const errorMessage = handleAPIError(error);
+        setError(errorMessage);
+        throw error;
+      }
+    },
+    [handleAPIError]
+  );
+
+  const updateAdmissionSchedule = useCallback(
+    async (
+      majorId: number,
+      schedule: AdmissionSchedule,
+      headers: HeadersInit
+    ) => {
+      try {
+        const response = await fetch(
+          API_ENDPOINTS.ADMISSION_SCHEDULE(majorId, schedule.id),
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              ...headers,
+            },
+            body: JSON.stringify(schedule),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `APIエラー: ${response.status} ${response.statusText}`
+          );
+        }
+
+        return await response.json();
+      } catch (error) {
+        const errorMessage = handleAPIError(error);
+        setError(errorMessage);
+        throw error;
+      }
+    },
+    [handleAPIError]
+  );
+
+  const updateAdmissionInfo = useCallback(
+    async (scheduleId: number, info: AdmissionInfo, headers: HeadersInit) => {
+      try {
+        const response = await fetch(
+          API_ENDPOINTS.ADMISSION_INFO(scheduleId, info.id),
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              ...headers,
+            },
+            body: JSON.stringify(info),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `APIエラー: ${response.status} ${response.statusText}`
+          );
+        }
+
+        return await response.json();
+      } catch (error) {
+        const errorMessage = handleAPIError(error);
+        setError(errorMessage);
+        throw error;
+      }
+    },
+    [handleAPIError]
+  );
+
   return {
     universities,
     setUniversities,
@@ -209,5 +318,8 @@ export const useUniversityData = () => {
     updateUniversity,
     updateDepartment,
     updateSubjects,
+    updateMajor,
+    updateAdmissionSchedule,
+    updateAdmissionInfo,
   };
 };

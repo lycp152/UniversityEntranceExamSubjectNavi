@@ -1,4 +1,4 @@
-package test_helpers
+package testutils
 
 import (
 	"university-exam-api/internal/domain/models"

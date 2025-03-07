@@ -70,9 +70,6 @@ func createTestData(db *gorm.DB) (*models.University, error) {
 		currentYear--
 	}
 
-	validFrom := time.Now()
-	validUntil := validFrom.AddDate(1, 0, 0)
-
 	university := &models.University{
 		BaseModel: models.BaseModel{
 			Version: 1,
@@ -104,8 +101,6 @@ func createTestData(db *gorm.DB) (*models.University, error) {
 										},
 										Enrollment:   100,
 										AcademicYear: currentYear,
-										ValidFrom:    validFrom,
-										ValidUntil:   validUntil,
 										Status:       "draft",
 									},
 								},

@@ -1,20 +1,19 @@
-package api
+package repositories
 
 import (
 	"testing"
 	"time"
 	"university-exam-api/internal/domain/models"
-	"university-exam-api/internal/repositories"
 )
 
 func TestDataIntegrity(t *testing.T) {
 	// テスト用のデータベースをセットアップ
-	db := repositories.SetupTestDB()
+	db := SetupTestDB()
 	if db == nil {
 		t.Fatal("データベースの初期化に失敗しました")
 	}
 
-	repo := repositories.NewUniversityRepository(db)
+	repo := NewUniversityRepository(db)
 
 	// テストデータの作成
 	university := &models.University{
@@ -48,8 +47,6 @@ func TestDataIntegrity(t *testing.T) {
 										},
 										Enrollment:   100,
 										AcademicYear: time.Now().Year(),
-										ValidFrom:    time.Now(),
-										ValidUntil:   time.Now().AddDate(1, 0, 0),
 										Status:       "draft",
 									},
 								},

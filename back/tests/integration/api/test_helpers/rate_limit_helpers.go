@@ -105,34 +105,17 @@ func ExecuteConcurrentRateLimitTest(t *testing.T, handler interface{}, e *echo.E
 	return AnalyzeRateLimitResults(allResults, allResponseTimes)
 }
 
-// AnalyzeRateLimitResults はレート制限テストの結果を分析します
-func AnalyzeRateLimitResults(results []int, responseTimes []float64) *RateLimitTestResult {
-	var (
-		totalRequests   = len(results)
-		limitedRequests = 0
-		successRequests = 0
-		sumResponseTime = 0.0
-		maxResponseTime = 0.0
-		minResponseTime = responseTimes[0]
-	)
+// calculateResponseTimeStats はレスポンス時間の統計を計算します
+func calculateResponseTimeStats(responseTimes []float64) (float64, float64, float64) {
+	if len(responseTimes) == 0 {
+		return 0, 0, 0
+	}
 
-	// レスポンス時間のソート
-	sortedTimes := make([]float64, len(responseTimes))
-	copy(sortedTimes, responseTimes)
-	sort.Float64s(sortedTimes)
+	sumResponseTime := 0.0
+	maxResponseTime := responseTimes[0]
+	minResponseTime := responseTimes[0]
 
-	// パーセンタイルの計算
-	percentile95 := calculatePercentile(sortedTimes, 95)
-	percentile99 := calculatePercentile(sortedTimes, 99)
-
-	for i, code := range results {
-		if code == http.StatusTooManyRequests {
-			limitedRequests++
-		} else if code == http.StatusOK {
-			successRequests++
-		}
-
-		responseTime := responseTimes[i]
+	for _, responseTime := range responseTimes {
 		sumResponseTime += responseTime
 		if responseTime > maxResponseTime {
 			maxResponseTime = responseTime
@@ -142,18 +125,61 @@ func AnalyzeRateLimitResults(results []int, responseTimes []float64) *RateLimitT
 		}
 	}
 
-	// 比率の計算
+	avgResponseTime := sumResponseTime / float64(len(responseTimes))
+	return avgResponseTime, maxResponseTime, minResponseTime
+}
+
+// countRequestResults はリクエスト結果の集計を行います
+func countRequestResults(results []int) (int, int) {
+	limitedRequests := 0
+	successRequests := 0
+
+	for _, code := range results {
+		if code == http.StatusTooManyRequests {
+			limitedRequests++
+		} else if code == http.StatusOK {
+			successRequests++
+		}
+	}
+
+	return limitedRequests, successRequests
+}
+
+// calculateRatios はレート制限と成功率を計算します
+func calculateRatios(totalRequests, limitedRequests, successRequests int) (float64, float64, float64) {
 	rateLimitRatio := float64(limitedRequests) / float64(totalRequests)
 	successRatio := float64(successRequests) / float64(totalRequests)
-	throughput := float64(successRequests) / (float64(totalRequests) * 0.001) // 1秒あたりの処理リクエスト数
+	throughput := float64(successRequests) / (float64(totalRequests) * 0.001)
+	return rateLimitRatio, successRatio, throughput
+}
+
+// AnalyzeRateLimitResults はレート制限テストの結果を分析します
+func AnalyzeRateLimitResults(results []int, responseTimes []float64) *RateLimitTestResult {
+	totalRequests := len(results)
+
+	// レスポンス時間の統計を計算
+	avgResponse, maxResponse, minResponse := calculateResponseTimeStats(responseTimes)
+
+	// リクエスト結果の集計
+	limitedRequests, successRequests := countRequestResults(results)
+
+	// パーセンタイルの計算
+	sortedTimes := make([]float64, len(responseTimes))
+	copy(sortedTimes, responseTimes)
+	sort.Float64s(sortedTimes)
+	percentile95 := calculatePercentile(sortedTimes, 95)
+	percentile99 := calculatePercentile(sortedTimes, 99)
+
+	// 比率の計算
+	rateLimitRatio, successRatio, throughput := calculateRatios(totalRequests, limitedRequests, successRequests)
 
 	return &RateLimitTestResult{
 		TotalRequests:    totalRequests,
 		LimitedRequests:  limitedRequests,
 		SuccessRequests:  successRequests,
-		AverageResponse:  sumResponseTime / float64(totalRequests),
-		MaxResponseTime:  maxResponseTime,
-		MinResponseTime:  minResponseTime,
+		AverageResponse:  avgResponse,
+		MaxResponseTime:  maxResponse,
+		MinResponseTime:  minResponse,
 		ResponseTimes:    responseTimes,
 		Percentile95:     percentile95,
 		Percentile99:     percentile99,
@@ -240,7 +266,7 @@ func GenerateTestReport(t *testing.T, testName string, results []*RateLimitTestR
 	report.Configuration = config
 
 	// レポートディレクトリの作成
-	reportDir := "test_reports"
+	reportDir := "back/logs/tests"
 	if err := os.MkdirAll(reportDir, 0755); err != nil {
 		t.Logf("レポートディレクトリの作成に失敗: %v", err)
 		return report
@@ -261,10 +287,10 @@ func GenerateTestReport(t *testing.T, testName string, results []*RateLimitTestR
 	}
 
 	// CSVレポートの生成
-	if err := generateResponseTimeCSV(t, report); err != nil {
+	if err := generateResponseTimeCSV(report); err != nil {
 		t.Logf("レスポンス時間CSVの生成に失敗: %v", err)
 	}
-	if err := generateRateLimitCSV(t, report); err != nil {
+	if err := generateRateLimitCSV(report); err != nil {
 		t.Logf("レート制限CSVの生成に失敗: %v", err)
 	}
 
@@ -272,7 +298,7 @@ func GenerateTestReport(t *testing.T, testName string, results []*RateLimitTestR
 }
 
 // generateResponseTimeCSV はレスポンス時間のCSVを生成します
-func generateResponseTimeCSV(t *testing.T, report *TestReport) error {
+func generateResponseTimeCSV(report *TestReport) error {
 	csvFile := filepath.Join("test_reports", fmt.Sprintf("%s_response_time_%s.csv", report.TestName, time.Now().Format("20060102_150405")))
 	f, err := os.Create(csvFile)
 	if err != nil {
@@ -318,7 +344,7 @@ func generateResponseTimeCSV(t *testing.T, report *TestReport) error {
 }
 
 // generateRateLimitCSV はレート制限のCSVを生成します
-func generateRateLimitCSV(t *testing.T, report *TestReport) error {
+func generateRateLimitCSV(report *TestReport) error {
 	csvFile := filepath.Join("test_reports", fmt.Sprintf("%s_rate_limit_%s.csv", report.TestName, time.Now().Format("20060102_150405")))
 	f, err := os.Create(csvFile)
 	if err != nil {
@@ -372,68 +398,51 @@ func generateRateLimitCSV(t *testing.T, report *TestReport) error {
 	return nil
 }
 
-// AnalyzeTestTrends はテスト結果のトレンドを分析します
-func AnalyzeTestTrends(t *testing.T, report *TestReport) {
-	t.Logf("テスト結果のトレンド分析:")
-	t.Logf("  テスト実行日時: %s", report.Timestamp.Format("2006-01-02 15:04:05"))
-	t.Logf("  テスト名: %s", report.TestName)
-
-	// レスポンス時間のトレンド
-	var avgResponseTimes []float64
-	for _, result := range report.Results {
-		avgResponseTimes = append(avgResponseTimes, result.AverageResponse)
+func analyzeResponseTimeTrends(t *testing.T, avgResponseTimes []float64) {
+	if len(avgResponseTimes) <= 1 {
+		return
 	}
-
-	// レスポンス時間の傾向を分析
-	if len(avgResponseTimes) > 1 {
-		trend := avgResponseTimes[len(avgResponseTimes)-1] - avgResponseTimes[0]
-		if trend > 0 {
-			t.Logf("  レスポンス時間の傾向: 増加傾向 (%.2f ms)", trend)
-		} else if trend < 0 {
-			t.Logf("  レスポンス時間の傾向: 減少傾向 (%.2f ms)", -trend)
-		} else {
-			t.Logf("  レスポンス時間の傾向: 安定")
-		}
+	trend := avgResponseTimes[len(avgResponseTimes)-1] - avgResponseTimes[0]
+	if trend > 0 {
+		t.Logf("  レスポンス時間の傾向: 増加傾向 (%.2f ms)", trend)
+	} else if trend < 0 {
+		t.Logf("  レスポンス時間の傾向: 減少傾向 (%.2f ms)", -trend)
+	} else {
+		t.Logf("  レスポンス時間の傾向: 安定")
 	}
+}
 
-	// レート制限の傾向を分析
-	var rateLimitRatios []float64
-	for _, result := range report.Results {
-		rateLimitRatios = append(rateLimitRatios, result.RateLimitRatio)
+func analyzeRateLimitTrends(t *testing.T, rateLimitRatios []float64) {
+	if len(rateLimitRatios) <= 1 {
+		return
 	}
-
-	if len(rateLimitRatios) > 1 {
-		trend := rateLimitRatios[len(rateLimitRatios)-1] - rateLimitRatios[0]
-		if trend > 0 {
-			t.Logf("  レート制限の傾向: 増加傾向 (%.2f%%)", trend*100)
-		} else if trend < 0 {
-			t.Logf("  レート制限の傾向: 減少傾向 (%.2f%%)", -trend*100)
-		} else {
-			t.Logf("  レート制限の傾向: 安定")
-		}
+	trend := rateLimitRatios[len(rateLimitRatios)-1] - rateLimitRatios[0]
+	if trend > 0 {
+		t.Logf("  レート制限の傾向: 増加傾向 (%.2f%%)", trend*100)
+	} else if trend < 0 {
+		t.Logf("  レート制限の傾向: 減少傾向 (%.2f%%)", -trend*100)
+	} else {
+		t.Logf("  レート制限の傾向: 安定")
 	}
+}
 
-	// スループットの傾向を分析
-	var throughputs []float64
-	for _, result := range report.Results {
-		throughputs = append(throughputs, result.Throughput)
+func analyzeThroughputTrends(t *testing.T, throughputs []float64) {
+	if len(throughputs) <= 1 {
+		return
 	}
-
-	if len(throughputs) > 1 {
-		trend := throughputs[len(throughputs)-1] - throughputs[0]
-		if trend > 0 {
-			t.Logf("  スループットの傾向: 増加傾向 (%.2f req/s)", trend)
-		} else if trend < 0 {
-			t.Logf("  スループットの傾向: 減少傾向 (%.2f req/s)", -trend)
-		} else {
-			t.Logf("  スループットの傾向: 安定")
-		}
+	trend := throughputs[len(throughputs)-1] - throughputs[0]
+	if trend > 0 {
+		t.Logf("  スループットの傾向: 増加傾向 (%.2f req/s)", trend)
+	} else if trend < 0 {
+		t.Logf("  スループットの傾向: 減少傾向 (%.2f req/s)", -trend)
+	} else {
+		t.Logf("  スループットの傾向: 安定")
 	}
+}
 
-	// 異常値の検出と分析
+func analyzeAnomalies(t *testing.T, results []*RateLimitTestResult) {
 	t.Logf("\n異常値分析:")
-	for i, result := range report.Results {
-		// レスポンス時間の異常値検出
+	for i, result := range results {
 		threshold := result.AverageResponse + (2 * result.Percentile95)
 		anomalies := 0
 		for _, rt := range result.ResponseTimes {
@@ -444,26 +453,23 @@ func AnalyzeTestTrends(t *testing.T, report *TestReport) {
 		if anomalies > 0 {
 			t.Logf("  テスト%d: %d件の異常なレスポンス時間を検出 (閾値: %.2f ms)", i+1, anomalies, threshold)
 		}
-
-		// レート制限の異常値検出
 		if result.RateLimitRatio > 0.8 {
 			t.Logf("  テスト%d: 高いレート制限率を検出 (%.2f%%)", i+1, result.RateLimitRatio*100)
 		}
-
-		// スループットの異常値検出
 		if result.Throughput < 1.0 {
 			t.Logf("  テスト%d: 低いスループットを検出 (%.2f req/s)", i+1, result.Throughput)
 		}
 	}
+}
 
-	// パフォーマンスメトリクスの集計
+func analyzePerformanceMetrics(t *testing.T, results []*RateLimitTestResult) {
 	t.Logf("\nパフォーマンスメトリクス:")
 	var totalRequests, totalLimited, totalSuccess int
 	var totalResponseTime float64
 	var maxResponseTime float64
-	var minResponseTime = report.Results[0].MinResponseTime
+	var minResponseTime = results[0].MinResponseTime
 
-	for _, result := range report.Results {
+	for _, result := range results {
 		totalRequests += result.TotalRequests
 		totalLimited += result.LimitedRequests
 		totalSuccess += result.SuccessRequests
@@ -487,7 +493,6 @@ func AnalyzeTestTrends(t *testing.T, report *TestReport) {
 	t.Logf("  最大レスポンス時間: %.2f ms", maxResponseTime)
 	t.Logf("  最小レスポンス時間: %.2f ms", minResponseTime)
 
-	// パフォーマンス警告
 	if avgResponseTime > 1000 {
 		t.Logf("\n警告: 全体的な平均レスポンス時間が1秒を超えています")
 	}
@@ -497,4 +502,23 @@ func AnalyzeTestTrends(t *testing.T, report *TestReport) {
 	if successRate < 50 {
 		t.Logf("警告: 全体的な成功率が50%%を下回っています")
 	}
+}
+
+func AnalyzeTestTrends(t *testing.T, report *TestReport) {
+	t.Logf("テスト結果のトレンド分析:")
+	t.Logf("  テスト実行日時: %s", report.Timestamp.Format("2006-01-02 15:04:05"))
+	t.Logf("  テスト名: %s", report.TestName)
+
+	var avgResponseTimes, rateLimitRatios, throughputs []float64
+	for _, result := range report.Results {
+		avgResponseTimes = append(avgResponseTimes, result.AverageResponse)
+		rateLimitRatios = append(rateLimitRatios, result.RateLimitRatio)
+		throughputs = append(throughputs, result.Throughput)
+	}
+
+	analyzeResponseTimeTrends(t, avgResponseTimes)
+	analyzeRateLimitTrends(t, rateLimitRatios)
+	analyzeThroughputTrends(t, throughputs)
+	analyzeAnomalies(t, report.Results)
+	analyzePerformanceMetrics(t, report.Results)
 }

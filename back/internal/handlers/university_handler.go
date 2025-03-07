@@ -19,6 +19,8 @@ const (
 	errInvalidSubjectIDFormat = "Invalid subject ID format: %v"
 	errMsgInvalidSubjectID = "Invalid subject ID format"
 	errMsgInvalidRequestBody = "Invalid request body"
+	errInvalidScheduleIDFormat = "Invalid schedule ID format: %v"
+	errMsgInvalidScheduleID = "Invalid schedule ID format"
 )
 
 type UniversityHandler struct {
@@ -30,7 +32,7 @@ func NewUniversityHandler(repo repositories.IUniversityRepository) *UniversityHa
 }
 
 func (h *UniversityHandler) GetUniversities(c echo.Context) error {
-    universities, err := h.repo.FindAll()
+    universities, err := h.repo.FindAll(c.Request().Context())
     if err != nil {
         logger.Error("Failed to fetch universities: %v", err)
         return handleError(c, err)
@@ -287,9 +289,9 @@ func (h *UniversityHandler) DeleteDepartment(c echo.Context) error {
 func (h *UniversityHandler) CreateSubject(c echo.Context) error {
     scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error("Invalid schedule ID format: %v", err)
+        logger.Error(errInvalidScheduleIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": "Invalid schedule ID format",
+            "error": errMsgInvalidScheduleID,
         })
     }
 
@@ -362,9 +364,9 @@ func (h *UniversityHandler) DeleteSubject(c echo.Context) error {
 func (h *UniversityHandler) UpdateSubjectsBatch(c echo.Context) error {
     scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error("Invalid schedule ID format: %v", err)
+        logger.Error(errInvalidScheduleIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": "Invalid schedule ID format",
+            "error": errMsgInvalidScheduleID,
         })
     }
 
@@ -405,4 +407,115 @@ func (h *UniversityHandler) GetCSRFToken(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"token": tokenStr,
 	})
+}
+
+// UpdateMajor は学科情報を更新します
+func (h *UniversityHandler) UpdateMajor(c echo.Context) error {
+    departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
+    if err != nil {
+        logger.Error(errInvalidDepartmentIDFormat, err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidDepartmentID,
+        })
+    }
+
+    majorID, err := strconv.ParseUint(c.Param("majorId"), 10, 32)
+    if err != nil {
+        logger.Error("Invalid major ID format: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": "Invalid major ID format",
+        })
+    }
+
+    var major models.Major
+    if err := c.Bind(&major); err != nil {
+        logger.Error("Failed to bind major data: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidRequestBody,
+        })
+    }
+
+    major.ID = uint(majorID)
+    major.DepartmentID = uint(departmentID)
+    if err := h.repo.UpdateMajor(&major); err != nil {
+        logger.Error("Failed to update major with ID %d: %v", majorID, err)
+        return handleError(c, err)
+    }
+
+    logger.Info("Successfully updated major with ID %d", majorID)
+    return c.JSON(http.StatusOK, major)
+}
+
+// UpdateAdmissionSchedule は入試日程を更新します
+func (h *UniversityHandler) UpdateAdmissionSchedule(c echo.Context) error {
+    majorID, err := strconv.ParseUint(c.Param("majorId"), 10, 32)
+    if err != nil {
+        logger.Error("Invalid major ID format: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": "Invalid major ID format",
+        })
+    }
+
+    scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
+    if err != nil {
+        logger.Error(errInvalidScheduleIDFormat, err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidScheduleID,
+        })
+    }
+
+    var schedule models.AdmissionSchedule
+    if err := c.Bind(&schedule); err != nil {
+        logger.Error("Failed to bind admission schedule data: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidRequestBody,
+        })
+    }
+
+    schedule.ID = uint(scheduleID)
+    schedule.MajorID = uint(majorID)
+    if err := h.repo.UpdateAdmissionSchedule(&schedule); err != nil {
+        logger.Error("Failed to update admission schedule with ID %d: %v", scheduleID, err)
+        return handleError(c, err)
+    }
+
+    logger.Info("Successfully updated admission schedule with ID %d", scheduleID)
+    return c.JSON(http.StatusOK, schedule)
+}
+
+// UpdateAdmissionInfo は募集人数を更新します
+func (h *UniversityHandler) UpdateAdmissionInfo(c echo.Context) error {
+    scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
+    if err != nil {
+        logger.Error(errInvalidScheduleIDFormat, err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidScheduleID,
+        })
+    }
+
+    infoID, err := strconv.ParseUint(c.Param("infoId"), 10, 32)
+    if err != nil {
+        logger.Error("Invalid info ID format: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": "Invalid info ID format",
+        })
+    }
+
+    var info models.AdmissionInfo
+    if err := c.Bind(&info); err != nil {
+        logger.Error("Failed to bind admission info data: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidRequestBody,
+        })
+    }
+
+    info.ID = uint(infoID)
+    info.AdmissionScheduleID = uint(scheduleID)
+    if err := h.repo.UpdateAdmissionInfo(&info); err != nil {
+        logger.Error("Failed to update admission info with ID %d: %v", infoID, err)
+        return handleError(c, err)
+    }
+
+    logger.Info("Successfully updated admission info with ID %d", infoID)
+    return c.JSON(http.StatusOK, info)
 }

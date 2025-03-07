@@ -83,6 +83,9 @@ export function useUniversityEditor() {
     updateUniversity,
     updateDepartment,
     updateSubjects,
+    updateMajor,
+    updateAdmissionSchedule,
+    updateAdmissionInfo,
   } = useUniversityData();
 
   const { calculateUpdatedSubjects, findTargetTestType } = useSubjectData();
@@ -133,6 +136,32 @@ export function useUniversityEditor() {
     return updatedDepartment;
   };
 
+  const updateDepartmentInUniversity = (
+    university: University,
+    departmentId: number,
+    field: string,
+    value: string | number
+  ): University => {
+    if (field === "universityName") {
+      return {
+        ...university,
+        name: value as string,
+      };
+    }
+
+    const updatedDepartments = university.departments.map(
+      (department: Department) => {
+        if (department.id !== departmentId) return department;
+        return updateDepartmentField(department, field, value);
+      }
+    );
+
+    return {
+      ...university,
+      departments: updatedDepartments,
+    };
+  };
+
   const handleInfoChange = (
     universityId: number,
     departmentId: number,
@@ -142,27 +171,12 @@ export function useUniversityEditor() {
     setUniversities((prevUniversities) =>
       prevUniversities.map((university) => {
         if (university.id !== universityId) return university;
-
-        // 大学名の更新
-        if (field === "universityName") {
-          return {
-            ...university,
-            name: value as string,
-          };
-        }
-
-        // 学部情報の更新
-        const updatedDepartments = university.departments.map(
-          (department: Department) => {
-            if (department.id !== departmentId) return department;
-            return updateDepartmentField(department, field, value);
-          }
+        return updateDepartmentInUniversity(
+          university,
+          departmentId,
+          field,
+          value
         );
-
-        return {
-          ...university,
-          departments: updatedDepartments,
-        };
       })
     );
   };
@@ -209,6 +223,20 @@ export function useUniversityEditor() {
     };
   };
 
+  const updateUniversityDepartments = (
+    university: University,
+    departmentId: number,
+    subjectId: number,
+    value: number,
+    isCommon: boolean
+  ): University => ({
+    ...university,
+    departments: university.departments.map((department: Department) => {
+      if (department.id !== departmentId) return department;
+      return updateDepartmentSubjects(department, subjectId, value, isCommon);
+    }),
+  });
+
   const handleScoreChange = async (
     universityId: number,
     departmentId: number,
@@ -220,23 +248,13 @@ export function useUniversityEditor() {
       setUniversities((prevUniversities) =>
         prevUniversities.map((university) => {
           if (university.id !== universityId) return university;
-
-          const updatedDepartments = university.departments.map(
-            (department: Department) => {
-              if (department.id !== departmentId) return department;
-              return updateDepartmentSubjects(
-                department,
-                subjectId,
-                value,
-                isCommon
-              );
-            }
+          return updateUniversityDepartments(
+            university,
+            departmentId,
+            subjectId,
+            value,
+            isCommon
           );
-
-          return {
-            ...university,
-            departments: updatedDepartments,
-          };
         })
       );
     } catch (error) {
@@ -245,73 +263,148 @@ export function useUniversityEditor() {
     }
   };
 
+  const updateTestTypesWithNewSubject = (
+    admissionSchedule: AdmissionSchedule,
+    internalType: TestType,
+    newSubject: Subject
+  ): AdmissionSchedule => ({
+    ...admissionSchedule,
+    testTypes: admissionSchedule.testTypes.map((testType) => {
+      if (testType.id === internalType.id) {
+        return {
+          ...testType,
+          subjects: [...testType.subjects, newSubject],
+        };
+      }
+      return testType;
+    }),
+  });
+
+  const updateDepartmentWithNewSubject = (
+    department: Department,
+    internalType: TestType,
+    newSubject: Subject
+  ): Department => {
+    const major: Major = department.majors[0];
+    const admissionSchedule = major?.admissionSchedules?.[0];
+    if (!major || !admissionSchedule) return department;
+
+    return {
+      ...department,
+      majors: [
+        {
+          ...major,
+          admissionSchedules: [
+            updateTestTypesWithNewSubject(
+              admissionSchedule,
+              internalType,
+              newSubject
+            ),
+          ],
+        },
+      ],
+    };
+  };
+
+  const updateUniversityWithNewSubject = (
+    university: University,
+    departmentId: number,
+    internalType: TestType,
+    newSubject: Subject
+  ): University => ({
+    ...university,
+    departments: university.departments.map((department) => {
+      if (department.id !== departmentId) return department;
+      return updateDepartmentWithNewSubject(
+        department,
+        internalType,
+        newSubject
+      );
+    }),
+  });
+
   const handleAddSubject = (
     universityId: number,
     departmentId: number,
     type: APITestType
   ) => {
     const internalType = transformTestTypeFromAPI(type);
+    const newSubject: Subject = {
+      id: 0,
+      testTypeId: internalType.id,
+      name: `科目${internalType.subjects.length + 1}`,
+      maxScore: 100,
+      minScore: 0,
+      weight: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
     setUniversities((prevUniversities) =>
       prevUniversities.map((university) => {
         if (university.id !== universityId) return university;
-
-        return {
-          ...university,
-          departments: university.departments.map((department) => {
-            if (department.id !== departmentId) return department;
-
-            const major = department.majors[0];
-            const admissionSchedule = major?.admissionSchedules?.[0];
-            if (!major || !admissionSchedule) return department;
-
-            const newSubject: Subject = {
-              id: 0,
-              testTypeId: internalType.id,
-              name: `科目${internalType.subjects.length + 1}`,
-              maxScore: 100,
-              minScore: 0,
-              weight: 1,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
-
-            const updatedTestTypes = admissionSchedule.testTypes.map(
-              (testType) => {
-                if (testType.id === internalType.id) {
-                  const updatedSubjects = [...testType.subjects, newSubject];
-                  return {
-                    id: testType.id,
-                    admissionScheduleId: testType.admissionScheduleId,
-                    name: testType.name,
-                    subjects: updatedSubjects,
-                    createdAt: testType.createdAt,
-                    updatedAt: testType.updatedAt,
-                  };
-                }
-                return testType;
-              }
-            );
-
-            const updatedAdmissionSchedule: AdmissionSchedule = {
-              ...admissionSchedule,
-              testTypes: updatedTestTypes,
-            };
-
-            const updatedMajor: Major = {
-              ...major,
-              admissionSchedules: [updatedAdmissionSchedule],
-            };
-
-            return {
-              ...department,
-              majors: [updatedMajor],
-            };
-          }),
-        };
+        return updateUniversityWithNewSubject(
+          university,
+          departmentId,
+          internalType,
+          newSubject
+        );
       })
     );
   };
+
+  const updateTestTypesWithSubjectName = (
+    testTypes: TestType[],
+    subjectId: number,
+    name: string
+  ): TestType[] =>
+    testTypes.map((testType) => ({
+      ...testType,
+      subjects: testType.subjects.map((subject) =>
+        subject.id === subjectId ? { ...subject, name } : subject
+      ),
+    }));
+
+  const updateDepartmentWithSubjectName = (
+    department: Department,
+    subjectId: number,
+    name: string
+  ): Department => {
+    const admissionSchedule = department.majors[0]?.admissionSchedules[0];
+    if (!admissionSchedule) return department;
+
+    return {
+      ...department,
+      majors: [
+        {
+          ...department.majors[0],
+          admissionSchedules: [
+            {
+              ...admissionSchedule,
+              testTypes: updateTestTypesWithSubjectName(
+                admissionSchedule.testTypes,
+                subjectId,
+                name
+              ),
+            },
+          ],
+        },
+      ],
+    };
+  };
+
+  const updateUniversityWithSubjectName = (
+    university: University,
+    departmentId: number,
+    subjectId: number,
+    name: string
+  ): University => ({
+    ...university,
+    departments: (university.departments || []).map((department) => {
+      if (department.id !== departmentId) return department;
+      return updateDepartmentWithSubjectName(department, subjectId, name);
+    }),
+  });
 
   const handleSubjectNameChange = (
     universityId: number,
@@ -322,43 +415,12 @@ export function useUniversityEditor() {
     setUniversities((prevUniversities) =>
       prevUniversities.map((university) => {
         if (university.id !== universityId) return university;
-
-        return {
-          ...university,
-          departments: (university.departments || []).map(
-            (department: Department) => {
-              if (department.id !== departmentId) return department;
-
-              const admissionSchedule =
-                department.majors[0]?.admissionSchedules[0];
-              if (!admissionSchedule) return department;
-
-              return {
-                ...department,
-                majors: [
-                  {
-                    ...department.majors[0],
-                    admissionSchedules: [
-                      {
-                        ...admissionSchedule,
-                        testTypes: admissionSchedule.testTypes.map(
-                          (testType: TestType) => ({
-                            ...testType,
-                            subjects: testType.subjects.map((subject) =>
-                              subject.id === subjectId
-                                ? { ...subject, name }
-                                : subject
-                            ),
-                          })
-                        ),
-                      },
-                    ],
-                  },
-                ],
-              };
-            }
-          ),
-        };
+        return updateUniversityWithSubjectName(
+          university,
+          departmentId,
+          subjectId,
+          name
+        );
       })
     );
   };
@@ -403,11 +465,22 @@ export function useUniversityEditor() {
         Pragma: "no-cache",
       };
 
-      await Promise.all([
-        updateUniversity(university, headers),
-        updateDepartment(university, department, headers),
-        updateSubjects(university, department, headers),
-      ]);
+      const major = department.majors[0];
+      const admissionSchedule = major?.admissionSchedules[0];
+      const admissionInfo = admissionSchedule?.admissionInfos[0];
+
+      await Promise.all(
+        [
+          updateUniversity(university, headers),
+          updateDepartment(university, department, headers),
+          updateSubjects(university, department, headers),
+          major && updateMajor(department.id, major, headers),
+          admissionSchedule &&
+            updateAdmissionSchedule(major.id, admissionSchedule, headers),
+          admissionInfo &&
+            updateAdmissionInfo(admissionSchedule.id, admissionInfo, headers),
+        ].filter(Boolean)
+      );
 
       await fetchUniversities();
 

@@ -1,9 +1,9 @@
-import { ScoreCalculator } from "../utils/calculations/scoreCalculator";
-import type { Score, ScoreMetrics } from "../types/score";
+import { ScoreCalculator } from "@/lib/score/core/calculator";
+import type { Score, ScoreCalculationResult } from "@/lib/types/score/score";
 import {
   SCORE_ERROR_CODES,
   SCORE_ERROR_MESSAGES,
-} from "../../../constants/subject/scores";
+} from "@/lib/constants/subject/scores";
 
 export class ScoreService {
   private readonly calculator: ScoreCalculator;

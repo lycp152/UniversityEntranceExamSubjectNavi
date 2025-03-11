@@ -1,9 +1,6 @@
 import { useState, useCallback } from "react";
-import type {
-  SubjectScore,
-  SubjectScoreError,
-} from "../../../../types/subject/common";
-import { validateSubjectScore } from "../../../../utils/subject/validation/validators";
+import type { SubjectScore, SubjectScoreError } from "@/types/subject/common";
+import { validateSubjectScore } from "@/utils/subject/validation/validators";
 
 export const useSubjectScore = () => {
   const [error, setError] = useState<SubjectScoreError | null>(null);

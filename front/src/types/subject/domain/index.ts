@@ -1,5 +1,8 @@
-import type { TestTypeName } from '@/lib/types/university/university';
-import type { SubjectName, SubjectCategory } from '../../../../constants/subject/subjects';
+import type { TestTypeName } from "@/lib/types/university/university";
+import type {
+  SubjectName,
+  SubjectCategory,
+} from "@/lib/constants/subject/subjects";
 
 export interface BaseScore {
   value: number;
@@ -29,5 +32,5 @@ export interface SubjectValidationError {
   code: string;
   message: string;
   field: string;
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
 }

@@ -1,6 +1,9 @@
-import { apiClient } from './index';
-import { authInterceptor } from '../interceptors/auth';
-import { loggingRequestInterceptor, loggingResponseInterceptor } from '../interceptors/logging';
+import { apiClient } from "@/api/client";
+import { authInterceptor } from "../interceptors/auth";
+import {
+  loggingRequestInterceptor,
+  loggingResponseInterceptor,
+} from "../interceptors/logging";
 
 export function setupApiClient(): void {
   // 認証インターセプターを追加

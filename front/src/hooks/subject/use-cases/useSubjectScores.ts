@@ -3,8 +3,8 @@ import type {
   SubjectScore,
   SubjectMetrics,
   SubjectValidationError,
-} from "../../types/domain";
-import { ScoreServiceFactory } from "../../../../factories/subject/ScoreServiceFactory";
+} from "@/types/subject/domain";
+import { ScoreServiceFactory } from "@/lib/factories/subject/ScoreServiceFactory";
 
 interface UseSubjectScoresResult {
   scores: SubjectScore[];

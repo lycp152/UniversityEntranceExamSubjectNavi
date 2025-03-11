@@ -1,10 +1,14 @@
-import type { SubjectScore, SubjectMetrics } from '../types/domain';
+import type {
+  SubjectScore,
+  ScoreCalculationResult,
+} from "@/lib/types/score/score";
 
 export class SubjectMetricsCollector {
-  private readonly metricsMap: Map<string, SubjectMetrics[]> = new Map();
+  private readonly metricsMap: Map<string, ScoreCalculationResult[]> =
+    new Map();
 
-  collectMetrics(scores: SubjectScore[]): SubjectMetrics[] {
-    const metricsByCategory = new Map<string, SubjectMetrics>();
+  collectMetrics(scores: SubjectScore[]): ScoreCalculationResult[] {
+    const metricsByCategory = new Map<string, ScoreCalculationResult>();
 
     // カテゴリごとにスコアを集計
     scores.forEach((score) => {
@@ -25,15 +29,15 @@ export class SubjectMetricsCollector {
     return metrics;
   }
 
-  getStoredMetrics(key: string): SubjectMetrics[] | undefined {
+  getStoredMetrics(key: string): ScoreCalculationResult[] | undefined {
     return this.metricsMap.get(key);
   }
 
   private generateKey(scores: SubjectScore[]): string {
     return scores
       .map((s) => `${s.subjectName}:${s.value}:${s.type}`)
-      .sort((a, b) => a.localeCompare(b, 'ja'))
-      .join('|');
+      .sort((a, b) => a.localeCompare(b, "ja"))
+      .join("|");
   }
 
   clearMetrics(): void {

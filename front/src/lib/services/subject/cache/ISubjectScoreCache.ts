@@ -1,9 +1,16 @@
-import type { SubjectScore, SubjectMetrics } from "../types/domain";
+import type {
+  SubjectScore,
+  ScoreCalculationResult,
+} from "@/lib/types/score/score";
 
 export interface ISubjectScoreCache {
   get(
     key: string
-  ): { scores: SubjectScore[]; metrics: SubjectMetrics[] } | null;
-  set(key: string, scores: SubjectScore[], metrics: SubjectMetrics[]): void;
+  ): { scores: SubjectScore[]; metrics: ScoreCalculationResult[] } | null;
+  set(
+    key: string,
+    scores: SubjectScore[],
+    metrics: ScoreCalculationResult[]
+  ): void;
   clear(): void;
 }

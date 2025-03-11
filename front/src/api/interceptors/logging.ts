@@ -1,5 +1,5 @@
-import type { RequestConfig } from "../client/types";
-import { isDevelopment } from "../../../config/environment";
+import type { RequestConfig } from "@/api/client/types";
+import { isDevelopment } from "@/config/environment";
 
 export class LoggingInterceptor {
   async interceptRequest(config: RequestConfig): Promise<RequestConfig> {

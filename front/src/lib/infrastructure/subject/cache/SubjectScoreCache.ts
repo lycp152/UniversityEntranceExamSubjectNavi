@@ -1,9 +1,9 @@
 import type {
   SubjectScore,
   SubjectMetrics,
-} from "@/domain/subject/models/types";
+} from "@/lib/domain/subject/models/types";
 import type { ISubjectScoreCache } from "@/lib/domain/subject/ports/ISubjectScoreCache";
-import { SubjectError } from "@/domain/subject/errors/SubjectError";
+import { SubjectError } from "@/lib/domain/subject/errors/SubjectError";
 
 interface CacheEntry {
   scores: SubjectScore[];

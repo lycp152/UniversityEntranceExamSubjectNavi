@@ -1,15 +1,17 @@
-import { ScoreCalculator } from '../core/calculator';
-import type { Score, ScoreCalculationResult } from '../core/types';
-import type { BaseSubjectScore, SubjectScores } from '@/lib/types/models';
+import { ScoreCalculator } from "../core/calculator";
+import type { Score, ScoreCalculationResult } from "../core/types";
+import type { BaseSubjectScore, SubjectScores } from "@/types/subject/score";
 
-type TestType = 'commonTest' | 'secondTest';
+type TestType = "commonTest" | "secondTest";
 type MaxTestType = `max${Capitalize<TestType>}`;
 
 export class SubjectScoreCalculator extends ScoreCalculator {
   /**
    * 科目スコアを計算用の形式に変換
    */
-  private convertToScores(subjectScore: BaseSubjectScore): { [key: string]: Score } {
+  private convertToScores(subjectScore: BaseSubjectScore): {
+    [key: string]: Score;
+  } {
     return {
       commonTest: {
         value: subjectScore.commonTest,
@@ -49,7 +51,10 @@ export class SubjectScoreCalculator extends ScoreCalculator {
   /**
    * テスト種別ごとの合計スコアを計算
    */
-  calculateTestTypeScore(subjects: SubjectScores, testType: TestType): ScoreCalculationResult {
+  calculateTestTypeScore(
+    subjects: SubjectScores,
+    testType: TestType
+  ): ScoreCalculationResult {
     const scores: { [key: string]: Score } = {};
 
     Object.entries(subjects).forEach(([subject, score]) => {
@@ -65,7 +70,10 @@ export class SubjectScoreCalculator extends ScoreCalculator {
   /**
    * カテゴリー別の合計スコアを計算
    */
-  calculateCategoryScore(subjects: SubjectScores, category: string): ScoreCalculationResult {
+  calculateCategoryScore(
+    subjects: SubjectScores,
+    category: string
+  ): ScoreCalculationResult {
     const categorySubjects = Object.entries(subjects)
       .filter(([subject]) => subject.startsWith(category))
       .reduce<SubjectScores>((acc, [subject, score]) => {

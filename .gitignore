@@ -29,6 +29,7 @@ back/dist/
 back/**/*.log
 back/logs/
 !back/logs/.gitkeep
+!back/logs/tests/.gitkeep
 back/bin/*
 
 # Frontend

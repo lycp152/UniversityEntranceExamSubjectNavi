@@ -1,7 +1,10 @@
-import type { SubjectScore, SubjectMetrics } from '../types/domain';
+import type {
+  SubjectScore,
+  ScoreCalculationResult,
+} from "@/lib/types/score/score";
 
 export interface ISubjectMetricsCollector {
-  collectMetrics(scores: SubjectScore[]): SubjectMetrics[];
-  getStoredMetrics(key: string): SubjectMetrics[] | undefined;
+  collectMetrics(scores: SubjectScore[]): ScoreCalculationResult[];
+  getStoredMetrics(key: string): ScoreCalculationResult[] | undefined;
   clearMetrics(): void;
 }

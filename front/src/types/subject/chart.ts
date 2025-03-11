@@ -1,5 +1,5 @@
-import { SubjectType } from '../../constants/subject';
-import type { SubjectScore } from './score';
+import { SubjectType } from "@/lib/constants/subject";
+import type { SubjectScore } from "./score";
 
 // 基本的なチャートデータの型
 export interface PieData {
@@ -46,7 +46,7 @@ export type ChartResult<T> = {
   data: T[];
   errors: any[];
   hasErrors: boolean;
-  status: 'success' | 'error';
+  status: "success" | "error";
   metadata?: {
     processedAt: number;
     totalItems: number;

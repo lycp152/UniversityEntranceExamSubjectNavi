@@ -1,7 +1,7 @@
 import type {
   SubjectScore,
   SubjectMetrics,
-} from "../../../../domain/subject/models/types";
+} from "@/lib/domain/subject/models/types";
 
 export interface ISubjectScoreCache {
   get(

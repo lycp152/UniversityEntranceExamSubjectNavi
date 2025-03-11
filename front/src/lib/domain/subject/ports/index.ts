@@ -4,7 +4,7 @@ import type {
   ValidationResult,
   MetricsStats,
   CacheEntry,
-} from "../../../../domain/subject/models/types";
+} from "@/lib/domain/subject/models/types";
 
 // 科目バリデータのインターフェース
 export interface ISubjectValidator {

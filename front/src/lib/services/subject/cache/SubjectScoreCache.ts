@@ -1,11 +1,14 @@
-import type { SubjectScore, SubjectMetrics } from "../types/domain";
+import type {
+  SubjectScore,
+  ScoreCalculationResult,
+} from "@/lib/types/score/score";
 import type { ISubjectScoreCache } from "./ISubjectScoreCache";
 
 export class SubjectScoreCache implements ISubjectScoreCache {
   private static instance: SubjectScoreCache;
   private readonly cache: Map<
     string,
-    { scores: SubjectScore[]; metrics: SubjectMetrics[] }
+    { scores: SubjectScore[]; metrics: ScoreCalculationResult[] }
   > = new Map();
 
   private constructor() {}
@@ -21,7 +24,7 @@ export class SubjectScoreCache implements ISubjectScoreCache {
     return this.cache.get(key) || null;
   }
 
-  set(key: string, scores: SubjectScore[], metrics: SubjectMetrics[]) {
+  set(key: string, scores: SubjectScore[], metrics: ScoreCalculationResult[]) {
     this.cache.set(key, { scores, metrics });
   }
 

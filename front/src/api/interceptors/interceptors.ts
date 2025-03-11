@@ -1,6 +1,8 @@
-import type { RequestConfig } from './types';
+import type { RequestConfig } from "@/api/client/types";
 
-export type RequestInterceptor = (config: RequestConfig) => Promise<RequestConfig>;
+export type RequestInterceptor = (
+  config: RequestConfig
+) => Promise<RequestConfig>;
 export type ResponseInterceptor = (response: Response) => Promise<Response>;
 export type ErrorInterceptor = (error: unknown) => Promise<never>;
 
@@ -45,6 +47,8 @@ export class InterceptorManager {
         error = e;
       }
     }
-    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+    return Promise.reject(
+      error instanceof Error ? error : new Error(String(error))
+    );
   }
 }

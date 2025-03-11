@@ -1,5 +1,5 @@
-import { QueryClient } from '@tanstack/react-query';
-import { APIError } from '../errors/api';
+import { QueryClient } from "@tanstack/react-query";
+import { APIError } from "@/lib/errors/api";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -9,7 +9,7 @@ export const queryClient = new QueryClient({
       retry: (failureCount, error) => {
         if (error instanceof APIError) {
           // 認証エラーや不正なリクエストの場合はリトライしない
-          if (error.code === 'UNAUTHORIZED' || error.code === 'BAD_REQUEST') {
+          if (error.code === "UNAUTHORIZED" || error.code === "BAD_REQUEST") {
             return false;
           }
         }

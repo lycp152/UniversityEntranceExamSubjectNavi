@@ -1,7 +1,7 @@
 import { EXAM_TYPE_OPTIONS } from "@/lib/constants/subjects";
 import type { BaseSubjectScore } from "@/lib/types/score/score";
 import type { SubjectName } from "@/lib/constants/subject";
-import type { SubjectScoreError } from "@/components/features/charts/subject/donut/types/subjects";
+import type { SubjectScoreError } from "@/features/charts/subject/donut/types/subjects";
 import type { TestTypeName } from "@/lib/types/university/university";
 import type { SubjectScore } from "@/types/subject/subjects";
 

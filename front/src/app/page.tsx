@@ -1,5 +1,5 @@
-import SearchForm from "@/components/features/search/form/SearchForm";
-import SearchResultTable from "@/components/features/search/result/SearchResultTable";
+import SearchForm from "@/features/search/form/SearchForm";
+import SearchResultTable from "@/features/search/result/SearchResultTable";
 
 export default function Home() {
   return (

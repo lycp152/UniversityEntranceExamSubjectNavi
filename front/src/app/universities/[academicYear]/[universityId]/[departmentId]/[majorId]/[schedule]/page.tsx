@@ -2,13 +2,13 @@
 
 import { useState, useEffect, use } from "react";
 import { notFound } from "next/navigation";
-import { ScoreDisplay } from "@/components/features/subject/score/ScoreDisplay";
-import SubjectInfo from "@/components/features/subject/detail/overview/SubjectInfo";
-import SubjectScoreTable from "@/components/features/subject/score/table";
-import { ErrorMessage } from "@/components/common/ErrorMessage";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { ScoreDisplay } from "@/features/subject/score/ScoreDisplay";
+import SubjectInfo from "@/features/subject/detail/overview/SubjectInfo";
+import SubjectScoreTable from "@/features/subject/score/table";
+import { ErrorMessage } from "@/components/errors/ErrorMessage";
+import { LoadingSpinner } from "@/components/ui/feedback/LoadingSpinner";
 import { transformSubjectData } from "@/lib/utils/subject/transform";
-import { UniversityService } from "@/api/services/university";
+import { UniversityService } from "@/providers/api/services/university";
 import type {
   APIUniversity,
   APIDepartment,

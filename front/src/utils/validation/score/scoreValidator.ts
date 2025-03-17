@@ -1,5 +1,5 @@
 import { BaseSubjectScore } from "@/lib/types/score/score";
-import { ErrorLogger } from "@/utils/logging/ErrorLogger";
+import { ErrorLogger } from "@/providers/logging/ErrorLogger";
 
 interface ValidationResult {
   isValid: boolean;

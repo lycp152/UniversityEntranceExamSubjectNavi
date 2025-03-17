@@ -1,4 +1,4 @@
-import { AdvancedValidationBuilder } from "@/components/features/university/domain/validators/AdvancedValidationBuilder";
+import { AdvancedValidationBuilder } from "@/features/university/domain/validators/AdvancedValidationBuilder";
 import type { Score } from "@/types/subject/score";
 import type { ISubjectValidator } from "./ISubjectValidator";
 import { SCORE_CONSTRAINTS } from "@/lib/constants/subject/scores";

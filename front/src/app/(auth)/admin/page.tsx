@@ -1,4 +1,4 @@
-import { AdminPage } from "@/components/features/admin/AdminPage";
+import { AdminPage } from "@/features/admin/AdminPage";
 
 export default function Page() {
   return <AdminPage />;

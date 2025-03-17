@@ -1,6 +1,6 @@
 import { Subject } from "@/lib/types/subject/subject";
 import { SubjectScore } from "@/types/subject/score";
-import { useChartData } from "@/components/features/charts/subject/donut/hooks/useChartData";
+import { useChartData } from "@/features/charts/subject/donut/hooks/useChartData";
 import { SUBJECT_TYPES } from "@/lib/constants/subject";
 import {
   isCommonSubject,

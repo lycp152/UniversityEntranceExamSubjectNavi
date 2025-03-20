@@ -1,4 +1,4 @@
-import { ScoreService } from "@/lib/services/subject/score/ScoreService";
+import { ScoreService } from "@/providers/services/subject/score/ScoreService";
 
 export class ScoreServiceFactory {
   static createService(): ScoreService {

@@ -1,21 +1,51 @@
 import { FC, memo } from "react";
-import type { SubjectScores } from "@/lib/types/score";
+import type {
+  SubjectScores,
+  SubjectScoreDetail,
+  BaseScore,
+} from "@/types/score";
 import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
 import { useScoreTable } from "@/hooks/subject/table/useScoreTable";
 import { useTableKeyboardNavigation } from "@/hooks/subject/table/useTableKeyboardNavigation";
 import { TEST_TYPES } from "@/lib/types/score";
-import type { SubjectScoreDetail } from "@/types/score";
+import type {
+  SubjectScore as LibSubjectScore,
+  BaseScore as LibBaseScore,
+} from "@/lib/types/score";
 import ScoreTableHeader from "./ScoreTableHeader";
 import ScoreTableBody from "./ScoreTableBody";
 
 interface ScoreTableProps {
-  scores: SubjectScores;
+  scores: Record<string, LibSubjectScore>;
 }
 
 type ScoreTableTotals = {
   [TEST_TYPES.COMMON]: number;
   [TEST_TYPES.INDIVIDUAL]: number;
   total: number;
+};
+
+const convertToBaseScore = (score?: LibBaseScore): BaseScore => {
+  if (!score) {
+    return { value: 0, maxValue: 0 };
+  }
+  return {
+    value: score.score,
+    maxValue: 100, // デフォルト値として100を使用
+  };
+};
+
+const convertToSubjectScores = (
+  scores: Record<string, LibSubjectScore>
+): SubjectScores => {
+  const result: SubjectScores = {};
+  for (const [subject, score] of Object.entries(scores)) {
+    result[subject] = {
+      [TEST_TYPES.COMMON]: convertToBaseScore(score[TEST_TYPES.COMMON]),
+      [TEST_TYPES.INDIVIDUAL]: convertToBaseScore(score[TEST_TYPES.INDIVIDUAL]),
+    };
+  }
+  return result;
 };
 
 interface ScoreTableContentProps extends ScoreTableProps {
@@ -69,12 +99,8 @@ ScoreTableContent.displayName = "ScoreTableContent";
 
 const ScoreTable: FC<ScoreTableProps> = memo(({ scores }) => {
   const { calculatedScores, sortedSubjects, totals } = useScoreTable(
-    scores
-  ) as {
-    calculatedScores: Record<string, SubjectScoreDetail> | null;
-    sortedSubjects: string[];
-    totals: ScoreTableTotals | null;
-  };
+    convertToSubjectScores(scores)
+  );
 
   return (
     <ErrorBoundary

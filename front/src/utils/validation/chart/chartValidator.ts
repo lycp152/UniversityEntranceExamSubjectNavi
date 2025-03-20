@@ -1,5 +1,9 @@
-import { BaseValidator } from '@/lib/utils/validation/base-validator';
-import type { ValidationRule, ValidationContext, ValidationResult } from '@/types/validation';
+import { BaseValidator } from "@/lib/utils/validation/base-validator";
+import type {
+  ValidationRule,
+  ValidationContext,
+  ValidationResult,
+} from "@/types/validation";
 
 interface ChartData {
   name: string;
@@ -12,17 +16,17 @@ interface ChartData {
  */
 const chartRules: ValidationRule<ChartData>[] = [
   {
-    code: 'VALID_VALUE',
+    code: "VALID_VALUE",
     validate: (data: ChartData) => data.value >= 0,
-    message: '値が無効です',
+    message: "値が無効です",
   },
   {
-    code: 'VALID_PERCENTAGE',
+    code: "VALID_PERCENTAGE",
     validate: (data: ChartData) => {
       const percentage = parseFloat(data.percentage);
       return !isNaN(percentage) && percentage >= 0 && percentage <= 100;
     },
-    message: 'パーセンテージが無効です',
+    message: "パーセンテージが無効です",
   },
 ];
 
@@ -44,7 +48,15 @@ export class ChartValidator extends BaseValidator<ChartData> {
     return {
       isValid,
       data: isValid ? chartData : undefined,
-      errors: isValid ? [] : [{ code: 'INVALID_CHART_DATA', message: 'チャートデータが無効です' }],
+      errors: isValid
+        ? []
+        : [
+            {
+              code: "INVALID_CHART_DATA",
+              message: "チャートデータが無効です",
+              severity: "error" as const,
+            },
+          ],
       metadata: {
         validatedAt: Date.now(),
         rules: chartRules.map((rule) => rule.code),
@@ -63,7 +75,7 @@ export class ChartValidator extends BaseValidator<ChartData> {
    * パーセンテージを計算
    */
   calculatePercentage(value: number, total: number): string {
-    if (total === 0) return '0';
+    if (total === 0) return "0";
     return ((value / total) * 100).toFixed(2);
   }
 }

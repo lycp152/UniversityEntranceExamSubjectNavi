@@ -13,6 +13,12 @@ interface OuterPieData {
 }
 
 export interface ChartData {
-  detailedData: DetailedPieData[];
-  outerData: OuterPieData[];
+  name: string;
+  value: number;
+  color: string;
+  percentage: number;
+  score: string;
+  category?: string;
+  detailedData?: DetailedPieData[];
+  outerData?: OuterPieData[];
 }

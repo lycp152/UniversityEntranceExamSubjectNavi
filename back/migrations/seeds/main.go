@@ -90,27 +90,119 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 	return calculatePercentages(subjects)
 }
 
-func main() {
-	// Load .env file
+func setupEnvironment() {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Warning: .env file not found")
-		// Set default environment variables
 		os.Setenv("DB_HOST", "localhost")
 		os.Setenv("DB_USER", "user")
 		os.Setenv("DB_PASSWORD", "password")
 		os.Setenv("DB_NAME", "university_exam_db")
 		os.Setenv("DB_PORT", "5432")
 	}
+}
 
-	// Connect to database
+func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypes []models.TestType) error {
+	for _, testType := range testTypes {
+		testType.AdmissionScheduleID = schedule.ID
+		subjects := testType.Subjects
+		testType.Subjects = nil
+
+		if err := tx.Create(&testType).Error; err != nil {
+			return err
+		}
+
+		if err := createSubjects(tx, &testType, subjects); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createSubjects(tx *gorm.DB, testType *models.TestType, subjects []models.Subject) error {
+	for _, subject := range subjects {
+		subject.TestTypeID = testType.ID
+		if err := tx.Create(&subject).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createAdmissionSchedules(tx *gorm.DB, major *models.Major, schedules []models.AdmissionSchedule) error {
+	for _, schedule := range schedules {
+		schedule.MajorID = major.ID
+		testTypes := schedule.TestTypes
+		schedule.TestTypes = nil
+
+		if err := tx.Create(&schedule).Error; err != nil {
+			return err
+		}
+
+		if err := createTestTypes(tx, &schedule, testTypes); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createMajors(tx *gorm.DB, department *models.Department, majors []models.Major) error {
+	for _, major := range majors {
+		major.DepartmentID = department.ID
+		schedules := major.AdmissionSchedules
+		major.AdmissionSchedules = nil
+
+		if err := tx.Create(&major).Error; err != nil {
+			return err
+		}
+
+		if err := createAdmissionSchedules(tx, &major, schedules); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createDepartments(tx *gorm.DB, university *models.University, departments []models.Department) error {
+	for _, department := range departments {
+		department.UniversityID = university.ID
+		majors := department.Majors
+		department.Majors = nil
+
+		if err := tx.Create(&department).Error; err != nil {
+			return err
+		}
+
+		if err := createMajors(tx, &department, majors); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func seedUniversities(tx *gorm.DB, universities []models.University) error {
+	for _, university := range universities {
+		departments := university.Departments
+		university.Departments = nil
+
+		if err := tx.Create(&university).Error; err != nil {
+			return err
+		}
+
+		if err := createDepartments(tx, &university, departments); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func main() {
+	setupEnvironment()
 	db := database.NewDB()
 
-	// データベースをクリーンアップ
 	if err := cleanupDatabase(db); err != nil {
 		log.Fatalf("Failed to cleanup database: %v", err)
 	}
 
-	// トランザクションを開始
 	tx := db.Begin()
 	if tx.Error != nil {
 		log.Fatalf("Failed to begin transaction: %v", tx.Error)
@@ -123,10 +215,7 @@ func main() {
 		}
 	}()
 
-	// 現在の年度と有効期間を設定
 	currentYear := 2024
-
-	// Sample data
 	universities := []models.University{
 		{
 			BaseModel: models.BaseModel{
@@ -150,7 +239,6 @@ func main() {
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									MajorID:      1,
 									Name:         "前期",
 									DisplayOrder: 1,
 									AdmissionInfos: []models.AdmissionInfo{
@@ -158,7 +246,6 @@ func main() {
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											AdmissionScheduleID: 1,
 											Enrollment:          100,
 											AcademicYear:        currentYear,
 											Status:              "published",
@@ -169,7 +256,6 @@ func main() {
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											AdmissionScheduleID: 1,
 											Name:                "共通",
 											Subjects: createSubjectsWithScores([]SubjectData{
 												{Name: "英語L", Order: 1, CommonScore: 50},
@@ -184,7 +270,6 @@ func main() {
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											AdmissionScheduleID: 1,
 											Name:                "二次",
 											Subjects: createSubjectsWithScores([]SubjectData{
 												{Name: "英語R", Order: 1, SecondaryScore: 150},
@@ -221,7 +306,6 @@ func main() {
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									MajorID:      2,
 									Name:         "後期",
 									DisplayOrder: 1,
 									AdmissionInfos: []models.AdmissionInfo{
@@ -229,7 +313,6 @@ func main() {
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											AdmissionScheduleID: 2,
 											Enrollment:          150,
 											AcademicYear:        currentYear,
 											Status:              "published",
@@ -240,7 +323,6 @@ func main() {
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											AdmissionScheduleID: 2,
 											Name:                "共通",
 											Subjects: []models.Subject{
 												{
@@ -303,14 +385,13 @@ func main() {
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
-											AdmissionScheduleID: 2,
 											Name:                "二次",
 											Subjects: []models.Subject{
 												{
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name:         "英語L",
+													Name:         "英語R",
 													Score:        100,
 													Percentage:   8.33,
 													DisplayOrder: 1,
@@ -319,46 +400,10 @@ func main() {
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name:         "英語R",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 2,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
 													Name:         "数学",
 													Score:        100,
 													Percentage:   8.33,
-													DisplayOrder: 3,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "国語",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 4,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "理科",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 5,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "地歴公",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 6,
+													DisplayOrder: 2,
 												},
 											},
 										},
@@ -372,15 +417,11 @@ func main() {
 		},
 	}
 
-	// Create universities
-	for _, university := range universities {
-		if err := tx.Create(&university).Error; err != nil {
-			tx.Rollback()
-			log.Fatalf("Failed to seed data: %v", err)
-		}
+	if err := seedUniversities(tx, universities); err != nil {
+		tx.Rollback()
+		log.Fatalf("Failed to seed universities: %v", err)
 	}
 
-	// トランザクションをコミット
 	if err := tx.Commit().Error; err != nil {
 		log.Fatalf("Failed to commit transaction: %v", err)
 	}

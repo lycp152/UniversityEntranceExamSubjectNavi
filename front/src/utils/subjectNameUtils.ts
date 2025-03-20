@@ -2,11 +2,10 @@ import {
   VALID_SUBJECT_NAME_PATTERN,
   SUBJECT_NAME_DISPLAY_MAPPING,
 } from "../lib/constants/subjects";
-import type {
-  SubjectNameDisplayMapping,
-  TestType,
-  SubjectName,
-} from "../types/models";
+
+type SubjectNameDisplayMapping = typeof SUBJECT_NAME_DISPLAY_MAPPING;
+type SubjectName = keyof SubjectNameDisplayMapping;
+type TestType = "commonTest" | "secondTest";
 
 /**
  * 科目名から基本カテゴリーを抽出する
@@ -34,9 +33,7 @@ export const getSubjectDisplayName = (subjectName: SubjectName): string => {
  * 科目名を表示用にフォーマットする
  * 定義済みの表示名マッピングを使用
  */
-export const formatSubjectName = (
-  subjectName: keyof SubjectNameDisplayMapping
-): string => {
+export const formatSubjectName = (subjectName: SubjectName): string => {
   return SUBJECT_NAME_DISPLAY_MAPPING[subjectName] || subjectName;
 };
 

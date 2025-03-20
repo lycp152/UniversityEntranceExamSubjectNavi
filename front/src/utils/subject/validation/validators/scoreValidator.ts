@@ -6,6 +6,8 @@ import {
   SCORE_ERROR_MESSAGES,
 } from "@/lib/constants/subject/scores";
 
+type ValidationSeverity = "error" | "warning" | "info";
+
 export const validateScore = (score: Score): ValidationResult<Score> => {
   const errors = [];
 
@@ -16,6 +18,8 @@ export const validateScore = (score: Score): ValidationResult<Score> => {
     errors.push({
       code: SCORE_ERROR_CODES.INVALID_RANGE,
       message: SCORE_ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_RANGE],
+      field: "value",
+      severity: "error" as ValidationSeverity,
     });
   }
 
@@ -26,6 +30,8 @@ export const validateScore = (score: Score): ValidationResult<Score> => {
     errors.push({
       code: SCORE_ERROR_CODES.INVALID_WEIGHT,
       message: SCORE_ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_WEIGHT],
+      field: "weight",
+      severity: "error" as ValidationSeverity,
     });
   }
 

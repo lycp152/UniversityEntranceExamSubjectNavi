@@ -1,6 +1,6 @@
-import type { BaseSubjectScore } from '@/lib/types/score/score';
-import type { TestScore } from '../../types/score/score';
-import { SCORE_CONSTRAINTS } from '@/lib/types/score/score';
+import type { BaseSubjectScore } from "@/lib/types/score/score";
+import type { TestScore } from "../../types/score/score";
+import { SCORE_CONSTRAINTS } from "@/lib/types/score/score";
 
 /**
  * スコアの型ガード
@@ -8,14 +8,14 @@ import { SCORE_CONSTRAINTS } from '@/lib/types/score/score';
 export function isValidTestScore(score: unknown): score is TestScore {
   try {
     return (
-      typeof score === 'object' &&
+      typeof score === "object" &&
       score !== null &&
-      'value' in score &&
-      'maxValue' in score &&
-      typeof (score as TestScore).value === 'number' &&
-      typeof (score as TestScore).maxValue === 'number'
+      "value" in score &&
+      "maxValue" in score &&
+      typeof (score as TestScore).value === "number" &&
+      typeof (score as TestScore).maxValue === "number"
     );
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -26,14 +26,14 @@ export function isValidTestScore(score: unknown): score is TestScore {
 export function isBaseSubjectScore(score: unknown): score is BaseSubjectScore {
   try {
     return (
-      typeof score === 'object' &&
+      typeof score === "object" &&
       score !== null &&
-      'commonTest' in score &&
-      'secondTest' in score &&
-      typeof (score as BaseSubjectScore).commonTest === 'number' &&
-      typeof (score as BaseSubjectScore).secondTest === 'number'
+      "commonTest" in score &&
+      "secondTest" in score &&
+      typeof (score as BaseSubjectScore).commonTest === "number" &&
+      typeof (score as BaseSubjectScore).secondTest === "number"
     );
-  } catch (error) {
+  } catch {
     return false;
   }
 }

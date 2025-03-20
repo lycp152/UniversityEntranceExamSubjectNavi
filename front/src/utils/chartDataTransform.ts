@@ -1,9 +1,7 @@
-import type {
-  SubjectScores,
-  ValidationResult,
-  SubjectNameDisplayMapping,
-  ChartData,
-} from "../types/models";
+import type { SubjectScores } from "@/lib/types/score";
+import type { ValidationResult } from "@/types/validation";
+import type { ChartData } from "@/features/charts/subject/donut/types/chart";
+import type { BaseSubjectScore } from "@/lib/types/score/score";
 import { createValidationResult } from "./validation";
 import { formatScore, formatPercentage } from "./formatting";
 import {
@@ -24,7 +22,7 @@ const createChartData = (
   name,
   value,
   color,
-  percentage: formatPercentage(value / totalScore),
+  percentage: Number(formatPercentage(value / totalScore)),
   score: formatScore(value),
   ...(category && { category }),
 });
@@ -40,14 +38,16 @@ export const transformDetailedData = (
     const data = Object.entries(subjects).map(([subject, scores]) => {
       const displayName =
         SUBJECT_NAME_DISPLAY_MAPPING[
-          subject as keyof SubjectNameDisplayMapping
+          subject as keyof typeof SUBJECT_NAME_DISPLAY_MAPPING
         ] || subject;
       const category = subject.replace(
         /[RL]$/,
         ""
       ) as keyof typeof SUBJECT_CATEGORY_COLORS;
       const color = SUBJECT_CATEGORY_COLORS[category] || "#000000";
-      const value = scores.commonTest + scores.secondTest;
+      const value =
+        (scores as BaseSubjectScore).commonTest +
+        (scores as BaseSubjectScore).secondTest;
 
       return createChartData(displayName, value, color, totalScore, category);
     });
@@ -69,7 +69,7 @@ export const transformOuterData = (
   return Object.entries(SUBJECT_CATEGORY_COLORS).map(([category, color]) => {
     const displayName =
       SUBJECT_NAME_DISPLAY_MAPPING[
-        category as keyof SubjectNameDisplayMapping
+        category as keyof typeof SUBJECT_NAME_DISPLAY_MAPPING
       ] || category;
     const value = getCategoryTotal(subjects, category);
 

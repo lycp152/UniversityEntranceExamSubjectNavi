@@ -50,27 +50,5 @@ func main() {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
-	// Create default schedules
-	schedules := []models.AdmissionSchedule{
-		{
-			Name:"前期",
-			DisplayOrder: 1,
-		},
-		{
-			Name:"中期",
-			DisplayOrder: 2,
-		},
-		{
-			Name:"後期",
-			DisplayOrder: 3,
-		},
-	}
-
-	for _, schedule := range schedules {
-		if err := db.Create(&schedule).Error; err != nil {
-			log.Fatalf("Failed to create schedule: %v", err)
-		}
-	}
-
 	log.Println("Successfully migrated database")
 }

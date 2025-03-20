@@ -33,6 +33,7 @@ export interface ValidationResult<T> {
     code: string;
     message: string;
     field?: string;
+    severity: "error" | "warning" | "info";
   }>;
   metadata?: ValidationMetadata;
 }

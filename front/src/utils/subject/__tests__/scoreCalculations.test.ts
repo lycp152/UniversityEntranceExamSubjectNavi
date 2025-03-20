@@ -6,7 +6,7 @@ import {
   calculateSubjectScores,
   calculateTestTypeTotal,
 } from "@/utils/subject/score/calculations";
-import { SubjectScores } from "@/lib/types/score";
+import type { SubjectScores, TestType } from "@/types/subject/score";
 
 describe("scoreCalculations", () => {
   const mockSubjects = {
@@ -44,12 +44,12 @@ describe("scoreCalculations", () => {
 
   describe("calculateTestTypeTotal", () => {
     it("共通テストの合計点を正しく計算する", () => {
-      const result = calculateTestTypeTotal(mockSubjects, "commonTest");
+      const result = calculateTestTypeTotal(mockSubjects, "共通" as TestType);
       expect(result).toBe(350); // 100 + 50 + 200
     });
 
     it("二次試験の合計点を正しく計算する", () => {
-      const result = calculateTestTypeTotal(mockSubjects, "secondTest");
+      const result = calculateTestTypeTotal(mockSubjects, "二次" as TestType);
       expect(result).toBe(650); // 200 + 150 + 300
     });
   });

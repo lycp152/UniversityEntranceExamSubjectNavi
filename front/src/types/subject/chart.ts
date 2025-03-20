@@ -42,9 +42,15 @@ export type PatternConfig = {
   };
 };
 
+export type ChartError = {
+  code: string;
+  message: string;
+  field?: string;
+};
+
 export type ChartResult<T> = {
   data: T[];
-  errors: any[];
+  errors: ChartError[];
   hasErrors: boolean;
   status: "success" | "error";
   metadata?: {

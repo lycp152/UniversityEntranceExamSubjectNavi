@@ -1,4 +1,5 @@
-import type { BaseSubjectScore, SubjectScores, ValidationResult } from '../types/models';
+import type { BaseSubjectScore, SubjectScores } from "@/types/subject/score";
+import type { ValidationResult } from "@/types/validation";
 
 /**
  * スコアの有効性を確認する
@@ -26,9 +27,14 @@ export const createValidationResult = <T>(
     isValid,
     data,
     errors: errors.map((message) => ({
-      code: 'VALIDATION_ERROR',
+      code: "VALIDATION_ERROR",
       message,
-      field: '数学',
+      field: "数学",
+      severity: "error" as const,
     })),
+    metadata: {
+      validatedAt: Date.now(),
+      rules: [],
+    },
   };
 };

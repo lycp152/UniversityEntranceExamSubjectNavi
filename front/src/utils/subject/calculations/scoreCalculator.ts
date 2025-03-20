@@ -34,6 +34,8 @@ export class ScoreCalculator {
             {
               code: "INVALID_SCORE",
               message: "点数が有効範囲外です",
+              field: "value",
+              severity: "error",
             },
           ],
       metadata: {

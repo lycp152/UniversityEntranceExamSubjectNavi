@@ -1,8 +1,10 @@
-import type { BaseSubjectScore } from '@/lib/types/score/score';
-import type { ScoreCache, CacheMetrics } from '../../types/cache/cache';
-import type { CacheOperationResult } from '../../types/score/score';
-import { createCacheKey } from '../../utils/score/scoreUtils';
-import { CACHE_CONFIG } from '../../types/score/score';
+import type {
+  BaseSubjectScore,
+  CacheOperationResult,
+} from "@/lib/types/score/score";
+import type { ScoreCache, CacheMetrics } from "@/lib/types/cache/cache";
+import { createCacheKey } from "@/lib/utils/score/scoreUtils";
+import { CACHE_CONFIG } from "@/lib/types/score/score";
 
 export class CacheService {
   private readonly cache: Map<string, ScoreCache>;
@@ -63,7 +65,10 @@ export class CacheService {
   /**
    * スコアをキャッシュに保存
    */
-  set(score: BaseSubjectScore, value: ScoreCache): CacheOperationResult<ScoreCache> {
+  set(
+    score: BaseSubjectScore,
+    value: ScoreCache
+  ): CacheOperationResult<ScoreCache> {
     const startTime = performance.now();
     const key = createCacheKey(score);
     const cacheEntry = {
@@ -85,7 +90,7 @@ export class CacheService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error : new Error('Unknown error'),
+        error: error instanceof Error ? error : new Error("Unknown error"),
         timestamp: Date.now(),
         cacheKey: key,
         cacheHit: false,
@@ -117,7 +122,8 @@ export class CacheService {
   private updateAccessMetrics(startTime: number): void {
     const accessTime = performance.now() - startTime;
     this.metrics.averageAccessTime =
-      (this.metrics.averageAccessTime * (this.metrics.totalOperations - 1) + accessTime) /
+      (this.metrics.averageAccessTime * (this.metrics.totalOperations - 1) +
+        accessTime) /
       this.metrics.totalOperations;
   }
 
@@ -133,7 +139,7 @@ export class CacheService {
    */
   clear(): void {
     this.cache.clear();
-    console.debug('Cache cleared');
+    console.debug("Cache cleared");
   }
 
   /**

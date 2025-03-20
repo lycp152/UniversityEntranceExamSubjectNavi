@@ -1,30 +1,38 @@
-import type {
-  SubjectScore,
-  ScoreCalculationResult,
-} from "@/lib/types/score/score";
+import type { SubjectScore } from "@/types/subject/domain";
+import type { ScoreCalculationResult } from "@/lib/types/score/score";
 
 export class SubjectMetricsCollector {
   private readonly metricsMap: Map<string, ScoreCalculationResult[]> =
     new Map();
 
   collectMetrics(scores: SubjectScore[]): ScoreCalculationResult[] {
-    const metricsByCategory = new Map<string, ScoreCalculationResult>();
+    const metricsByCategory = new Map<
+      string,
+      { total: number; maxTotal: number }
+    >();
 
     // カテゴリごとにスコアを集計
     scores.forEach((score) => {
       const category = score.category;
       const current = metricsByCategory.get(category) || {
-        score: 0,
-        percentage: 0,
-        category,
+        total: 0,
+        maxTotal: 0,
       };
 
-      current.score += score.value * score.weight;
-      current.percentage = (current.score / score.maxValue) * 100;
+      current.total += score.value * score.weight;
+      current.maxTotal += score.maxValue * score.weight;
       metricsByCategory.set(category, current);
     });
 
-    const metrics = Array.from(metricsByCategory.values());
+    // 最終的なメトリクスを生成
+    const metrics = Array.from(metricsByCategory.values()).map((values) => ({
+      total: values.total,
+      maxTotal: values.maxTotal,
+      percentage: (values.total / values.maxTotal) * 100,
+      isValid: true,
+      computedAt: Date.now(),
+    }));
+
     this.metricsMap.set(this.generateKey(scores), metrics);
     return metrics;
   }

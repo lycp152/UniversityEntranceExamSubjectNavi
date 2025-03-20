@@ -14,4 +14,4 @@ export {
   SubjectValidator,
   getTransformService,
   getSubjectValidator,
-} from "../services/subject";
+} from "@/providers/services/subject";

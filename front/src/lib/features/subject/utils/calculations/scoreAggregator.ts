@@ -1,61 +1,54 @@
-type TestTypeName = "common" | "secondary";
+import type {
+  CategoryScore,
+  SubjectCategory,
+  Score,
+} from "@/types/subject/score";
+import { SUBJECTS, SUBJECT_CATEGORIES } from "@/lib/constants/subject/subjects";
 
-interface Score {
-  subjectName: string;
-  type: TestTypeName;
-  value: number;
-  percentage: number;
-}
-
-interface TestScore {
-  score: number;
-  percentage: number;
-}
-
-interface CategoryScore {
-  subject: string;
-  commonTest?: TestScore;
-  secondaryTest?: TestScore;
-  total: TestScore;
-}
+const SUBJECT_TO_CATEGORY_MAP: Record<string, SubjectCategory> = {
+  [SUBJECTS.ENGLISH]: SUBJECT_CATEGORIES.ENGLISH,
+  [SUBJECTS.MATH]: SUBJECT_CATEGORIES.MATH,
+  [SUBJECTS.SCIENCE]: SUBJECT_CATEGORIES.SCIENCE,
+  [SUBJECTS.SOCIAL]: SUBJECT_CATEGORIES.SOCIAL,
+} as const;
 
 export class ScoreAggregator {
   aggregateByCategory(scores: Score[]): CategoryScore[] {
-    const categoryMap = new Map<string, CategoryScore>();
+    const categoryMap = new Map<SubjectCategory, CategoryScore>();
 
     scores.forEach((score) => {
-      const existing = categoryMap.get(score.subjectName);
+      const category = SUBJECT_TO_CATEGORY_MAP[score.subjectName];
+      const existing = categoryMap.get(category);
       if (existing) {
-        if (score.type === "common") {
-          existing.commonTest = {
+        if (score.type === "共通") {
+          existing.common = {
             score: score.value,
             percentage: score.percentage,
           };
         } else {
-          existing.secondaryTest = {
+          existing.individual = {
             score: score.value,
             percentage: score.percentage,
           };
         }
         existing.total = {
           score:
-            (existing.commonTest?.score || 0) +
-            (existing.secondaryTest?.score || 0),
+            (existing.common?.score || 0) + (existing.individual?.score || 0),
           percentage:
-            (existing.commonTest?.percentage || 0) +
-            (existing.secondaryTest?.percentage || 0),
+            (existing.common?.percentage || 0) +
+            (existing.individual?.percentage || 0),
         };
       } else {
-        categoryMap.set(score.subjectName, {
-          subject: score.subjectName,
-          commonTest:
-            score.type === "common"
+        categoryMap.set(category, {
+          category,
+          common:
+            score.type === "共通"
               ? { score: score.value, percentage: score.percentage }
-              : undefined,
-          secondaryTest:
-            score.type === "secondary"
+              : { score: 0, percentage: 0 },
+          individual:
+            score.type === "二次"
               ? { score: score.value, percentage: score.percentage }
-              : undefined,
+              : { score: 0, percentage: 0 },
           total: { score: score.value, percentage: score.percentage },
         });
       }

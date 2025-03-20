@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/api/client/index";
-import { University, UniversitySchema } from "@/api/types";
+import { apiClient } from "@/providers/api/client";
+import { University, UniversitySchema } from "@/providers/api/types";
 
 // 大学一覧を取得するクエリ
 export const useUniversitiesQuery = () => {

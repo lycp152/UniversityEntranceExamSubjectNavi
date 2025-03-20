@@ -1,33 +1,33 @@
-import { BaseValidator } from '../../utils/validation/base-validator';
+import { BaseValidator } from "@/lib/utils/validation/base-validator";
 import type {
   ValidationRule,
   ValidationResult,
   ValidationContext,
   ValidationMetadata,
-} from '../../../types/validation';
-import type { BaseSubjectScore } from '@/lib/types/score/score';
+} from "../../../types/validation";
+import type { BaseSubjectScore } from "@/lib/types/score/score";
 import {
   createCacheKey,
   isBaseSubjectScore,
   validateTestScore,
-} from '../../utils/score/scoreUtils';
+} from "@/lib/utils/score/scoreUtils";
 
 export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
   private readonly rules: ValidationRule<BaseSubjectScore>[] = [
     {
-      code: 'SCORE_FORMAT',
-      message: 'Invalid score format',
+      code: "SCORE_FORMAT",
+      message: "Invalid score format",
       validate: (score: BaseSubjectScore) => isBaseSubjectScore(score),
     },
     {
-      code: 'COMMON_TEST_SCORE',
-      message: 'Invalid common test score',
+      code: "COMMON_TEST_SCORE",
+      message: "Invalid common test score",
       validate: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.commonTest, maxValue: 100 }),
     },
     {
-      code: 'INDIVIDUAL_TEST_SCORE',
-      message: 'Invalid individual test score',
+      code: "INDIVIDUAL_TEST_SCORE",
+      message: "Invalid individual test score",
       validate: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.secondTest, maxValue: 100 }),
     },
@@ -36,7 +36,10 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
   private readonly cache = new Map<string, number>();
   private readonly errorLogger?: (error: Error) => void;
 
-  constructor(context?: ValidationContext, errorLogger?: (error: Error) => void) {
+  constructor(
+    context?: ValidationContext,
+    errorLogger?: (error: Error) => void
+  ) {
     super(context);
     this.errorLogger = errorLogger;
   }
@@ -55,7 +58,7 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
     if (this.errorLogger && error instanceof Error) {
       this.errorLogger(error);
     } else {
-      console.error('Validation error:', error);
+      console.error("Validation error:", error);
     }
   }
 
@@ -93,12 +96,14 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
           errors.push({
             code: rule.code,
             message: rule.message,
+            severity: "error" as const,
           });
         }
       } catch (error) {
         errors.push({
-          code: 'VALIDATION_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          code: "VALIDATION_ERROR",
+          message: error instanceof Error ? error.message : "Unknown error",
+          severity: "error" as const,
         });
       }
     }
@@ -113,11 +118,19 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
   /**
    * スコアのバリデーション（テスト用インターフェース）
    */
-  async validateScore(score: unknown): Promise<ValidationResult<BaseSubjectScore>> {
+  async validateScore(
+    score: unknown
+  ): Promise<ValidationResult<BaseSubjectScore>> {
     if (!isBaseSubjectScore(score)) {
       return {
         isValid: false,
-        errors: [{ code: 'INVALID_FORMAT', message: 'Invalid score format' }],
+        errors: [
+          {
+            code: "INVALID_FORMAT",
+            message: "Invalid score format",
+            severity: "error" as const,
+          },
+        ],
         metadata: {
           validatedAt: Date.now(),
         },
@@ -131,7 +144,10 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
    */
   isValidScore(score: BaseSubjectScore): boolean {
     try {
-      return this.isValidTestScore(score.commonTest) && this.isValidTestScore(score.secondTest);
+      return (
+        this.isValidTestScore(score.commonTest) &&
+        this.isValidTestScore(score.secondTest)
+      );
     } catch (error) {
       this.logError(error);
       return false;

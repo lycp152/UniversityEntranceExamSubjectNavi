@@ -1,97 +1,65 @@
 import { useState } from "react";
-import { TestScore } from "@/lib/types/score/index";
-import { Subject } from "@/lib/types/subject/subject";
-import { Department, University, Major } from "@/lib/types/university";
-import { APIExamInfo as ExamInfo } from "@/lib/types/university/api";
+import { Department, University } from "@/lib/types/university";
+import {
+  Subject,
+  TestType,
+  AdmissionSchedule,
+  Major,
+} from "@/lib/types/university/university";
 import { ExamTable } from "../table/ExamTable";
+
+const updateSubject = (subject: Subject, subjectId: number, value: number) =>
+  subject.id === subjectId ? { ...subject, maxScore: value } : subject;
+
+const updateTestType = (
+  testType: TestType,
+  subjectId: number,
+  value: number
+) => ({
+  ...testType,
+  subjects: testType.subjects.map((subject) =>
+    updateSubject(subject, subjectId, value)
+  ),
+});
+
+const updateSchedule = (
+  schedule: AdmissionSchedule,
+  subjectId: number,
+  value: number
+) => ({
+  ...schedule,
+  testTypes: schedule.testTypes.map((testType) =>
+    updateTestType(testType, subjectId, value)
+  ),
+});
+
+const updateMajor = (major: Major, subjectId: number, value: number) => ({
+  ...major,
+  admissionSchedules: major.admissionSchedules.map((schedule) =>
+    updateSchedule(schedule, subjectId, value)
+  ),
+});
+
+const updateDepartment = (
+  department: Department,
+  departmentId: number,
+  subjectId: number,
+  value: number
+) => {
+  if (department.id !== departmentId) return department;
+  return {
+    ...department,
+    majors: department.majors.map((major) =>
+      updateMajor(major, subjectId, value)
+    ),
+  };
+};
 
 interface ExamFormProps {
   departments: Department[];
   universities: University[];
   onSave: (departments: Department[]) => void;
 }
-
-const updateSubjectScore = (
-  subject: Subject,
-  subjectId: number,
-  value: number
-) => {
-  if (subject.id !== subjectId) return subject;
-  return {
-    ...subject,
-    score: value,
-  };
-};
-
-const updateExamInfo = (
-  examInfo: ExamInfo,
-  subjectId: number,
-  value: number
-) => ({
-  ...examInfo,
-  subjects: examInfo.subjects.map((subject: Subject) =>
-    updateSubjectScore(subject, subjectId, value)
-  ),
-});
-
-const updateMajor = (major: Major, subjectId: number, value: number) => ({
-  ...major,
-  exam_infos: major.exam_infos.map((examInfo: ExamInfo) =>
-    updateExamInfo(examInfo, subjectId, value)
-  ),
-});
-
-const updateDepartmentField = (
-  department: Department,
-  major: Major,
-  examInfo: ExamInfo,
-  field: string,
-  value: string | number
-) => {
-  switch (field) {
-    case "universityName":
-      return {
-        ...department,
-        University: department.University
-          ? { ...department.University, name: value as string }
-          : undefined,
-      };
-    case "departmentName":
-      return { ...department, name: value as string };
-    case "majorName":
-      return {
-        ...department,
-        majors: [{ ...major, name: value as string }],
-      };
-    case "schedule":
-      return {
-        ...department,
-        majors: [
-          {
-            ...major,
-            exam_infos: [
-              {
-                ...examInfo,
-                schedule: { ...examInfo.schedule, name: value as string },
-              },
-            ],
-          },
-        ],
-      };
-    case "enrollment":
-      return {
-        ...department,
-        majors: [
-          {
-            ...major,
-            exam_infos: [{ ...examInfo, enrollment: value as number }],
-          },
-        ],
-      };
-    default:
-      return department;
-  }
-};
 
 export const ExamForm = ({
   departments,
@@ -105,10 +73,7 @@ export const ExamForm = ({
   const handleInfoChange = (department: Department, value: string) => {
     const updatedDepartments = departments.map((d) => {
       if (d.id !== department.id) return d;
-      return {
-        ...d,
-        universityId: parseInt(value, 10),
-      };
+      return { ...d, universityId: parseInt(value, 10) };
     });
     onSave(updatedDepartments);
   };
@@ -119,10 +84,9 @@ export const ExamForm = ({
     value: number
   ) => {
     setEditedDepartments((prev) =>
-      prev.map((department) => {
-        if (department.id !== departmentId) return department;
-        return department;
-      })
+      prev.map((department) =>
+        updateDepartment(department, departmentId, subjectId, value)
+      )
     );
   };
 

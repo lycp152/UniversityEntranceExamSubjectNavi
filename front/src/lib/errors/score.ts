@@ -138,7 +138,9 @@ export const createErrorMessage = (
   const parts = [baseMessage];
 
   if (field) {
-    const testType = Object.values(TEST_TYPES).includes(field as any)
+    const testType = Object.values(TEST_TYPES).includes(
+      field as (typeof TEST_TYPES)[keyof typeof TEST_TYPES]
+    )
       ? `${field}の`
       : `${field}における`;
     parts.unshift(testType);

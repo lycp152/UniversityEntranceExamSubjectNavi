@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/api/client/index";
+import { apiClient } from "@/providers/api/client";
 import type { University } from "@/lib/types/university";
 
 const QUERY_KEY = "universities";

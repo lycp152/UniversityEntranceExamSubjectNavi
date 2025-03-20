@@ -1,4 +1,4 @@
-import type { University, Department, TestType } from "./university";
+import type { University, Department } from "./university";
 import type { APITestType as TestTypeAPI } from "@/lib/types/university/api";
 
 export interface EditMode {

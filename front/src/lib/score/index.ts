@@ -11,7 +11,7 @@ export {
 } from "@/lib/config/validation";
 
 // サービスのエクスポート
-export * from "../services/score";
+export * from "@/providers/services/score";
 
 // ユーティリティのエクスポート
 export * from "../utils/score/scoreUtils";
@@ -21,4 +21,4 @@ export {
   getScoreValidator,
   getCacheService,
   getMetricsService,
-} from "../services/score";
+} from "@/providers/services/score";

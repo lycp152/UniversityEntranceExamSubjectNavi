@@ -10,7 +10,7 @@ interface Props {
   data: ChartData;
 }
 
-const Chart: FC<Props> = ({ data: { detailedData, outerData } }) => (
+const Chart: FC<Props> = ({ data: { detailedData = [], outerData = [] } }) => (
   <RechartsPieChart>
     <Patterns />
     <InnerPie data={detailedData} />

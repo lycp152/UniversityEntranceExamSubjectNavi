@@ -11,6 +11,6 @@ export const FORMAT_PATTERNS = {
   },
   // テストタイプに基づくフォーマット
   TEST_TYPE: (name: string, testType: string) => {
-    return `${name}(${testType})`;
+    return testType === "common" ? `${name}(共通)` : `${name}(二次)`;
   },
 } as const;

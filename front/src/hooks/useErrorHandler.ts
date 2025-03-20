@@ -4,7 +4,7 @@ import {
   ApiClientError,
   NetworkError,
   TimeoutError,
-} from "@/api/client/errors";
+} from "@/providers/api/client/errors";
 import { isAPIError } from "@/lib/errors/api";
 
 export const useErrorHandler = () => {

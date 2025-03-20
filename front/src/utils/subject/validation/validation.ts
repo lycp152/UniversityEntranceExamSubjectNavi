@@ -35,6 +35,7 @@ export const validateSubjectScore = (
             code: "INVALID_SCORE",
             message: "点数が無効です",
             field: !isValidCommonTest ? "commonTest" : "secondTest",
+            severity: "error",
           },
         ],
       };
@@ -53,6 +54,7 @@ export const validateSubjectScore = (
           code: "VALIDATION_ERROR",
           message: err.message,
           field: err.path.join("."),
+          severity: "error",
         })),
       };
     }
@@ -62,6 +64,7 @@ export const validateSubjectScore = (
         {
           code: "UNKNOWN_ERROR",
           message: "不明なエラーが発生しました",
+          severity: "error",
         },
       ],
     };

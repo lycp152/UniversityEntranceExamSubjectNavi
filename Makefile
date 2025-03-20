@@ -11,7 +11,7 @@ help: ## ヘルプを表示
 
 # 開発環境セットアップ
 .PHONY: setup
-setup: check-deps init build migrate seed ## 開発環境の完全セットアップ
+setup: check-deps init build start-db migrate seed ## 開発環境の完全セットアップ
 	@echo "🎉 セットアップが完了しました！"
 	@echo "👉 開発を開始するには 'make dev' を実行してください"
 
@@ -59,19 +59,19 @@ logs: ## コンテナのログを表示
 # フロントエンド関連
 .PHONY: front-install
 front-install: ## フロントエンドの依存関係をインストール
-	cd front && npm install
+	cd front && yarn install
 
 .PHONY: front-build
 front-build: ## フロントエンドをビルド
-	cd front && npm run build
+	cd front && yarn build
 
 .PHONY: front-test
 front-test: ## フロントエンドのテストを実行
-	cd front && npm test
+	cd front && yarn test
 
 .PHONY: front-lint
 front-lint: ## フロントエンドのリントを実行
-	cd front && npm run lint
+	cd front && yarn lint
 
 # バックエンド関連
 .PHONY: back-install
@@ -80,7 +80,7 @@ back-install: ## バックエンドの依存関係をインストール
 
 .PHONY: back-build
 back-build: ## バックエンドをビルド
-	cd back && go build -o dist/app
+	cd back && go build -o dist/app ./cmd/api
 
 .PHONY: back-test
 back-test: ## バックエンドのテストを実行
@@ -93,19 +93,19 @@ back-lint: ## バックエンドのリントを実行
 # データベース関連
 .PHONY: migrate
 migrate: ## マイグレーションを実行
-	cd back && go run cmd/migrate/main.go up
+	cd back && go run migrations/scripts/main.go up
 
 .PHONY: migrate-down
 migrate-down: ## マイグレーションをロールバック
-	cd back && go run cmd/migrate/main.go down
+	cd back && go run migrations/scripts/main.go down
 
 .PHONY: migrate-create
 migrate-create: ## 新しいマイグレーションファイルを作成
-	cd back && go run cmd/migrate/main.go create $(name)
+	cd back && go run migrations/scripts/main.go create $(name)
 
 .PHONY: seed
 seed: ## データベースにシードデータを投入
-	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
+	cd back && go run migrations/seeds/main.go
 
 .PHONY: db-backup
 db-backup: ## データベースのバックアップを作成
@@ -189,3 +189,10 @@ release: ## 新しいバージョンをリリース
 	@git tag -a v$(version) -m "Release v$(version)"
 	@git push origin v$(version)
 	@echo "✅ リリースが完了しました"
+
+.PHONY: start-db
+start-db: ## データベースコンテナを起動
+	@echo "🐘 PostgreSQLを起動しています..."
+	$(DOCKER_COMPOSE) up -d postgres
+	@echo "⏳ データベースの初期化を待機しています..."
+	sleep 10

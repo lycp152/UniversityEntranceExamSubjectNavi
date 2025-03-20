@@ -88,7 +88,8 @@ export function useUniversityEditor() {
     updateAdmissionInfo,
   } = useUniversityData();
 
-  const { calculateUpdatedSubjects, findTargetTestType } = useSubjectData();
+  const { calculateUpdatedSubjects, isCommonTestType, isIndividualTestType } =
+    useSubjectData();
 
   const [editMode, setEditMode] = useState<EditMode | null>(null);
   const [backupState, setBackupState] = useState<BackupState | null>(null);
@@ -192,7 +193,9 @@ export function useUniversityEditor() {
     if (!major || !admissionSchedule) return department;
 
     const targetTestType = admissionSchedule.testTypes.find((type: TestType) =>
-      findTargetTestType(transformTestTypeToAPI(type), isCommon)
+      isCommon
+        ? isCommonTestType(transformTestTypeToAPI(type))
+        : isIndividualTestType(transformTestTypeToAPI(type))
     );
 
     if (!targetTestType) return department;

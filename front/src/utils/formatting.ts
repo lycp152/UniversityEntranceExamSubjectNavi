@@ -1,5 +1,6 @@
 import { SUBJECT_NAME_DISPLAY_MAPPING } from "../lib/constants/subjects";
-import type { SubjectNameDisplayMapping } from "../types/models";
+
+type SubjectNameDisplayMapping = typeof SUBJECT_NAME_DISPLAY_MAPPING;
 
 /**
  * 科目名を表示用にフォーマットする

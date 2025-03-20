@@ -1,4 +1,4 @@
-import type { SubjectScores } from "../types/models";
+import type { SubjectScores } from "@/types/subject/score";
 import { isValidScore } from "./validation";
 import { formatScore, formatPercentage } from "./formatting";
 import { SUBJECT_MAIN_CATEGORIES } from "../lib/constants/subjects";
@@ -10,7 +10,8 @@ import { extractSubjectMainCategory } from "./subjectNameUtils";
 export const calculateTotal = (subjects: SubjectScores): number => {
   return Object.values(subjects).reduce((total, score) => {
     if (!isValidScore(score)) return total;
-    return total + score.commonTest + score.secondTest;
+    const subjectScore = score;
+    return total + subjectScore.commonTest + subjectScore.secondTest;
   }, 0);
 };
 
@@ -24,7 +25,8 @@ export const calculateCategoryTotal = (
   return Object.entries(subjects).reduce((total, [subjectName, score]) => {
     if (!isValidScore(score)) return total;
     if (extractSubjectMainCategory(subjectName) !== category) return total;
-    return total + score.commonTest + score.secondTest;
+    const subjectScore = score;
+    return total + subjectScore.commonTest + subjectScore.secondTest;
   }, 0);
 };
 

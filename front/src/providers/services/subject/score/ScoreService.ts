@@ -1,5 +1,5 @@
-import { ScoreCalculator } from "@/lib/score/core/calculator";
-import type { Score, ScoreCalculationResult } from "@/lib/types/score/score";
+import { ScoreCalculator } from "@/utils/subject/calculations/scoreCalculator";
+import type { Score, ScoreMetrics } from "@/types/subject/score";
 import {
   SCORE_ERROR_CODES,
   SCORE_ERROR_MESSAGES,
@@ -28,7 +28,7 @@ export class ScoreService {
         score: totalScore,
         percentage,
       };
-    } catch (error) {
+    } catch {
       throw new Error(
         SCORE_ERROR_MESSAGES[SCORE_ERROR_CODES.CALCULATION_ERROR]
       );

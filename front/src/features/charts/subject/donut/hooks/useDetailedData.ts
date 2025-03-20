@@ -10,6 +10,7 @@ import type { ChartResult } from "@/types/subject/chart";
 import { createDetailedPieData } from "@/features/charts/subject/donut/utils/pieChartTransformers";
 import { createChartError } from "@/features/charts/subject/donut/utils/errorHandlers";
 import { extractScores } from "@/features/charts/subject/donut/utils/scoreExtractors";
+import { TEST_TYPES } from "@/types/subject/score";
 
 export const useDetailedData = (
   subjectData: Subject,
@@ -41,7 +42,9 @@ export const useDetailedData = (
                 score.subjectName,
                 score.value,
                 totalScore,
-                score.type
+                score.type === "共通"
+                  ? TEST_TYPES.COMMON
+                  : TEST_TYPES.INDIVIDUAL
               )
             );
           }

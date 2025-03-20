@@ -20,6 +20,7 @@ export interface Score {
   weight: number;
   type: TestTypeName;
   subjectName: SubjectName;
+  percentage: number;
 }
 
 export interface BaseSubjectScore {

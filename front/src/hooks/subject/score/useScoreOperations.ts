@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { ScoreService } from "@/lib/services/subject/score/ScoreService";
+import { ScoreService } from "@/providers/services/subject/score/ScoreService";
 import type {
   Score,
   ScoreMetrics,

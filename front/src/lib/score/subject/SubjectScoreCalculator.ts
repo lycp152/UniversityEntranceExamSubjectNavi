@@ -3,7 +3,6 @@ import type { Score, ScoreCalculationResult } from "../core/types";
 import type { BaseSubjectScore, SubjectScores } from "@/types/subject/score";
 
 type TestType = "commonTest" | "secondTest";
-type MaxTestType = `max${Capitalize<TestType>}`;
 
 export class SubjectScoreCalculator extends ScoreCalculator {
   /**

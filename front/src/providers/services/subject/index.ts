@@ -1,5 +1,5 @@
-import { TransformService } from '../../utils/subject/transformService';
-import { SubjectValidator } from '../validation/subjectValidationService';
+import { TransformService } from "@/lib/utils/subject/transformService";
+import { SubjectValidator } from "../validation/subjectValidationService";
 
 // サービスのシングルトンインスタンス
 let transformServiceInstance: TransformService | null = null;

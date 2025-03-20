@@ -23,7 +23,7 @@ export const useUniversityOperations = () => {
         )(apiUniversity);
         return { data: university };
       } catch (error) {
-        errorHandler(error);
+        errorHandler.handleError(error);
         return {
           error: {
             code: "UPDATE_FAILED",

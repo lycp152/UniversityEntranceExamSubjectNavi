@@ -1,4 +1,4 @@
-import type { EditButtonsProps } from "../../lib/types/university/list";
+import type { EditButtonsProps } from "@/lib/types/university/list";
 
 const SaveButton = ({ onSave }: { onSave: () => void }) => (
   <button

@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/client";
+import { apiClient } from "@/providers/api/client";
 import { authInterceptor } from "../interceptors/auth";
 import {
   loggingRequestInterceptor,

@@ -1,7 +1,7 @@
 import { BaseValidator } from "@/lib/utils/validation/base-validator";
 import type { ValidationRule, ValidationResult } from "@/types/validation";
-import type { Subject, SubjectScore } from "../../types/subject/schema";
-import { SUBJECT_CONSTRAINTS } from "../../config/subject/constraints";
+import type { Subject, SubjectScore } from "@/lib/types/subject/schema";
+import { SUBJECT_CONSTRAINTS } from "@/lib/config/subject/constraints";
 
 export class SubjectValidator extends BaseValidator<Subject> {
   private readonly rules: ValidationRule<Subject>[] = [
@@ -41,6 +41,7 @@ export class SubjectValidator extends BaseValidator<Subject> {
             {
               code: "INVALID_SCORE",
               message: "スコアが無効です",
+              severity: "error" as const,
             },
           ],
       metadata: {
@@ -60,6 +61,7 @@ export class SubjectValidator extends BaseValidator<Subject> {
         errors.push({
           code: rule.code,
           message: rule.message,
+          severity: "error" as const,
         });
       }
     }

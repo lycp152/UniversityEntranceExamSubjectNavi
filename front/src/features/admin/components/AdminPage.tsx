@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import type { APITestType } from "@/lib/types/university/api";
 import { useUniversityEditor } from "@/hooks/university/useUniversityEditor";
-import { UniversityList } from "@/features/university/list/UniversityList";
-import { AdminLayout } from "@/features/admin/AdminLayout";
+import { AdminPageContent } from "./AdminPageContent";
+import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
 
-export function AdminPage() {
+export function AdminPage(): JSX.Element {
   const {
     universities,
     error,
@@ -25,18 +24,18 @@ export function AdminPage() {
   } = useUniversityEditor();
 
   useEffect(() => {
-    fetchUniversities();
+    fetchUniversities().catch((error) => {
+      console.error("Failed to fetch universities:", error);
+    });
   }, [fetchUniversities]);
 
   return (
-    <AdminLayout
-      isLoading={isLoading}
-      error={error}
-      isEmpty={!universities.length}
-      successMessage={successMessage}
-    >
-      <UniversityList
+    <ErrorBoundary>
+      <AdminPageContent
         universities={universities}
+        error={error}
+        isLoading={isLoading}
+        successMessage={successMessage}
         editMode={editMode}
         onEdit={handleEdit}
         onInfoChange={handleInfoChange}
@@ -44,13 +43,9 @@ export function AdminPage() {
         onSave={handleSave}
         onCancel={handleCancel}
         onInsert={handleInsert}
-        onAddSubject={(
-          universityId: number,
-          departmentId: number,
-          type: APITestType
-        ) => handleAddSubject(universityId, departmentId, type)}
+        onAddSubject={handleAddSubject}
         onSubjectNameChange={handleSubjectNameChange}
       />
-    </AdminLayout>
+    </ErrorBoundary>
   );
 }

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
-import { ErrorMessage } from "../../components/errors/ErrorMessage";
-import { LoadingSpinner } from "../../components/ui/feedback/LoadingSpinner";
-import { EmptyState } from "../../components/ui/feedback/EmptyState";
+import { ErrorMessage } from "@/components/errors/ErrorMessage";
+import { LoadingSpinner } from "@/components/ui/feedback/LoadingSpinner";
+import { EmptyState } from "@/components/ui/feedback/EmptyState";
 
 interface AdminLayoutProps {
   readonly children: ReactNode;
@@ -24,18 +24,25 @@ export function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <h2 className="text-2xl font-bold text-gray-900">
-        大学入試科目ナビ - 管理ページ
-      </h2>
+      <header className="bg-white shadow">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            大学入試科目ナビ - 管理ページ
+          </h1>
+        </div>
+      </header>
       {successMessage && (
         <div
           className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
           role="alert"
+          aria-live="polite"
         >
           <span className="block sm:inline">{successMessage}</span>
         </div>
       )}
-      <main className="container mx-auto px-4 py-8">{children}</main>
+      <main className="container mx-auto px-4 py-8" role="main">
+        {children}
+      </main>
     </div>
   );
 }

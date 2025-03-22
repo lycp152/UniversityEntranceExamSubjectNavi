@@ -1,5 +1,5 @@
-import type { Subject } from "@/lib/types/subject/subject";
-import { extractSubjectMainCategory } from "@/utils/subjectNameUtils";
+import type { Subject } from "@/types/subjects/subject";
+import { extractSubjectMainCategory } from "@/utils/subject-name";
 
 export const useCalculateScore = (subjectData: Subject) => {
   // 全体の合計点を計算する関数

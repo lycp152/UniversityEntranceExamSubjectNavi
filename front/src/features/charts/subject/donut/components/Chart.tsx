@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { PieChart as RechartsPieChart } from "recharts";
+import { PieChart } from "recharts";
 import Patterns from "@/features/charts/subject/donut/patterns";
 import InnerPie from "./InnerPie";
 import OuterPie from "./OuterPie";
@@ -11,12 +11,12 @@ interface Props {
 }
 
 const Chart: FC<Props> = ({ data: { detailedData = [], outerData = [] } }) => (
-  <RechartsPieChart>
+  <PieChart>
     <Patterns />
     <InnerPie data={detailedData} />
     <OuterPie data={outerData} />
     <CustomTooltip />
-  </RechartsPieChart>
+  </PieChart>
 );
 
 export default Chart;

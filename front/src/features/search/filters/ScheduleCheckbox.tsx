@@ -1,4 +1,4 @@
-import GenericCheckboxGroup from "@/components/ui/forms/checkbox/SimpleCheckboxGroup";
+import GenericCheckboxGroup from "@/components/ui/forms/checkbox/simple-checkbox-group";
 
 interface ScheduleCheckboxProps {
   schedule: string[];

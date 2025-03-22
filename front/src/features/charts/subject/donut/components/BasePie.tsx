@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Pie } from "recharts";
 import { PIE_COMMON_PROPS } from "@/features/charts/subject/donut/types";
-import { PieData } from "@/types/subject/chart";
+import { PieData } from "@/features/charts/types";
 import CustomLabel from "@/features/charts/subject/donut/components/CustomLabel";
 
 interface Props {

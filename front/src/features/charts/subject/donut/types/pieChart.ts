@@ -1,4 +1,4 @@
-import { SubjectType } from "@/lib/constants/subject";
+import { SubjectType } from "@/features/subjects/constants";
 
 // 基本的なデータ変換の入力型
 export interface TransformInput {

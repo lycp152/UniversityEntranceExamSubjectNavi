@@ -3,10 +3,10 @@ import {
   University,
   Subject,
   TestType,
-} from "@/lib/types/university";
-import { DepartmentInfo } from "../../university/department/info";
+} from "@/types/university/university";
+import { DepartmentInfo } from "../../universities/department/info";
 import { ExamSection } from "../sections/ExamSection";
-import { APISubject, APITestType } from "@/lib/types/university/api";
+import { APISubject, APITestType } from "@/types/api/api-types";
 
 interface ExamTableProps {
   departments: Department[];

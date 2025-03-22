@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { useUniversityEditor } from "@/hooks/university/useUniversityEditor";
+import { useUniversityEditor } from "@/features/admin/hooks/use-university-editor";
 import { AdminPageContent } from "./AdminPageContent";
-import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
+import { ErrorBoundary } from "@/components/errors/error-boundary";
 
 export function AdminPage(): JSX.Element {
   const {

@@ -6,15 +6,15 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { SubjectScore } from "@/types/subject/score";
+import { SubjectScore } from "@/types/score/score3";
 import CustomLabel from "./CustomLabel";
 import Patterns from "@/features/charts/subject/donut/patterns";
 import {
   ChartTooltip,
   TooltipPayload,
 } from "@/features/charts/subject/donut/components/ChartTooltip";
-import { getSubjectBaseCategory } from "@/utils/subject/operations/subjectOperations";
-import { CHART_CONFIG } from "@/lib/constants/subject/chart";
+import { getSubjectBaseCategory } from "@/features/charts/utils/operations/subjectOperations";
+import { CHART_CONFIG } from "@/features/charts/constants/chart";
 
 type ChartProps = {
   detailedData: SubjectScore[];

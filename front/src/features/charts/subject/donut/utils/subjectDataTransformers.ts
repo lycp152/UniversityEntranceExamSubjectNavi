@@ -1,4 +1,4 @@
-import { TestType } from "@/types/subject/score";
+import { TestType } from "@/types/score/score3";
 import { TransformedSubjectData } from "../types/pieDataTransformerTypes";
 import { getCategoryFromSubject, getDisplayName } from "./subjectNameParser";
 import { formatWithTestType } from "./subjectNameFormatter";

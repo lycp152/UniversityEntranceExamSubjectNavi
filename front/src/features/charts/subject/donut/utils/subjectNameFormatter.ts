@@ -1,4 +1,4 @@
-import { TestType } from "@/types/subject/score";
+import { TestType } from "@/types/score/score3";
 import { FORMAT_PATTERNS } from "../constants/subjectFormats";
 
 /**

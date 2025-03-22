@@ -1,6 +1,6 @@
-import { EXAM_TYPE_OPTIONS } from "@/lib/constants/subjects";
+import { EXAM_TYPE_OPTIONS } from "@/constants/subjects";
 import type { SubjectScore } from "../types/subjects";
-import type { SubjectName } from "@/lib/constants/subject";
+import type { SubjectName } from "@/features/subjects/constants";
 
 export interface SubjectScoreError {
   type: "error";

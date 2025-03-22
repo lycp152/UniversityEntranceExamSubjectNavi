@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { CustomLabelProps } from "@/types/subject/chart";
+import { CustomLabelProps } from "@/features/charts/types";
 
 // ラベルフォーマット戦略
 const labelFormatters = {

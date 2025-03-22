@@ -1,4 +1,4 @@
-import { PatternConfig } from "@/types/subject/chart";
+import { PatternConfig } from "@/features/charts/types";
 import { PATTERN_CONFIG, createPattern } from "./patternConfig";
 
 // 科目別のパターン定義

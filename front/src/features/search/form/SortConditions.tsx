@@ -1,4 +1,4 @@
-import { SectionTitle } from "@/components/ui/typography/SectionTitle";
+import { SectionTitle } from "@/components/ui/typography/section-title";
 
 interface SortCondition {
   examType: string;

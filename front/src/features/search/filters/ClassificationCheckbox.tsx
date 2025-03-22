@@ -1,4 +1,4 @@
-import CategoryCheckboxGroup from "@/components/ui/forms/checkbox/CategoryCheckboxGroup";
+import CategoryCheckboxGroup from "@/components/ui/forms/checkbox/category-checkbox-group";
 
 const classificationData: Record<string, string[]> = {
   国公立: [

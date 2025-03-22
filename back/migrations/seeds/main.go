@@ -391,7 +391,7 @@ func main() {
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name:         "英語R",
+													Name:         "英語L",
 													Score:        100,
 													Percentage:   8.33,
 													DisplayOrder: 1,
@@ -400,10 +400,46 @@ func main() {
 													BaseModel: models.BaseModel{
 														Version: 1,
 													},
-													Name:         "数学",
+													Name:         "英語R",
 													Score:        100,
 													Percentage:   8.33,
 													DisplayOrder: 2,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "数学",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 3,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "国語",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 4,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "理科",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 5,
+												},
+												{
+													BaseModel: models.BaseModel{
+														Version: 1,
+													},
+													Name:         "地歴公",
+													Score:        100,
+													Percentage:   8.33,
+													DisplayOrder: 6,
 												},
 											},
 										},

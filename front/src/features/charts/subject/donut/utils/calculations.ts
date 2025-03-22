@@ -1,4 +1,4 @@
-import { SubjectScores } from "@/types/subject";
+import { SubjectScores } from "@/features/subjects/constants";
 import { getCategoryFromSubject } from "./stringTransformers";
 
 export const calculateTotalScore = (subjects: SubjectScores): number =>

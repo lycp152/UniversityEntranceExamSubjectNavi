@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Pie, Cell } from "recharts";
 import CustomLabel from "./CustomLabel";
 import { PIE_COMMON_PROPS } from "@/features/charts/subject/donut/types";
-import { PieData } from "@/types/subject/chart";
+import { PieData } from "@/features/charts/types";
 
 interface Props {
   data: PieData[];

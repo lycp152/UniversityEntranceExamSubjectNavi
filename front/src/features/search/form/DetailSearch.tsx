@@ -3,7 +3,7 @@ import RegionCheckbox from "../filters/RegionCheckbox";
 import AcademicFieldCheckbox from "../filters/AcademicFieldCheckbox";
 import ScheduleCheckbox from "../filters/ScheduleCheckbox";
 import ClassificationCheckbox from "../filters/ClassificationCheckbox";
-import { SectionTitle } from "@/components/ui/typography/SectionTitle";
+import { SectionTitle } from "@/components/ui/typography/section-title";
 
 interface DetailSearchProps {
   region: string[];

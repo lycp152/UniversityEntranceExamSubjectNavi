@@ -1,4 +1,4 @@
-import type { Subject } from "@/lib/types/subject/subject";
+import type { Subject } from "@/types/subjects/subject";
 import { useCalculateScore } from "./useCalculateScore";
 import { useDetailedData } from "./useDetailedData";
 import { useOuterData } from "@/features/charts/subject/donut/hooks/useOuterData";

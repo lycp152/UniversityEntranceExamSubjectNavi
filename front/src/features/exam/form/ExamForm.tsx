@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Department, University } from "@/lib/types/university";
 import {
+  Department,
+  University,
   Subject,
   TestType,
   AdmissionSchedule,
   Major,
-} from "@/lib/types/university/university";
+} from "@/types/university/university";
 import { ExamTable } from "../table/ExamTable";
 
 const updateSubject = (subject: Subject, subjectId: number, value: number) =>

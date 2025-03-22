@@ -1,9 +1,9 @@
-import { SubjectCategory } from "@/types/subject";
+import { SubjectName } from "@/features/subjects/constants";
 
 interface DetailedPieData {
   name: string;
   value: number;
-  category: SubjectCategory;
+  category: SubjectName;
 }
 
 interface OuterPieData {

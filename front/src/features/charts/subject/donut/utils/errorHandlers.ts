@@ -1,12 +1,12 @@
-import { ErrorCategory } from "@/features/charts/subject/donut/types/errors";
-import { ChartError } from "@/types/subject/error";
+import { ErrorCategory } from "@/types/errors/categories";
+import { ChartError } from "@/features/charts/types/error";
 import { ErrorCode } from "../constants/errorCodes";
 import {
   ScoreValidationRules,
   ValidationResult,
   ValidationError,
   ValidationRule,
-} from "../types/validation";
+} from "@/types/validation/validation2";
 
 // パフォーマンス最適化のためのキャッシュ
 const ruleResultCache = new Map<string, ValidationResult>();

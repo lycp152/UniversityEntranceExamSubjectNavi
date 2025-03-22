@@ -4,7 +4,7 @@ import { useState } from "react";
 import SortConditions from "./SortConditions";
 import DetailSearch from "./DetailSearch";
 import { formStyles } from "./styles";
-import { SectionTitle } from "@/components/ui/typography/SectionTitle";
+import { SectionTitle } from "@/components/ui/typography/section-title";
 
 export default function SearchForm() {
   const [subject, setSubject] = useState<string>("");

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { COLORS } from "@/lib/constants/subject";
+import { COLORS } from "@/features/subjects/constants";
 import { PATTERN_DIMENSIONS } from "./constants/dimensions";
 import { BasePatternProps } from "./types";
 

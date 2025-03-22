@@ -1,16 +1,16 @@
 import { useMemo } from "react";
-import type { Subject } from "@/lib/types/subject/subject";
-import { SUBJECT_DISPLAY_ORDER } from "@/lib/constants/subjects";
+import type { Subject } from "@/types/subjects/subject";
+import { SUBJECT_DISPLAY_ORDER } from "@/constants/subjects";
 import {
   ERROR_CODES,
   ERROR_MESSAGES,
 } from "@/features/charts/subject/donut/constants/errorCodes";
-import { DetailedPieData } from "@/types/subject/chart";
-import type { ChartResult } from "@/types/subject/chart";
+import { DetailedPieData } from "@/features/charts/types";
+import type { ChartResult } from "@/features/charts/types";
 import { createDetailedPieData } from "@/features/charts/subject/donut/utils/pieChartTransformers";
 import { createChartError } from "@/features/charts/subject/donut/utils/errorHandlers";
 import { extractScores } from "@/features/charts/subject/donut/utils/scoreExtractors";
-import { TEST_TYPES } from "@/types/subject/score";
+import { TEST_TYPES } from "@/types/score/score3";
 
 export const useDetailedData = (
   subjectData: Subject,

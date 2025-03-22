@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Subject as UISubject } from "@/lib/types/subject/subject";
+import type { Subject as UISubject } from "@/types/subjects/subject";
 import type {
   APIUniversity,
   APIDepartment,
   APIMajor,
   APIAdmissionSchedule,
   APITestType,
-} from "@/lib/types/university/api";
+} from "@/types/api/api-types";
 import { tableStyles } from "./styles";
-import { transformSubjectData } from "@/lib/utils/subject/transform";
-import { LoadingSpinner } from "@/components/ui/feedback/LoadingSpinner";
-import { ErrorMessage } from "@/components/errors/ErrorMessage";
+import { transformSubjectData } from "@/utils/subject-mapper";
+import { LoadingSpinner } from "@/components/ui/feedback/loading-spinner";
+import { ErrorMessage } from "@/components/errors/error-message";
 
 const processTestTypes = (
   testType: APITestType,

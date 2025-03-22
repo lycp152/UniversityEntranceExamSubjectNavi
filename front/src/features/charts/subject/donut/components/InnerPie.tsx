@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Pie, Cell } from "recharts";
-import { COLORS } from "@/lib/constants/subject";
+import { COLORS } from "@/features/subjects/constants";
 import CustomLabel from "./CustomLabel";
 import { DetailedPieData, PIE_COMMON_PROPS } from "../types";
 

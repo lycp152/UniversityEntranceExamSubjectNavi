@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
-import { SubjectCategory } from "@/types/subject";
+import { SubjectName } from "@/features/subjects/constants";
 
 export interface BasePatternProps {
-  id: SubjectCategory;
+  id: SubjectName;
   children?: ReactNode;
   patternTransform?: string;
 }

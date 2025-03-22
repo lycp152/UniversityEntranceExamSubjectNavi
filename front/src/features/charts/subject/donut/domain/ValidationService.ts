@@ -1,5 +1,8 @@
-import { ValidationRule, ValidationContext } from './ValidationRule';
-import { ValidationResult, ValidationError } from '../types/validation';
+import { ValidationRule, ValidationContext } from "./ValidationRule";
+import {
+  ValidationResult,
+  ValidationError,
+} from "../../../../../types/validation/validation2";
 
 export interface ValidationMetrics {
   startTime: number;
@@ -52,15 +55,16 @@ export class ValidationService<T> {
       return [true, executionTime];
     } catch (error: unknown) {
       console.error(`Validation error in rule ${rule.code}:`, error);
-      const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+      const errorMessage =
+        error instanceof Error ? error.message : "不明なエラー";
 
       return [
         false,
         0,
         {
           message: `バリデーション実行中にエラーが発生しました: ${errorMessage}`,
-          code: 'VALIDATION_ERROR',
-          severity: 'error',
+          code: "VALIDATION_ERROR",
+          severity: "error",
           metadata: {
             timestamp: this.context?.timestamp,
             originalError: error,
@@ -78,7 +82,10 @@ export class ValidationService<T> {
     const ruleExecutionTimes: Record<string, number> = {};
 
     for (const rule of this.rules) {
-      const [isValid, executionTime, error] = this.validateSingleRule(rule, value);
+      const [isValid, executionTime, error] = this.validateSingleRule(
+        rule,
+        value
+      );
       ruleExecutionTimes[rule.code] = executionTime;
 
       if (!isValid && error) {

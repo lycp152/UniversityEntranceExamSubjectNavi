@@ -1,9 +1,9 @@
 "use client";
 
-import type { APITestType } from "@/lib/types/university/api";
-import type { University, Department } from "@/lib/types/university/university";
-import type { EditMode } from "@/lib/types/university/list";
-import { UniversityList } from "@/features/university/list/UniversityList";
+import type { APITestType } from "@/types/api/api-types";
+import type { University, Department } from "@/types/university/university";
+import type { EditMode } from "@/types/university/university-list";
+import { UniversityList } from "@/features/universities/list/UniversityList";
 import { AdminLayout } from "@/features/admin/components/AdminLayout";
 import { memo, useCallback } from "react";
 

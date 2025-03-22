@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { DonutChart } from "./components/DonutChart";
-import { useSubjectChart } from "@/hooks/subject/chart/useSubjectChart";
+import { useSubjectChart } from "@/features/charts/hooks/useSubjectChart";
 import { containerStyles, containerClassName, pieChartStyles } from "./styles";
 
 const mockSubject = {

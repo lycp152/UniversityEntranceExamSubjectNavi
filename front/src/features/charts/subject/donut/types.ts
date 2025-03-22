@@ -1,4 +1,4 @@
-import { SubjectCategory } from '@/types/subject';
+import { SubjectName } from "@/features/subjects/constants";
 
 export interface CustomLabelProps {
   cx: number;
@@ -15,11 +15,11 @@ export interface CustomLabelProps {
 export interface DetailedPieData {
   name: string;
   value: number;
-  category: SubjectCategory;
+  category: SubjectName;
 }
 
 export const PIE_COMMON_PROPS = {
-  dataKey: 'value',
+  dataKey: "value",
   startAngle: 90,
   endAngle: -270,
 } as const;

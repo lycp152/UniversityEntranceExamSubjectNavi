@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
-import { ErrorMessage } from "@/components/errors/ErrorMessage";
-import { LoadingSpinner } from "@/components/ui/feedback/LoadingSpinner";
-import { EmptyState } from "@/components/ui/feedback/EmptyState";
+import { ErrorMessage } from "@/components/errors/error-message";
+import { LoadingSpinner } from "@/components/ui/feedback/loading-spinner";
+import { EmptyState } from "@/components/ui/feedback/empty-state";
 
 interface AdminLayoutProps {
   readonly children: ReactNode;

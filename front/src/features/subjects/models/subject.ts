@@ -1,5 +1,5 @@
 import type { SubjectScore, SubjectMetrics } from "./types";
-import type { SubjectCategory } from "@/features/subjects/constants/subjects";
+import type { SubjectCategory } from "@/constants/subjects";
 import { SubjectError } from "../errors/SubjectError";
 import { SCORE_CONSTRAINTS } from "@/constants/scores";
 

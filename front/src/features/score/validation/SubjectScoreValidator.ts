@@ -1,7 +1,4 @@
-import type {
-  SubjectScore,
-  SubjectScoreError,
-} from "@/types/score/SubjectScoreType";
+import { SubjectScore, SubjectScoreError } from "@/types/score/score";
 import { SUBJECT_TYPES } from "@/features/subjects/constants";
 
 export const validateSubjectScore = (

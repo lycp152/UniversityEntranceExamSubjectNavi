@@ -1,14 +1,14 @@
 import { FC, memo } from "react";
-import type { SubjectScores } from "@/types/score/score";
 import type {
-  ScoreMetrics,
   SubjectScoreDetail,
-} from "@/features/charts/subject/donut/types/score";
+  SubjectScore,
+  ScoreMetrics,
+} from "@/types/score/score";
 import { TEST_TYPES } from "@/types/score/score";
 
 interface ScoreTableBodyProps {
-  scores: SubjectScores;
-  calculatedScores: Record<string, SubjectScoreDetail> | null;
+  scores: Record<string, SubjectScore>;
+  calculatedScores: Record<string, SubjectScoreDetail>;
   sortedSubjects: string[];
   totals: {
     [TEST_TYPES.COMMON]: number;
@@ -49,8 +49,8 @@ const ScoreTableBody: FC<ScoreTableBodyProps> = memo(
               >
                 {subject}
               </th>
-              <ScoreCell data={score[TEST_TYPES.COMMON]} label="共通テスト" />
-              <ScoreCell data={score[TEST_TYPES.INDIVIDUAL]} label="個別試験" />
+              <ScoreCell data={score.commonTest} label="共通テスト" />
+              <ScoreCell data={score.secondaryTest} label="個別試験" />
               <ScoreCell data={score.total} label="合計" />
             </tr>
           );

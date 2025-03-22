@@ -1,4 +1,4 @@
-import type { Severity } from "../core";
+import type { Severity } from "../operations/core";
 import type { ErrorSeverity } from "@/types/errors/categories";
 
 export type AlertCategory =

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { SubjectScores, TestType, TEST_TYPES } from "@/types/score/score3";
+import { SubjectScores, TestType, TEST_TYPES } from "@/types/score/score";
 import {
   calculateTotalScore,
   calculateTestTypeTotal,

@@ -1,5 +1,5 @@
 import { InputHTMLAttributes, forwardRef } from "react";
-import { cn } from "@/lib/core/tailwind-class-merger";
+import { cn } from "@/utils/styles";
 
 const Input = forwardRef<
   HTMLInputElement,

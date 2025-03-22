@@ -1,4 +1,4 @@
-import type { ValidationRule } from "@/types/validation/validation";
+import type { ValidationRule } from "@/types/validation";
 import { ValidationError, ValidationErrorDetail } from "./ValidationError";
 import { ValidationRuleCache } from "./ValidationRuleCache";
 import { ValidationCategory, ValidationSeverity } from "./ValidationErrorTypes";
@@ -26,7 +26,16 @@ export class AdvancedValidationBuilder<T> {
     if (cacheKey) {
       const cachedRules = this.cache.getCachedRules(cacheKey);
       if (cachedRules) {
-        this.rules = cachedRules;
+        this.rules = cachedRules.map((rule) => ({
+          ...rule,
+          name: rule.code,
+          severity: "error" as const,
+          category: "validation",
+          validate: async (data: T) => {
+            const result = await rule.validate(data);
+            return Boolean(result);
+          },
+        }));
       }
     }
   }

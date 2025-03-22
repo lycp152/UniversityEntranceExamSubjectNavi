@@ -1,10 +1,9 @@
 import { useMemo } from "react";
-import { SubjectScores } from "@/types/score/SubjectScoreType2";
+import { SubjectScores, SubjectScoreDetail } from "@/types/score/score";
 import {
   calculateSubjectScores,
   calculateTotalScore,
 } from "@/features/subjects/utils/services/ScoreCalculationService";
-import { SubjectScoreDetail } from "@/types/score/SubjectScoreType";
 
 export const useScoreCalculations = (scores: SubjectScores) => {
   const totalScore = useMemo(() => calculateTotalScore(scores), [scores]);

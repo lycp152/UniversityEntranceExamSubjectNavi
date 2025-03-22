@@ -1,10 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
-import type {
-  Score,
-  ScoreMetrics,
-  ScoreValidationError,
-  CategoryScore,
-} from "@/types/score/score3";
+import type { ScoreMetrics } from "@/types/score/score";
+import type { Score, ScoreValidationError } from "@/types/score/core";
+import type { CategoryScore } from "@/types/score/display";
 import { validateScore } from "@/features/score/validation/scoreValidator2";
 import { ScoreAggregator } from "@/features/subjects/utils/scoreAggregator";
 

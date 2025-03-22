@@ -1,5 +1,5 @@
-import type { BaseSubjectScore } from "@/types/score/score2";
-import { TestScore, SCORE_CONSTRAINTS } from "@/types/score/score2";
+import type { BaseSubjectScore } from "@/types/score/score";
+import { TestScore, SCORE_CONSTRAINTS } from "@/types/score/score";
 
 /**
  * スコアの型ガード

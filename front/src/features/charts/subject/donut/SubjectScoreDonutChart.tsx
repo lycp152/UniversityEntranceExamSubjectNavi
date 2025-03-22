@@ -1,11 +1,11 @@
 import { FC } from "react";
-import { Subject } from "@/types/subjects/subject";
+import { UISubject } from "@/types/ui/subjects";
 import { useSubjectChart } from "@/features/charts/hooks/useSubjectChart";
 import { containerStyles, containerClassName, pieChartStyles } from "./styles";
 import { DonutChart } from "./components/DonutChart";
 
 interface SubjectScoreDonutChartProps {
-  subjectData: Subject;
+  subjectData: UISubject;
 }
 
 const SubjectScoreDonutChart: FC<SubjectScoreDonutChartProps> = ({

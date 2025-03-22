@@ -1,8 +1,5 @@
 import { BaseValidator } from "@/utils/validation/base-validator";
-import type {
-  ValidationRule,
-  ValidationResult,
-} from "@/types/validation/validation";
+import type { ValidationRule, ValidationResult } from "@/types/validation";
 import type { Subject, SubjectScore } from "@/features/subjects/schemas";
 import { SUBJECT_CONSTRAINTS } from "@/features/subjects/config/constraints";
 
@@ -10,18 +7,24 @@ export class SubjectValidator extends BaseValidator<Subject> {
   private readonly rules: ValidationRule<Subject>[] = [
     {
       code: "VALID_SCORE_RANGE",
+      name: "スコア範囲の検証",
       message: "スコアが有効範囲外です",
       validate: (subject) =>
         subject.maxScore >= SUBJECT_CONSTRAINTS.MIN_SCORE &&
         subject.minScore >= SUBJECT_CONSTRAINTS.MIN_SCORE &&
         subject.maxScore >= subject.minScore,
+      severity: "error",
+      category: "validation",
     },
     {
       code: "VALID_WEIGHT",
+      name: "重みの検証",
       message: "重みが有効範囲外です",
       validate: (subject) =>
         subject.weight >= SUBJECT_CONSTRAINTS.MIN_WEIGHT &&
         subject.weight <= SUBJECT_CONSTRAINTS.MAX_WEIGHT,
+      severity: "error",
+      category: "validation",
     },
   ];
 

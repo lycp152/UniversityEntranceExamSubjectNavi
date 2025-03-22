@@ -1,4 +1,4 @@
-import { ScoreValidationRules } from "@/types/validation/validation2";
+import { ScoreValidationRules } from "@/types/validation";
 import { ValidationError } from "@/features/universities/domain/validators/ValidationError";
 import {
   ValidationCategory as ValidationErrorCodes,

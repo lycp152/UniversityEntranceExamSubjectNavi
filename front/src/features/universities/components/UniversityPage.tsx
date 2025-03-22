@@ -16,7 +16,7 @@ import type {
   APIAdmissionSchedule,
   APITestType,
 } from "@/types/api/api-types";
-import type { Subject } from "@/types/subjects/subject";
+import type { UISubject } from "@/types/ui/subjects";
 import { UniversityPageParams } from "@/features/universities/types/params";
 
 const findDepartmentAndMajor = (
@@ -50,7 +50,9 @@ const UniversityPage = ({ params }: Props) => {
   const { academicYear, universityId, departmentId, majorId, schedule } =
     resolvedParams;
 
-  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<UISubject | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

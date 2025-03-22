@@ -5,10 +5,8 @@ import type {
   AlertType,
   Trend,
 } from "@/lib/monitoring";
-import type {
-  ValidationOperationResult,
-  BaseSubjectScore,
-} from "@/types/score/score2";
+import type { BaseSubjectScore } from "@/types/score/score";
+import type { ValidationOperationResult } from "@/features/score/lib/operations/operation-results";
 
 export class MetricsService {
   private readonly metrics: PerformanceMetrics;

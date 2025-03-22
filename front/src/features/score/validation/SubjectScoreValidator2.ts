@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { BaseSubjectScore, SubjectScores } from "@/types/score/score2";
-import type { ValidationResult } from "@/types/validation/validation";
+import type { BaseSubjectScore, SubjectScores } from "@/types/score/score";
+import type { ValidationResult } from "@/types/validation";
 
 const SCORE_CONSTRAINTS = {
   MIN_SCORE: 0,

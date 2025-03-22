@@ -1,5 +1,5 @@
-import type { ValidationResult } from "@/types/validation/validation";
-import type { BaseSubjectScore } from "@/types/score/score2";
+import type { ValidationResult } from "@/types/validation";
+import type { BaseSubjectScore } from "@/types/score/score";
 
 /**
  * スコアのキャッシュデータ型

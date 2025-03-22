@@ -1,4 +1,4 @@
-import { SubjectScores } from "@/types/score/score3";
+import { SubjectScores } from "@/types/score/score";
 
 export interface TestScores {
   subjects: SubjectScores;

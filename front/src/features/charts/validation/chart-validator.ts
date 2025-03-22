@@ -3,7 +3,7 @@ import type {
   ValidationRule,
   ValidationContext,
   ValidationResult,
-} from "@/types/validation/validation";
+} from "@/types/validation";
 
 interface ChartData {
   name: string;
@@ -17,16 +17,22 @@ interface ChartData {
 const chartRules: ValidationRule<ChartData>[] = [
   {
     code: "VALID_VALUE",
+    name: "値の検証",
     validate: (data: ChartData) => data.value >= 0,
     message: "値が無効です",
+    severity: "error",
+    category: "validation",
   },
   {
     code: "VALID_PERCENTAGE",
+    name: "パーセンテージの検証",
     validate: (data: ChartData) => {
       const percentage = parseFloat(data.percentage);
       return !isNaN(percentage) && percentage >= 0 && percentage <= 100;
     },
     message: "パーセンテージが無効です",
+    severity: "error",
+    category: "validation",
   },
 ];
 

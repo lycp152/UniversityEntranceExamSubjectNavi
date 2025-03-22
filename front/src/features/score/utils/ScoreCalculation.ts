@@ -1,4 +1,4 @@
-import { SubjectScores, TestType } from "@/types/score/score3";
+import { SubjectScores, TestType } from "@/types/score/score";
 
 /**
  * 全科目の合計点を計算する

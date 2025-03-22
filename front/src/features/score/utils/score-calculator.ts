@@ -1,5 +1,5 @@
-import type { Score } from "@/types/score/score3";
-import type { ValidationResult } from "@/types/validation/validation";
+import type { Score } from "@/types/score/core";
+import type { ValidationResult } from "@/types/validation";
 import { SCORE_CONSTRAINTS } from "@/constants/scores";
 
 export class ScoreCalculator {

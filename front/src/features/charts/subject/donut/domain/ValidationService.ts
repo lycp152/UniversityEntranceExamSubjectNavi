@@ -1,8 +1,5 @@
 import { ValidationRule, ValidationContext } from "./ValidationRule";
-import {
-  ValidationResult,
-  ValidationError,
-} from "../../../../../types/validation/validation2";
+import { ValidationResult, ValidationError } from "@/types/validation";
 
 export interface ValidationMetrics {
   startTime: number;

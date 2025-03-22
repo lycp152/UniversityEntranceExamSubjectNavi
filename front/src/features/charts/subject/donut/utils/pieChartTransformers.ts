@@ -1,6 +1,6 @@
 import { DetailedPieData, PieData } from "@/features/charts/types";
 import { TransformInput } from "@/features/charts/types/ScoreTransformTypes";
-import { TestType, TEST_TYPES } from "@/types/score/score3";
+import { TestType, TEST_TYPES } from "@/types/score/score";
 import { SUBJECT_TYPES } from "@/features/subjects/constants";
 import { transformSubjectData } from "./subjectDataTransformers";
 import { transformToPieData } from "./baseChartTransformers";

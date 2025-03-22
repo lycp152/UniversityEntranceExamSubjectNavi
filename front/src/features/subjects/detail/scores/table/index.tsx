@@ -2,21 +2,17 @@ import { FC, memo } from "react";
 import type {
   SubjectScores,
   SubjectScoreDetail,
-  BaseScore,
-} from "@/features/charts/subject/donut/types/score";
+  SubjectScore,
+} from "@/types/score/score";
 import { ErrorBoundary } from "@/components/errors/error-boundary";
 import { useScoreTable } from "@/features/subjects/hooks/table/useScoreTable";
 import { useTableKeyboardNavigation } from "@/features/subjects/hooks/table/useTableKeyboardNavigation";
 import { TEST_TYPES } from "@/types/score/score";
-import type {
-  SubjectScore as LibSubjectScore,
-  BaseScore as LibBaseScore,
-} from "@/types/score/score";
 import ScoreTableHeader from "./ScoreTableHeader";
 import ScoreTableBody from "./ScoreTableBody";
 
 interface ScoreTableProps {
-  scores: Record<string, LibSubjectScore>;
+  scores: Record<string, SubjectScore>;
 }
 
 type ScoreTableTotals = {
@@ -25,24 +21,14 @@ type ScoreTableTotals = {
   total: number;
 };
 
-const convertToBaseScore = (score?: LibBaseScore): BaseScore => {
-  if (!score) {
-    return { value: 0, maxValue: 0 };
-  }
-  return {
-    value: score.score,
-    maxValue: 100, // デフォルト値として100を使用
-  };
-};
-
 const convertToSubjectScores = (
-  scores: Record<string, LibSubjectScore>
+  scores: Record<string, SubjectScore>
 ): SubjectScores => {
   const result: SubjectScores = {};
   for (const [subject, score] of Object.entries(scores)) {
     result[subject] = {
-      [TEST_TYPES.COMMON]: convertToBaseScore(score[TEST_TYPES.COMMON]),
-      [TEST_TYPES.INDIVIDUAL]: convertToBaseScore(score[TEST_TYPES.INDIVIDUAL]),
+      commonTest: score.value,
+      secondTest: 0, // デフォルト値として0を使用
     };
   }
   return result;

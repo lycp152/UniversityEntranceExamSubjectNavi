@@ -4,8 +4,8 @@ import type {
   ValidationResult,
   ValidationContext,
   ValidationMetadata,
-} from "../../../types/validation/validation";
-import type { BaseSubjectScore } from "@/types/score/score2";
+} from "@/types/validation/core";
+import type { BaseSubjectScore } from "@/types/score/score";
 import {
   createCacheKey,
   isBaseSubjectScore,
@@ -16,20 +16,29 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
   private readonly rules: ValidationRule<BaseSubjectScore>[] = [
     {
       code: "SCORE_FORMAT",
+      name: "スコア形式の検証",
       message: "Invalid score format",
       validate: (score: BaseSubjectScore) => isBaseSubjectScore(score),
+      severity: "error",
+      category: "validation",
     },
     {
       code: "COMMON_TEST_SCORE",
+      name: "共通テストスコアの検証",
       message: "Invalid common test score",
       validate: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.commonTest, maxValue: 100 }),
+      severity: "error",
+      category: "validation",
     },
     {
       code: "INDIVIDUAL_TEST_SCORE",
+      name: "個別テストスコアの検証",
       message: "Invalid individual test score",
       validate: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.secondTest, maxValue: 100 }),
+      severity: "error",
+      category: "validation",
     },
   ];
 
@@ -37,7 +46,11 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
   private readonly errorLogger?: (error: Error) => void;
 
   constructor(
-    context?: ValidationContext,
+    context: ValidationContext = {
+      fieldName: "",
+      value: undefined,
+      timestamp: Date.now(),
+    },
     errorLogger?: (error: Error) => void
   ) {
     super(context);

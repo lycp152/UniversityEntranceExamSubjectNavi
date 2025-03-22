@@ -1,4 +1,4 @@
-import { TestType } from "@/types/score/score3";
+import { TestType } from "@/types/score/score";
 
 export const FORMAT_PATTERNS = {
   SUBJECT_WITH_TEST_TYPE: (subject: string, testType: TestType) =>

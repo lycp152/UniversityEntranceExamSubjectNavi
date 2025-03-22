@@ -1,10 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { ScoreService } from "@/features/score/service/score-service";
-import type {
-  Score,
-  ScoreMetrics,
-  ScoreValidationError,
-} from "@/types/score/score3";
+import type { ScoreMetrics } from "@/types/score/score";
+import type { Score, ScoreValidationError } from "@/types/score/core";
 
 export const useScoreOperations = () => {
   const [error, setError] = useState<ScoreValidationError | null>(null);

@@ -1,9 +1,9 @@
-import { ValidationResult } from "@/types/validation/validation2";
 import {
+  ValidationResult,
   ValidationMetadata,
   ValidationErrorCodes,
   ValidationErrorCode,
-} from "@/types/validation/valitation3";
+} from "@/types/validation";
 import { ValidationError } from "@/lib/validation/error";
 
 /**

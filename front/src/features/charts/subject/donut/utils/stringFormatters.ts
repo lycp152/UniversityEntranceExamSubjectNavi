@@ -1,4 +1,4 @@
-import { TestType } from "@/types/score/score3";
+import { TestType } from "@/types/score/score";
 import { FORMAT_PATTERNS } from "../constants/subjectFormats";
 
 export const formatWithTestType = (

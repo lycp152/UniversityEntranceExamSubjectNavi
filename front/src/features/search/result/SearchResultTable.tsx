@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Subject as UISubject } from "@/types/subjects/subject";
+import type { UISubject } from "@/types/ui/subjects";
 import type {
   APIUniversity,
   APIDepartment,
@@ -102,7 +102,7 @@ const transformUniversityData = (
     );
 
     subjects.forEach((subject) => {
-      const key = `${subject.universityId}-${subject.departmentId}-${subject.majorId}-${subject.admissionScheduleId}`;
+      const key = `${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`;
       if (!transformedSubjectsMap.has(key)) {
         transformedSubjectsMap.set(key, subject);
       }
@@ -227,23 +227,27 @@ const SearchResultTable = () => {
           <tbody>
             {subjects.map((subject: UISubject) => (
               <tr
-                key={`${subject.universityId}-${subject.departmentId}-${subject.majorId}-${subject.admissionScheduleId}`}
+                key={`${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`}
                 className={tableStyles.row}
                 onClick={() =>
                   handleRowClick(
-                    subject.academicYear,
-                    subject.universityId,
-                    subject.departmentId,
-                    subject.majorId,
-                    subject.admissionScheduleId
+                    subject.examInfo.academicYear,
+                    subject.university.id,
+                    subject.department.id,
+                    subject.major.id,
+                    subject.admissionSchedule.id
                   )
                 }
               >
-                <td className={tableStyles.td}>{subject.universityName}</td>
-                <td className={tableStyles.td}>{subject.department}</td>
-                <td className={tableStyles.td}>{subject.major}</td>
-                <td className={tableStyles.td}>{subject.admissionSchedule}</td>
-                <td className={tableStyles.td}>{subject.enrollment} 名</td>
+                <td className={tableStyles.td}>{subject.university.name}</td>
+                <td className={tableStyles.td}>{subject.department.name}</td>
+                <td className={tableStyles.td}>{subject.major.name}</td>
+                <td className={tableStyles.td}>
+                  {subject.admissionSchedule.name}
+                </td>
+                <td className={tableStyles.td}>
+                  {subject.examInfo.enrollment} 名
+                </td>
               </tr>
             ))}
           </tbody>

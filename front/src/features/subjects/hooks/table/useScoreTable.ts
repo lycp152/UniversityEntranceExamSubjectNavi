@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { SubjectScores } from "@/features/charts/subject/donut/types/score";
+import type { SubjectScores, SubjectScoreDetail } from "@/types/score/score";
 import { ScoreCalculator } from "@/features/subjects/utils/calculator";
 import { TEST_TYPES } from "@/types/score/score";
 
@@ -22,18 +22,11 @@ export const useScoreTable = (scores: SubjectScores) => {
 
       // 合計値の計算
       const totals = Object.values(calculatedScores).reduce<ScoreTableTotals>(
-        (
-          acc,
-          {
-            [TEST_TYPES.COMMON]: common,
-            [TEST_TYPES.INDIVIDUAL]: individual,
-            total,
-          }
-        ) => ({
-          [TEST_TYPES.COMMON]: acc[TEST_TYPES.COMMON] + common.score,
+        (acc, score: SubjectScoreDetail) => ({
+          [TEST_TYPES.COMMON]: acc[TEST_TYPES.COMMON] + score.commonTest.score,
           [TEST_TYPES.INDIVIDUAL]:
-            acc[TEST_TYPES.INDIVIDUAL] + individual.score,
-          total: acc.total + total.score,
+            acc[TEST_TYPES.INDIVIDUAL] + score.secondaryTest.score,
+          total: acc.total + score.total.score,
         }),
         {
           [TEST_TYPES.COMMON]: 0,

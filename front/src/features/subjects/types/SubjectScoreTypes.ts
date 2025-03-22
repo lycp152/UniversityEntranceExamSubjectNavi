@@ -1,8 +1,5 @@
 import type { TestTypeName } from "@/types/university/university";
-import type {
-  SubjectName,
-  SubjectCategory,
-} from "@/features/subjects/constants/subjects";
+import type { SubjectName, SubjectCategory } from "@/constants/subjects";
 
 export interface BaseScore {
   value: number;

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Subject } from "@/types/subjects/subject";
+import type { UISubject } from "@/types/ui/subjects";
 import { SUBJECT_DISPLAY_ORDER } from "@/constants/subjects";
 import {
   ERROR_CODES,
@@ -10,10 +10,10 @@ import type { ChartResult } from "@/features/charts/types";
 import { createDetailedPieData } from "@/features/charts/subject/donut/utils/pieChartTransformers";
 import { createChartError } from "@/features/charts/subject/donut/utils/errorHandlers";
 import { extractScores } from "@/features/charts/subject/donut/utils/scoreExtractors";
-import { TEST_TYPES } from "@/types/score/score3";
+import { TEST_TYPES } from "@/types/score/score";
 
 export const useDetailedData = (
-  subjectData: Subject,
+  subjectData: UISubject,
   totalScore: number
 ): ChartResult<DetailedPieData> => {
   return useMemo(() => {

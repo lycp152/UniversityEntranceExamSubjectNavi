@@ -1,13 +1,11 @@
-import type {
-  BaseSubjectScore,
-  CacheOperationResult,
-} from "@/types/score/score2";
+import type { BaseSubjectScore } from "@/types/score/score";
+import type { CacheOperationResult } from "@/features/score/lib/operations/operation-results";
 import type {
   ScoreCache,
   CacheMetrics,
 } from "@/features/score/service/score-cache.types";
 import { createCacheKey } from "@/features/score/validation/score-validator3";
-import { CACHE_CONFIG } from "@/types/score/score2";
+import { CACHE_CONFIG } from "@/lib/config/cache";
 
 export class CacheService {
   private readonly cache: Map<string, ScoreCache>;

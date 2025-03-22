@@ -1,5 +1,5 @@
-import { Subject } from "@/types/subjects/subject";
-import { SubjectScore } from "@/types/score/score3";
+import { UISubject } from "@/types/ui/subjects";
+import { DisplaySubjectScore } from "@/types/score/score";
 import { useChartData } from "@/features/charts/subject/donut/hooks/useChartData";
 import { SUBJECT_TYPES } from "@/features/subjects/constants";
 import {
@@ -10,12 +10,17 @@ import {
 import { calculatePercentage } from "@/utils/math/percentage";
 
 // チャート用の合計点計算
-const calculateChartTotalScore = (data: SubjectScore[]): number => {
-  return data.reduce((sum: number, item: SubjectScore) => sum + item.value, 0);
+const calculateChartTotalScore = (data: DisplaySubjectScore[]): number => {
+  return data.reduce(
+    (sum: number, item: DisplaySubjectScore) => sum + item.value,
+    0
+  );
 };
 
 // 左側グラフのデータを時計回りに並び替える
-const sortLeftDetailedData = (detailedData: SubjectScore[]): SubjectScore[] => {
+const sortLeftDetailedData = (
+  detailedData: DisplaySubjectScore[]
+): DisplaySubjectScore[] => {
   // デバッグ用のログ
   console.log("Input data for sorting:", detailedData);
 
@@ -48,11 +53,13 @@ const sortLeftDetailedData = (detailedData: SubjectScore[]): SubjectScore[] => {
   return sorted;
 };
 
-const createRightOuterData = (detailedData: SubjectScore[]): SubjectScore[] => {
+const createRightOuterData = (
+  detailedData: DisplaySubjectScore[]
+): DisplaySubjectScore[] => {
   const totalScore = calculateChartTotalScore(detailedData);
 
   return detailedData
-    .reduce((acc: SubjectScore[], current: SubjectScore) => {
+    .reduce((acc: DisplaySubjectScore[], current: DisplaySubjectScore) => {
       const type = current.name.includes(SUBJECT_TYPES.COMMON)
         ? SUBJECT_TYPES.COMMON
         : SUBJECT_TYPES.SECONDARY;
@@ -75,14 +82,14 @@ const createRightOuterData = (detailedData: SubjectScore[]): SubjectScore[] => {
 
       return acc;
     }, [])
-    .sort((a: SubjectScore, b: SubjectScore) => {
+    .sort((a: DisplaySubjectScore, b: DisplaySubjectScore) => {
       if (a.name === SUBJECT_TYPES.COMMON) return -1;
       if (b.name === SUBJECT_TYPES.COMMON) return 1;
       return 0;
     });
 };
 
-const getCategoryType = (item: SubjectScore) => {
+const getCategoryType = (item: DisplaySubjectScore) => {
   if (isCommonSubject(item.name)) {
     return SUBJECT_TYPES.COMMON;
   }
@@ -93,8 +100,8 @@ const getCategoryType = (item: SubjectScore) => {
 };
 
 const createRightDetailedData = (
-  detailedData: SubjectScore[]
-): SubjectScore[] => {
+  detailedData: DisplaySubjectScore[]
+): DisplaySubjectScore[] => {
   return [...detailedData]
     .map((item) => ({
       ...item,
@@ -112,11 +119,11 @@ const createRightDetailedData = (
     });
 };
 
-export const useSubjectChart = (subjectData: Subject) => {
+export const useSubjectChart = (subjectData: UISubject) => {
   const chartData = useChartData(subjectData);
   const { detailedData, outerData } = chartData as unknown as {
-    detailedData: SubjectScore[];
-    outerData: SubjectScore[];
+    detailedData: DisplaySubjectScore[];
+    outerData: DisplaySubjectScore[];
   };
 
   // デバッグ用のログ

@@ -1,5 +1,5 @@
 // 型定義のエクスポート
-export * from "../../types/score/score";
+export * from "@/types/score/score";
 
 // 定数のエクスポート
 export { CACHE_CONFIG, RETRY_CONFIG } from "@/lib/config/cache";

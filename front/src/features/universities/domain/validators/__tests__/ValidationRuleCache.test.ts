@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ValidationRuleCache } from "../ValidationRuleCache";
-import type { ValidationRule } from "@/types/validation/validation";
+import type { ValidationRule } from "@/types/validation";
 
 describe("ValidationRuleCache", () => {
   let cache: ValidationRuleCache<string>;
@@ -17,6 +17,9 @@ describe("ValidationRuleCache", () => {
           validate: (value) => value.length > 0,
           message: "値は必須です",
           code: "REQUIRED",
+          name: "REQUIRED",
+          severity: "error",
+          category: "validation",
         },
       ];
 
@@ -37,6 +40,9 @@ describe("ValidationRuleCache", () => {
           validate: (value) => value.length > 0,
           message: "値は必須です",
           code: "REQUIRED",
+          name: "REQUIRED",
+          severity: "error",
+          category: "validation",
         },
       ];
 
@@ -55,6 +61,9 @@ describe("ValidationRuleCache", () => {
           validate: (value) => value.length > 0,
           message: "値は必須です",
           code: "REQUIRED",
+          name: "REQUIRED",
+          severity: "error",
+          category: "validation",
         },
       ];
 
@@ -79,6 +88,9 @@ describe("ValidationRuleCache", () => {
           validate: (value) => value.length > 0,
           message: "値は必須です",
           code: "REQUIRED",
+          name: "REQUIRED",
+          severity: "error",
+          category: "validation",
         },
       ];
 
@@ -102,6 +114,9 @@ describe("ValidationRuleCache", () => {
           validate: (value) => value.length > 0,
           message: "値は必須です",
           code: "REQUIRED",
+          name: "REQUIRED",
+          severity: "error",
+          category: "validation",
         },
       ];
 

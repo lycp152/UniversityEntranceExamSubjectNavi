@@ -6,7 +6,7 @@ import {
   ValidationResult,
   ValidationError,
   ValidationRule,
-} from "@/types/validation/validation2";
+} from "@/types/validation";
 
 // パフォーマンス最適化のためのキャッシュ
 const ruleResultCache = new Map<string, ValidationResult>();
@@ -119,15 +119,19 @@ const getCacheKey = (value: number, rules: ScoreValidationRules): string => {
   return `${value}:${JSON.stringify(rules)}`;
 };
 
-const validateWithPerformance = (
+const validateWithPerformance = async (
   value: number,
   rule: ValidationRule<number>,
   startTime: number,
   context?: Record<string, unknown>
-): { isValid: boolean; executionTime: number; error?: ValidationError } => {
+): Promise<{
+  isValid: boolean;
+  executionTime: number;
+  error?: ValidationError;
+}> => {
   try {
     const start = performance.now();
-    const isValid = rule.validate(value);
+    const isValid = await rule.validate(value);
     const executionTime = performance.now() - start;
 
     if (!isValid) {
@@ -185,11 +189,11 @@ const checkCache = (
   return null;
 };
 
-const validateBasicRule = (
+const validateBasicRule = async (
   value: number,
   startTime: number
-): { result: ValidationResult | null; executionTime: number } => {
-  const { isValid, executionTime, error } = validateWithPerformance(
+): Promise<{ result: ValidationResult | null; executionTime: number }> => {
+  const { isValid, executionTime, error } = await validateWithPerformance(
     value,
     SCORE_RULES.isValid,
     startTime
@@ -227,22 +231,22 @@ const getAdditionalRules = (
   ...(rules.customRules ?? []),
 ];
 
-const validateAndCollectErrors = (
+const validateAndCollectErrors = async (
   value: number,
   rules: ValidationRule<number>[],
   startTime: number,
   metadata?: Record<string, unknown>
-): {
+): Promise<{
   errors: ValidationError[];
   appliedRules: string[];
   ruleExecutionTimes: Record<string, number>;
-} => {
+}> => {
   const errors: ValidationError[] = [];
   const appliedRules: string[] = [];
   const ruleExecutionTimes: Record<string, number> = {};
 
   for (const rule of rules) {
-    const { isValid, executionTime, error } = validateWithPerformance(
+    const { isValid, executionTime, error } = await validateWithPerformance(
       value,
       rule,
       startTime,
@@ -271,19 +275,20 @@ const handleCacheResult = (
   return result;
 };
 
-const validateAndProcessRules = (
+const validateAndProcessRules = async (
   value: number,
   rules: ScoreValidationRules,
   startTime: number,
   baseExecutionTime: number
-): ValidationResult => {
+): Promise<ValidationResult> => {
   const additionalRules = getAdditionalRules(rules);
-  const { errors, appliedRules, ruleExecutionTimes } = validateAndCollectErrors(
-    value,
-    additionalRules,
-    startTime,
-    rules.metadata
-  );
+  const { errors, appliedRules, ruleExecutionTimes } =
+    await validateAndCollectErrors(
+      value,
+      additionalRules,
+      startTime,
+      rules.metadata
+    );
   ruleExecutionTimes[SCORE_RULES.isValid.code] = baseExecutionTime;
 
   return {
@@ -300,47 +305,52 @@ const validateAndProcessRules = (
   };
 };
 
-const processValidationResult = (
+const processValidationResult = async (
   value: number,
   rules: ScoreValidationRules,
   options: ErrorOptions,
   startTime: number
-): ValidationResult => {
+): Promise<ValidationResult> => {
   const { result: basicResult, executionTime: baseExecutionTime } =
-    validateBasicRule(value, startTime);
+    await validateBasicRule(value, startTime);
   if (basicResult) return basicResult;
 
-  return validateAndProcessRules(value, rules, startTime, baseExecutionTime);
+  return await validateAndProcessRules(
+    value,
+    rules,
+    startTime,
+    baseExecutionTime
+  );
 };
 
-const validateWithCache = (
+const validateWithCache = async (
   value: number,
   rules: ScoreValidationRules,
   options: ErrorOptions
-): ValidationResult => {
+): Promise<ValidationResult> => {
   const startTime = Date.now();
   return (
     (options.cacheable && checkCache(value, rules, startTime)) ||
     handleCacheResult(
       value,
       rules,
-      processValidationResult(value, rules, options, startTime),
+      await processValidationResult(value, rules, options, startTime),
       options
     )
   );
 };
 
-export const validateScore = (
+export const validateScore = async (
   value: number,
-  rules: ScoreValidationRules = {},
+  rules: ScoreValidationRules = { commonTest: [], secondTest: [], total: [] },
   options: ErrorOptions = {}
-): ValidationResult => validateWithCache(value, rules, options);
+): Promise<ValidationResult> => validateWithCache(value, rules, options);
 
-export const isValidScore = (
+export const isValidScore = async (
   value: number,
-  rules: ScoreValidationRules = {}
-): boolean => {
-  const { isValid } = validateScore(value, rules);
+  rules: ScoreValidationRules = { commonTest: [], secondTest: [], total: [] }
+): Promise<boolean> => {
+  const { isValid } = await validateScore(value, rules);
   return isValid;
 };
 

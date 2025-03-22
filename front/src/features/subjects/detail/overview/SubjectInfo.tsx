@@ -1,14 +1,16 @@
 import DetailSection from "./DetailSection";
-import type { Subject } from "@/types/subjects/subject";
+import type { UISubject } from "@/types/ui/subjects";
 
-const SubjectInfo = ({ subjectDetail }: { subjectDetail: Subject }) => {
+const SubjectInfo = ({ subjectDetail }: { subjectDetail: UISubject }) => {
   return (
     <div>
-      <h1 className="text-xl font-bold mb-4">{subjectDetail.universityName}</h1>
-      <DetailSection value={subjectDetail.department} />
-      <DetailSection value={subjectDetail.major} />
-      <DetailSection value={subjectDetail.admissionSchedule} />
-      <DetailSection value={`${subjectDetail.enrollment} 名`} />
+      <h1 className="text-xl font-bold mb-4">
+        {subjectDetail.university.name}
+      </h1>
+      <DetailSection value={subjectDetail.department.name} />
+      <DetailSection value={subjectDetail.major.name} />
+      <DetailSection value={subjectDetail.admissionSchedule.name} />
+      <DetailSection value={`${subjectDetail.examInfo.enrollment} 名`} />
     </div>
   );
 };

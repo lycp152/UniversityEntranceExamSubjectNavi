@@ -1,5 +1,5 @@
 import { SubjectType } from "@/features/subjects/constants";
-import type { SubjectScore } from "@/types/score/score3";
+import type { SubjectScore } from "@/types/score/score";
 
 // 基本的なチャートデータの型
 export interface PieData {

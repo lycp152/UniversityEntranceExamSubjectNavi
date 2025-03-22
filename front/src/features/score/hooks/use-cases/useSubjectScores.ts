@@ -4,7 +4,7 @@ import type {
   SubjectMetrics,
   SubjectValidationError,
 } from "@/features/subjects/types/SubjectScoreTypes";
-import type { Score } from "@/types/score/score3";
+import type { Score } from "@/types/score/core";
 import { ScoreServiceFactory } from "@/features/score/factories/ScoreServiceFactory";
 
 interface UseSubjectScoresResult {

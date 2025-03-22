@@ -324,124 +324,28 @@ func main() {
 												Version: 1,
 											},
 											Name:                "共通",
-											Subjects: []models.Subject{
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "英語L",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 1,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "英語R",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 2,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "数学",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 3,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "国語",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 4,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "理科",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 5,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "地歴公",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 6,
-												},
-											},
+											Subjects: createSubjectsWithScores([]SubjectData{
+												{Name: "英語L", Order: 1, CommonScore: 100},
+												{Name: "英語R", Order: 2, CommonScore: 100},
+												{Name: "数学", Order: 3, CommonScore: 100},
+												{Name: "国語", Order: 4, CommonScore: 100},
+												{Name: "理科", Order: 5, CommonScore: 100},
+												{Name: "地歴公", Order: 6, CommonScore: 100},
+											}),
 										},
 										{
 											BaseModel: models.BaseModel{
 												Version: 1,
 											},
 											Name:                "二次",
-											Subjects: []models.Subject{
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "英語L",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 1,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "英語R",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 2,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "数学",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 3,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "国語",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 4,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "理科",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 5,
-												},
-												{
-													BaseModel: models.BaseModel{
-														Version: 1,
-													},
-													Name:         "地歴公",
-													Score:        100,
-													Percentage:   8.33,
-													DisplayOrder: 6,
-												},
-											},
+											Subjects: createSubjectsWithScores([]SubjectData{
+												{Name: "英語L", Order: 1, SecondaryScore: 100},
+												{Name: "英語R", Order: 2, SecondaryScore: 100},
+												{Name: "数学", Order: 3, SecondaryScore: 100},
+												{Name: "国語", Order: 4, SecondaryScore: 100},
+												{Name: "理科", Order: 5, SecondaryScore: 100},
+												{Name: "地歴公", Order: 6, SecondaryScore: 100},
+											}),
 										},
 									},
 								},

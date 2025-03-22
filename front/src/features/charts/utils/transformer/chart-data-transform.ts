@@ -1,8 +1,7 @@
 import type { SubjectScores } from "@/types/score/score";
-import type { ValidationResult } from "@/types/validation/validation";
+import type { ValidationResult } from "@/types/validation";
 import type { ChartData } from "@/features/charts/subject/donut/types/chart";
-import type { BaseSubjectScore } from "@/types/score/score2";
-import { createValidationResult } from "@/utils/validation/base-validator2";
+import { ScoreValidator } from "@/utils/validation/score/score-validator";
 import {
   formatScore,
   formatPercentage,
@@ -33,10 +32,10 @@ const createChartData = (
 /**
  * 詳細データを生成する
  */
-export const transformDetailedData = (
+export const transformDetailedData = async (
   subjects: SubjectScores,
   totalScore: number
-): ValidationResult<ChartData[]> => {
+): Promise<ValidationResult<ChartData[]>> => {
   try {
     const data = Object.entries(subjects).map(([subject, scores]) => {
       const displayName =
@@ -48,16 +47,32 @@ export const transformDetailedData = (
         ""
       ) as keyof typeof SUBJECT_CATEGORY_COLORS;
       const color = SUBJECT_CATEGORY_COLORS[category] || "#000000";
-      const value =
-        (scores as BaseSubjectScore).commonTest +
-        (scores as BaseSubjectScore).secondTest;
+      const value = scores.commonTest + scores.secondTest;
 
       return createChartData(displayName, value, color, totalScore, category);
     });
 
-    return createValidationResult(true, data);
+    const validator = new ScoreValidator();
+    const result = await validator.validate(subjects);
+    return {
+      ...result,
+      data: result.isValid ? data : undefined,
+    };
   } catch (error) {
-    return createValidationResult(false, [], [(error as Error).message]);
+    const validator = new ScoreValidator();
+    const result = await validator.validate({});
+    return {
+      ...result,
+      data: undefined,
+      errors: [
+        {
+          code: "VALIDATION_ERROR",
+          message: (error as Error).message,
+          field: "チャートデータ",
+          severity: "error" as const,
+        },
+      ],
+    };
   }
 };
 

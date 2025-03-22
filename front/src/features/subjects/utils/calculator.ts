@@ -1,12 +1,11 @@
 import {
-  BaseScore,
+  TestScore,
   ScoreMetrics,
   BaseSubjectScore,
   SubjectScores,
   SubjectScoreDetail,
-  TEST_TYPES,
   SCORE_CONSTRAINTS,
-} from "@/features/charts/subject/donut/types/score";
+} from "@/types/score/score";
 import {
   ScoreCalculationError,
   ScoreErrorCodes,
@@ -24,14 +23,13 @@ export class ScoreCalculator {
   private readonly roundToDecimal: number;
 
   constructor(options: ScoreCalculatorOptions = {}) {
-    this.roundToDecimal =
-      options.roundToDecimal ?? SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES;
+    this.roundToDecimal = options.roundToDecimal ?? 2;
   }
 
   /**
    * 基本的なスコアの計算
    */
-  protected calculateBaseScore(score: BaseScore, field?: string): ScoreMetrics {
+  protected calculateBaseScore(score: TestScore, field?: string): ScoreMetrics {
     try {
       this.validateScore(score, field);
       return {
@@ -50,7 +48,7 @@ export class ScoreCalculator {
   /**
    * スコアの検証
    */
-  private validateScore(score: BaseScore, field?: string): void {
+  private validateScore(score: TestScore, field?: string): void {
     if (score.value < SCORE_CONSTRAINTS.MIN_VALUE) {
       throw new ScoreCalculationError(
         createErrorMessage(ScoreErrorCodes.NEGATIVE_SCORE, field),
@@ -88,23 +86,21 @@ export class ScoreCalculator {
   calculateSubjectScore(subject: BaseSubjectScore): SubjectScoreDetail {
     try {
       const commonTest = this.calculateBaseScore(
-        subject[TEST_TYPES.COMMON],
-        TEST_TYPES.COMMON
+        { value: subject.commonTest, maxValue: 100 },
+        "commonTest"
       );
-      const individualTest = this.calculateBaseScore(
-        subject[TEST_TYPES.INDIVIDUAL],
-        TEST_TYPES.INDIVIDUAL
+      const secondaryTest = this.calculateBaseScore(
+        { value: subject.secondTest, maxValue: 100 },
+        "secondTest"
       );
 
-      const totalScore = commonTest.score + individualTest.score;
-      const totalMaxScore =
-        subject[TEST_TYPES.COMMON].maxValue +
-        subject[TEST_TYPES.INDIVIDUAL].maxValue;
+      const totalScore = commonTest.score + secondaryTest.score;
+      const totalMaxScore = 200; // 共通テストと二次試験の満点の合計
 
       return {
         subject: "",
-        [TEST_TYPES.COMMON]: commonTest,
-        [TEST_TYPES.INDIVIDUAL]: individualTest,
+        commonTest,
+        secondaryTest,
         total: {
           score: totalScore,
           percentage: this.calculatePercentage(totalScore, totalMaxScore),
@@ -161,10 +157,10 @@ export class ScoreCalculator {
    */
   calculateTestTypeTotal(
     subjects: SubjectScores,
-    testType: keyof typeof TEST_TYPES
+    testType: "commonTest" | "secondTest"
   ): number {
     return Object.values(subjects).reduce((total, subject) => {
-      return total + subject[TEST_TYPES[testType]].value;
+      return total + subject[testType];
     }, 0);
   }
 }

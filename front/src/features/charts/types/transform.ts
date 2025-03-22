@@ -1,4 +1,4 @@
-import type { Subject, SubjectGroup } from "../../../types/subjects/subject";
+import type { UISubject, SubjectGroup } from "@/types/ui/subjects";
 
 /**
  * 変換元のデータ型
@@ -29,7 +29,7 @@ export interface TransformSource {
  * 変換結果の型
  */
 export interface TransformResult {
-  subject: Subject;
+  subject: UISubject;
   groups: SubjectGroup[];
   metadata: {
     transformedAt: number;

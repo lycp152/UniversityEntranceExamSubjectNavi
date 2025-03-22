@@ -1,4 +1,5 @@
-import { SubjectScores, ScoreValidationError } from "@/types/score/score3";
+import { SubjectScores } from "@/types/score/score";
+import { ScoreValidationError } from "@/types/score/core";
 import { calculatePercentage } from "@/features/score/utils/ScoreCalculation";
 import { validateSubjectScores } from "@/features/score/validation/SubjectScoreValidator2";
 
@@ -30,7 +31,7 @@ export const calculateSubjectScores = (subjects: SubjectScores) => {
     );
   }
 
-  const validatedSubjects = validationResult.data as SubjectScores;
+  const validatedSubjects = validationResult.data;
   const totalCommonTest = Object.values(validatedSubjects).reduce(
     (sum, score) => sum + score.commonTest,
     0

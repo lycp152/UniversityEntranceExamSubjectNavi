@@ -1,5 +1,5 @@
-import type { SubjectScores } from "@/types/score/score3";
-import { isValidScore } from "@/utils/validation/base-validator2";
+import type { SubjectScores } from "@/types/score/score";
+import { isValidScore } from "@/utils/validation/score/score-validator";
 import {
   formatScore,
   formatPercentage,

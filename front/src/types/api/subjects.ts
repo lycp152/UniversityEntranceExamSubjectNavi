@@ -1,6 +1,7 @@
 // 科目カテゴリーの型定義
 export const SUBJECT_CATEGORIES = {
-  ENGLISH: "英語",
+  ENGLISH_L: "英語L",
+  ENGLISH_R: "英語R",
   MATH: "数学",
   JAPANESE: "国語",
   SCIENCE: "理科",
@@ -88,65 +89,4 @@ export interface APIUniversity {
   id: number;
   name: string;
   departments: APIDepartment[];
-}
-
-// UIの型定義
-export interface UISubject {
-  id: number;
-  name: string;
-  score: number;
-  percentage: number;
-  displayOrder: number;
-  testTypeId: number;
-  university: {
-    id: number;
-    name: string;
-  };
-  department: {
-    id: number;
-    name: string;
-  };
-  major: {
-    id: number;
-    name: string;
-  };
-  examInfo: {
-    id: number;
-    enrollment: number;
-    academicYear: number;
-    validFrom: string;
-    validUntil: string;
-    status: string;
-  };
-  admissionSchedule: {
-    id: number;
-    name: string;
-    displayOrder: number;
-  };
-}
-
-// コンポーネントのProps型
-export interface SubjectCardProps {
-  subject: UISubject;
-  onSelect?: (id: number) => void;
-}
-
-export interface ScoreTableProps {
-  subjectData: UISubject;
-  isLoading?: boolean;
-}
-
-// カスタムフックの戻り値の型
-export interface UseSubjectResult {
-  subject: UISubject | null;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-// APIレスポンスの型
-export interface SubjectApiResponse {
-  data: UISubject;
-  meta: {
-    updatedAt: string;
-  };
 }

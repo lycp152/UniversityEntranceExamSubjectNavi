@@ -1,7 +1,5 @@
-import type {
-  SubjectScore,
-  ScoreCalculationResult,
-} from "@/types/score/score2";
+import type { SubjectScore } from "@/types/score/score";
+import type { ScoreCalculationResult } from "@/features/subjects/types/calculation";
 
 export interface ISubjectMetricsCollector {
   collectMetrics(scores: SubjectScore[]): ScoreCalculationResult[];

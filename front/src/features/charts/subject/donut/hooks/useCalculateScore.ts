@@ -1,9 +1,9 @@
-import type { Subject } from "@/types/subjects/subject";
+import type { UISubject } from "@/types/ui/subjects";
 import { extractSubjectMainCategory } from "@/utils/subject-name";
 
-export const useCalculateScore = (subjectData: Subject) => {
+export const useCalculateScore = (subjectData: UISubject) => {
   // 全体の合計点を計算する関数
-  const calculateTotalScore = (subjects: Subject["subjects"]) =>
+  const calculateTotalScore = (subjects: UISubject["subjects"]) =>
     Object.values(subjects).reduce(
       (sum, scores) => sum + scores.commonTest + scores.secondTest,
       0
@@ -11,7 +11,7 @@ export const useCalculateScore = (subjectData: Subject) => {
 
   // カテゴリー（科目）ごとの合計点を計算する関数
   const calculateCategoryTotal = (
-    subjects: Subject["subjects"],
+    subjects: UISubject["subjects"],
     category: string
   ) =>
     Object.entries(subjects)

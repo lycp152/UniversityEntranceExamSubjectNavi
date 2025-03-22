@@ -1,14 +1,14 @@
-import type { Subject } from "@/types/subjects/subject";
+import type { UISubject } from "@/types/ui/subjects";
 import { SUBJECT_DISPLAY_ORDER } from "@/constants/subjects";
 import { PieData } from "@/features/charts/types";
 import { createOuterPieData } from "@/features/charts/subject/donut/utils/pieChartTransformers";
 import { extractSubjectMainCategory } from "@/utils/subject-name";
 
 export const useOuterData = (
-  subjectData: Subject,
+  subjectData: UISubject,
   totalScore: number,
   calculateCategoryTotal: (
-    subjects: Subject["subjects"],
+    subjects: UISubject["subjects"],
     category: string
   ) => number
 ) => {

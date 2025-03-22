@@ -1,5 +1,5 @@
 import { AdvancedValidationBuilder } from "@/features/universities/domain/validators/AdvancedValidationBuilder";
-import type { Score } from "@/types/score/score3";
+import type { Score } from "@/types/score/core";
 import type { ISubjectValidator } from "./ISubjectValidator";
 import { SCORE_CONSTRAINTS } from "@/constants/scores";
 import { SubjectError } from "@/features/subjects/errors/SubjectError";
@@ -18,8 +18,19 @@ export class SubjectValidator implements ISubjectValidator {
         validate: (score) =>
           score.value >= SCORE_CONSTRAINTS.MIN_VALUE &&
           score.value <= score.maxValue,
-        message: "点数は0から最大値の間で入力してください",
+        message: "スコアが範囲外です",
         code: "INVALID_SCORE_RANGE",
+        name: "INVALID_SCORE_RANGE",
+        severity: "error",
+        category: "validation",
+      })
+      .addRule({
+        validate: (score) => score.maxValue > 0,
+        message: "最大値は0より大きい必要があります",
+        code: "INVALID_MAX_VALUE",
+        name: "INVALID_MAX_VALUE",
+        severity: "error",
+        category: "validation",
       })
       .addRule({
         validate: (score) =>
@@ -27,6 +38,9 @@ export class SubjectValidator implements ISubjectValidator {
           score.weight <= SCORE_CONSTRAINTS.MAX_WEIGHT,
         message: "重みは0から1の間で入力してください",
         code: "INVALID_WEIGHT_RANGE",
+        name: "INVALID_WEIGHT_RANGE",
+        severity: "error",
+        category: "validation",
       });
   }
 

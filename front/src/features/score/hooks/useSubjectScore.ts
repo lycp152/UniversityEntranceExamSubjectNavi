@@ -1,8 +1,5 @@
 import { useState, useCallback } from "react";
-import type {
-  SubjectScore,
-  SubjectScoreError,
-} from "@/types/score/SubjectScoreType";
+import { SubjectScore, SubjectScoreError } from "@/types/score/score";
 import { validateSubjectScore } from "@/features/score/validation/SubjectScoreValidator";
 
 export const useSubjectScore = () => {

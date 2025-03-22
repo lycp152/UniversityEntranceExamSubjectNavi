@@ -1,10 +1,10 @@
 import { FC } from "react";
 import SubjectScoreDonutChart from "@/features/charts/subject/donut/SubjectScoreDonutChart";
 import styles from "./ScoreDisplay.module.css";
-import { Subject } from "@/types/subjects/subject";
+import { UISubject } from "@/types/ui/subjects";
 
 type ScoreDisplayProps = {
-  subject: Subject;
+  subject: UISubject;
 };
 
 export const ScoreDisplay: FC<ScoreDisplayProps> = ({ subject }) => {

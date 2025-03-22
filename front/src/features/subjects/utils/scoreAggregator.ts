@@ -1,18 +1,15 @@
-import type {
-  CategoryScore,
-  SubjectCategory,
-  Score,
-} from "@/types/score/score3";
-import {
-  SUBJECTS,
-  SUBJECT_CATEGORIES,
-} from "@/features/subjects/constants/subjects";
+import type { SubjectCategory } from "@/types/score/score";
+import type { Score } from "@/types/score/core";
+import type { CategoryScore } from "@/types/score/display";
+import { SUBJECTS } from "@/constants/subjects";
 
 const SUBJECT_TO_CATEGORY_MAP: Record<string, SubjectCategory> = {
-  [SUBJECTS.ENGLISH]: SUBJECT_CATEGORIES.ENGLISH,
-  [SUBJECTS.MATH]: SUBJECT_CATEGORIES.MATH,
-  [SUBJECTS.SCIENCE]: SUBJECT_CATEGORIES.SCIENCE,
-  [SUBJECTS.SOCIAL]: SUBJECT_CATEGORIES.SOCIAL,
+  [SUBJECTS.ENGLISH_R]: "英語",
+  [SUBJECTS.ENGLISH_L]: "英語",
+  [SUBJECTS.MATH]: "数学",
+  [SUBJECTS.JAPANESE]: "国語",
+  [SUBJECTS.SCIENCE]: "理科",
+  [SUBJECTS.SOCIAL]: "地歴公",
 } as const;
 
 export class ScoreAggregator {

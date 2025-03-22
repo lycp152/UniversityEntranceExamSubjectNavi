@@ -1,10 +1,10 @@
 import { FC } from "react";
 import styles from "./SubjectScoreTable.module.css";
-import { Subject } from "@/types/subjects/subject";
+import { UISubject } from "@/types/ui/subjects";
 import { calculatePercentage } from "@/utils/math/percentage";
 
 interface SubjectScoreTableProps {
-  subjectData: Subject;
+  subjectData: UISubject;
 }
 
 const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {

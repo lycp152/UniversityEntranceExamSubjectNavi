@@ -6,7 +6,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { SubjectScore } from "@/types/score/score3";
+import { DisplaySubjectScore } from "@/types/score/score";
 import CustomLabel from "./CustomLabel";
 import Patterns from "@/features/charts/subject/donut/patterns";
 import {
@@ -17,19 +17,22 @@ import { getSubjectBaseCategory } from "@/features/charts/utils/operations/subje
 import { CHART_CONFIG } from "@/features/charts/constants/chart";
 
 type ChartProps = {
-  detailedData: SubjectScore[];
-  outerData: SubjectScore[];
+  detailedData: DisplaySubjectScore[];
+  outerData: DisplaySubjectScore[];
   isRightChart?: boolean;
 };
 
 // パターン選択戦略
 const patternStrategies = {
-  right: (entry: SubjectScore) => `url(#pattern-${entry.category})`,
-  left: (entry: SubjectScore) =>
+  right: (entry: DisplaySubjectScore) => `url(#pattern-${entry.category})`,
+  left: (entry: DisplaySubjectScore) =>
     `url(#pattern-${getSubjectBaseCategory(entry.name)})`,
 };
 
-const getChartFillColor = (entry: SubjectScore, isRightChart: boolean) => {
+const getChartFillColor = (
+  entry: DisplaySubjectScore,
+  isRightChart: boolean
+) => {
   const strategyKey = isRightChart ? "right" : "left";
   const strategy = patternStrategies[strategyKey];
   return strategy(entry);

@@ -1,5 +1,5 @@
 import type { SubjectScore } from "@/features/subjects/types/SubjectScoreTypes";
-import type { ScoreCalculationResult } from "@/types/score/score2";
+import type { ScoreCalculationResult } from "@/features/subjects/types/calculation";
 
 export class SubjectMetricsCollector {
   private readonly metricsMap: Map<string, ScoreCalculationResult[]> =

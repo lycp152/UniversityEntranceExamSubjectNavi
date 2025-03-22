@@ -1,7 +1,7 @@
 import {
   VALID_SUBJECT_NAME_PATTERN,
   SUBJECT_NAME_DISPLAY_MAPPING,
-} from "../constants/subjects";
+} from "@/constants/subjects";
 
 type SubjectNameDisplayMapping = typeof SUBJECT_NAME_DISPLAY_MAPPING;
 type SubjectName = keyof SubjectNameDisplayMapping;

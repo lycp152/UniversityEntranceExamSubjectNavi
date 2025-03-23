@@ -73,6 +73,15 @@ export const SUBJECT_TYPES = {
   SECONDARY: "二次",
 } as const;
 
+// 科目の基本カテゴリー
+export const SUBJECT_BASE_CATEGORIES = {
+  ENGLISH: "英語",
+  MATH: "数学",
+  JAPANESE: "国語",
+  SCIENCE: "理科",
+  SOCIAL: "地歴公",
+} as const;
+
 /**
  * 科目の定義
  */
@@ -102,12 +111,11 @@ export const SUBJECT_DISPLAY_NAMES = {
  * 科目の表示順序
  */
 export const SUBJECT_ORDER = [
-  SUBJECTS.ENGLISH_L,
-  SUBJECTS.ENGLISH_R,
-  SUBJECTS.MATH,
-  SUBJECTS.JAPANESE,
-  SUBJECTS.SCIENCE,
-  SUBJECTS.SOCIAL,
+  "英語",
+  "数学",
+  "国語",
+  "理科",
+  "地歴公",
 ] as const;
 
 /**
@@ -127,5 +135,11 @@ export const VALID_SUBJECT_NAME_PATTERN = "^(英語[RL]|数学|国語|理科|地
 /**
  * 型定義
  */
-export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS];
+export type SubjectName =
+  (typeof SUBJECT_BASE_CATEGORIES)[keyof typeof SUBJECT_BASE_CATEGORIES];
 export type SubjectCategory = keyof typeof SUBJECT_CATEGORY_COLORS;
+
+export interface SubjectScores {
+  commonTest: number;
+  secondTest: number;
+}

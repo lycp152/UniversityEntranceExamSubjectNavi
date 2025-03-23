@@ -1,5 +1,5 @@
 import type { TestTypeName } from "@/types/universities/university";
-import type { SubjectName } from "@/constants/subjects2";
+import type { SubjectName } from "@/constants/subjects";
 
 export interface SubjectScore {
   type: TestTypeName;

@@ -1,8 +1,9 @@
 import { FC } from "react";
 import { Pie, Cell } from "recharts";
-import { COLORS } from "@/constants/subjects2";
+import { SUBJECT_CATEGORY_COLORS } from "@/constants/subjects";
 import CustomLabel from "./CustomLabel";
 import { DetailedPieData, PIE_COMMON_PROPS } from "../types";
+import { getSubjectBaseCategory } from "@/utils/validation/subject-type-validator";
 
 interface Props {
   data: DetailedPieData[];
@@ -21,7 +22,7 @@ const InnerPie: FC<Props> = ({ data }) => (
         key={`cell-${entry.name}`}
         fill={
           entry.name.includes("共通")
-            ? COLORS[entry.category]
+            ? SUBJECT_CATEGORY_COLORS[getSubjectBaseCategory(entry.category)]
             : `url(#pattern-${entry.category})`
         }
       />

@@ -1,11 +1,12 @@
 import { FC } from "react";
 import BasePattern from "../base/BasePattern";
-import FilledCircle from "../elements/FilledCircle";
-import { PATTERN_POINTS } from "../constants/paths";
+import StrokedPath from "../elements/StrokedPath";
+import { PATTERN_PATHS } from "../constants/paths";
+import { SUBJECT_BASE_CATEGORIES } from "@/constants/subjects";
 
 const MathPattern: FC = () => (
-  <BasePattern id="数学">
-    <FilledCircle {...PATTERN_POINTS.math} />
+  <BasePattern id={SUBJECT_BASE_CATEGORIES.MATH}>
+    <StrokedPath d={PATTERN_PATHS.math} />
   </BasePattern>
 );
 

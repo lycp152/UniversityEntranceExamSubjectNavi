@@ -1,4 +1,4 @@
-import { SubjectScores } from "@/constants/subjects2";
+import { SubjectScores } from "@/constants/subjects";
 import { getCategoryFromSubject } from "@/utils/extractors/subject-name-extractor2";
 
 export const calculateTotalScore = (subjects: SubjectScores): number =>

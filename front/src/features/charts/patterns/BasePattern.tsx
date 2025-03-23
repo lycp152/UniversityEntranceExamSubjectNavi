@@ -1,7 +1,8 @@
 import { FC } from "react";
-import { COLORS } from "@/constants/subjects2";
+import { SUBJECT_CATEGORY_COLORS } from "@/constants/subjects";
 import { PATTERN_DIMENSIONS } from "./constants/dimensions";
 import { BasePatternProps } from "./types";
+import { getSubjectBaseCategory } from "@/utils/validation/subject-type-validator";
 
 const BasePattern: FC<BasePatternProps> = ({
   id,
@@ -18,7 +19,7 @@ const BasePattern: FC<BasePatternProps> = ({
     <rect
       width={PATTERN_DIMENSIONS.width}
       height={PATTERN_DIMENSIONS.height}
-      fill={COLORS[id]}
+      fill={SUBJECT_CATEGORY_COLORS[getSubjectBaseCategory(id)]}
     />
     {children}
   </pattern>

@@ -1,4 +1,4 @@
-import { SubjectType } from "@/constants/subjects2";
+import { SUBJECT_TYPES } from "@/constants/subjects";
 import type { SubjectScore } from "@/types/score";
 
 // 基本的なチャートデータの型
@@ -11,7 +11,7 @@ export interface PieData {
 export interface DetailedPieData extends PieData {
   category: string;
   displayName?: string;
-  type: SubjectType;
+  type: (typeof SUBJECT_TYPES)[keyof typeof SUBJECT_TYPES];
 }
 
 export type ChartProps = {

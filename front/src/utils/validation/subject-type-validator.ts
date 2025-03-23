@@ -1,5 +1,9 @@
-import { SUBJECT_TYPES, SUBJECTS, SUBJECT_ORDER } from "@/constants/subjects2";
-import type { SubjectName } from "@/constants/subjects2";
+import {
+  SUBJECT_TYPES,
+  SUBJECT_BASE_CATEGORIES,
+  SUBJECT_ORDER,
+} from "@/constants/subjects";
+import type { SubjectCategory } from "@/constants/subjects";
 
 /**
  * 共通科目かどうかを判定
@@ -16,9 +20,10 @@ export const isSecondarySubject = (name: string): boolean =>
 /**
  * 科目名から基本カテゴリーを取得
  */
-export const getSubjectBaseCategory = (name: string): SubjectName => {
+export const getSubjectBaseCategory = (name: string): SubjectCategory => {
   return (
-    SUBJECT_ORDER.find((subject) => name.includes(subject)) ?? SUBJECTS.ENGLISH
+    SUBJECT_ORDER.find((subject) => name.includes(subject)) ??
+    SUBJECT_BASE_CATEGORIES.ENGLISH
   );
 };
 

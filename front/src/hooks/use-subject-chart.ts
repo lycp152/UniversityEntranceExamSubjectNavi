@@ -1,7 +1,7 @@
 import { UISubject } from "@/types/universities/subjects";
 import { DisplaySubjectScore } from "@/types/score";
 import { useChartData } from "@/hooks/use-chart-data";
-import { SUBJECT_TYPES } from "@/constants/subjects2";
+import { SUBJECT_TYPES } from "@/constants/subjects";
 import {
   isCommonSubject,
   compareSubjectOrder,

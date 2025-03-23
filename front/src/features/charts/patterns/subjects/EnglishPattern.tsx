@@ -1,11 +1,12 @@
 import { FC } from "react";
 import BasePattern from "../base/BasePattern";
-import StrokedLine from "../elements/StrokedLine";
-import { PATTERN_POINTS } from "../constants/paths";
+import StrokedPath from "../elements/StrokedPath";
+import { PATTERN_PATHS } from "../constants/paths";
+import { SUBJECT_BASE_CATEGORIES } from "@/constants/subjects";
 
 const EnglishPattern: FC = () => (
-  <BasePattern id="英語" patternTransform="rotate(45)">
-    <StrokedLine {...PATTERN_POINTS.english} strokeWidth="2" />
+  <BasePattern id={SUBJECT_BASE_CATEGORIES.ENGLISH}>
+    <StrokedPath d={PATTERN_PATHS.english} />
   </BasePattern>
 );
 

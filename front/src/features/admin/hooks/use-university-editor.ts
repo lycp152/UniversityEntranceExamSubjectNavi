@@ -7,11 +7,11 @@ import type {
   Major,
   AdmissionSchedule,
   TestTypeName,
-} from "@/types/university/university";
+} from "@/types/universities/university";
 import type { APITestType, APISubject } from "@/types/api/api-types";
 import { UNIVERSITY_STATUS } from "@/lib/config/status";
-import { useUniversityData } from "../../universities/hooks/useUniversityData";
-import { useSubjectData } from "../../subjects/hooks/useSubjectData";
+import { useUniversityData } from "@/features/admin/hooks/useUniversityData";
+import { useSubjectData } from "@/features/admin/hooks/useSubjectData";
 
 interface EditMode {
   universityId: number;

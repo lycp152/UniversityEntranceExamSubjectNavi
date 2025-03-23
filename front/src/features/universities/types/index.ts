@@ -1,4 +1,4 @@
-import type { University, Department } from "@/types/university/university";
+import type { University, Department } from "@/types/universities/university";
 
 export interface UniversityCardProps {
   university: University;

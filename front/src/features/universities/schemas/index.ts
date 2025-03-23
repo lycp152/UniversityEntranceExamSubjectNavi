@@ -1,9 +1,6 @@
 import { z } from "zod";
-import {
-  UNIVERSITY_STATUS,
-  ADMISSION_STATUS,
-} from "../../../lib/config/status";
-import { VALIDATION_RULES } from "@/features/universities/validations/validation";
+import { UNIVERSITY_STATUS, ADMISSION_STATUS } from "@/lib/config/status";
+import { VALIDATION_RULES } from "@/features/universities/constants/validation-rules";
 
 /**
  * 大学のZodスキーマ

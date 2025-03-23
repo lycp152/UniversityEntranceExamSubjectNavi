@@ -1,4 +1,4 @@
-import { TEST_TYPES } from "../../charts/subject/donut/types/score";
+import { TEST_TYPES } from "@/features/subjects/types/score2";
 
 /**
  * スコア関連のエラーコード

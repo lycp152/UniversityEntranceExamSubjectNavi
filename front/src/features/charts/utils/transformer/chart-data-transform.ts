@@ -1,11 +1,11 @@
-import type { SubjectScores } from "@/types/score/score";
+import type { SubjectScores } from "@/types/score";
 import type { ValidationResult } from "@/types/validation";
-import type { ChartData } from "@/features/charts/subject/donut/types/chart";
-import { ScoreValidator } from "@/utils/validation/score/score-validator";
+import type { ChartData } from "@/features/charts/types/chart";
+import { ScoreValidator } from "@/utils/validation/score-validator";
 import {
   formatScore,
   formatPercentage,
-} from "@/features/charts/utils/format/formatter";
+} from "@/utils/formatters/chart-value-formatter";
 import {
   SUBJECT_NAME_DISPLAY_MAPPING,
   SUBJECT_CATEGORY_COLORS,

@@ -1,14 +1,8 @@
 // 型定義のエクスポート
-export * from "@/types/score/score";
+export * from "@/types/score";
 
 // 定数のエクスポート
-export { CACHE_CONFIG, RETRY_CONFIG } from "@/lib/config/cache";
-
-export {
-  ValidationFailureType,
-  SCORE_CONSTRAINTS,
-  TEST_TYPES,
-} from "@/features/universities/validations/validation";
+export { CACHE_CONFIG, RETRY_CONFIG } from "@/features/score/lib/cache";
 
 // サービスのエクスポート
 export * from "@/features/score/service/index2";

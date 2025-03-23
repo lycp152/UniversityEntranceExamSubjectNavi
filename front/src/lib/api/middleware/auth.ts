@@ -1,5 +1,5 @@
 import type { RequestInterceptor } from ".";
-import type { RequestConfig } from "@/types/api";
+import type { RequestConfig } from "@/types/api/common/request";
 
 class AuthInterceptorImpl {
   private getAuthToken(): string | null {

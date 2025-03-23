@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { useErrorHandler } from "@/features/universities/hooks/useErrorHandler";
 import { useUpdateUniversity } from "../api/mutations";
-import type { University } from "@/types/university/university";
+import type { University } from "@/types/universities/university";
 import type { UniversityOperationResult } from "../types";
 import type { APIUniversity } from "@/types/api/api-types";
-import { transformToAPIUniversity } from "../utils/transformers";
+import { transformToAPIUniversity } from "@/features/universities/utils/transformers";
 
 export const useUniversityOperations = () => {
   const errorHandler = useErrorHandler();

@@ -1,5 +1,5 @@
-import { ValidationError } from "./ValidationError";
-import { ValidationCategory, ValidationSeverity } from "./ValidationErrorTypes";
+import { ValidationError } from "@/lib/validation/error";
+import { ValidationCategory, ValidationSeverity } from "@/types/validation";
 
 interface BatchValidationResult<T> {
   item: T;

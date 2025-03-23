@@ -1,4 +1,4 @@
-import type { SubjectScore } from "@/features/subjects/types/SubjectScoreTypes";
+import type { SubjectScore } from "@/types/score";
 import type { ScoreCalculationResult } from "@/features/subjects/types/calculation";
 
 export class SubjectMetricsCollector {

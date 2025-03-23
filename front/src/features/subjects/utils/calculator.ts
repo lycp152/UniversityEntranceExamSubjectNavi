@@ -5,7 +5,7 @@ import {
   SubjectScores,
   SubjectScoreDetail,
   SCORE_CONSTRAINTS,
-} from "@/types/score/score";
+} from "@/types/score";
 import {
   ScoreCalculationError,
   ScoreErrorCodes,

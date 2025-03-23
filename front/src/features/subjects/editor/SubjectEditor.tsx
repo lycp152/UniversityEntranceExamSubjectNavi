@@ -1,4 +1,4 @@
-import type { TestType, Subject } from "@/types/university/university";
+import type { TestType, Subject } from "@/types/universities/university";
 
 interface SubjectEditorProps {
   readonly testType: TestType;

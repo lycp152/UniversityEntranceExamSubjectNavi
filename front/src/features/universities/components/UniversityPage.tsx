@@ -2,13 +2,13 @@
 
 import { useState, useEffect, use } from "react";
 import { notFound } from "next/navigation";
-import { ScoreDisplay } from "@/features/subjects/score/ScoreDisplay";
-import SubjectInfo from "@/features/subjects/detail/overview/SubjectInfo";
-import SubjectScoreTable from "@/features/subjects/score/table";
+import { ScoreDisplay } from "@/features/universities/utils/ScoreDisplay";
+import SubjectInfo from "@/features/universities/utils/SubjectInfo";
+import SubjectScoreTable from "@/features/universities/table";
 import { ErrorMessage } from "@/components/errors/error-message";
 import { LoadingSpinner } from "@/components/ui/feedback/loading-spinner";
-import { transformSubjectData } from "@/utils/subject-mapper";
-import { UniversityService } from "@/features/universities/api/university";
+import { transformSubjectData } from "@/utils/transformers/subject-mapper";
+import { UniversityService } from "@/features/universities/lib/university-service";
 import type {
   APIUniversity,
   APIDepartment,
@@ -16,7 +16,7 @@ import type {
   APIAdmissionSchedule,
   APITestType,
 } from "@/types/api/api-types";
-import type { UISubject } from "@/types/ui/subjects";
+import type { UISubject } from "@/types/universities/subjects";
 import { UniversityPageParams } from "@/features/universities/types/params";
 
 const findDepartmentAndMajor = (

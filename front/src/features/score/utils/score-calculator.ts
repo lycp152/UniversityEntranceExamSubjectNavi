@@ -1,4 +1,4 @@
-import type { Score } from "@/types/score/core";
+import type { Score } from "@/types/score";
 import type { ValidationResult } from "@/types/validation";
 import { SCORE_CONSTRAINTS } from "@/constants/scores";
 

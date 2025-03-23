@@ -1,4 +1,4 @@
-import type { Score } from "@/types/score/core";
+import type { Score } from "@/types/score";
 
 export interface ISubjectValidator {
   validateBatch(scores: Score[]): void;

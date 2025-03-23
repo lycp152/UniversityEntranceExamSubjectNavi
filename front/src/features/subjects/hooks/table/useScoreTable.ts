@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import type { SubjectScores, SubjectScoreDetail } from "@/types/score/score";
+import type { SubjectScores, SubjectScoreDetail } from "@/types/score";
 import { ScoreCalculator } from "@/features/subjects/utils/calculator";
-import { TEST_TYPES } from "@/types/score/score";
+import { TEST_TYPES } from "@/types/score";
 
 interface ScoreTableTotals {
   [TEST_TYPES.COMMON]: number;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { DepartmentModel } from "../../model/department";
-import type { Department, Major } from "@/types/university/university";
+import type { Department, Major } from "@/types/universities/university";
 
 describe("DepartmentModel", () => {
   const mockMajor: Major = {

@@ -1,4 +1,4 @@
-import type { TestTypeName } from "@/types/university/university";
+import type { TestTypeName } from "@/types/universities/university";
 import type { SubjectName, SubjectCategory } from "@/constants/subjects";
 
 // 基本的なスコア型

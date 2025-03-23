@@ -6,7 +6,7 @@ import type {
   AdmissionSchedule,
   TestType,
   Subject,
-} from "@/types/university/university";
+} from "@/types/universities/university";
 import type {
   APIUniversity,
   APIDepartment,

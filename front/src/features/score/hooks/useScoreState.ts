@@ -1,9 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
-import type { ScoreMetrics } from "@/types/score/score";
-import type { Score, ScoreValidationError } from "@/types/score/core";
-import type { CategoryScore } from "@/types/score/display";
+import type { ScoreMetrics, Score, ScoreValidationError } from "@/types/score";
+import type { CategoryScore } from "@/features/score/types/display";
 import { validateScore } from "@/features/score/validation/scoreValidator2";
-import { ScoreAggregator } from "@/features/subjects/utils/scoreAggregator";
+import { ScoreAggregator } from "@/features/score/utils/scoreAggregator";
 
 interface ScoreState {
   scores: Score[];

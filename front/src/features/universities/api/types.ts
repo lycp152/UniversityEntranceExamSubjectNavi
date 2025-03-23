@@ -1,4 +1,4 @@
-import type { University } from "@/types/university/university";
+import type { University } from "@/types/universities/university";
 
 export interface UniversityFilters {
   name?: string;

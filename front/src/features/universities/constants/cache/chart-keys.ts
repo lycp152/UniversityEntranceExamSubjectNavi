@@ -1,9 +1,9 @@
-import { ScoreValidationRules } from "@/types/validation";
-import { ValidationError } from "@/features/universities/domain/validators/ValidationError";
 import {
+  ScoreValidationRules,
   ValidationCategory as ValidationErrorCodes,
   ValidationSeverity,
-} from "@/features/universities/domain/validators/ValidationErrorTypes";
+} from "@/types/validation";
+import { ValidationError } from "@/lib/validation/error";
 
 /**
  * チャートデータのキャッシュキー生成を担当するクラス

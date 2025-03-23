@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api/client";
-import type { University } from "@/types/university/university";
+import type { University } from "@/types/universities/university";
 
 const QUERY_KEY = "universities";
 

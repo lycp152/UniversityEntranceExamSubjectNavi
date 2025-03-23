@@ -1,5 +1,5 @@
-import { SubjectScore, SubjectScoreError } from "@/types/score/score";
-import { SUBJECT_TYPES } from "@/features/subjects/constants";
+import { SubjectScoreError, SubjectScore } from "@/types/score";
+import { SUBJECT_TYPES } from "@/constants/subjects2";
 
 export const validateSubjectScore = (
   score: SubjectScore

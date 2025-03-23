@@ -6,7 +6,7 @@ import {
   TestType,
   AdmissionSchedule,
   Major,
-} from "@/types/university/university";
+} from "@/types/universities/university";
 import { ExamTable } from "../table/ExamTable";
 
 const updateSubject = (subject: Subject, subjectId: number, value: number) =>

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { SubjectScores, SubjectScoreDetail } from "@/types/score/score";
+import { SubjectScores, SubjectScoreDetail } from "@/types/score";
 import {
   calculateSubjectScores,
   calculateTotalScore,

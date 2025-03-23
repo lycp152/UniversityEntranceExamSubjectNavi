@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { ScoreValidator } from "./scoreValidator";
-import type { BaseSubjectScore } from "@/types/score/score";
+import type { BaseSubjectScore } from "@/types/score";
 
 describe("ScoreValidator", () => {
   let validator: ScoreValidator;

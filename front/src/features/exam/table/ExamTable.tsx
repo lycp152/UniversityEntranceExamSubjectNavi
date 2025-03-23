@@ -3,9 +3,9 @@ import {
   University,
   Subject,
   TestType,
-} from "@/types/university/university";
-import { DepartmentInfo } from "../../universities/department/info";
-import { ExamSection } from "../sections/ExamSection";
+} from "@/types/universities/university";
+import { DepartmentInfo } from "@/components/universities/department-info/department-info";
+import { ExamSection } from "@/components/exam/exam-section";
 import { APISubject, APITestType } from "@/types/api/api-types";
 
 interface ExamTableProps {

@@ -1,10 +1,10 @@
 import { FC, memo } from "react";
 import type {
-  SubjectScoreDetail,
   SubjectScore,
+  SubjectScoreDetail,
   ScoreMetrics,
-} from "@/types/score/score";
-import { TEST_TYPES } from "@/types/score/score";
+} from "@/types/score";
+import { TEST_TYPES } from "@/types/score";
 
 interface ScoreTableBodyProps {
   scores: Record<string, SubjectScore>;

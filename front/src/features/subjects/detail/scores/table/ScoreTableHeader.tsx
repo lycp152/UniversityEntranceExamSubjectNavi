@@ -1,5 +1,5 @@
 import { FC, memo } from "react";
-import { TEST_TYPES } from "@/types/score/score";
+import { TEST_TYPES } from "@/types/score";
 
 const TEST_TYPE_LABELS = {
   [TEST_TYPES.COMMON]: "共通テスト",

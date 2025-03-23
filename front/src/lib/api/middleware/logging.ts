@@ -1,4 +1,4 @@
-import type { RequestConfig } from "@/types/api";
+import type { RequestConfig } from "@/types/api/common/request";
 import { isDevelopment } from "@/lib/config/env";
 
 export class LoggingInterceptor {

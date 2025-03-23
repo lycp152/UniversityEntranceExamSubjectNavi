@@ -1,4 +1,6 @@
-import type { ApiResponse, ApiClientConfig, RequestConfig } from "@/types/api";
+import type { ApiClientConfig } from "@/types/api/config";
+import type { ApiResponse } from "@/types/api/common/response";
+import type { RequestConfig } from "@/types/api/common/request";
 import {
   ApiClientError,
   NetworkError,
@@ -11,7 +13,7 @@ import type {
   RequestInterceptor,
   ResponseInterceptor,
   ErrorInterceptor,
-} from "@/lib/api/middleware";
+} from "@/lib/api/middleware/index";
 
 export class ApiClient {
   private readonly baseURL: string;

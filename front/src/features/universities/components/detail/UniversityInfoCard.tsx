@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/cards/card";
-import type { University } from "@/types/university/university";
+import type { University } from "@/types/universities/university";
 
 interface UniversityInfoCardProps {
   university: University;

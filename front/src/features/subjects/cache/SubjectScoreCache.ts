@@ -1,4 +1,4 @@
-import type { SubjectScore } from "@/types/score/score";
+import type { SubjectScore } from "@/types/score";
 import type { ScoreCalculationResult } from "@/features/subjects/types/calculation";
 import type { ISubjectScoreCache } from "./ISubjectScoreCache";
 

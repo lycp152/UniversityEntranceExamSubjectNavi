@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { University } from "@/types/university/university";
-import { UniversityService } from "@/features/universities/api/university";
-import { transformToAPIUniversity } from "../utils/transformers";
-import { transformUniversity } from "@/features/universities/utils/transform";
+import type { University } from "@/types/universities/university";
+import { UniversityService } from "@/features/universities/lib/university-service";
+import { transformToAPIUniversity } from "@/features/universities/utils/transformers";
+import { transformUniversity } from "@/utils/transformers/university-data-transformer";
 import { UNIVERSITY_KEYS } from "./queryKeys";
 import type { UniversityQueryError } from "./types";
 

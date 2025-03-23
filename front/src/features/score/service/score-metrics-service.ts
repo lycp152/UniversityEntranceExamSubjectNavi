@@ -5,7 +5,7 @@ import type {
   AlertType,
   Trend,
 } from "@/lib/monitoring";
-import type { BaseSubjectScore } from "@/types/score/score";
+import type { BaseSubjectScore } from "@/types/score";
 import type { ValidationOperationResult } from "@/features/score/lib/operations/operation-results";
 
 export class MetricsService {

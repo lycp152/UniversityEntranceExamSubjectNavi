@@ -4,8 +4,8 @@ import type {
   ValidationResult,
   ValidationContext,
   ValidationMetadata,
-} from "@/types/validation/core";
-import type { BaseSubjectScore } from "@/types/score/score";
+} from "@/types/validation";
+import type { BaseSubjectScore } from "@/types/score";
 import {
   createCacheKey,
   isBaseSubjectScore,

@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/cards/card";
 import { Button } from "@/components/ui/buttons/button";
-import type { Department } from "@/types/university/university";
+import type { Department } from "@/types/universities/university";
 
 interface DepartmentCardProps {
   department: Department;

@@ -1,7 +1,7 @@
-import type { TestTypeName } from "@/types/university/university";
-import type { SubjectName } from "@/features/subjects/constants";
-import type { SubjectScores } from "../../../types/score/score";
-import type { ValidationResult } from "@/types/validation/core";
+import type { TestTypeName } from "@/types/universities/university";
+import type { SubjectName } from "@/constants/subjects2";
+import type { SubjectScores } from "@/types/score";
+import type { ValidationResult } from "@/types/validation";
 
 /**
  * 詳細な科目スコアの型

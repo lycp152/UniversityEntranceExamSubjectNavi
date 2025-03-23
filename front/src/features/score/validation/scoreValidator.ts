@@ -1,4 +1,4 @@
-import { BaseSubjectScore } from "@/types/score/score";
+import { BaseSubjectScore } from "@/types/score";
 import { ErrorLogger } from "@/features/score/validation/score-error-logger";
 
 interface ValidationResult {

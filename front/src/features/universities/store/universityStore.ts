@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { University } from "@/types/university/university";
+import type { University } from "@/types/universities/university";
 import type { UniversityFilters } from "../api/types";
 
 interface UniversityStore {

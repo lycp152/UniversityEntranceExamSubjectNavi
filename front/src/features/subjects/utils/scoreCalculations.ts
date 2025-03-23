@@ -1,11 +1,11 @@
-import type { SubjectScores } from "@/types/score/score";
-import { isValidScore } from "@/utils/validation/score/score-validator";
+import type { SubjectScores } from "@/types/score";
+import { isValidScore } from "@/utils/validation/score-validator";
 import {
   formatScore,
   formatPercentage,
-} from "../../charts/utils/format/formatter";
+} from "@/utils/formatters/chart-value-formatter";
 import { SUBJECT_MAIN_CATEGORIES } from "@/constants/subjects";
-import { extractSubjectMainCategory } from "@/utils/subject-name";
+import { extractSubjectMainCategory } from "@/utils/formatters/subject-name";
 
 /**
  * 全科目の合計点を計算する

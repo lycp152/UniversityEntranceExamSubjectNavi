@@ -1,4 +1,4 @@
-import type { Department, Major } from "@/types/university/university";
+import type { Department, Major } from "@/types/universities/university";
 
 export class DepartmentModel {
   constructor(private readonly data: Department) {}

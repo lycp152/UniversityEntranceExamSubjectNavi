@@ -1,13 +1,13 @@
 import { FC, memo } from "react";
 import type {
+  SubjectScore,
   SubjectScores,
   SubjectScoreDetail,
-  SubjectScore,
-} from "@/types/score/score";
+} from "@/types/score";
 import { ErrorBoundary } from "@/components/errors/error-boundary";
 import { useScoreTable } from "@/features/subjects/hooks/table/useScoreTable";
 import { useTableKeyboardNavigation } from "@/features/subjects/hooks/table/useTableKeyboardNavigation";
-import { TEST_TYPES } from "@/types/score/score";
+import { TEST_TYPES } from "@/types/score";
 import ScoreTableHeader from "./ScoreTableHeader";
 import ScoreTableBody from "./ScoreTableBody";
 

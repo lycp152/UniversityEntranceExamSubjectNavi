@@ -4,7 +4,7 @@ import type {
   University,
   Major,
   Department,
-} from "@/types/university/university";
+} from "@/types/universities/university";
 
 describe("UniversityModel", () => {
   const mockMajor: Major = {

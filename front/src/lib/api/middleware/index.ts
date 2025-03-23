@@ -1,4 +1,4 @@
-import type { RequestConfig } from "@/types/api";
+import type { RequestConfig } from "@/types/api/common/request";
 
 export type RequestInterceptor = (
   config: RequestConfig

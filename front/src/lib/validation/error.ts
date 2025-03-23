@@ -1,22 +1,43 @@
-/**
- * バリデーション関連のエラーを表すクラス
- */
+import { ValidationCategory, ValidationSeverity } from "@/types/validation";
+
+export interface ValidationErrorDetail {
+  message: string;
+  category: ValidationCategory;
+  severity: ValidationSeverity;
+  field?: string;
+  value?: unknown;
+}
+
 export class ValidationError extends Error {
-  /**
-   * @param message エラーメッセージ
-   * @param code エラーコード
-   */
-  constructor(message: string, public readonly code: string) {
+  constructor(
+    message: string,
+    public readonly details: ValidationErrorDetail[]
+  ) {
     super(message);
     this.name = "ValidationError";
-    // Error クラスの prototype チェーンを正しく設定
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 
-  /**
-   * エラーの文字列表現を返す
-   */
-  toString(): string {
-    return `${this.name}[${this.code}]: ${this.message}`;
+  get errors(): ValidationErrorDetail[] {
+    return this.details;
+  }
+
+  hasErrors(severity: ValidationSeverity = ValidationSeverity.ERROR): boolean {
+    return this.details.some((detail) => detail.severity === severity);
+  }
+
+  getErrorsByCategory(category: ValidationCategory): ValidationErrorDetail[] {
+    return this.details.filter((detail) => detail.category === category);
+  }
+
+  getErrorsBySeverity(severity: ValidationSeverity): ValidationErrorDetail[] {
+    return this.details.filter((detail) => detail.severity === severity);
+  }
+
+  toJSON() {
+    return {
+      message: this.message,
+      details: this.details,
+    };
   }
 }

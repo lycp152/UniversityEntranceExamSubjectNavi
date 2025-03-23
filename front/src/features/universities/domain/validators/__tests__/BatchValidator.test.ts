@@ -1,11 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { BatchValidator } from "../BatchValidator";
-import { ValidationError } from "../ValidationError";
-import type { TestType as TestTypeCreateInput } from "@/types/university/university";
-import {
-  ValidationCategory,
-  ValidationSeverity,
-} from "../ValidationErrorTypes";
+import { ValidationError } from "@/lib/validation/error";
+import type { TestType as TestTypeCreateInput } from "@/types/universities/university";
+import { ValidationCategory, ValidationSeverity } from "@/types/validation";
 
 const createTimeoutValidator = () => {
   return vi

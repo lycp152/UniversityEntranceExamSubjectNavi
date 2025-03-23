@@ -4,7 +4,7 @@ import type {
   ScoreCalculationResult,
   ScoreContext,
 } from "../types/score";
-import type { BaseSubjectScore, SubjectScores } from "@/types/score/score";
+import type { BaseSubjectScore, SubjectScores } from "@/types/score";
 
 type TestType = "commonTest" | "secondTest";
 

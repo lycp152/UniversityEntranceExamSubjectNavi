@@ -1,7 +1,7 @@
 import {
   SubjectScores as LibSubjectScores,
   BaseSubjectScore as LibBaseSubjectScore,
-} from "@/features/charts/subject/donut/types/score";
+} from "@/features/subjects/types/score2";
 
 export type TestType = "commonTest" | "secondTest";
 

@@ -1,5 +1,4 @@
-import { SubjectScores } from "@/types/score/score";
-import { ScoreValidationError } from "@/types/score/core";
+import { SubjectScores, ScoreValidationError } from "@/types/score";
 import { calculatePercentage } from "@/features/score/utils/ScoreCalculation";
 import { validateSubjectScores } from "@/features/score/validation/SubjectScoreValidator2";
 

@@ -1,6 +1,5 @@
 import { ScoreCalculator } from "@/features/score/utils/score-calculator";
-import type { ScoreMetrics } from "@/types/score/score";
-import type { Score } from "@/types/score/core";
+import type { ScoreMetrics, Score } from "@/types/score";
 import { SCORE_ERROR_CODES, SCORE_ERROR_MESSAGES } from "@/constants/scores";
 
 export class ScoreService {

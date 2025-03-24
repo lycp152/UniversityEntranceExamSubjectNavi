@@ -1,6 +1,6 @@
-import { EXAM_TYPE_OPTIONS } from "@/constants/subjects";
+import { EXAM_TYPES } from "@/constants/subjects";
 import type { SubjectScore } from "@/types/charts/subject-scores";
-import type { SubjectName } from "@/constants/subjects";
+import type { SubjectName } from "@/types/subjects";
 
 export interface SubjectScoreError {
   type: "error";
@@ -25,11 +25,13 @@ export const extractScores = (
     ];
   }
 
-  const extractedScores = EXAM_TYPE_OPTIONS.map((type) => ({
-    type,
-    value: type === "共通" ? scores.commonTest : scores.secondTest,
-    subjectName: normalizedSubjectName,
-  })).filter((score) => score.value > 0);
+  const extractedScores = Object.values(EXAM_TYPES)
+    .map((type) => ({
+      type,
+      value: type === "共通" ? scores.commonTest : scores.secondTest,
+      subjectName: normalizedSubjectName,
+    }))
+    .filter((score) => score.value > 0);
 
   if (extractedScores.length === 0) {
     return [

@@ -1,6 +1,6 @@
 import type { Score } from "@/types/score";
 import type { ValidationResult } from "@/types/validation";
-import { SCORE_CONSTRAINTS } from "@/constants/scores";
+import { SCORE_ERROR_CODES } from "@/constants/domain-error-codes";
 
 export class ScoreCalculator {
   calculateTotalScore(scores: Score[]): number {
@@ -21,9 +21,7 @@ export class ScoreCalculator {
 
   validateScore(score: Score): ValidationResult<Score> {
     const isValid =
-      score.value >= SCORE_CONSTRAINTS.MIN_VALUE &&
-      score.value <= score.maxValue &&
-      score.weight > 0;
+      score.value >= 0 && score.value <= score.maxValue && score.weight > 0;
 
     return {
       isValid,
@@ -32,7 +30,7 @@ export class ScoreCalculator {
         ? []
         : [
             {
-              code: "INVALID_SCORE",
+              code: SCORE_ERROR_CODES.INVALID_SCORE,
               message: "点数が有効範囲外です",
               field: "value",
               severity: "error",

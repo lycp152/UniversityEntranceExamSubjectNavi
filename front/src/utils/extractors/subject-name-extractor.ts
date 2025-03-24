@@ -1,5 +1,5 @@
 /**
- * 科目名からカテゴリー（教科）を抽出する
+ * 科目名からカテゴリ（教科）を抽出する
  */
 export const getCategoryFromSubject = (subjectName: string): string => {
   // 地歴公などの特殊な科目名はそのままカテゴリとして扱う

@@ -1,4 +1,5 @@
-import type { SubjectCategory, SubjectScores } from "@/types/api/subjects";
+import type { SubjectCategory } from "@/types/subjects";
+import type { SubjectScores } from "@/types/api/subjects";
 
 // UIの型定義
 export interface UISubject {

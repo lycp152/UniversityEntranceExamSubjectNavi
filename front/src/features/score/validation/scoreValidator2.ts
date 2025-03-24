@@ -1,10 +1,10 @@
 import type { Score } from "@/types/score";
 import type { ValidationResult } from "@/types/validation";
 import {
-  SCORE_CONSTRAINTS,
   SCORE_ERROR_CODES,
-  SCORE_ERROR_MESSAGES,
-} from "@/constants/scores";
+  ERROR_MESSAGES,
+} from "@/constants/domain-error-codes";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
 
 type ValidationSeverity = "error" | "warning" | "info";
 
@@ -12,24 +12,24 @@ export const validateScore = (score: Score): ValidationResult<Score> => {
   const errors = [];
 
   if (
-    score.value < SCORE_CONSTRAINTS.MIN_VALUE ||
+    score.value < SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE ||
     score.value > score.maxValue
   ) {
     errors.push({
       code: SCORE_ERROR_CODES.INVALID_RANGE,
-      message: SCORE_ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_RANGE],
+      message: ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_RANGE],
       field: "value",
       severity: "error" as ValidationSeverity,
     });
   }
 
   if (
-    score.weight < SCORE_CONSTRAINTS.MIN_WEIGHT ||
-    score.weight > SCORE_CONSTRAINTS.MAX_WEIGHT
+    score.weight < SUBJECT_SCORE_CONSTRAINTS.MIN_PERCENTAGE ||
+    score.weight > SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE
   ) {
     errors.push({
       code: SCORE_ERROR_CODES.INVALID_WEIGHT,
-      message: SCORE_ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_WEIGHT],
+      message: ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_WEIGHT],
       field: "weight",
       severity: "error" as ValidationSeverity,
     });

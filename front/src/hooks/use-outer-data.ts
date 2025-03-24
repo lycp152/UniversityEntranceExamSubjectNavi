@@ -1,8 +1,14 @@
+import { useMemo } from "react";
 import type { UISubject } from "@/types/universities/subjects";
-import { SUBJECT_DISPLAY_ORDER } from "@/constants/subjects";
-import { PieData } from "@/types/charts/pie-chart";
+import { SUBJECTS } from "@/constants/subjects";
+import type { PieData, ChartResult } from "@/types/charts/pie-chart";
 import { createOuterPieData } from "@/utils/builders/pie-chart-data-builder";
 import { extractSubjectMainCategory } from "@/utils/formatters/subject-name";
+import { createChartError } from "@/utils/validation/chart-error-factory";
+import {
+  ERROR_MESSAGES,
+  SCORE_ERROR_CODES,
+} from "@/constants/domain-error-codes";
 
 export const useOuterData = (
   subjectData: UISubject,
@@ -11,13 +17,57 @@ export const useOuterData = (
     subjects: UISubject["subjects"],
     category: string
   ) => number
-) => {
-  return SUBJECT_DISPLAY_ORDER.reduce((acc, subject) => {
-    const category = extractSubjectMainCategory(subject);
-    if (!acc.some((item) => item.name === category)) {
-      const total = calculateCategoryTotal(subjectData.subjects, category);
-      acc.push(createOuterPieData(category, total, totalScore));
+): ChartResult<PieData> => {
+  return useMemo(() => {
+    const startTime = Date.now();
+    const result: ChartResult<PieData> = {
+      data: [],
+      errors: [],
+      hasErrors: false,
+      status: "success",
+    };
+
+    try {
+      result.data = Object.values(SUBJECTS).reduce<PieData[]>(
+        (acc, subject) => {
+          const category = extractSubjectMainCategory(subject);
+          if (!acc.some((item) => item.name === category)) {
+            const total = calculateCategoryTotal(
+              subjectData.subjects,
+              category
+            );
+            acc.push(createOuterPieData(category, total, totalScore));
+          }
+          return acc;
+        },
+        []
+      );
+
+      result.metadata = {
+        processedAt: startTime,
+        totalItems: Object.values(SUBJECTS).length,
+        successCount: result.data.length,
+        errorCount: result.errors.length,
+      };
+    } catch (error) {
+      result.errors.push(
+        createChartError(
+          SCORE_ERROR_CODES.INVALID_SCORE,
+          ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_SCORE],
+          "outer-data",
+          {
+            severity: "error",
+            details: {
+              originalMessage:
+                error instanceof Error ? error.message : "Unknown error",
+            },
+          }
+        )
+      );
+      result.hasErrors = true;
+      result.status = "error";
     }
-    return acc;
-  }, [] as PieData[]);
+
+    return result;
+  }, [subjectData.subjects, totalScore, calculateCategoryTotal]);
 };

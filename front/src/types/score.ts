@@ -1,5 +1,5 @@
 import type { TestTypeName } from "@/types/universities/university";
-import type { SubjectName } from "@/constants/subjects";
+import type { SubjectName } from "@/types/subjects";
 import type { PieData } from "@/types/charts/pie-chart";
 
 export interface BaseScore {

@@ -7,10 +7,9 @@ import {
   SCORE_CONSTRAINTS,
 } from "@/types/score";
 import {
-  ScoreCalculationError,
-  ScoreErrorCodes,
-  createErrorMessage,
-} from "@/features/subjects/errors/ScoreErorr";
+  SCORE_ERROR_CODES,
+  ERROR_MESSAGES,
+} from "@/constants/domain-error-codes";
 
 export interface ScoreCalculatorOptions {
   roundToDecimal?: number;
@@ -37,10 +36,10 @@ export class ScoreCalculator {
         percentage: this.calculatePercentage(score.value, score.maxValue),
       };
     } catch (error) {
-      throw new ScoreCalculationError(
-        createErrorMessage(ScoreErrorCodes.CALCULATION_ERROR, field),
-        field,
-        { error: error instanceof Error ? error.message : "不明なエラー" }
+      throw new Error(
+        ERROR_MESSAGES[SCORE_ERROR_CODES.CALCULATION_ERROR] +
+          (field ? ` (${field})` : ""),
+        { cause: error instanceof Error ? error.message : "不明なエラー" }
       );
     }
   }
@@ -50,15 +49,15 @@ export class ScoreCalculator {
    */
   private validateScore(score: TestScore, field?: string): void {
     if (score.value < SCORE_CONSTRAINTS.MIN_VALUE) {
-      throw new ScoreCalculationError(
-        createErrorMessage(ScoreErrorCodes.NEGATIVE_SCORE, field),
-        field
+      throw new Error(
+        ERROR_MESSAGES[SCORE_ERROR_CODES.NEGATIVE_SCORE] +
+          (field ? ` (${field})` : "")
       );
     }
     if (score.value > score.maxValue) {
-      throw new ScoreCalculationError(
-        createErrorMessage(ScoreErrorCodes.MAX_SCORE_EXCEEDED, field),
-        field
+      throw new Error(
+        ERROR_MESSAGES[SCORE_ERROR_CODES.MAX_SCORE_EXCEEDED] +
+          (field ? ` (${field})` : "")
       );
     }
   }
@@ -107,14 +106,12 @@ export class ScoreCalculator {
         },
       };
     } catch (error) {
-      if (error instanceof ScoreCalculationError) {
+      if (error instanceof Error) {
         throw error;
       }
-      throw new ScoreCalculationError(
-        createErrorMessage(ScoreErrorCodes.CALCULATION_ERROR),
-        undefined,
-        { error: error instanceof Error ? error.message : "不明なエラー" }
-      );
+      throw new Error(ERROR_MESSAGES[SCORE_ERROR_CODES.CALCULATION_ERROR], {
+        cause: error instanceof Error ? error.message : "不明なエラー",
+      });
     }
   }
 
@@ -134,21 +131,19 @@ export class ScoreCalculator {
             subject,
           };
         } catch (error) {
-          throw new ScoreCalculationError(
-            createErrorMessage(ScoreErrorCodes.CALCULATION_ERROR, subject),
-            subject,
-            { error: error instanceof Error ? error.message : "不明なエラー" }
+          throw new Error(
+            ERROR_MESSAGES[SCORE_ERROR_CODES.CALCULATION_ERROR] +
+              ` (${subject})`,
+            { cause: error instanceof Error ? error.message : "不明なエラー" }
           );
         }
       }
 
       return results;
     } catch (error) {
-      throw new ScoreCalculationError(
-        createErrorMessage(ScoreErrorCodes.CALCULATION_ERROR),
-        undefined,
-        { error: error instanceof Error ? error.message : "不明なエラー" }
-      );
+      throw new Error(ERROR_MESSAGES[SCORE_ERROR_CODES.CALCULATION_ERROR], {
+        cause: error instanceof Error ? error.message : "不明なエラー",
+      });
     }
   }
 

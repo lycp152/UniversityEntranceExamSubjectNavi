@@ -1,7 +1,7 @@
 import type { SubjectScore, SubjectMetrics } from "./types";
-import type { SubjectCategory } from "@/constants/subjects";
+import type { SubjectCategory } from "@/types/subjects";
 import { SubjectError } from "../errors/SubjectError";
-import { SCORE_CONSTRAINTS } from "@/constants/scores";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
 
 export class Subject {
   private constructor(private readonly score: SubjectScore) {}
@@ -15,11 +15,11 @@ export class Subject {
 
   private static isValidScore(score: SubjectScore): boolean {
     return (
-      score.value >= SCORE_CONSTRAINTS.MIN_VALUE &&
+      score.value >= SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE &&
       score.value <= score.maxValue &&
-      score.value <= SCORE_CONSTRAINTS.MAX_VALUE &&
-      score.weight >= SCORE_CONSTRAINTS.MIN_WEIGHT &&
-      score.weight <= SCORE_CONSTRAINTS.MAX_WEIGHT
+      score.value <= SUBJECT_SCORE_CONSTRAINTS.MAX_SCORE &&
+      score.weight >= SUBJECT_SCORE_CONSTRAINTS.MIN_PERCENTAGE &&
+      score.weight <= SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE
     );
   }
 

@@ -1,4 +1,4 @@
-import { SUBJECT_TYPES } from "@/constants/subjects";
+import { EXAM_TYPES } from "@/constants/subjects";
 import type { SubjectScore } from "@/types/score";
 
 // 基本的なチャートデータの型
@@ -11,7 +11,7 @@ export interface PieData {
 export interface DetailedPieData extends PieData {
   category: string;
   displayName?: string;
-  type: (typeof SUBJECT_TYPES)[keyof typeof SUBJECT_TYPES];
+  type: (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES];
 }
 
 export type ChartProps = {

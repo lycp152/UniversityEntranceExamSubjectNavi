@@ -6,10 +6,7 @@ import {
   formatScore,
   formatPercentage,
 } from "@/utils/formatters/chart-value-formatter";
-import {
-  SUBJECT_NAME_DISPLAY_MAPPING,
-  SUBJECT_CATEGORY_COLORS,
-} from "@/constants/subjects";
+import { SUBJECTS, SUBJECT_CATEGORIES } from "@/constants/subjects";
 
 /**
  * 共通のチャートデータ変換関数
@@ -38,15 +35,9 @@ export const transformDetailedData = async (
 ): Promise<ValidationResult<ChartData[]>> => {
   try {
     const data = Object.entries(subjects).map(([subject, scores]) => {
-      const displayName =
-        SUBJECT_NAME_DISPLAY_MAPPING[
-          subject as keyof typeof SUBJECT_NAME_DISPLAY_MAPPING
-        ] || subject;
-      const category = subject.replace(
-        /[RL]$/,
-        ""
-      ) as keyof typeof SUBJECT_CATEGORY_COLORS;
-      const color = SUBJECT_CATEGORY_COLORS[category] || "#000000";
+      const displayName = SUBJECTS[subject as keyof typeof SUBJECTS] || subject;
+      const category = subject.replace(/[RL]$/, "");
+      const color = SUBJECT_CATEGORIES[category].color || "#000000";
       const value = scores.commonTest + scores.secondTest;
 
       return createChartData(displayName, value, color, totalScore, category);
@@ -84,13 +75,16 @@ export const transformOuterData = (
   totalScore: number,
   getCategoryTotal: (subjects: SubjectScores, category: string) => number
 ): ChartData[] => {
-  return Object.entries(SUBJECT_CATEGORY_COLORS).map(([category, color]) => {
-    const displayName =
-      SUBJECT_NAME_DISPLAY_MAPPING[
-        category as keyof typeof SUBJECT_NAME_DISPLAY_MAPPING
-      ] || category;
+  return Object.entries(SUBJECT_CATEGORIES).map(([category, color]) => {
+    const displayName = SUBJECTS[category as keyof typeof SUBJECTS] || category;
     const value = getCategoryTotal(subjects, category);
 
-    return createChartData(displayName, value, color, totalScore, category);
+    return createChartData(
+      displayName,
+      value,
+      color.color,
+      totalScore,
+      category
+    );
   });
 };

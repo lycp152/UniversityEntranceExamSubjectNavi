@@ -107,22 +107,6 @@ export const TEST_TYPE_PATTERNS: Record<string, PatternConfig> = {
   },
 };
 
-export const SUBJECT_ORDER = [
-  "英語L",
-  "英語R",
-  "数学",
-  "国語",
-  "理科",
-  "地歴公",
-] as const;
-export const BASE_SUBJECTS = [
-  "英語",
-  "数学",
-  "国語",
-  "理科",
-  "地歴公",
-] as const;
-
 export const SUBJECT_COLORS = Object.fromEntries(
   Object.entries(SUBJECT_PATTERNS).map(([key, value]) => [key, value.color])
 ) as Record<keyof typeof SUBJECT_PATTERNS, string>;

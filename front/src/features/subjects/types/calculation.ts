@@ -1,5 +1,5 @@
 import type { TestTypeName } from "@/types/universities/university";
-import type { SubjectName } from "@/constants/subjects";
+import type { SubjectName } from "@/types/subjects";
 import type { SubjectScores } from "@/types/score";
 import type { ValidationResult } from "@/types/validation";
 

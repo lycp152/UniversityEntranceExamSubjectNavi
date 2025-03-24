@@ -1,6 +1,9 @@
 import { ScoreCalculator } from "@/features/score/utils/score-calculator";
 import type { ScoreMetrics, Score } from "@/types/score";
-import { SCORE_ERROR_CODES, SCORE_ERROR_MESSAGES } from "@/constants/scores";
+import {
+  SCORE_ERROR_CODES,
+  ERROR_MESSAGES,
+} from "@/constants/domain-error-codes";
 
 export class ScoreService {
   private readonly calculator: ScoreCalculator;
@@ -26,9 +29,7 @@ export class ScoreService {
         percentage,
       };
     } catch {
-      throw new Error(
-        SCORE_ERROR_MESSAGES[SCORE_ERROR_CODES.CALCULATION_ERROR]
-      );
+      throw new Error(ERROR_MESSAGES[SCORE_ERROR_CODES.CALCULATION_ERROR]);
     }
   }
 

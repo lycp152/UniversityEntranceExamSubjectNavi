@@ -1,4 +1,4 @@
-import { SubjectName } from "@/constants/subjects";
+import { SubjectName } from "@/types/subjects";
 
 interface DetailedPieData {
   name: string;

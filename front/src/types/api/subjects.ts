@@ -1,16 +1,3 @@
-// 科目カテゴリーの型定義
-export const SUBJECT_CATEGORIES = {
-  ENGLISH_L: "英語L",
-  ENGLISH_R: "英語R",
-  MATH: "数学",
-  JAPANESE: "国語",
-  SCIENCE: "理科",
-  SOCIAL: "地歴公",
-} as const;
-
-export type SubjectCategory =
-  (typeof SUBJECT_CATEGORIES)[keyof typeof SUBJECT_CATEGORIES];
-
 // スコアの型定義
 export interface SubjectScores {
   commonTest: number;
@@ -30,7 +17,6 @@ export interface DepartmentModel {
 export interface SubjectModel {
   id: string;
   name: string;
-  category: SubjectCategory;
   scores: SubjectScores;
 }
 

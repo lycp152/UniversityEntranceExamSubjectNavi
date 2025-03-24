@@ -1,14 +1,12 @@
 import { DetailedPieData, PieData } from "@/types/charts/pie-chart";
 import { BaseTransformParams } from "@/types/charts/transformers";
 import { TestType, TEST_TYPES } from "@/types/score";
-import { SUBJECT_TYPES } from "@/constants/subjects";
+import { EXAM_TYPES } from "@/constants/subjects";
 import { transformSubjectData } from "@/utils/formatters/subject-data-formatter";
 import { transformToPieData } from "@/utils/transformers/pie-data";
 
 const mapTestTypeToSubjectType = (testType: TestType) =>
-  testType === TEST_TYPES.COMMON
-    ? SUBJECT_TYPES.COMMON
-    : SUBJECT_TYPES.SECONDARY;
+  testType === TEST_TYPES.COMMON ? EXAM_TYPES.COMMON : EXAM_TYPES.SECONDARY;
 
 export const createDetailedPieData = (
   subjectName: string,

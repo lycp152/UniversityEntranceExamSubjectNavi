@@ -203,8 +203,8 @@ type Major struct {
 type AdmissionSchedule struct {
 	BaseModel
 	MajorID    uint       `json:"major_id" gorm:"not null;index:idx_schedule_major_year"`
-	Name       string     `json:"name" gorm:"not null;size:50;check:name in ('前期','中期','後期')"`
-	DisplayOrder int      `json:"display_order" gorm:"not null;default:0;check:display_order >= 0"`
+	Name       string     `json:"name" gorm:"not null;size:6;check:name in ('前期','中期','後期')"`
+	DisplayOrder int      `json:"display_order" gorm:"not null;default:0;check:display_order >= 0 AND display_order <= 3"`
 	Major      Major      `json:"-" gorm:"foreignKey:MajorID"`
 	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
 	TestTypes  []TestType `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
@@ -234,7 +234,7 @@ type TestType struct {
 type Subject struct {
 	BaseModel
 	TestTypeID    uint      `json:"test_type_id" gorm:"not null;index:idx_subject_test"`
-	Name          string    `json:"name" gorm:"not null;index:idx_subject_name;size:50;check:name <> ''"`
+	Name          string    `json:"name" gorm:"not null;index:idx_subject_name;size:20;check:name <> ''"`
 	Score         int       `json:"score" gorm:"not null;check:score >= 0 AND score <= 1000"`
 	Percentage    float64   `json:"percentage" gorm:"not null;check:percentage >= 0 AND percentage <= 100"`
 	DisplayOrder  int       `json:"display_order" gorm:"not null;default:0;check:display_order >= 0"`

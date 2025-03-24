@@ -132,7 +132,7 @@ export class SubjectScoreCalculator extends BaseScoreCalculator {
   }
 
   /**
-   * カテゴリー別の合計スコアを計算
+   * カテゴリ別の合計スコアを計算
    */
   calculateCategoryScore(
     subjects: SubjectScores,

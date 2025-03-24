@@ -4,7 +4,7 @@ import {
   formatScore,
   formatPercentage,
 } from "@/utils/formatters/chart-value-formatter";
-import { SUBJECT_MAIN_CATEGORIES } from "@/constants/subjects";
+import { SUBJECT_CATEGORIES } from "@/constants/subjects";
 import { extractSubjectMainCategory } from "@/utils/formatters/subject-name";
 
 /**
@@ -46,13 +46,13 @@ export const calculatePercentage = (value: number, total: number): number => {
  */
 export const calculateAll = (subjects: SubjectScores) => {
   const total = calculateTotal(subjects);
-  const byCategory = SUBJECT_MAIN_CATEGORIES.reduce<
+  const byCategory = Object.values(SUBJECT_CATEGORIES).reduce<
     Record<string, { total: number; percentage: number }>
   >((acc, category) => {
-    const categoryTotal = calculateCategoryTotal(subjects, category);
+    const categoryTotal = calculateCategoryTotal(subjects, category.category);
     return {
       ...acc,
-      [category]: {
+      [category.category]: {
         total: categoryTotal,
         percentage: calculatePercentage(categoryTotal, total),
       },

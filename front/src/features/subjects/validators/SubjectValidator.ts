@@ -1,20 +1,20 @@
 import type { SubjectScore, ValidationResult } from "../models/types";
 import { SubjectError } from "../errors/SubjectError";
-import { SCORE_CONSTRAINTS } from "@/constants/scores";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
 
 export class SubjectValidator {
   private static validateValue(value: number, maxValue: number): boolean {
     return (
-      value >= SCORE_CONSTRAINTS.MIN_VALUE &&
+      value >= SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE &&
       value <= maxValue &&
-      value <= SCORE_CONSTRAINTS.MAX_VALUE
+      value <= SUBJECT_SCORE_CONSTRAINTS.MAX_SCORE
     );
   }
 
   private static validateWeight(weight: number): boolean {
     return (
-      weight >= SCORE_CONSTRAINTS.MIN_WEIGHT &&
-      weight <= SCORE_CONSTRAINTS.MAX_WEIGHT
+      weight >= SUBJECT_SCORE_CONSTRAINTS.MIN_PERCENTAGE &&
+      weight <= SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE
     );
   }
 
@@ -25,7 +25,7 @@ export class SubjectValidator {
     try {
       if (!SubjectValidator.validateValue(score.value, score.maxValue)) {
         errors.push({
-          code: "INVALID_VALUE",
+          code: "INVALID_SCORE",
           message: "点数が有効範囲外です",
           field: "value",
           severity: "error" as const,
@@ -35,7 +35,7 @@ export class SubjectValidator {
 
       if (!SubjectValidator.validateWeight(score.weight)) {
         errors.push({
-          code: "INVALID_WEIGHT",
+          code: "INVALID_PERCENTAGE",
           message: "重みが有効範囲外です",
           field: "weight",
           severity: "error" as const,

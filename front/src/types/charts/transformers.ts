@@ -8,7 +8,7 @@ export interface TransformedSubjectData {
   name: string;
   /** 科目の表示名 */
   displayName: string;
-  /** 科目のカテゴリー */
+  /** 科目のカテゴリ */
   category: string;
 }
 
@@ -32,7 +32,7 @@ export type TransformResult = {
   data: PieData;
   /** メタデータ */
   metadata?: {
-    /** カテゴリー */
+    /** カテゴリ */
     category?: string;
     /** 表示名 */
     displayName?: string;

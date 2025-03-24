@@ -1,6 +1,6 @@
-import { SUBJECT_NAME_DISPLAY_MAPPING } from "@/constants/subjects";
+import { SUBJECTS } from "@/constants/subjects";
 
-type SubjectNameDisplayMapping = typeof SUBJECT_NAME_DISPLAY_MAPPING;
+type SubjectNameDisplayMapping = typeof SUBJECTS;
 
 /**
  * 科目名を表示用にフォーマットする
@@ -8,7 +8,7 @@ type SubjectNameDisplayMapping = typeof SUBJECT_NAME_DISPLAY_MAPPING;
 export const formatSubjectName = (
   subjectName: keyof SubjectNameDisplayMapping
 ): string => {
-  return SUBJECT_NAME_DISPLAY_MAPPING[subjectName] || subjectName;
+  return SUBJECTS[subjectName] || subjectName;
 };
 
 /**

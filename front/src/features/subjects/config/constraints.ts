@@ -11,8 +11,3 @@ export const SUBJECT_CONSTRAINTS = {
   /** 最大重み */
   MAX_WEIGHT: 1,
 } as const;
-
-/**
- * 科目の表示順序
- */
-export const SUBJECT_DISPLAY_ORDER = ['英語L', '英語R', '数学', '国語', '理科', '地歴公'] as const;

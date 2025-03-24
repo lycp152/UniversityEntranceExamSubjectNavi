@@ -5,10 +5,13 @@ import {
   ApiClientError,
   NetworkError,
   TimeoutError,
-} from "@/types/errors/client";
+} from "@/types/errors/api-client-errors";
 import { InterceptorManager } from "@/lib/api/middleware";
 import { ENV } from "@/lib/config/env";
-import { API_ERROR_CODES, ERROR_MESSAGES } from "@/types/errors/codes";
+import {
+  ERROR_MESSAGES,
+  API_ERROR_CODES,
+} from "@/constants/domain-error-codes";
 import type {
   RequestInterceptor,
   ResponseInterceptor,

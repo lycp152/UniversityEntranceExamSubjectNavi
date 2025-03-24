@@ -1,4 +1,4 @@
-import { ErrorCode } from "@/constants/error-codes";
+import { ErrorCode } from "@/types/errors/error-codes";
 import { ChartError } from "@/types/errors/charts";
 
 export interface ErrorOptions {

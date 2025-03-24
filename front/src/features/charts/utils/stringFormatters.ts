@@ -1,5 +1,5 @@
 import { TestType } from "@/types/score";
-import { FORMAT_PATTERNS } from "@/constants/subject-formats";
+import { FORMAT_PATTERNS } from "@/constants/subjects";
 
 export const formatWithTestType = (
   name: string,

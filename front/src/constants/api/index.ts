@@ -1,5 +1,3 @@
-import type { ApiResponse, ApiError } from "@/types/api/common/response";
-
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const API_ENDPOINTS = {
@@ -9,10 +7,6 @@ export const API_ENDPOINTS = {
   SUBJECTS_BATCH: (universityId: number, departmentId: number) =>
     `${API_BASE_URL}/api/universities/${universityId}/departments/${departmentId}/subjects/batch`,
 } as const;
-
-export type APIEndpoint = typeof API_ENDPOINTS;
-
-export type { ApiResponse, ApiError };
 
 export const DEFAULT_HEADERS = {
   "Content-Type": "application/json",

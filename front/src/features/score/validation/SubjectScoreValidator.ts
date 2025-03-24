@@ -1,5 +1,5 @@
 import { SubjectScoreError, SubjectScore } from "@/types/score";
-import { SUBJECT_TYPES } from "@/constants/subjects";
+import { EXAM_TYPES } from "@/constants/subjects";
 
 export const validateSubjectScore = (
   score: SubjectScore
@@ -16,5 +16,5 @@ export const validateSubjectScore = (
 };
 
 export const validateTestType = (type: string): boolean => {
-  return type === SUBJECT_TYPES.COMMON || type === SUBJECT_TYPES.SECONDARY;
+  return type === EXAM_TYPES.COMMON || type === EXAM_TYPES.SECONDARY;
 };

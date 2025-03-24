@@ -1,5 +1,8 @@
 import { BaseApiError } from "./base";
-import { API_ERROR_CODES } from "./codes";
+import {
+  API_ERROR_CODES,
+  ERROR_MESSAGES,
+} from "../../constants/domain-error-codes";
 
 export class ApiClientError extends BaseApiError {
   static isApiClientError(error: unknown): error is ApiClientError {
@@ -8,7 +11,7 @@ export class ApiClientError extends BaseApiError {
 }
 
 export class NetworkError extends BaseApiError {
-  constructor(message = "ネットワークエラーが発生しました") {
+  constructor(message = ERROR_MESSAGES[API_ERROR_CODES.NETWORK_ERROR]) {
     super({
       code: API_ERROR_CODES.NETWORK_ERROR,
       message,
@@ -18,7 +21,7 @@ export class NetworkError extends BaseApiError {
 }
 
 export class TimeoutError extends BaseApiError {
-  constructor(message = "リクエストがタイムアウトしました") {
+  constructor(message = ERROR_MESSAGES[API_ERROR_CODES.TIMEOUT_ERROR]) {
     super({
       code: API_ERROR_CODES.TIMEOUT_ERROR,
       message,
@@ -30,8 +33,8 @@ export class TimeoutError extends BaseApiError {
 export class ValidationError extends BaseApiError {
   constructor(message: string, details?: Record<string, unknown>) {
     super({
-      code: API_ERROR_CODES.VALIDATION_ERROR,
-      message,
+      code: API_ERROR_CODES.API_VALIDATION_ERROR,
+      message: message || ERROR_MESSAGES[API_ERROR_CODES.API_VALIDATION_ERROR],
       status: 400,
       details,
     });

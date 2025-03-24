@@ -12,7 +12,7 @@ export const calculateTotalScore = (subjects: SubjectScores): number => {
 };
 
 /**
- * 特定のカテゴリーの合計点を計算する
+ * 特定のカテゴリの合計点を計算する
  */
 export const calculateCategoryTotal = (
   subjects: SubjectScores,

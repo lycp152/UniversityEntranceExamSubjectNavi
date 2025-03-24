@@ -1,5 +1,5 @@
 import type { TestTypeName } from "@/types/universities/university";
-import type { SubjectName, SubjectCategory } from "@/constants/subjects";
+import type { SubjectName, SubjectCategory } from "@/types/subjects";
 
 // 基本的なスコア型
 export interface BaseScore {

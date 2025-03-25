@@ -5,11 +5,14 @@ import {
   loggingResponseInterceptor,
 } from "@/lib/api/middleware/logging";
 
+// ページネーションのパラメータ型定義
 export interface PaginationParams {
   page: number;
   limit: number;
 }
 
+// APIクライアントの初期設定を行う関数
+// 認証とロギングのインターセプターを設定
 export function setupApiClient(): void {
   // 認証インターセプターを追加
   apiClient.addRequestInterceptor(authInterceptor);

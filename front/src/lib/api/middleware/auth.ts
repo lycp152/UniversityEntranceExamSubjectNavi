@@ -1,11 +1,19 @@
+// 認証関連のインターセプターを実装するクラス
+// APIリクエストにAuthorizationヘッダーを追加する
 import type { RequestInterceptor } from ".";
 import type { RequestConfig } from "@/types/api/common/request";
+import { ENV } from "@/lib/config/env";
 
 class AuthInterceptorImpl {
+  // ローカルストレージから認証トークンを取得
+  // サーバーサイドでの実行時はnullを返す
   private getAuthToken(): string | null {
-    return localStorage.getItem("auth_token");
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(ENV.AUTH.TOKEN_KEY);
   }
 
+  // リクエストインターセプター
+  // 認証トークンが存在する場合、リクエストヘッダーにBearerトークンを追加
   intercept: RequestInterceptor = async (
     config: RequestConfig
   ): Promise<RequestConfig> => {
@@ -16,11 +24,12 @@ class AuthInterceptorImpl {
       ...config,
       headers: {
         ...config.headers,
-        Authorization: `Bearer ${token}`,
+        Authorization: `${ENV.AUTH.TOKEN_PREFIX} ${token}`,
       },
     };
   };
 }
 
+// シングルトンとしてインターセプターをエクスポート
 export const authInterceptor: RequestInterceptor = new AuthInterceptorImpl()
   .intercept;

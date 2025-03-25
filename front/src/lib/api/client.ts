@@ -1,3 +1,5 @@
+// HTTPリクエストを実行し、インターセプターを管理するコアクラス
+// タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
 import type { ApiClientConfig } from "@/types/api/config";
 import type { ApiResponse } from "@/types/api/common/response";
 import type { RequestConfig } from "@/types/api/common/request";
@@ -33,10 +35,11 @@ export class ApiClient {
     this.timeout = config.timeout ?? ENV.API.TIMEOUT;
     this.interceptors = new InterceptorManager();
 
-    // デフォルトのエラーインターセプターを設定
     this.setupDefaultInterceptors();
   }
 
+  // デフォルトのエラーインターセプターを設定
+  // サーバーエラーをApiClientErrorに変換
   private setupDefaultInterceptors(): void {
     this.interceptors.addErrorInterceptor(async (error) => {
       if (error instanceof Response) {
@@ -54,10 +57,12 @@ export class ApiClient {
     });
   }
 
+  // インターセプターマネージャーへのアクセスを提供
   public getInterceptorManager(): InterceptorManager {
     return this.interceptors;
   }
 
+  // 各種インターセプターを追加するメソッド
   public addRequestInterceptor(interceptor: RequestInterceptor): void {
     this.interceptors.addRequestInterceptor(interceptor);
   }
@@ -70,6 +75,8 @@ export class ApiClient {
     this.interceptors.addErrorInterceptor(interceptor);
   }
 
+  // HTTPリクエストを実行する汎用メソッド
+  // タイムアウト制御とインターセプターの実行を管理
   async request<T>(
     path: string,
     config: RequestConfig
@@ -125,6 +132,7 @@ export class ApiClient {
     }
   }
 
+  // GETリクエストを実行
   async get<T>(
     path: string,
     config?: Omit<RequestConfig, "method">
@@ -133,6 +141,7 @@ export class ApiClient {
     return response.data;
   }
 
+  // POSTリクエストを実行
   async post<T>(
     path: string,
     data?: unknown,
@@ -146,6 +155,7 @@ export class ApiClient {
     return response.data;
   }
 
+  // PUTリクエストを実行
   async put<T>(
     path: string,
     data?: unknown,
@@ -159,6 +169,7 @@ export class ApiClient {
     return response.data;
   }
 
+  // DELETEリクエストを実行
   async delete<T>(
     path: string,
     config?: Omit<RequestConfig, "method">
@@ -171,6 +182,7 @@ export class ApiClient {
   }
 }
 
+// シングルトンとしてAPIクライアントをエクスポート
 export const apiClient = new ApiClient({
   baseURL: ENV.API.BASE_URL,
 });

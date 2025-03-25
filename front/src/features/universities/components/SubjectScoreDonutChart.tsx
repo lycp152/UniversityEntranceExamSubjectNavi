@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { UISubject } from "@/types/universities/subjects";
-import { useSubjectChart } from "@/hooks/use-subject-chart";
+import { useSubjectChart } from "@/hooks/subject/use-subject-chart";
 import {
   containerStyles,
   containerClassName,
@@ -15,22 +15,22 @@ interface SubjectScoreDonutChartProps {
 const SubjectScoreDonutChart: FC<SubjectScoreDonutChartProps> = ({
   subjectData,
 }) => {
-  const { leftChart, rightChart } = useSubjectChart(subjectData);
+  const { subjectChart, examChart } = useSubjectChart(subjectData);
 
   return (
     <div className="flex w-full gap-4">
       <div className={containerClassName} style={containerStyles}>
         <style>{pieChartStyles}</style>
         <DonutChart
-          detailedData={leftChart.detailedData}
-          outerData={leftChart.outerData}
+          detailedData={subjectChart.detailedData}
+          outerData={subjectChart.outerData}
         />
       </div>
       <div className={containerClassName} style={containerStyles}>
         <style>{pieChartStyles}</style>
         <DonutChart
-          detailedData={rightChart.detailedData}
-          outerData={rightChart.outerData}
+          detailedData={examChart.detailedData}
+          outerData={examChart.outerData}
           isRightChart={true}
         />
       </div>

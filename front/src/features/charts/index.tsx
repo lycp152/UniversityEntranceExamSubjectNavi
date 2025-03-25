@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { DonutChart } from "@/components/charts/DonutChart";
-import { useSubjectChart } from "@/hooks/use-subject-chart";
+import { useSubjectChart } from "@/hooks/subject/use-subject-chart";
 import {
   containerStyles,
   containerClassName,
@@ -79,22 +79,22 @@ const mockSubject: UISubject = {
 };
 
 const SubjectScoreDonutChart: FC = () => {
-  const { leftChart, rightChart } = useSubjectChart(mockSubject);
+  const { subjectChart, examChart } = useSubjectChart(mockSubject);
 
   return (
     <div className="flex w-full gap-4">
       <div className={containerClassName} style={containerStyles}>
         <style>{pieChartStyles}</style>
         <DonutChart
-          detailedData={leftChart.detailedData}
-          outerData={leftChart.outerData}
+          detailedData={subjectChart.detailedData}
+          outerData={subjectChart.outerData}
         />
       </div>
       <div className={containerClassName} style={containerStyles}>
         <style>{pieChartStyles}</style>
         <DonutChart
-          detailedData={rightChart.detailedData}
-          outerData={rightChart.outerData}
+          detailedData={examChart.detailedData}
+          outerData={examChart.outerData}
           isRightChart={true}
         />
       </div>

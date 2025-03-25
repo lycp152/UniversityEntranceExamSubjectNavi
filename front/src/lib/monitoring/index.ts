@@ -1,6 +1,9 @@
 import type { Severity } from "../operations/core";
 import type { ErrorSeverity } from "@/types/errors/categories";
 
+/**
+ * アラートカテゴリーの定義
+ */
 export type AlertCategory =
   | "performance"
   | "reliability"
@@ -8,6 +11,9 @@ export type AlertCategory =
   | "security"
   | "availability";
 
+/**
+ * アラートタイプの定義
+ */
 export type AlertType =
   | "responseTime"
   | "throughput"
@@ -22,29 +28,47 @@ export type AlertType =
 export type Trend = "increasing" | "decreasing" | "stable";
 export type Priority = "high" | "medium" | "low";
 
+/**
+ * 基本トレンドアイテムのインターフェース
+ */
 interface BaseTrendItem {
   timestamp: number;
   value: number;
 }
 
+/**
+ * レスポンスタイムのトレンドアイテム
+ */
 interface ResponseTimeTrendItem extends BaseTrendItem {
   operation: string;
 }
 
+/**
+ * エラーレートのトレンドアイテム
+ */
 interface ErrorRateTrendItem extends BaseTrendItem {
   errorType: string;
 }
 
+/**
+ * メモリ使用量のトレンドアイテム
+ */
 interface MemoryUsageTrendItem extends BaseTrendItem {
   type: "heap" | "rss";
 }
 
+/**
+ * キャッシュ効率のトレンドアイテム
+ */
 interface CacheEfficiencyTrendItem {
   timestamp: number;
   hitRate: number;
   missRate: number;
 }
 
+/**
+ * パフォーマンスメトリクスのインターフェース
+ */
 export interface PerformanceMetrics {
   trends: {
     responseTime: ResponseTimeTrendItem[];
@@ -85,6 +109,9 @@ export interface PerformanceMetrics {
   };
 }
 
+/**
+ * アラートのインターフェース
+ */
 export interface Alert {
   type: AlertType;
   message: string;
@@ -97,6 +124,9 @@ export interface Alert {
   recommendations: string[];
 }
 
+/**
+ * アラート履歴のインターフェース
+ */
 export interface AlertHistory extends Alert {
   startTime: number;
   endTime: number;
@@ -105,6 +135,9 @@ export interface AlertHistory extends Alert {
   preventiveMeasures: string[];
 }
 
+/**
+ * エラーコンテキストのインターフェース
+ */
 export interface ErrorContext {
   errorType: string;
   timestamp: number;
@@ -123,6 +156,9 @@ export interface ErrorContext {
   };
 }
 
+/**
+ * リカバリー結果のインターフェース
+ */
 export interface RecoveryResult {
   success: boolean;
   attempts: number;

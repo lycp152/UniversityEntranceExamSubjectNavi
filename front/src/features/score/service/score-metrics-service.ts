@@ -4,7 +4,7 @@ import type {
   PerformanceMetrics,
   AlertType,
   Trend,
-} from "@/lib/monitoring";
+} from "@/types/monitoring";
 import type { BaseSubjectScore } from "@/types/score";
 import type { ValidationOperationResult } from "@/features/score/lib/operations/operation-results";
 

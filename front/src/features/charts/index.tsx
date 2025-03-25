@@ -4,7 +4,7 @@ import { useSubjectChart } from "@/hooks/subject/use-subject-chart";
 import {
   containerStyles,
   containerClassName,
-  pieChartStyles,
+  chartStyles,
 } from "@/styles/chart-styles";
 import type { UISubject } from "@/types/universities/subjects";
 
@@ -84,14 +84,14 @@ const SubjectScoreDonutChart: FC = () => {
   return (
     <div className="flex w-full gap-4">
       <div className={containerClassName} style={containerStyles}>
-        <style>{pieChartStyles}</style>
+        <style>{chartStyles}</style>
         <DonutChart
           detailedData={subjectChart.detailedData}
           outerData={subjectChart.outerData}
         />
       </div>
       <div className={containerClassName} style={containerStyles}>
-        <style>{pieChartStyles}</style>
+        <style>{chartStyles}</style>
         <DonutChart
           detailedData={examChart.detailedData}
           outerData={examChart.outerData}

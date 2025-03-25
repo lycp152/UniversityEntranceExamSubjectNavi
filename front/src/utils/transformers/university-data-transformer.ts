@@ -17,7 +17,7 @@ import type {
   Subject,
   TestTypeName,
 } from "@/types/universities/university";
-import { UNIVERSITY_STATUS, ADMISSION_STATUS } from "@/lib/config/status";
+import { UNIVERSITY_STATUS } from "@/lib/config/status";
 
 export const transformUniversity = (
   apiUniversity: APIUniversity
@@ -78,7 +78,6 @@ export const transformAdmissionSchedule = (
   endDate: new Date(),
   created_at: apiSchedule.created_at ?? "",
   updated_at: apiSchedule.updated_at ?? "",
-  status: ADMISSION_STATUS.UPCOMING,
 });
 
 export function transformTestType(apiTestType: APITestType): TestType {
@@ -158,7 +157,6 @@ const transformScheduleFromAPI = (
   testTypes: schedule.test_types?.map(transformTestTypeFromAPI) ?? [],
   startDate: new Date(),
   endDate: new Date(),
-  status: ADMISSION_STATUS.UPCOMING,
   created_at: schedule.created_at ?? "",
   updated_at: schedule.updated_at ?? "",
 });

@@ -1,10 +1,8 @@
 import { BaseModel } from "@/types/base-model";
-import type { UNIVERSITY_STATUS, ADMISSION_STATUS } from "@/lib/config/status";
+import type { UNIVERSITY_STATUS } from "@/lib/config/status";
 
 export type UniversityStatus =
   (typeof UNIVERSITY_STATUS)[keyof typeof UNIVERSITY_STATUS];
-export type AdmissionScheduleStatus =
-  (typeof ADMISSION_STATUS)[keyof typeof ADMISSION_STATUS];
 
 export type TestTypeName = "共通" | "二次";
 
@@ -65,7 +63,6 @@ export interface AdmissionSchedule extends BaseModel {
   admissionInfos: AdmissionInfo[];
   startDate: Date;
   endDate: Date;
-  status: AdmissionScheduleStatus;
 }
 
 /**

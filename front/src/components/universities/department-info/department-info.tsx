@@ -31,12 +31,6 @@ export const DepartmentInfo = ({
       onInfoChange(field, transformValue(field, e.target.value));
     };
 
-  // 日程から「期」を除いた部分を取得
-  const currentSchedule = admissionSchedule.name.replace(
-    "期",
-    ""
-  ) as (typeof ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES)[number];
-
   return (
     <div className="px-2 border-l border-gray-200 min-w-[125px]">
       {isEditing ? (
@@ -69,7 +63,7 @@ export const DepartmentInfo = ({
               <div className="flex items-center">
                 <select
                   id="schedule"
-                  value={currentSchedule}
+                  value={admissionSchedule.name}
                   onChange={handleChange("schedule")}
                   className="w-[50px] text-xs text-gray-600 px-1 py-1 border border-blue-300 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >

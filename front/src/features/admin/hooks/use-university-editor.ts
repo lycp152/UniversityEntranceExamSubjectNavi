@@ -8,11 +8,11 @@ import type {
   AdmissionSchedule,
 } from "@/types/universities/university";
 import type { APITestType, APISubject } from "@/types/api/models";
-import { UNIVERSITY_STATUS } from "@/lib/config/status";
 import { useUniversityData } from "@/features/admin/hooks/useUniversityData";
 import { useSubjectData } from "@/features/admin/hooks/useSubjectData";
 import type { EditMode } from "@/types/universities/university-list";
-import type { ExamTypeName } from "@/constants/subjects";
+import type { ExamTypeName, SubjectName } from "@/constants/subjects";
+import type { AdmissionScheduleName } from "@/constants/admission-schedule";
 
 interface BackupState {
   university: University;
@@ -23,22 +23,28 @@ const transformSubjectToAPI = (subject: Subject): APISubject => ({
   id: subject.id,
   test_type_id: subject.testTypeId,
   name: subject.name,
-  score: subject.maxScore,
-  percentage: subject.weight,
+  score: subject.score,
+  percentage: subject.percentage,
   display_order: 0,
-  created_at: subject.createdAt.toISOString(),
-  updated_at: subject.updatedAt.toISOString(),
+  created_at: subject.createdAt,
+  updated_at: subject.updatedAt,
+  version: subject.version,
+  created_by: subject.createdBy,
+  updated_by: subject.updatedBy,
 });
 
 const transformSubjectFromAPI = (subject: APISubject): Subject => ({
   id: subject.id,
   testTypeId: subject.test_type_id,
-  name: subject.name,
-  maxScore: subject.score,
-  minScore: 0,
-  weight: subject.percentage,
-  createdAt: new Date(subject.created_at ?? ""),
-  updatedAt: new Date(subject.updated_at ?? ""),
+  name: subject.name as SubjectName,
+  score: subject.score,
+  percentage: subject.percentage,
+  displayOrder: 0,
+  createdAt: subject.created_at ?? "",
+  updatedAt: subject.updated_at ?? "",
+  version: subject.version ?? 1,
+  createdBy: subject.created_by ?? "",
+  updatedBy: subject.updated_by ?? "",
 });
 
 const transformTestTypeToAPI = (testType: TestType): APITestType => ({
@@ -46,8 +52,11 @@ const transformTestTypeToAPI = (testType: TestType): APITestType => ({
   admission_schedule_id: testType.admissionScheduleId,
   name: testType.name,
   subjects: testType.subjects.map(transformSubjectToAPI),
-  created_at: testType.createdAt.toISOString(),
-  updated_at: testType.updatedAt.toISOString(),
+  created_at: testType.createdAt,
+  updated_at: testType.updatedAt,
+  version: testType.version,
+  created_by: testType.createdBy,
+  updated_by: testType.updatedBy,
 });
 
 const transformTestTypeFromAPI = (testType: APITestType): TestType => ({
@@ -55,8 +64,11 @@ const transformTestTypeFromAPI = (testType: APITestType): TestType => ({
   admissionScheduleId: testType.admission_schedule_id,
   name: testType.name as ExamTypeName,
   subjects: testType.subjects.map(transformSubjectFromAPI),
-  createdAt: new Date(testType.created_at ?? ""),
-  updatedAt: new Date(testType.updated_at ?? ""),
+  createdAt: (testType.created_at ?? "").toString(),
+  updatedAt: (testType.updated_at ?? "").toString(),
+  version: testType.version ?? 1,
+  createdBy: testType.created_by ?? "",
+  updatedBy: testType.updated_by ?? "",
 });
 
 export function useUniversityEditor() {
@@ -116,7 +128,7 @@ export function useUniversityEditor() {
         updatedAdmissionInfo.enrollment = value as number;
         break;
       case "schedule":
-        updatedAdmissionSchedule.name = value as string;
+        updatedAdmissionSchedule.name = value as AdmissionScheduleName;
         break;
       default:
         console.warn(`Unknown field: ${field}`);
@@ -328,12 +340,15 @@ export function useUniversityEditor() {
     const newSubject: Subject = {
       id: 0,
       testTypeId: internalType.id,
-      name: `科目${internalType.subjects.length + 1}`,
-      maxScore: 100,
-      minScore: 0,
-      weight: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      name: `科目${internalType.subjects.length + 1}` as SubjectName,
+      score: 100,
+      percentage: 100,
+      displayOrder: internalType.subjects.length,
+      createdAt: new Date().toString(),
+      updatedAt: new Date().toString(),
+      version: 1,
+      createdBy: "",
+      updatedBy: "",
     };
 
     setUniversities((prevUniversities) =>
@@ -357,7 +372,9 @@ export function useUniversityEditor() {
     testTypes.map((testType) => ({
       ...testType,
       subjects: testType.subjects.map((subject) =>
-        subject.id === subjectId ? { ...subject, name } : subject
+        subject.id === subjectId
+          ? { ...subject, name: name as SubjectName }
+          : subject
       ),
     }));
 
@@ -519,9 +536,11 @@ export function useUniversityEditor() {
       id: tempId,
       name: "",
       departments: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: UNIVERSITY_STATUS.ACTIVE,
+      createdAt: new Date().toString(),
+      updatedAt: new Date().toString(),
+      version: 1,
+      createdBy: "",
+      updatedBy: "",
     };
 
     setUniversities((prev: University[]) => {

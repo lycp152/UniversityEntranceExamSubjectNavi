@@ -17,5 +17,8 @@ export const transformSubjectData = (
     name: formatWithTestType(subjectName, testType),
     displayName: formatWithTestType(baseDisplayName, testType),
     category,
+    testTypeId: 0,
+    percentage: 0,
+    displayOrder: 0,
   };
 };

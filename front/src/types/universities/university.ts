@@ -1,28 +1,27 @@
 import { BaseModel } from "@/types/base-model";
-import type { UniversityStatus } from "@/lib/config/status";
-import type { ExamTypeName } from "@/constants/subjects";
+import type { ExamTypeName, SubjectName } from "@/constants/subjects";
+import type {
+  AdmissionScheduleName,
+  DisplayOrder,
+} from "@/constants/admission-schedule";
+import { ADMISSION_INFO_CONSTRAINTS } from "@/constants/admission-schedule";
+
 /**
  * 大学の基本型定義
  */
 export interface University extends BaseModel {
-  id: number;
   name: string;
   departments: Department[];
-  createdAt: Date;
-  updatedAt: Date;
-  status: UniversityStatus;
 }
 
 /**
  * 学部の型定義
  */
 export interface Department extends BaseModel {
-  id: number;
   name: string;
   universityId: number;
+  university?: University;
   majors: Major[];
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 /**
@@ -31,20 +30,20 @@ export interface Department extends BaseModel {
 export interface Major extends BaseModel {
   name: string;
   departmentId: number;
+  department?: Department;
   admissionSchedules: AdmissionSchedule[];
 }
 
 /**
  * 入試情報の型定義
  */
-export interface AdmissionInfo {
-  id: number;
-  majorId: number;
+export interface AdmissionInfo extends BaseModel {
+  admissionScheduleId: number;
   academicYear: number;
   enrollment: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
+  status: (typeof ADMISSION_INFO_CONSTRAINTS.VALID_STATUSES)[number];
+  admissionSchedule?: AdmissionSchedule;
+  testTypes: TestType[];
 }
 
 /**
@@ -52,36 +51,31 @@ export interface AdmissionInfo {
  */
 export interface AdmissionSchedule extends BaseModel {
   majorId: number;
-  name: string;
-  displayOrder: number;
+  name: AdmissionScheduleName;
+  displayOrder: DisplayOrder;
+  major?: Major;
   testTypes: TestType[];
   admissionInfos: AdmissionInfo[];
-  startDate: Date;
-  endDate: Date;
 }
 
 /**
  * 試験種別の型定義
  */
 export interface TestType extends BaseModel {
-  id: number;
   admissionScheduleId: number;
   name: ExamTypeName;
+  admissionSchedule?: AdmissionSchedule;
   subjects: Subject[];
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 /**
  * 科目の型定義
  */
-export interface Subject {
-  id: number;
+export interface Subject extends BaseModel {
   testTypeId: number;
-  name: string;
-  maxScore: number;
-  minScore: number;
-  weight: number;
-  createdAt: Date;
-  updatedAt: Date;
+  name: SubjectName;
+  score: number;
+  percentage: number;
+  displayOrder: number;
+  testType?: TestType;
 }

@@ -18,14 +18,28 @@ export const createDetailedPieData = (
     subjectName,
     testType
   );
-  const transformInput: BaseTransformParams = { value, totalScore, name };
+  const transformInput: BaseTransformParams = {
+    value,
+    totalScore,
+    name,
+    testTypeId: 0,
+    percentage: 0,
+    displayOrder: 0,
+  };
   const baseData = transformToPieData(transformInput);
 
   return {
     ...baseData.data,
     category,
     displayName,
-    type: mapTestTypeToSubjectType(testType),
+    type: mapTestTypeToSubjectType(testType).name,
+    testTypeId: mapTestTypeToSubjectType(testType).id,
+    displayOrder: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    version: 1,
+    createdBy: "system",
+    updatedBy: "system",
   };
 };
 
@@ -38,4 +52,7 @@ export const createOuterPieData = (
     value: total,
     totalScore,
     name: category,
+    testTypeId: 0,
+    percentage: 0,
+    displayOrder: 0,
   }).data;

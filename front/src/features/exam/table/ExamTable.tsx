@@ -26,11 +26,14 @@ const transformToAPISubject = (subject: Subject): APISubject => ({
   id: subject.id,
   test_type_id: subject.testTypeId,
   name: subject.name,
-  score: subject.maxScore,
-  percentage: subject.weight,
-  display_order: 0,
-  created_at: subject.createdAt.toISOString(),
-  updated_at: subject.updatedAt.toISOString(),
+  score: subject.score,
+  percentage: subject.percentage,
+  display_order: subject.displayOrder,
+  created_at: subject.createdAt,
+  updated_at: subject.updatedAt,
+  version: subject.version,
+  created_by: subject.createdBy,
+  updated_by: subject.updatedBy,
 });
 
 const transformToAPITestType = (testType: TestType): APITestType => ({
@@ -38,8 +41,11 @@ const transformToAPITestType = (testType: TestType): APITestType => ({
   admission_schedule_id: testType.admissionScheduleId,
   name: testType.name,
   subjects: testType.subjects.map(transformToAPISubject),
-  created_at: testType.createdAt.toISOString(),
-  updated_at: testType.updatedAt.toISOString(),
+  created_at: testType.createdAt,
+  updated_at: testType.updatedAt,
+  version: testType.version,
+  created_by: testType.createdBy,
+  updated_by: testType.updatedBy,
 });
 
 export const ExamTable = ({

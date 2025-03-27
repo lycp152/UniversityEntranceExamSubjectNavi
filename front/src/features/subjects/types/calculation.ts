@@ -1,5 +1,4 @@
-import type { ExamTypeName } from "@/constants/subjects";
-import type { SubjectName } from "@/types/subjects";
+import type { ExamTypeName, SubjectName } from "@/constants/subjects";
 import type { SubjectScores } from "@/types/score";
 import type { ValidationResult } from "@/types/validation";
 

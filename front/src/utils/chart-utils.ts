@@ -25,8 +25,8 @@ export const createChartMetadata = <T>(
 // 科目名からカテゴリタイプを取得する関数
 // 共通テスト、二次試験、その他の科目を分類
 export const getCategoryType = (name: string): string => {
-  if (isCommonSubject(name)) return EXAM_TYPES.COMMON;
-  if (isSecondarySubject(name)) return EXAM_TYPES.SECONDARY;
+  if (isCommonSubject(name)) return EXAM_TYPES.COMMON.name;
+  if (isSecondarySubject(name)) return EXAM_TYPES.SECONDARY.name;
   return extractSubjectMainCategory(name);
 };
 

@@ -2,7 +2,7 @@ import type { APIAdmissionInfo, APITestType } from "@/types/api/models";
 
 export interface ExamSectionsProps {
   admissionInfo: APIAdmissionInfo & {
-    testTypes?: APITestType[];
+    testTypes: APITestType[];
   };
   isEditing: boolean;
   onScoreChange: (subjectId: number, value: number, isCommon: boolean) => void;

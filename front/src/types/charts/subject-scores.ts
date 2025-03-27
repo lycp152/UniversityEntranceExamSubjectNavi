@@ -1,8 +1,18 @@
-import type { ExamTypeName } from "@/constants/subjects";
-import type { SubjectName } from "@/types/subjects";
+import type { ExamTypeName, SubjectName } from "@/constants/subjects";
 
 export interface SubjectScore {
+  id: number;
+  name: SubjectName;
   type: ExamTypeName;
   value: number;
-  subjectName: SubjectName;
+  category: string;
+  testTypeId: number;
+  percentage: number;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  version: number;
+  createdBy: string;
+  updatedBy: string;
 }

@@ -1,4 +1,4 @@
-import { SubjectName } from "@/types/subjects";
+import type { SubjectName } from "@/constants/subjects";
 
 export interface CustomLabelProps {
   cx: number;

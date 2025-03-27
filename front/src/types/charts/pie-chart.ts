@@ -1,5 +1,8 @@
-import { EXAM_TYPES } from "@/constants/subjects";
-import type { ErrorSeverity } from "@/lib/api/errors/categories";
+import { ExamType } from "@/constants/subjects";
+import {
+  ChartErrorCode,
+  ChartErrorSeverity,
+} from "@/constants/chart-error-codes";
 
 // 基本的なチャートデータの型
 export interface PieData {
@@ -11,7 +14,15 @@ export interface PieData {
 export interface DetailedPieData extends PieData {
   category: string;
   displayName?: string;
-  type: (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES];
+  type: ExamType;
+  testTypeId: number;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  version: number;
+  createdBy: string;
+  updatedBy: string;
 }
 
 export type CustomLabelProps = {
@@ -36,20 +47,12 @@ export type PatternConfig = {
   };
 };
 
+// バックエンドのValidationError構造体と一致
 export type ChartError = {
-  code: string;
+  code: ChartErrorCode;
+  field: string;
   message: string;
-  field?: string;
-  severity: ErrorSeverity;
-  subject: string;
-  details?: Record<string, unknown>;
-  context?: {
-    source: string;
-    category: string;
-    timestamp: number;
-    fieldName: string;
-    value?: unknown;
-  };
+  severity: ChartErrorSeverity;
 };
 
 export type ChartResult<T> = {

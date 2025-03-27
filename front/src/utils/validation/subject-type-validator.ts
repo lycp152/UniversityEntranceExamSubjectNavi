@@ -4,13 +4,13 @@ import { EXAM_TYPES, SUBJECT_CATEGORIES } from "@/constants/subjects";
  * 共通科目かどうかを判定
  */
 export const isCommonSubject = (name: string): boolean =>
-  name.includes(EXAM_TYPES.COMMON);
+  name.includes(EXAM_TYPES.COMMON.name);
 
 /**
  * 二次科目かどうかを判定
  */
 export const isSecondarySubject = (name: string): boolean =>
-  name.includes(EXAM_TYPES.SECONDARY);
+  name.includes(EXAM_TYPES.SECONDARY.name);
 
 /**
  * 科目名から基本カテゴリを取得

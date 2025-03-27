@@ -19,9 +19,54 @@ type ValidationRule struct {
 
 // ValidationError はバリデーションエラーを表現する構造体
 type ValidationError struct {
-	Field   string
-	Message string
-	Code    string
+	Field    string
+	Message  string
+	Code     string
+	Severity string // error, warning, info
+}
+
+// エラーコードの定義
+const (
+	// データ変換エラー
+	ErrTransformError      = "TRANSFORM_ERROR"
+	ErrInvalidDataFormat   = "INVALID_DATA_FORMAT"
+	ErrMissingRequiredField = "MISSING_REQUIRED_FIELD"
+
+	// 計算エラー
+	ErrCalculationError    = "CALCULATION_ERROR"
+	ErrInvalidPercentage   = "INVALID_PERCENTAGE"
+	ErrTotalExceeded       = "TOTAL_EXCEEDED"
+
+	// 表示エラー
+	ErrRenderError         = "RENDER_ERROR"
+	ErrInvalidDimensions   = "INVALID_DIMENSIONS"
+	ErrOverflowError       = "OVERFLOW_ERROR"
+)
+
+// エラーメッセージの定義
+var ErrorMessages = map[string]string{
+	ErrTransformError:      "データの変換中にエラーが発生しました",
+	ErrInvalidDataFormat:   "データの形式が不正です",
+	ErrMissingRequiredField: "必須フィールドが不足しています",
+	ErrCalculationError:    "計算中にエラーが発生しました",
+	ErrInvalidPercentage:   "パーセンテージの値が不正です（0-100の範囲）",
+	ErrTotalExceeded:       "合計値が上限を超えています",
+	ErrRenderError:         "チャートの描画中にエラーが発生しました",
+	ErrInvalidDimensions:   "チャートのサイズが不正です",
+	ErrOverflowError:       "データが表示可能な範囲を超えています",
+}
+
+// エラーの重要度マッピング
+var ErrorSeverity = map[string]string{
+	ErrTransformError:      "error",
+	ErrInvalidDataFormat:   "error",
+	ErrMissingRequiredField: "error",
+	ErrCalculationError:    "error",
+	ErrInvalidPercentage:   "error",
+	ErrTotalExceeded:       "error",
+	ErrRenderError:         "warning",
+	ErrInvalidDimensions:   "warning",
+	ErrOverflowError:       "warning",
 }
 
 func (e *ValidationError) Error() string {

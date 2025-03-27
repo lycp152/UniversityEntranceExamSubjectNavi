@@ -51,7 +51,7 @@ export function SubjectEditor({
             <div className="w-32">
               <input
                 type="number"
-                value={subject.maxScore}
+                value={subject.score}
                 onChange={(e) =>
                   onScoreChange(
                     subject.id,
@@ -59,14 +59,14 @@ export function SubjectEditor({
                     isCommonTest
                   )
                 }
-                placeholder="最高点"
+                placeholder="点数"
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
             <div className="w-32">
               <input
                 type="number"
-                value={subject.minScore}
+                value={subject.percentage}
                 onChange={(e) =>
                   onScoreChange(
                     subject.id,
@@ -74,14 +74,14 @@ export function SubjectEditor({
                     isCommonTest
                   )
                 }
-                placeholder="最低点"
+                placeholder="割合"
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
             <div className="w-32">
               <input
                 type="number"
-                value={subject.weight}
+                value={subject.displayOrder}
                 onChange={(e) =>
                   onScoreChange(
                     subject.id,
@@ -89,7 +89,7 @@ export function SubjectEditor({
                     isCommonTest
                   )
                 }
-                placeholder="重み"
+                placeholder="表示順"
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>

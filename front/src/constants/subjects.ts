@@ -1,13 +1,26 @@
 import type { SubjectCategoryWithColor } from "@/types/subjects";
 
 /**
+ * システム関連の定数
+ */
+export const SYSTEM_CONSTANTS = {
+  DEFAULT_USER: "system",
+} as const;
+
+/**
  * 試験区分の定義
  * バックエンドの定義と同期を保つ必要があります
  * @see back/internal/domain/models/models.go
  */
 export const EXAM_TYPES = {
-  COMMON: "共通",
-  SECONDARY: "二次",
+  COMMON: {
+    name: "共通",
+    id: 1,
+  },
+  SECONDARY: {
+    name: "二次",
+    id: 2,
+  },
 } as const;
 
 /**
@@ -69,7 +82,8 @@ export const FORMAT_PATTERNS = {
 } as const;
 
 // バックエンドの型定義と同期を取るための型
-export type ExamType = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES];
+export type ExamType = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["name"];
+export type ExamTypeId = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["id"];
 export type ExamTypeName = (typeof EXAM_TYPE_CONSTRAINTS.VALID_NAMES)[number];
 export type SubjectCategory = keyof typeof SUBJECT_CATEGORIES;
-export type Subject = (typeof SUBJECTS)[keyof typeof SUBJECTS];
+export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS];

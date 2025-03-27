@@ -1,6 +1,6 @@
-import { EXAM_TYPES } from "@/constants/subjects";
+import { EXAM_TYPES, SYSTEM_CONSTANTS } from "@/constants/subjects";
 import type { SubjectScore } from "@/types/charts/subject-scores";
-import type { SubjectName } from "@/types/subjects";
+import type { SubjectName } from "@/constants/subjects";
 
 export interface SubjectScoreError {
   type: "error";
@@ -12,7 +12,6 @@ export const extractScores = (
   scores: { commonTest: number; secondTest: number },
   subjectName: string
 ): (SubjectScore | SubjectScoreError)[] => {
-  // 英語の場合はL/Rの接尾辞を保持
   const normalizedSubjectName = subjectName as SubjectName;
 
   if (!scores) {
@@ -27,9 +26,19 @@ export const extractScores = (
 
   const extractedScores = Object.values(EXAM_TYPES)
     .map((type) => ({
-      type,
-      value: type === "共通" ? scores.commonTest : scores.secondTest,
-      subjectName: normalizedSubjectName,
+      id: 0,
+      name: normalizedSubjectName,
+      type: type.name,
+      value: type.name === "共通" ? scores.commonTest : scores.secondTest,
+      category: type.name,
+      testTypeId: type.id,
+      percentage: 0,
+      displayOrder: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      version: 1,
+      createdBy: SYSTEM_CONSTANTS.DEFAULT_USER,
+      updatedBy: SYSTEM_CONSTANTS.DEFAULT_USER,
     }))
     .filter((score) => score.value > 0);
 

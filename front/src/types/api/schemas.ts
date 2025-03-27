@@ -20,17 +20,7 @@ export const TestTypeSchema = z.object({
   subjects: z.array(SubjectSchema),
 });
 
-export const AdmissionInfoSchema = z.object({
-  id: z.number(),
-  major_id: z.number(),
-  enrollment: z.number(),
-  academic_year: z.number(),
-  status: z.string(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
-
-export const AdmissionScheduleSchema = z.object({
+export const AdmissionScheduleSchema: z.ZodType = z.object({
   id: z.number(),
   major_id: z.number(),
   name: z.string(),
@@ -38,7 +28,19 @@ export const AdmissionScheduleSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   test_types: z.array(TestTypeSchema),
-  admission_infos: z.array(AdmissionInfoSchema),
+  admission_infos: z.array(z.lazy(() => AdmissionInfoSchema)),
+});
+
+export const AdmissionInfoSchema: z.ZodType = z.object({
+  id: z.number(),
+  admission_schedule_id: z.number(),
+  enrollment: z.number(),
+  academic_year: z.number(),
+  status: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  admission_schedule: z.lazy(() => AdmissionScheduleSchema),
+  test_types: z.array(TestTypeSchema),
 });
 
 export const MajorSchema = z.object({

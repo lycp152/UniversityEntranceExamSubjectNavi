@@ -14,10 +14,14 @@ export interface BaseModel {
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
+  version: number;
+  created_by: string;
+  updated_by: string;
 }
 
 // APIレスポンスの型定義
 export interface APIUniversity extends BaseModel {
+  id: number;
   name: string;
   departments: APIDepartment[];
 }
@@ -43,10 +47,12 @@ export interface APIAdmissionSchedule extends BaseModel {
 }
 
 export interface APIAdmissionInfo extends BaseModel {
-  major_id: number;
+  admission_schedule_id: number;
   enrollment: number;
   academic_year: number;
   status: string;
+  admission_schedule: APIAdmissionSchedule;
+  test_types: APITestType[];
 }
 
 export interface APITestType extends BaseModel {

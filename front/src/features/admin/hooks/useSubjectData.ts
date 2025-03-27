@@ -52,6 +52,9 @@ export const useSubjectData = () => {
         created_at: now,
         updated_at: now,
         deleted_at: null,
+        version: 1,
+        created_by: "",
+        updated_by: "",
       };
     },
     []

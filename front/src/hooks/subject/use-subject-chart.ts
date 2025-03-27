@@ -30,8 +30,8 @@ const sortByExamType = (
   a: DisplaySubjectScore,
   b: DisplaySubjectScore
 ): number => {
-  if (a.name === EXAM_TYPES.COMMON) return -1;
-  if (b.name === EXAM_TYPES.COMMON) return 1;
+  if (a.name === EXAM_TYPES.COMMON.name) return -1;
+  if (b.name === EXAM_TYPES.COMMON.name) return 1;
   return 0;
 };
 

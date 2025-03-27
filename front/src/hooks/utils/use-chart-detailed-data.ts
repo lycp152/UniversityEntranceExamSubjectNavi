@@ -5,9 +5,9 @@ import { useMemo } from "react";
 import type { UISubject } from "@/types/universities/subjects";
 import { SUBJECTS } from "@/constants/subjects";
 import {
-  ERROR_MESSAGES,
-  SCORE_ERROR_CODES,
-} from "@/constants/domain-error-codes";
+  CHART_ERROR_CODES,
+  CHART_ERROR_MESSAGES,
+} from "@/constants/chart-error-codes";
 import type {
   DetailedPieData,
   ChartResult,
@@ -39,8 +39,8 @@ export const useDetailedData = (
           if (score.type === "error") {
             // エラーケースの処理
             const error: ChartError = createChartError(
-              SCORE_ERROR_CODES.INVALID_SCORE,
-              ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_SCORE],
+              CHART_ERROR_CODES.CALCULATION_ERROR,
+              CHART_ERROR_MESSAGES[CHART_ERROR_CODES.CALCULATION_ERROR],
               score.subjectName,
               {
                 severity: "error",
@@ -51,7 +51,7 @@ export const useDetailedData = (
           } else {
             // 正常ケースの処理：円グラフデータの生成
             const pieData: DetailedPieData = createDetailedPieData(
-              score.subjectName,
+              score.name,
               score.value,
               totalScore,
               score.type === "共通" ? TEST_TYPES.COMMON : TEST_TYPES.INDIVIDUAL

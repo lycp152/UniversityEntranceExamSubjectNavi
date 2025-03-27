@@ -49,28 +49,50 @@ export const DepartmentRow = ({
         id: subject.id,
         test_type_id: testType.id,
         name: subject.name,
-        score: subject.maxScore || 0,
-        percentage: subject.weight || 0,
-        display_order: 0,
-        created_at: subject.createdAt.toISOString(),
-        updated_at: subject.updatedAt.toISOString(),
+        score: subject.score || 0,
+        percentage: subject.percentage || 0,
+        display_order: subject.displayOrder,
+        created_at: subject.createdAt,
+        updated_at: subject.updatedAt,
+        version: subject.version,
+        created_by: subject.createdBy,
+        updated_by: subject.updatedBy,
       })) as APISubject[],
-      created_at: testType.createdAt.toISOString(),
-      updated_at: testType.updatedAt.toISOString(),
+      created_at: testType.createdAt,
+      updated_at: testType.updatedAt,
+      version: testType.version,
+      created_by: testType.createdBy,
+      updated_by: testType.updatedBy,
     })
   );
 
-  const mappedAdmissionInfo: APIAdmissionInfo & { testTypes?: APITestType[] } =
-    {
-      id: admissionInfo.id,
-      major_id: admissionInfo.majorId,
-      academic_year: admissionInfo.academicYear,
-      enrollment: admissionInfo.enrollment,
-      status: admissionInfo.status,
-      created_at: admissionInfo.created_at,
-      updated_at: admissionInfo.updated_at,
-      testTypes: mappedTestTypes,
-    };
+  const mappedAdmissionInfo: APIAdmissionInfo & { testTypes: APITestType[] } = {
+    id: admissionInfo.id,
+    admission_schedule_id: admissionInfo.admissionScheduleId,
+    academic_year: admissionInfo.academicYear,
+    enrollment: admissionInfo.enrollment,
+    status: admissionInfo.status,
+    created_at: admissionInfo.createdAt,
+    updated_at: admissionInfo.updatedAt,
+    version: admissionInfo.version,
+    created_by: admissionInfo.createdBy,
+    updated_by: admissionInfo.updatedBy,
+    admission_schedule: {
+      id: admissionSchedule.id,
+      major_id: admissionSchedule.majorId,
+      name: admissionSchedule.name,
+      display_order: admissionSchedule.displayOrder,
+      test_types: mappedTestTypes,
+      admission_infos: [],
+      created_at: admissionSchedule.createdAt,
+      updated_at: admissionSchedule.updatedAt,
+      version: admissionSchedule.version,
+      created_by: admissionSchedule.createdBy,
+      updated_by: admissionSchedule.updatedBy,
+    },
+    test_types: mappedTestTypes,
+    testTypes: mappedTestTypes,
+  };
 
   return (
     <div className="px-4 py-3 hover:bg-gray-50 transition-colors">

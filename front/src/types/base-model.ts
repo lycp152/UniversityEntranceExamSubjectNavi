@@ -3,7 +3,10 @@
  */
 export interface BaseModel {
   id: number;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  createdBy: string;
+  updatedBy: string;
 }

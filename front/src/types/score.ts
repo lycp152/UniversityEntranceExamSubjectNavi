@@ -1,5 +1,8 @@
-import type { ExamTypeName, SubjectCategory } from "@/constants/subjects";
-import type { SubjectName } from "@/types/subjects";
+import type {
+  ExamTypeName,
+  SubjectCategory,
+  SubjectName,
+} from "@/constants/subjects";
 import type { PieData } from "@/types/charts/pie-chart";
 
 export interface BaseScore {

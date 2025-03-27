@@ -8,9 +8,9 @@ import type { PieData, ChartResult } from "@/types/charts/pie-chart";
 import { createOuterPieData } from "@/utils/builders/pie-chart-data-builder";
 import { createChartError } from "@/utils/validation/chart-error-factory";
 import {
-  ERROR_MESSAGES,
-  SCORE_ERROR_CODES,
-} from "@/constants/domain-error-codes";
+  CHART_ERROR_CODES,
+  CHART_ERROR_MESSAGES,
+} from "@/constants/chart-error-codes";
 import {
   createChartMetadata,
   createChartErrorResult,
@@ -65,8 +65,8 @@ export const useCategoryData = (
     } catch (error) {
       // エラー発生時の処理
       const chartError = createChartError(
-        SCORE_ERROR_CODES.INVALID_SCORE,
-        ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_SCORE],
+        CHART_ERROR_CODES.CALCULATION_ERROR,
+        CHART_ERROR_MESSAGES[CHART_ERROR_CODES.CALCULATION_ERROR],
         "category-data",
         {
           severity: "error",

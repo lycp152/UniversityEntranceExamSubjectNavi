@@ -1,5 +1,8 @@
-import type { ExamTypeName, SubjectCategory } from "@/constants/subjects";
-import type { SubjectName } from "@/types/subjects";
+import type {
+  ExamTypeName,
+  SubjectCategory,
+  SubjectName,
+} from "@/constants/subjects";
 
 // 基本的なスコア型
 export interface BaseScore {

@@ -181,7 +181,7 @@ export function UniversityEditor({
                     />
                     <input
                       type="number"
-                      value={subject.maxScore || 0}
+                      value={subject.score || 0}
                       onChange={(e) =>
                         handleScoreChange(
                           subject.id,

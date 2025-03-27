@@ -117,8 +117,8 @@ export const useUniversityData = () => {
           id: department.id,
           name: department.name,
           university_id: university.id,
-          created_at: department.createdAt.toISOString(),
-          updated_at: department.updatedAt.toISOString(),
+          created_at: department.createdAt,
+          updated_at: department.updatedAt,
         };
 
         const response = await fetch(

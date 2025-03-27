@@ -6,20 +6,13 @@ import type {
   Subject,
   Major,
   AdmissionSchedule,
-  TestTypeName,
 } from "@/types/universities/university";
-import type { APITestType, APISubject } from "@/types/api/api-types";
+import type { APITestType, APISubject } from "@/lib/api/types/models";
 import { UNIVERSITY_STATUS } from "@/lib/config/status";
 import { useUniversityData } from "@/features/admin/hooks/useUniversityData";
 import { useSubjectData } from "@/features/admin/hooks/useSubjectData";
-
-interface EditMode {
-  universityId: number;
-  departmentId: number;
-  isEditing: boolean;
-  isNew?: boolean;
-  insertIndex?: number;
-}
+import type { EditMode } from "@/types/universities/university-list";
+import type { ExamTypeName } from "@/constants/subjects";
 
 interface BackupState {
   university: University;
@@ -60,7 +53,7 @@ const transformTestTypeToAPI = (testType: TestType): APITestType => ({
 const transformTestTypeFromAPI = (testType: APITestType): TestType => ({
   id: testType.id,
   admissionScheduleId: testType.admission_schedule_id,
-  name: testType.name as TestTypeName,
+  name: testType.name as ExamTypeName,
   subjects: testType.subjects.map(transformSubjectFromAPI),
   createdAt: new Date(testType.created_at ?? ""),
   updatedAt: new Date(testType.updated_at ?? ""),

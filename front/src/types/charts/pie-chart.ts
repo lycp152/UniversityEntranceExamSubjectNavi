@@ -1,5 +1,5 @@
 import { EXAM_TYPES } from "@/constants/subjects";
-import type { SubjectScore } from "@/types/score";
+import type { ErrorSeverity } from "@/lib/api/errors/categories";
 
 // 基本的なチャートデータの型
 export interface PieData {
@@ -13,12 +13,6 @@ export interface DetailedPieData extends PieData {
   displayName?: string;
   type: (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES];
 }
-
-export type ChartProps = {
-  detailedData: SubjectScore[];
-  outerData: SubjectScore[];
-  isRightChart?: boolean;
-};
 
 export type CustomLabelProps = {
   cx: number;
@@ -46,7 +40,16 @@ export type ChartError = {
   code: string;
   message: string;
   field?: string;
-  severity?: "error" | "warning" | "info";
+  severity: ErrorSeverity;
+  subject: string;
+  details?: Record<string, unknown>;
+  context?: {
+    source: string;
+    category: string;
+    timestamp: number;
+    fieldName: string;
+    value?: unknown;
+  };
 };
 
 export type ChartResult<T> = {
@@ -60,4 +63,10 @@ export type ChartResult<T> = {
     successCount: number;
     errorCount: number;
   };
+};
+
+export type ChartData = {
+  detailedData: DetailedPieData[];
+  outerData: PieData[];
+  errors: ChartError[];
 };

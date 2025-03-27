@@ -1,6 +1,4 @@
-/**
- * TODO: このファイルは分割する予定です
- */
+/* TODO 分割する */
 
 import { z } from "zod";
 
@@ -12,62 +10,6 @@ export interface GetUniversitiesResponse {
   total: number;
   page: number;
   limit: number;
-}
-
-/**
- * 大学詳細取得APIのレスポンス型
- */
-export interface GetUniversityResponse {
-  university: APIUniversity;
-}
-
-/**
- * 学部一覧取得APIのレスポンス型
- */
-export interface GetDepartmentsResponse {
-  departments: Department[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-/**
- * 学科一覧取得APIのレスポンス型
- */
-export interface GetMajorsResponse {
-  majors: Major[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-/**
- * 入試情報一覧取得APIのレスポンス型
- */
-export interface GetAdmissionInfosResponse {
-  examInfos: AdmissionInfo[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-/**
- * 入試日程一覧取得APIのレスポンス型
- */
-export interface GetAdmissionSchedulesResponse {
-  admissionSchedules: AdmissionSchedule[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-/**
- * エラーレスポンスの型定義
- */
-export interface ErrorResponse {
-  error: string;
-  message: string;
-  status: number;
 }
 
 // APIレスポンスの基本型定義
@@ -201,32 +143,3 @@ export type AdmissionInfo = z.infer<typeof AdmissionInfoSchema>;
 export type AdmissionSchedule = z.infer<typeof AdmissionScheduleSchema>;
 export type TestType = z.infer<typeof TestTypeSchema>;
 export type Subject = z.infer<typeof SubjectSchema>;
-
-// APIレスポンス型定義
-export interface GetUniversityResponse {
-  university: APIUniversity;
-}
-
-export interface GetDepartmentResponse {
-  department: Department;
-}
-
-export interface GetMajorResponse {
-  major: Major;
-}
-
-export interface GetAdmissionInfoResponse {
-  admission_info: AdmissionInfo;
-}
-
-export interface GetAdmissionScheduleResponse {
-  admission_schedule: AdmissionSchedule;
-}
-
-export interface GetTestTypeResponse {
-  test_type: TestType;
-}
-
-export interface GetSubjectResponse {
-  subject: Subject;
-}

@@ -1,5 +1,5 @@
-import type { ScoreMetrics, SubjectCategory } from "@/types/score";
-
+import type { ScoreMetrics } from "@/types/score";
+import type { SubjectCategory } from "@/constants/subjects";
 export type SubjectTableData = {
   subject: string;
   commonTest: ScoreMetrics;

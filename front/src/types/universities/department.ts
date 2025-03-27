@@ -1,8 +1,5 @@
 import type { Department, University } from "@/types/universities/university";
 
-export const SCHEDULE_OPTIONS = ["前", "中", "後"] as const;
-export type ScheduleOption = (typeof SCHEDULE_OPTIONS)[number];
-
 export interface DepartmentInfoProps {
   department: Department;
   university: University;

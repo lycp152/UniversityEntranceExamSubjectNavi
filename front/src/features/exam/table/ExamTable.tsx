@@ -6,7 +6,7 @@ import {
 } from "@/types/universities/university";
 import { DepartmentInfo } from "@/components/universities/department-info/department-info";
 import { ExamSection } from "@/components/exam/exam-section";
-import { APISubject, APITestType } from "@/types/api/api-types";
+import { APISubject, APITestType } from "@/lib/api/types/models";
 
 interface ExamTableProps {
   departments: Department[];

@@ -1,6 +1,6 @@
-import type { ExamSectionsProps } from "@/types/components/exam-sections";
+import type { ExamSectionsProps } from "@/types/exam/exam-sections";
 import { ExamSection } from "@/components/exam/exam-section";
-import type { APITestType } from "@/types/api/api-types";
+import type { APITestType } from "@/lib/api/types/models";
 
 export const ExamSections = ({
   admissionInfo,

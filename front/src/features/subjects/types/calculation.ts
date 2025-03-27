@@ -1,4 +1,4 @@
-import type { TestTypeName } from "@/types/universities/university";
+import type { ExamTypeName } from "@/constants/subjects";
 import type { SubjectName } from "@/types/subjects";
 import type { SubjectScores } from "@/types/score";
 import type { ValidationResult } from "@/types/validation";
@@ -7,7 +7,7 @@ import type { ValidationResult } from "@/types/validation";
  * 詳細な科目スコアの型
  */
 export interface DetailedSubjectScore {
-  type: TestTypeName;
+  type: ExamTypeName;
   value: number;
   maxValue: number;
   weight: number;

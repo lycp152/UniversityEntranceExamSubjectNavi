@@ -1,5 +1,5 @@
 import type { DepartmentInfoProps } from "@/types/universities/department";
-import { SCHEDULE_OPTIONS } from "@/types/universities/department";
+import { ADMISSION_SCHEDULE_CONSTRAINTS } from "@/constants/admission-schedule";
 
 const transformValue = (field: string, value: string): string | number => {
   if (field === "enrollment") {
@@ -35,7 +35,7 @@ export const DepartmentInfo = ({
   const currentSchedule = admissionSchedule.name.replace(
     "期",
     ""
-  ) as (typeof SCHEDULE_OPTIONS)[number];
+  ) as (typeof ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES)[number];
 
   return (
     <div className="px-2 border-l border-gray-200 min-w-[125px]">
@@ -73,7 +73,7 @@ export const DepartmentInfo = ({
                   onChange={handleChange("schedule")}
                   className="w-[50px] text-xs text-gray-600 px-1 py-1 border border-blue-300 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
-                  {SCHEDULE_OPTIONS.map((option) => (
+                  {ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES.map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>

@@ -42,38 +42,26 @@ const mockSubject: UISubject = {
     英語L: {
       commonTest: 100,
       secondTest: 75,
-      maxCommonTest: 100,
-      maxSecondTest: 100,
     },
     英語R: {
       commonTest: 100,
       secondTest: 75,
-      maxCommonTest: 100,
-      maxSecondTest: 100,
     },
     数学: {
       commonTest: 200,
       secondTest: 100,
-      maxCommonTest: 200,
-      maxSecondTest: 100,
     },
     国語: {
       commonTest: 200,
       secondTest: 100,
-      maxCommonTest: 200,
-      maxSecondTest: 100,
     },
     理科: {
       commonTest: 100,
       secondTest: 100,
-      maxCommonTest: 100,
-      maxSecondTest: 100,
     },
     地歴公: {
       commonTest: 100,
       secondTest: 50,
-      maxCommonTest: 100,
-      maxSecondTest: 100,
     },
   },
 };

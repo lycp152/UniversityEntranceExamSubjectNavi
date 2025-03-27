@@ -1,20 +1,13 @@
 import {
   SubjectScores as LibSubjectScores,
   BaseSubjectScore as LibBaseSubjectScore,
-} from "@/features/subjects/types/score2";
+} from "@/types/score";
 
 export type TestType = "commonTest" | "secondTest";
 
 export interface ScoreData {
   score: number;
   percentage: number;
-}
-
-export interface SubjectScoreDetail {
-  subject: string;
-  commonTest: ScoreData;
-  secondaryTest: ScoreData;
-  total: ScoreData;
 }
 
 export interface ChartScore {

@@ -6,7 +6,7 @@ import type {
   AdmissionSchedule,
   AdmissionInfo,
 } from "@/types/universities/university";
-import type { ApiError } from "@/types/api/common/response";
+import type { HttpError } from "@/lib/api/types/http";
 import {
   transformAPIResponse,
   transformToAPITestType,
@@ -38,7 +38,7 @@ export const useUniversityData = () => {
       return `APIエラー: ${error.status} ${error.statusText}`;
     }
     if (typeof error === "object" && error !== null && "message" in error) {
-      return (error as ApiError).message;
+      return (error as HttpError).message;
     }
     return "予期せぬエラーが発生しました";
   }, []);

@@ -1,6 +1,6 @@
 "use client";
 
-import type { APITestType } from "@/types/api/api-types";
+import type { APITestType } from "@/lib/api/types/models";
 import type { University, Department } from "@/types/universities/university";
 import type { EditMode } from "@/types/universities/university-list";
 import { UniversityList } from "@/features/admin/components/UniversityList";

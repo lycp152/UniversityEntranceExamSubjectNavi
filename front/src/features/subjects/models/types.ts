@@ -1,5 +1,5 @@
-import type { TestTypeName } from "@/types/universities/university";
-import type { SubjectName, SubjectCategory } from "@/types/subjects";
+import type { ExamTypeName, SubjectCategory } from "@/constants/subjects";
+import type { SubjectName } from "@/types/subjects";
 
 // 基本的なスコア型
 export interface BaseScore {
@@ -10,7 +10,7 @@ export interface BaseScore {
 
 // 科目スコア型
 export interface SubjectScore extends BaseScore {
-  readonly type: TestTypeName;
+  readonly type: ExamTypeName;
   readonly subjectName: SubjectName;
   readonly category: SubjectCategory;
   readonly timestamp?: number;

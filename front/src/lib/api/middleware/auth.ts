@@ -1,7 +1,7 @@
 // 認証関連のインターセプターを実装するクラス
 // APIリクエストにAuthorizationヘッダーを追加する
 import type { RequestInterceptor } from ".";
-import type { RequestConfig } from "@/types/api/common/request";
+import type { HttpRequestConfig } from "@/lib/api/types/http";
 import { ENV } from "@/lib/config/env";
 
 class AuthInterceptorImpl {
@@ -15,8 +15,8 @@ class AuthInterceptorImpl {
   // リクエストインターセプター
   // 認証トークンが存在する場合、リクエストヘッダーにBearerトークンを追加
   intercept: RequestInterceptor = async (
-    config: RequestConfig
-  ): Promise<RequestConfig> => {
+    config: HttpRequestConfig
+  ): Promise<HttpRequestConfig> => {
     const token = this.getAuthToken();
     if (!token) return config;
 

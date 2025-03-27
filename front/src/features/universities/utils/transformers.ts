@@ -15,7 +15,7 @@ import type {
   APIAdmissionInfo,
   APITestType,
   APISubject,
-} from "@/types/api/api-types";
+} from "@/lib/api/types/models";
 
 export const transformToAPISubject = (subject: Subject): APISubject => ({
   id: subject.id,

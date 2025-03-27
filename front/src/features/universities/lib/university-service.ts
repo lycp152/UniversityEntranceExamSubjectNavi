@@ -5,7 +5,7 @@ import type {
   APIDepartment,
   APISubject,
   GetUniversitiesResponse,
-} from "@/types/api/api-types";
+} from "@/lib/api/types/models";
 
 export class UniversityService {
   static async getUniversities(): Promise<GetUniversitiesResponse> {

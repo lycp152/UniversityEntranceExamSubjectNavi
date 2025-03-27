@@ -6,7 +6,7 @@ import type {
   APIAdmissionInfo,
   APITestType,
   APISubject,
-} from "@/types/api/api-types";
+} from "@/lib/api/types/models";
 
 export const DepartmentRow = ({
   university,

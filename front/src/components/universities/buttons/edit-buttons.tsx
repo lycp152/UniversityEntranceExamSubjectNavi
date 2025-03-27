@@ -1,11 +1,5 @@
 import React from "react";
-
-interface EditButtonsProps {
-  readonly isEditing: boolean;
-  readonly onEdit: () => void;
-  readonly onSave: () => void;
-  readonly onCancel: () => void;
-}
+import type { EditButtonsProps } from "@/types/universities/university-list";
 
 interface SaveButtonProps {
   onSave: () => void;

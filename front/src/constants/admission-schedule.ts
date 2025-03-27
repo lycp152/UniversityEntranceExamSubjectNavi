@@ -6,7 +6,7 @@
 export const ADMISSION_SCHEDULE_CONSTRAINTS = {
   // 名前の制約（バックエンドと一致）
   MAX_NAME_LENGTH: 6, // 漢字2文字分（UTF-8で6バイト）
-  VALID_NAMES: ["前期", "中期", "後期"] as const,
+  VALID_NAMES: ["前", "中", "後"] as const,
 
   // 表示順序の制約（バックエンドと一致）
   MIN_DISPLAY_ORDER: 0,

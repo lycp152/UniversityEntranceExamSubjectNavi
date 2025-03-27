@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useRouter } from "next/router";
-import { BaseApiError } from "@/types/errors/base";
+import { BaseApiError } from "@/lib/api/errors/base";
 import { API_ERROR_CODES } from "@/constants/domain-error-codes";
 
 export const useErrorHandler = () => {

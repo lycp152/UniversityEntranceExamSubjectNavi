@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { APITestType, APISubject } from "@/types/api/api-types";
+import type { APITestType, APISubject } from "@/lib/api/types/models";
 
 export const useSubjectData = () => {
   const calculateUpdatedSubjects = useCallback(

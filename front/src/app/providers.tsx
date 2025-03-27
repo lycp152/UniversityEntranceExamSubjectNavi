@@ -4,7 +4,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { BaseApiError } from "@/types/errors/base";
+import { BaseApiError } from "@/lib/api/errors/base";
 
 const queryConfig: QueryClientConfig = {
   defaultOptions: {

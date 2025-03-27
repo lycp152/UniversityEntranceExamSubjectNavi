@@ -1,12 +1,14 @@
 // APIリクエスト・レスポンスのロギングを行うインターセプター
 // 開発環境でのデバッグを支援するためのログ出力を提供
-import type { RequestConfig } from "@/types/api/common/request";
+import type { HttpRequestConfig } from "@/lib/api/types/http";
 import { isDevelopment } from "@/lib/config/env";
 
 export class LoggingInterceptor {
   // リクエストの内容をコンソールに出力
   // メソッド、ヘッダー、ボディの情報を階層的に表示
-  async interceptRequest(config: RequestConfig): Promise<RequestConfig> {
+  async interceptRequest(
+    config: HttpRequestConfig
+  ): Promise<HttpRequestConfig> {
     if (isDevelopment) {
       console.group("API Request");
       console.log("Method:", config.method);

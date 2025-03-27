@@ -6,7 +6,7 @@ import type {
   APIAdmissionInfo,
   APITestType,
   APISubject,
-} from "@/types/api/api-types";
+} from "@/lib/api/types/models";
 import type {
   University,
   Department,
@@ -15,10 +15,9 @@ import type {
   AdmissionSchedule,
   TestType,
   Subject,
-  TestTypeName,
 } from "@/types/universities/university";
 import { UNIVERSITY_STATUS } from "@/lib/config/status";
-
+import type { ExamTypeName } from "@/constants/subjects";
 export const transformUniversity = (
   apiUniversity: APIUniversity
 ): University => ({
@@ -84,7 +83,7 @@ export function transformTestType(apiTestType: APITestType): TestType {
   return {
     id: apiTestType.id,
     admissionScheduleId: apiTestType.admission_schedule_id,
-    name: apiTestType.name as TestTypeName,
+    name: apiTestType.name as ExamTypeName,
     subjects: apiTestType.subjects.map(transformSubject),
     createdAt: apiTestType.created_at
       ? new Date(apiTestType.created_at)
@@ -163,7 +162,7 @@ const transformScheduleFromAPI = (
 
 const transformTestTypeFromAPI = (type: APITestType): TestType => ({
   id: type.id,
-  name: type.name as TestTypeName,
+  name: type.name as ExamTypeName,
   admissionScheduleId: type.admission_schedule_id,
   subjects: type.subjects?.map(transformSubjectFromAPI) ?? [],
   createdAt: new Date(type.created_at ?? new Date()),
@@ -209,7 +208,7 @@ export function apiTestTypeToTestType(apiTestType: APITestType): TestType {
   return {
     id: apiTestType.id,
     admissionScheduleId: apiTestType.admission_schedule_id,
-    name: apiTestType.name as TestTypeName,
+    name: apiTestType.name as ExamTypeName,
     subjects: apiTestType.subjects.map(transformSubject),
     createdAt: new Date(apiTestType.created_at ?? ""),
     updatedAt: new Date(apiTestType.updated_at ?? ""),

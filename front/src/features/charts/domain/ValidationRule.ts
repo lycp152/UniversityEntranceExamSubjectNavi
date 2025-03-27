@@ -1,4 +1,4 @@
-import { ErrorCategory, ErrorSeverity } from "@/types/errors/categories";
+import { ErrorCategory, ErrorSeverity } from "@/lib/api/errors/categories";
 
 export interface ValidationContext {
   fieldName: string;

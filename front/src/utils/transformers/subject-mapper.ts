@@ -5,21 +5,14 @@ import type {
   APIMajor,
   APIAdmissionInfo,
   APIAdmissionSchedule,
-} from "@/types/api/api-types";
+} from "@/lib/api/types/models";
 import type { UISubject } from "@/types/universities/subjects";
+import type { BaseSubjectScore } from "@/types/score";
 
 const updateSubjectScores = (
   subject: APISubject,
   testType: { id: number; name: string },
-  subjects: Record<
-    string,
-    {
-      commonTest: number;
-      secondTest: number;
-      maxCommonTest: number;
-      maxSecondTest: number;
-    }
-  >
+  subjects: Record<string, BaseSubjectScore>
 ) => {
   if (subject.name in subjects) {
     const isCommonTest = testType.name === "共通";
@@ -31,8 +24,6 @@ const updateSubjectScores = (
       secondTest: !isCommonTest
         ? currentScores.secondTest + subject.score
         : currentScores.secondTest,
-      maxCommonTest: isCommonTest ? 100 : currentScores.maxCommonTest,
-      maxSecondTest: !isCommonTest ? 100 : currentScores.maxSecondTest,
     };
   }
 };
@@ -40,19 +31,14 @@ const updateSubjectScores = (
 const calculateSubjectScores = (
   allSubjects: APISubject[],
   schedule: APIAdmissionSchedule
-) => {
-  const subjects = {
-    英語L: { commonTest: 0, secondTest: 0, maxCommonTest: 0, maxSecondTest: 0 },
-    英語R: { commonTest: 0, secondTest: 0, maxCommonTest: 0, maxSecondTest: 0 },
-    数学: { commonTest: 0, secondTest: 0, maxCommonTest: 0, maxSecondTest: 0 },
-    国語: { commonTest: 0, secondTest: 0, maxCommonTest: 0, maxSecondTest: 0 },
-    理科: { commonTest: 0, secondTest: 0, maxCommonTest: 0, maxSecondTest: 0 },
-    地歴公: {
-      commonTest: 0,
-      secondTest: 0,
-      maxCommonTest: 0,
-      maxSecondTest: 0,
-    },
+): Record<string, BaseSubjectScore> => {
+  const subjects: Record<string, BaseSubjectScore> = {
+    英語L: { commonTest: 0, secondTest: 0 },
+    英語R: { commonTest: 0, secondTest: 0 },
+    数学: { commonTest: 0, secondTest: 0 },
+    国語: { commonTest: 0, secondTest: 0 },
+    理科: { commonTest: 0, secondTest: 0 },
+    地歴公: { commonTest: 0, secondTest: 0 },
   };
 
   for (const subject of allSubjects) {

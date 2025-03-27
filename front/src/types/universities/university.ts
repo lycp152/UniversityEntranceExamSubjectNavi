@@ -1,11 +1,6 @@
 import { BaseModel } from "@/types/base-model";
-import type { UNIVERSITY_STATUS } from "@/lib/config/status";
-
-export type UniversityStatus =
-  (typeof UNIVERSITY_STATUS)[keyof typeof UNIVERSITY_STATUS];
-
-export type TestTypeName = "共通" | "二次";
-
+import type { UniversityStatus } from "@/lib/config/status";
+import type { ExamTypeName } from "@/constants/subjects";
 /**
  * 大学の基本型定義
  */
@@ -71,7 +66,7 @@ export interface AdmissionSchedule extends BaseModel {
 export interface TestType extends BaseModel {
   id: number;
   admissionScheduleId: number;
-  name: TestTypeName;
+  name: ExamTypeName;
   subjects: Subject[];
   createdAt: Date;
   updatedAt: Date;
@@ -89,28 +84,4 @@ export interface Subject {
   weight: number;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface UniversitySubject {
-  id: number;
-  universityId: number;
-  departmentId: number;
-  majorId: number;
-  admissionScheduleId: number;
-  academicYear: number;
-  subjectId: number;
-  universityName: string;
-  department: string;
-  major: string;
-  admissionSchedule: string;
-  enrollment: number;
-  rank: number;
-  subjects: {
-    英語L: { commonTest: number; secondTest: number };
-    英語R: { commonTest: number; secondTest: number };
-    数学: { commonTest: number; secondTest: number };
-    国語: { commonTest: number; secondTest: number };
-    理科: { commonTest: number; secondTest: number };
-    地歴公: { commonTest: number; secondTest: number };
-  };
 }

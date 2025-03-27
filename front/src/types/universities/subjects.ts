@@ -1,5 +1,4 @@
-import type { SubjectCategory } from "@/types/subjects";
-import type { SubjectScores } from "@/types/api/subjects";
+import type { BaseSubjectScore } from "@/types/score";
 
 // UIの型定義
 export interface UISubject {
@@ -32,42 +31,5 @@ export interface UISubject {
     name: string;
     displayOrder: number;
   };
-  subjects: {
-    [key in SubjectCategory]: SubjectScores;
-  };
-}
-
-// コンポーネントのProps型
-export interface SubjectCardProps {
-  subject: UISubject;
-  onSelect?: (id: number) => void;
-}
-
-export interface ScoreTableProps {
-  subjectData: UISubject;
-  isLoading?: boolean;
-}
-
-// カスタムフックの戻り値の型
-export interface UseSubjectResult {
-  subject: UISubject | null;
-  isLoading: boolean;
-  error: Error | null;
-}
-
-// APIレスポンスの型
-export interface SubjectApiResponse {
-  data: UISubject;
-  meta: {
-    updatedAt: string;
-  };
-}
-
-// 科目グループの型定義
-export interface SubjectGroup {
-  testTypeId: number;
-  subjects: UISubject[];
-  totalScore: number;
-  maxTotalScore: number;
-  isValid: boolean;
+  subjects: Record<string, BaseSubjectScore>;
 }

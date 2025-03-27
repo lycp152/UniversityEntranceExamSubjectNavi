@@ -1,13 +1,12 @@
 // HTTPリクエストを実行し、インターセプターを管理するコアクラス
 // タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
-import type { ApiClientConfig } from "@/types/api/config";
-import type { ApiResponse } from "@/types/api/common/response";
-import type { RequestConfig } from "@/types/api/common/request";
+import type { ApiClientConfig } from "@/lib/api/types/client";
+import type { HttpResponse, HttpRequestConfig } from "@/lib/api/types/http";
 import {
   ApiClientError,
   NetworkError,
   TimeoutError,
-} from "@/types/errors/api-client-errors";
+} from "@/lib/api/errors/client";
 import { InterceptorManager } from "@/lib/api/middleware";
 import { ENV } from "@/lib/config/env";
 import {
@@ -79,8 +78,8 @@ export class ApiClient {
   // タイムアウト制御とインターセプターの実行を管理
   async request<T>(
     path: string,
-    config: RequestConfig
-  ): Promise<ApiResponse<T>> {
+    config: HttpRequestConfig
+  ): Promise<HttpResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -135,7 +134,7 @@ export class ApiClient {
   // GETリクエストを実行
   async get<T>(
     path: string,
-    config?: Omit<RequestConfig, "method">
+    config?: Omit<HttpRequestConfig, "method">
   ): Promise<T> {
     const response = await this.request<T>(path, { ...config, method: "GET" });
     return response.data;
@@ -145,7 +144,7 @@ export class ApiClient {
   async post<T>(
     path: string,
     data?: unknown,
-    config?: Omit<RequestConfig, "method" | "body">
+    config?: Omit<HttpRequestConfig, "method" | "body">
   ): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
@@ -159,7 +158,7 @@ export class ApiClient {
   async put<T>(
     path: string,
     data?: unknown,
-    config?: Omit<RequestConfig, "method" | "body">
+    config?: Omit<HttpRequestConfig, "method" | "body">
   ): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
@@ -172,7 +171,7 @@ export class ApiClient {
   // DELETEリクエストを実行
   async delete<T>(
     path: string,
-    config?: Omit<RequestConfig, "method">
+    config?: Omit<HttpRequestConfig, "method">
   ): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,

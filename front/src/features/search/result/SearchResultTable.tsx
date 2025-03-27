@@ -8,7 +8,7 @@ import type {
   APIMajor,
   APIAdmissionSchedule,
   APITestType,
-} from "@/types/api/api-types";
+} from "@/lib/api/types/models";
 import { tableStyles } from "./styles";
 import { transformSubjectData } from "@/utils/transformers/subject-mapper";
 import { LoadingSpinner } from "@/components/ui/feedback/loading-spinner";

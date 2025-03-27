@@ -1,5 +1,5 @@
-import { ErrorCode } from "@/types/errors/error-codes";
-import { ChartError } from "@/types/errors/charts";
+import { ErrorCode } from "@/lib/api/errors/code";
+import { ChartError } from "@/types/charts/pie-chart";
 
 export interface ErrorOptions {
   severity?: ChartError["severity"];

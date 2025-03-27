@@ -1,11 +1,13 @@
-import type { Alert, AlertHistory, Priority } from "@/types/monitoring/alerts";
 import type {
+  Alert,
+  AlertHistory,
+  Priority,
   ResponseTimeTrendItem,
   BaseTrendItem,
   ErrorRateTrendItem,
   MemoryUsageTrendItem,
   CacheEfficiencyTrendItem,
-} from "@/types/monitoring/trends";
+} from "@/features/score/types";
 
 /**
  * パフォーマンスメトリクスのインターフェース

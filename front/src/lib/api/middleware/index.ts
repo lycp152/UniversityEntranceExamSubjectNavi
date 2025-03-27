@@ -1,4 +1,4 @@
-import type { HttpRequestConfig } from "@/lib/api/types/http";
+import type { HttpRequestConfig } from "@/types/api/http";
 
 // APIリクエスト・レスポンスの加工処理を定義するインターフェース
 export type RequestInterceptor = (

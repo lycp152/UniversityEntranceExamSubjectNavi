@@ -15,7 +15,7 @@ import type {
   APIMajor,
   APIAdmissionSchedule,
   APITestType,
-} from "@/lib/api/types/models";
+} from "@/types/api/models";
 import type { UISubject } from "@/types/universities/subjects";
 import { UniversityPageParams } from "@/features/universities/types/params";
 

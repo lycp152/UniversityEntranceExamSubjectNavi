@@ -1,7 +1,7 @@
 import type {
   APITestType as TestType,
   APISubject as Subject,
-} from "@/lib/api/types/models";
+} from "@/types/api/models";
 import { useState, useCallback } from "react";
 
 interface ScoreDisplayProps {

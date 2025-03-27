@@ -1,7 +1,7 @@
 // 認証関連のインターセプターを実装するクラス
 // APIリクエストにAuthorizationヘッダーを追加する
 import type { RequestInterceptor } from ".";
-import type { HttpRequestConfig } from "@/lib/api/types/http";
+import type { HttpRequestConfig } from "@/types/api/http";
 import { ENV } from "@/lib/config/env";
 
 class AuthInterceptorImpl {

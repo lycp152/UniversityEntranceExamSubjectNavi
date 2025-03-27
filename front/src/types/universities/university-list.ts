@@ -1,5 +1,5 @@
 import type { University, Department } from "./university";
-import type { APITestType } from "@/lib/api/types/models";
+import type { APITestType } from "@/types/api/models";
 
 export interface EditMode {
   universityId: number;

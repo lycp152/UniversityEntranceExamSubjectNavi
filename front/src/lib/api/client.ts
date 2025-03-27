@@ -1,7 +1,7 @@
 // HTTPリクエストを実行し、インターセプターを管理するコアクラス
 // タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
-import type { ApiClientConfig } from "@/lib/api/types/client";
-import type { HttpResponse, HttpRequestConfig } from "@/lib/api/types/http";
+import type { ApiClientConfig } from "@/types/api/client";
+import type { HttpResponse, HttpRequestConfig } from "@/types/api/http";
 import {
   ApiClientError,
   NetworkError,

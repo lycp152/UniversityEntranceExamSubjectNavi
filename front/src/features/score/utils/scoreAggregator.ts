@@ -1,6 +1,7 @@
-import type { SubjectCategory, Score } from "@/types/score";
+import type { Score } from "@/types/score";
 import type { CategoryScore } from "@/features/score/types/display";
 import { SUBJECTS } from "@/constants/subjects";
+import type { SubjectCategory } from "@/constants/subjects";
 
 const SUBJECT_TO_CATEGORY_MAP: Record<string, SubjectCategory> = {
   [SUBJECTS.ENGLISH_R]: "英語",

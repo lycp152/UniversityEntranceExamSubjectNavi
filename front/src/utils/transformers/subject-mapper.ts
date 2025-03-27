@@ -5,7 +5,7 @@ import type {
   APIMajor,
   APIAdmissionInfo,
   APIAdmissionSchedule,
-} from "@/lib/api/types/models";
+} from "@/types/api/models";
 import type { UISubject } from "@/types/universities/subjects";
 import type { BaseSubjectScore } from "@/types/score";
 

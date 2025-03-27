@@ -7,7 +7,7 @@ import type {
   Major,
   AdmissionSchedule,
 } from "@/types/universities/university";
-import type { APITestType, APISubject } from "@/lib/api/types/models";
+import type { APITestType, APISubject } from "@/types/api/models";
 import { UNIVERSITY_STATUS } from "@/lib/config/status";
 import { useUniversityData } from "@/features/admin/hooks/useUniversityData";
 import { useSubjectData } from "@/features/admin/hooks/useSubjectData";

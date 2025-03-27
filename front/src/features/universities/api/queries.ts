@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { University, APIUniversity } from "@/lib/api/types/models";
+import type { APIUniversity } from "@/types/api/models";
+import type { University } from "@/types/api/schemas";
 import { UniversityService } from "@/features/universities/lib/university-service";
 import { UNIVERSITY_KEYS } from "./queryKeys";
 import type { UniversityFilters, UniversityQueryError } from "./types";

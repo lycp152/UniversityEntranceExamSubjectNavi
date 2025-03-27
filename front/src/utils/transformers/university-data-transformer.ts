@@ -6,7 +6,7 @@ import type {
   APIAdmissionInfo,
   APITestType,
   APISubject,
-} from "@/lib/api/types/models";
+} from "@/types/api/models";
 import type {
   University,
   Department,

@@ -6,7 +6,7 @@ import type {
   AdmissionSchedule,
   AdmissionInfo,
 } from "@/types/universities/university";
-import type { HttpError } from "@/lib/api/types/http";
+import type { HttpError } from "@/types/api/http";
 import {
   transformAPIResponse,
   transformToAPITestType,

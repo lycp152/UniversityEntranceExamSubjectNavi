@@ -1,6 +1,6 @@
 import React from "react";
 import type { University, Department } from "@/types/universities/university";
-import type { APITestType } from "@/lib/api/types/models";
+import type { APITestType } from "@/types/api/models";
 import { DepartmentRow } from "@/components/universities/table/department-row";
 
 interface UniversityCardProps {

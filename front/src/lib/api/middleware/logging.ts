@@ -1,6 +1,6 @@
 // APIリクエスト・レスポンスのロギングを行うインターセプター
 // 開発環境でのデバッグを支援するためのログ出力を提供
-import type { HttpRequestConfig } from "@/lib/api/types/http";
+import type { HttpRequestConfig } from "@/types/api/http";
 import { isDevelopment } from "@/lib/config/env";
 
 export class LoggingInterceptor {

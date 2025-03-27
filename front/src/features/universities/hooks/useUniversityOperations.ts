@@ -3,7 +3,7 @@ import { useErrorHandler } from "@/features/universities/hooks/useErrorHandler";
 import { useUpdateUniversity } from "../api/mutations";
 import type { University } from "@/types/universities/university";
 import type { UniversityOperationResult } from "../types";
-import type { APIUniversity } from "@/lib/api/types/models";
+import type { APIUniversity } from "@/types/api/models";
 import { transformToAPIUniversity } from "@/features/universities/utils/transformers";
 
 export const useUniversityOperations = () => {

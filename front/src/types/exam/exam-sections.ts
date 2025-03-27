@@ -1,4 +1,4 @@
-import type { APIAdmissionInfo, APITestType } from "@/lib/api/types/models";
+import type { APIAdmissionInfo, APITestType } from "@/types/api/models";
 
 export interface ExamSectionsProps {
   admissionInfo: APIAdmissionInfo & {

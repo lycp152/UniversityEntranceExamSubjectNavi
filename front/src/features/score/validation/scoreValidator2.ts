@@ -1,50 +1,102 @@
-import type { Score } from "@/types/score";
-import type { ValidationResult } from "@/types/validation";
+import { z } from "zod";
+import type { BaseSubjectScore, SubjectScores } from "@/types/score";
 import {
-  SCORE_ERROR_CODES,
-  ERROR_MESSAGES,
-} from "@/constants/domain-error-codes";
-import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
+  ValidationErrorCode,
+  ValidationSeverity,
+} from "@/constants/validation";
+import type { ValidationResult } from "@/types/validation-rules";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score";
 
-type ValidationSeverity = "error" | "warning" | "info";
+// 個別のスコアのバリデーションスキーマ
+const baseSubjectScoreSchema = z.object({
+  commonTest: z.number().min(SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE),
+  secondTest: z.number().min(SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE),
+});
 
-export const validateScore = (score: Score): ValidationResult<Score> => {
-  const errors = [];
+// スコアの整合性チェック
+export const validateScore = (score: number): boolean => {
+  return score >= SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE;
+};
 
-  if (
-    score.value < SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE ||
-    score.value > score.maxValue
-  ) {
-    errors.push({
-      code: SCORE_ERROR_CODES.INVALID_RANGE,
-      message: ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_RANGE],
-      field: "value",
-      severity: "error" as ValidationSeverity,
-    });
+// 科目スコアの検証
+export const validateSubjectScore = (
+  score: BaseSubjectScore
+): ValidationResult<BaseSubjectScore> => {
+  try {
+    const validatedScore = baseSubjectScoreSchema.parse(score);
+    const isValidCommonTest = validateScore(score.commonTest);
+    const isValidSecondTest = validateScore(score.secondTest);
+
+    if (!isValidCommonTest || !isValidSecondTest) {
+      return {
+        isValid: false,
+        errors: [
+          {
+            code: ValidationErrorCode.INVALID_DATA_FORMAT,
+            message: "点数が無効です",
+            field: !isValidCommonTest ? "commonTest" : "secondTest",
+            severity: ValidationSeverity.ERROR,
+          },
+        ],
+      };
+    }
+
+    return {
+      isValid: true,
+      data: validatedScore,
+      errors: [],
+    };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        isValid: false,
+        errors: error.errors.map((err: z.ZodIssue) => ({
+          code: ValidationErrorCode.INVALID_DATA_FORMAT,
+          message: err.message,
+          field: err.path.join("."),
+          severity: ValidationSeverity.ERROR,
+        })),
+      };
+    }
+    return {
+      isValid: false,
+      errors: [
+        {
+          code: ValidationErrorCode.TRANSFORM_ERROR,
+          message: "不明なエラーが発生しました",
+          field: "validation",
+          severity: ValidationSeverity.ERROR,
+        },
+      ],
+    };
   }
+};
 
-  if (
-    score.weight < SUBJECT_SCORE_CONSTRAINTS.MIN_PERCENTAGE ||
-    score.weight > SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE
-  ) {
-    errors.push({
-      code: SCORE_ERROR_CODES.INVALID_WEIGHT,
-      message: ERROR_MESSAGES[SCORE_ERROR_CODES.INVALID_WEIGHT],
-      field: "weight",
-      severity: "error" as ValidationSeverity,
-    });
+// 全科目のスコアの検証
+export const validateSubjectScores = (
+  subjects: SubjectScores
+): ValidationResult<SubjectScores> => {
+  const errors: ValidationResult<BaseSubjectScore>["errors"] = [];
+  const validatedSubjects: Partial<SubjectScores> = {};
+
+  for (const [subject, score] of Object.entries(subjects)) {
+    const result = validateSubjectScore(score);
+    if (!result.isValid) {
+      errors.push(
+        ...result.errors.map((err) => ({
+          ...err,
+          field: err.field ? `${subject}.${err.field}` : subject,
+        }))
+      );
+    } else if (result.data) {
+      validatedSubjects[subject as keyof SubjectScores] = result.data;
+    }
   }
 
   return {
     isValid: errors.length === 0,
-    data: errors.length === 0 ? score : undefined,
+    data:
+      errors.length === 0 ? (validatedSubjects as SubjectScores) : undefined,
     errors,
-    metadata: {
-      validatedAt: Date.now(),
-    },
   };
-};
-
-export const validateScores = (scores: Score[]): boolean => {
-  return scores.every((score) => validateScore(score).isValid);
 };

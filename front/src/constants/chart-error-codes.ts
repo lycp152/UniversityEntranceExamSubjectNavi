@@ -1,4 +1,4 @@
-import { ErrorSeverity } from "@/lib/api/errors/categories";
+import { ErrorSeverity } from "@/types/error-categories";
 
 // チャート関連のエラーコード
 export const CHART_ERROR_CODES = {
@@ -18,6 +18,9 @@ export const CHART_ERROR_CODES = {
   OVERFLOW_ERROR: "OVERFLOW_ERROR",
 } as const;
 
+// 型定義のエクスポート
+export type ChartErrorCode = keyof typeof CHART_ERROR_CODES;
+
 // エラーの重要度マッピング
 export const CHART_ERROR_SEVERITY: Record<
   keyof typeof CHART_ERROR_CODES,
@@ -33,6 +36,9 @@ export const CHART_ERROR_SEVERITY: Record<
   INVALID_DIMENSIONS: "warning",
   OVERFLOW_ERROR: "warning",
 };
+
+// 型定義のエクスポート
+export type ChartErrorSeverity = (typeof CHART_ERROR_SEVERITY)[ChartErrorCode];
 
 // エラーメッセージの定義
 export const CHART_ERROR_MESSAGES: Record<
@@ -51,6 +57,4 @@ export const CHART_ERROR_MESSAGES: Record<
 };
 
 // 型定義のエクスポート
-export type ChartErrorCode = keyof typeof CHART_ERROR_CODES;
 export type ChartErrorMessage = (typeof CHART_ERROR_MESSAGES)[ChartErrorCode];
-export type ChartErrorSeverity = (typeof CHART_ERROR_SEVERITY)[ChartErrorCode];

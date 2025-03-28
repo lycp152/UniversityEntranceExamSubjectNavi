@@ -13,6 +13,13 @@ export const ADMISSION_SCHEDULE_CONSTRAINTS = {
   MAX_DISPLAY_ORDER: 3, // 前期、中期、後期の3つに対応
 } as const;
 
+// 型定義のエクスポート
+export type AdmissionScheduleName =
+  (typeof ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES)[number];
+export type DisplayOrder =
+  | typeof ADMISSION_SCHEDULE_CONSTRAINTS.MIN_DISPLAY_ORDER
+  | typeof ADMISSION_SCHEDULE_CONSTRAINTS.MAX_DISPLAY_ORDER;
+
 /**
  * 入試情報の制約
  */
@@ -30,9 +37,12 @@ export const ADMISSION_INFO_CONSTRAINTS = {
   MAX_ACADEMIC_YEAR: 2100,
 } as const;
 
-// バックエンドの型定義と同期を取るための型
-export type AdmissionScheduleName =
-  (typeof ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES)[number];
-export type DisplayOrder =
-  | typeof ADMISSION_SCHEDULE_CONSTRAINTS.MIN_DISPLAY_ORDER
-  | typeof ADMISSION_SCHEDULE_CONSTRAINTS.MAX_DISPLAY_ORDER;
+// 型定義のエクスポート
+export type AdmissionStatus =
+  (typeof ADMISSION_INFO_CONSTRAINTS.VALID_STATUSES)[number];
+export type Enrollment =
+  | typeof ADMISSION_INFO_CONSTRAINTS.MIN_ENROLLMENT
+  | typeof ADMISSION_INFO_CONSTRAINTS.MAX_ENROLLMENT;
+export type AcademicYear =
+  | typeof ADMISSION_INFO_CONSTRAINTS.MIN_ACADEMIC_YEAR
+  | typeof ADMISSION_INFO_CONSTRAINTS.MAX_ACADEMIC_YEAR;

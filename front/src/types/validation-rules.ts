@@ -1,4 +1,8 @@
-import { ErrorCategory, ErrorSeverity } from "@/lib/api/errors/categories";
+import {
+  ValidationCategory,
+  ValidationErrorCode,
+  ValidationSeverity,
+} from "@/constants/validation";
 
 export interface ValidationContext {
   fieldName: string;
@@ -8,23 +12,20 @@ export interface ValidationContext {
 }
 
 export interface ValidationError {
+  field: string;
   message: string;
-  code: string;
-  severity: ErrorSeverity;
-  field?: string;
+  code: ValidationErrorCode;
+  severity: ValidationSeverity;
   metadata?: Record<string, unknown>;
 }
 
 export type ValidationRule<T> = {
-  name: string;
-  validate: (
-    value: T,
-    context?: ValidationContext
-  ) => boolean | Promise<boolean>;
+  field: string;
+  condition: (value: T) => boolean;
   message: string;
-  code: string;
-  severity: ErrorSeverity;
-  category: ErrorCategory;
+  code: ValidationErrorCode;
+  severity: ValidationSeverity;
+  category: ValidationCategory;
   metadata?: Record<string, unknown>;
 };
 
@@ -49,20 +50,6 @@ export interface ValidationResult<T = unknown> {
   metadata?: ValidationMetadata;
   data?: T;
 }
-
-export const createValidationRule = <T>(
-  validate: (value: T) => boolean,
-  message: string,
-  code: string,
-  severity: ErrorSeverity = "error"
-): ValidationRule<T> => ({
-  name: code,
-  validate,
-  message,
-  code,
-  severity,
-  category: "validation",
-});
 
 export type ScoreValidationRules = {
   commonTest: ValidationRule<number>[];

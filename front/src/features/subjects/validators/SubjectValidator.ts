@@ -1,6 +1,6 @@
 import type { SubjectScore, ValidationResult } from "../models/types";
 import { SubjectError } from "../errors/SubjectError";
-import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score";
 
 export class SubjectValidator {
   private static validateValue(value: number, maxValue: number): boolean {

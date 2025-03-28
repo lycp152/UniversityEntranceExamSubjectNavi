@@ -1,5 +1,9 @@
 import type { SubjectScores } from "@/types/score";
-import type { ValidationResult } from "@/types/validation";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+} from "@/constants/validation";
+import { ValidationResult } from "@/types/validation-rules";
 import type { ChartData } from "@/features/charts/types/chart";
 import { ScoreValidator } from "@/utils/validation/score-validator";
 import {
@@ -57,10 +61,10 @@ export const transformDetailedData = async (
       data: undefined,
       errors: [
         {
-          code: "VALIDATION_ERROR",
+          code: ValidationErrorCode.TRANSFORM_ERROR,
           message: (error as Error).message,
           field: "チャートデータ",
-          severity: "error" as const,
+          severity: ValidationSeverity.ERROR,
         },
       ],
     };

@@ -1,4 +1,4 @@
-import type { ValidationRule } from "@/types/validation";
+import type { ValidationRule } from "@/types/validation-rules";
 
 interface CacheMetrics {
   hits: number;

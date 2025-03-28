@@ -1,6 +1,6 @@
 export const TEST_TYPES = {
   COMMON: "common",
-  INDIVIDUAL: "individual",
+  SECONDARY: "secondary",
 } as const;
 
 export const SCORE_CONSTRAINTS = {
@@ -21,5 +21,5 @@ export interface ScoreMetrics {
 
 export interface BaseSubjectScore {
   [TEST_TYPES.COMMON]: BaseScore;
-  [TEST_TYPES.INDIVIDUAL]: BaseScore;
+  [TEST_TYPES.SECONDARY]: BaseScore;
 }

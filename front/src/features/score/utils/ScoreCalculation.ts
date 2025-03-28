@@ -1,4 +1,9 @@
-import { SubjectScores, TestType } from "@/types/score";
+import {
+  SubjectScores,
+  TestType,
+  BaseSubjectScore,
+  TEST_TYPES,
+} from "@/types/score";
 
 /**
  * 全科目の合計点を計算する
@@ -21,9 +26,9 @@ export const calculateTestTypeTotal = (
   subjects: SubjectScores,
   testType: TestType
 ): number => {
-  const testTypeMap = {
-    common: "commonTest",
-    individual: "secondTest",
+  const testTypeMap: Record<TestType, keyof BaseSubjectScore> = {
+    [TEST_TYPES.COMMON]: "commonTest",
+    [TEST_TYPES.SECONDARY]: "secondTest",
   } as const;
 
   return Object.values(subjects).reduce((total, subject) => {

@@ -1,4 +1,4 @@
-import { ValidationCategory, ValidationSeverity } from "@/types/validation";
+import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
 
 /**
  * バリデーションエラーの詳細情報を表すインターフェース

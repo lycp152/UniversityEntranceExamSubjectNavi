@@ -1,9 +1,14 @@
 import { BaseValidator } from "@/utils/validation/base-validator";
-import type {
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+  ValidationCategory,
+} from "@/constants/validation";
+import {
   ValidationRule,
   ValidationContext,
   ValidationResult,
-} from "@/types/validation";
+} from "@/types/validation-rules";
 
 interface ChartData {
   name: string;
@@ -16,23 +21,23 @@ interface ChartData {
  */
 const chartRules: ValidationRule<ChartData>[] = [
   {
-    code: "VALID_VALUE",
-    name: "値の検証",
-    validate: (data: ChartData) => data.value >= 0,
+    code: ValidationErrorCode.INVALID_DATA_FORMAT,
+    field: "value",
+    condition: (data: ChartData) => data.value >= 0,
     message: "値が無効です",
-    severity: "error",
-    category: "validation",
+    severity: ValidationSeverity.ERROR,
+    category: ValidationCategory.FORMAT,
   },
   {
-    code: "VALID_PERCENTAGE",
-    name: "パーセンテージの検証",
-    validate: (data: ChartData) => {
+    code: ValidationErrorCode.INVALID_PERCENTAGE,
+    field: "percentage",
+    condition: (data: ChartData) => {
       const percentage = parseFloat(data.percentage);
       return !isNaN(percentage) && percentage >= 0 && percentage <= 100;
     },
     message: "パーセンテージが無効です",
-    severity: "error",
-    category: "validation",
+    severity: ValidationSeverity.ERROR,
+    category: ValidationCategory.FORMAT,
   },
 ];
 
@@ -58,9 +63,10 @@ export class ChartValidator extends BaseValidator<ChartData> {
         ? []
         : [
             {
-              code: "INVALID_CHART_DATA",
+              code: ValidationErrorCode.INVALID_DATA_FORMAT,
               message: "チャートデータが無効です",
-              severity: "error" as const,
+              field: "chartData",
+              severity: ValidationSeverity.ERROR,
             },
           ],
       metadata: {

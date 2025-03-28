@@ -93,7 +93,7 @@ export function useUniversityEditor() {
   const {
     calculateUpdatedSubjects,
     isCommonAPITestType,
-    isIndividualAPITestType,
+    isSecondaryAPITestType,
   } = useSubjectData();
 
   const [editMode, setEditMode] = useState<EditMode | null>(null);
@@ -200,7 +200,7 @@ export function useUniversityEditor() {
     const targetTestType = admissionSchedule.testTypes.find((type: TestType) =>
       isCommon
         ? isCommonAPITestType(transformTestTypeToAPI(type))
-        : isIndividualAPITestType(transformTestTypeToAPI(type))
+        : isSecondaryAPITestType(transformTestTypeToAPI(type))
     );
 
     if (!targetTestType) return department;

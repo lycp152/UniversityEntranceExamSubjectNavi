@@ -1,6 +1,9 @@
 import type { Score } from "@/types/score";
-import type { ValidationResult } from "@/types/validation";
-import { SCORE_ERROR_CODES } from "@/constants/domain-error-codes";
+import type { ValidationResult } from "@/types/validation-rules";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+} from "@/constants/validation";
 
 export class ScoreCalculator {
   calculateTotalScore(scores: Score[]): number {
@@ -30,10 +33,10 @@ export class ScoreCalculator {
         ? []
         : [
             {
-              code: SCORE_ERROR_CODES.INVALID_SCORE,
+              code: ValidationErrorCode.INVALID_DATA_FORMAT,
               message: "点数が有効範囲外です",
               field: "value",
-              severity: "error",
+              severity: ValidationSeverity.ERROR,
             },
           ],
       metadata: {

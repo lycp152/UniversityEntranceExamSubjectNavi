@@ -19,7 +19,7 @@ export const SUBJECT_SCORE_CONSTRAINTS = {
   DEFAULT_DECIMAL_PLACES: 2,
 } as const;
 
-// バックエンドの型定義と同期を取るための型
+// 型定義のエクスポート
 export type Score =
   | typeof SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE
   | typeof SUBJECT_SCORE_CONSTRAINTS.MAX_SCORE;

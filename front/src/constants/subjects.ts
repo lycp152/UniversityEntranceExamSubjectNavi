@@ -23,6 +23,10 @@ export const EXAM_TYPES = {
   },
 } as const;
 
+// 型定義のエクスポート
+export type ExamType = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["name"];
+export type ExamTypeId = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["id"];
+
 /**
  * 試験区分の制約
  * バックエンドの制約値と同期を保つ必要があります
@@ -32,6 +36,9 @@ export const EXAM_TYPE_CONSTRAINTS = {
   MAX_NAME_LENGTH: 10,
   VALID_NAMES: ["共通", "二次"] as const,
 } as const;
+
+// 型定義のエクスポート
+export type ExamTypeName = (typeof EXAM_TYPE_CONSTRAINTS.VALID_NAMES)[number];
 
 /**
  * 教科の基本カテゴリとその表示色を定義
@@ -60,6 +67,9 @@ export const SUBJECT_CATEGORIES: Record<string, SubjectCategoryWithColor> = {
   },
 } as const;
 
+// 型定義のエクスポート
+export type SubjectCategory = keyof typeof SUBJECT_CATEGORIES;
+
 /**
  * 科目の定義
  * バックエンドの定義と同期を保つ必要があります
@@ -74,16 +84,12 @@ export const SUBJECTS = {
   SOCIAL: "地歴公",
 } as const;
 
+// 型定義のエクスポート
+export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS];
+
 export const FORMAT_PATTERNS = {
   // テストタイプに基づくフォーマット
   TEST_TYPE: (name: string, testType: string) => {
     return testType === "common" ? `${name}(共通)` : `${name}(二次)`;
   },
 } as const;
-
-// バックエンドの型定義と同期を取るための型
-export type ExamType = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["name"];
-export type ExamTypeId = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["id"];
-export type ExamTypeName = (typeof EXAM_TYPE_CONSTRAINTS.VALID_NAMES)[number];
-export type SubjectCategory = keyof typeof SUBJECT_CATEGORIES;
-export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS];

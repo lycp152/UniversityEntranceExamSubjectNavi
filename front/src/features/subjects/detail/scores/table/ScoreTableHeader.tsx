@@ -3,7 +3,7 @@ import { TEST_TYPES } from "@/types/score";
 
 const TEST_TYPE_LABELS = {
   [TEST_TYPES.COMMON]: "共通テスト",
-  [TEST_TYPES.INDIVIDUAL]: "個別試験",
+  [TEST_TYPES.SECONDARY]: "個別試験",
 } as const;
 
 const ScoreTableHeader: FC = memo(() => (

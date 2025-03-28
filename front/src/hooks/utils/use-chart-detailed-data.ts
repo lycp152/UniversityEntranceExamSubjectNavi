@@ -54,7 +54,7 @@ export const useDetailedData = (
               score.name,
               score.value,
               totalScore,
-              score.type === "共通" ? TEST_TYPES.COMMON : TEST_TYPES.INDIVIDUAL
+              score.type === "共通" ? TEST_TYPES.COMMON : TEST_TYPES.SECONDARY
             );
             acc.data.push(pieData);
           }

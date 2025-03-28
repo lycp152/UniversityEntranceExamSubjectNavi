@@ -1,7 +1,12 @@
 import { useState, useCallback, useMemo } from "react";
-import type { ScoreMetrics, Score, ScoreValidationError } from "@/types/score";
+import type {
+  ScoreMetrics,
+  Score,
+  ScoreValidationError,
+  BaseSubjectScore,
+} from "@/types/score";
 import type { CategoryScore } from "@/features/score/types/display";
-import { validateScore } from "@/features/score/validation/scoreValidator2";
+import { validateSubjectScore } from "@/features/score/validation/scoreValidator2";
 import { ScoreAggregator } from "@/features/score/utils/scoreAggregator";
 
 interface ScoreState {
@@ -9,6 +14,12 @@ interface ScoreState {
   metrics: ScoreMetrics | null;
   error: ScoreValidationError | null;
 }
+
+// Score型をBaseSubjectScore型に変換する関数
+const convertToBaseSubjectScore = (score: Score): BaseSubjectScore => ({
+  commonTest: score.type === "共通" ? score.value : 0,
+  secondTest: score.type === "二次" ? score.value : 0,
+});
 
 export const useScoreState = () => {
   const [state, setState] = useState<ScoreState>({
@@ -34,7 +45,8 @@ export const useScoreState = () => {
 
   const updateScore = useCallback(
     (newScore: Score) => {
-      const validation = validateScore(newScore);
+      const baseScore = convertToBaseSubjectScore(newScore);
+      const validation = validateSubjectScore(baseScore);
       if (!validation.isValid) {
         setState((prev) => ({
           ...prev,

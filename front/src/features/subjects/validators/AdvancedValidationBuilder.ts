@@ -1,7 +1,7 @@
-import type { ValidationRule } from "@/types/validation";
+import type { ValidationRule } from "@/types/validation-rules";
 import { ValidationError, ValidationErrorDetail } from "@/lib/validation/error";
 import { ValidationRuleCache } from "@/features/subjects/constants/validation-rule-cache";
-import { ValidationCategory, ValidationSeverity } from "@/types/validation";
+import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
 
 interface ConditionalRule<T> {
   condition: (value: T) => boolean;
@@ -29,11 +29,10 @@ export class AdvancedValidationBuilder<T> {
         this.rules = cachedRules.map((rule) => ({
           ...rule,
           name: rule.code,
-          severity: "error" as const,
-          category: "validation",
-          validate: async (data: T) => {
-            const result = await rule.validate(data);
-            return Boolean(result);
+          severity: ValidationSeverity.ERROR,
+          category: ValidationCategory.TRANSFORM,
+          condition: (data: T) => {
+            return Boolean(rule.condition(data));
           },
         }));
       }
@@ -60,7 +59,7 @@ export class AdvancedValidationBuilder<T> {
 
   private validateBasicRules(value: T): ValidationErrorDetail[] {
     return this.rules
-      .filter((rule) => !rule.validate(value))
+      .filter((rule) => !rule.condition(value))
       .map((rule) => ({
         field: rule.code,
         message: rule.message,
@@ -74,7 +73,7 @@ export class AdvancedValidationBuilder<T> {
       .filter((rule) => rule.condition(value))
       .flatMap((rule) =>
         rule.rules
-          .filter((r) => !r.validate(value))
+          .filter((r) => !r.condition(value))
           .map((r) => ({
             field: r.code,
             message: r.message,
@@ -93,7 +92,7 @@ export class AdvancedValidationBuilder<T> {
       .map((rule) => ({
         field: rule.field,
         message: rule.message,
-        category: ValidationCategory.DEPENDENCY,
+        category: ValidationCategory.TRANSFORM,
         severity: ValidationSeverity.ERROR,
       }));
   }

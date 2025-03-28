@@ -1,6 +1,10 @@
 import { z } from "zod";
 import type { BaseSubjectScore, SubjectScores } from "@/types/score";
-import type { ValidationResult } from "@/types/validation";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+} from "@/constants/validation";
+import type { ValidationResult } from "@/types/validation-rules";
 
 const SCORE_CONSTRAINTS = {
   MIN_SCORE: 0,
@@ -32,10 +36,10 @@ export const validateSubjectScore = (
         isValid: false,
         errors: [
           {
-            code: "INVALID_SCORE",
+            code: ValidationErrorCode.INVALID_DATA_FORMAT,
             message: "点数が無効です",
             field: !isValidCommonTest ? "commonTest" : "secondTest",
-            severity: "error",
+            severity: ValidationSeverity.ERROR,
           },
         ],
       };
@@ -50,11 +54,11 @@ export const validateSubjectScore = (
     if (error instanceof z.ZodError) {
       return {
         isValid: false,
-        errors: error.errors.map((err) => ({
-          code: "VALIDATION_ERROR",
+        errors: error.errors.map((err: z.ZodIssue) => ({
+          code: ValidationErrorCode.INVALID_DATA_FORMAT,
           message: err.message,
           field: err.path.join("."),
-          severity: "error",
+          severity: ValidationSeverity.ERROR,
         })),
       };
     }
@@ -62,9 +66,10 @@ export const validateSubjectScore = (
       isValid: false,
       errors: [
         {
-          code: "UNKNOWN_ERROR",
+          code: ValidationErrorCode.TRANSFORM_ERROR,
           message: "不明なエラーが発生しました",
-          severity: "error",
+          field: "validation",
+          severity: ValidationSeverity.ERROR,
         },
       ],
     };

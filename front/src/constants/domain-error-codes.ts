@@ -32,6 +32,15 @@ export const VALIDATION_ERROR_CODES = {
   INVALID_TEST_TYPE: "INVALID_TEST_TYPE",
 } as const;
 
+// 型定義のエクスポート
+export type ApiErrorCode = keyof typeof API_ERROR_CODES;
+export type ScoreErrorCode = keyof typeof SCORE_ERROR_CODES;
+export type ValidationErrorCode = keyof typeof VALIDATION_ERROR_CODES;
+export type ErrorCode =
+  | (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES]
+  | (typeof SCORE_ERROR_CODES)[keyof typeof SCORE_ERROR_CODES]
+  | (typeof VALIDATION_ERROR_CODES)[keyof typeof VALIDATION_ERROR_CODES];
+
 // エラーメッセージの定義
 export const ERROR_MESSAGES: Record<string, string> = {
   // APIエラーメッセージ
@@ -69,20 +78,8 @@ export const ERROR_MESSAGES: Record<string, string> = {
     "無効な試験区分です（共通、二次のいずれか）",
 };
 
-// エラーコードの型定義
-export type ApiErrorCode = keyof typeof API_ERROR_CODES;
-export type ScoreErrorCode = keyof typeof SCORE_ERROR_CODES;
-export type ValidationErrorCode = keyof typeof VALIDATION_ERROR_CODES;
-
-// エラーメッセージの型定義
+// 型定義のエクスポート
 export type ApiErrorMessage = (typeof ERROR_MESSAGES)[ApiErrorCode];
 export type ScoreErrorMessage = (typeof ERROR_MESSAGES)[ScoreErrorCode];
 export type ValidationErrorMessage =
   (typeof ERROR_MESSAGES)[ValidationErrorCode];
-
-/**
- * アプリケーション全体で使用されるエラーコードの型定義
- */
-export type ErrorCode =
-  | (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES]
-  | (typeof SCORE_ERROR_CODES)[keyof typeof SCORE_ERROR_CODES];

@@ -5,7 +5,7 @@ import { TEST_TYPES } from "@/types/score";
 
 interface ScoreTableTotals {
   [TEST_TYPES.COMMON]: number;
-  [TEST_TYPES.INDIVIDUAL]: number;
+  [TEST_TYPES.SECONDARY]: number;
   total: number;
 }
 
@@ -24,13 +24,13 @@ export const useScoreTable = (scores: SubjectScores) => {
       const totals = Object.values(calculatedScores).reduce<ScoreTableTotals>(
         (acc, score: SubjectScoreDetail) => ({
           [TEST_TYPES.COMMON]: acc[TEST_TYPES.COMMON] + score.commonTest.score,
-          [TEST_TYPES.INDIVIDUAL]:
-            acc[TEST_TYPES.INDIVIDUAL] + score.secondaryTest.score,
+          [TEST_TYPES.SECONDARY]:
+            acc[TEST_TYPES.SECONDARY] + score.secondaryTest.score,
           total: acc.total + score.total.score,
         }),
         {
           [TEST_TYPES.COMMON]: 0,
-          [TEST_TYPES.INDIVIDUAL]: 0,
+          [TEST_TYPES.SECONDARY]: 0,
           total: 0,
         }
       );

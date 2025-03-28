@@ -1,4 +1,4 @@
-import type { ErrorSeverity } from "@/lib/api/errors/categories";
+import type { ErrorSeverity } from "@/types/error-categories";
 
 /**
  * アラートカテゴリーの定義

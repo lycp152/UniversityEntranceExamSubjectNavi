@@ -12,7 +12,7 @@ interface ScoreTableBodyProps {
   sortedSubjects: string[];
   totals: {
     [TEST_TYPES.COMMON]: number;
-    [TEST_TYPES.INDIVIDUAL]: number;
+    [TEST_TYPES.SECONDARY]: number;
     total: number;
   } | null;
 }

@@ -1,9 +1,6 @@
-import {
-  ScoreValidationRules,
-  ValidationCategory as ValidationErrorCodes,
-  ValidationSeverity,
-} from "@/types/validation";
 import { ValidationError } from "@/lib/validation/error";
+import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
+import { ScoreValidationRules } from "@/types/validation-rules";
 
 /**
  * スコアバリデーションのキャッシュキー生成を担当するクラス
@@ -17,7 +14,7 @@ export class ScoreValidationCacheKey {
       throw new ValidationError("無効なキーパラメータです", [
         {
           message: "無効なキーパラメータです",
-          category: ValidationErrorCodes.SYSTEM,
+          category: ValidationCategory.TRANSFORM,
           severity: ValidationSeverity.ERROR,
         },
       ]);

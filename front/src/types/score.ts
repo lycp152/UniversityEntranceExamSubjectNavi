@@ -115,5 +115,5 @@ export interface SubjectScoreError {
 
 export const TEST_TYPES = {
   COMMON: "common",
-  INDIVIDUAL: "individual",
+  SECONDARY: "secondary",
 } as const;

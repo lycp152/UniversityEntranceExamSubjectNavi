@@ -1,4 +1,7 @@
-import type { ValidationContext, ValidationResult } from "@/types/validation";
+import type {
+  ValidationContext,
+  ValidationResult,
+} from "@/types/validation-rules";
 
 /**
  * バリデーションの基底クラス

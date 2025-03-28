@@ -23,7 +23,7 @@ describe("base calculations", () => {
   describe("calculateTestTypeTotal", () => {
     it.each([
       [TEST_TYPES.COMMON, testData.totals.commonTest],
-      [TEST_TYPES.INDIVIDUAL, testData.totals.secondTest],
+      [TEST_TYPES.SECONDARY, testData.totals.secondTest],
     ])("%sの合計点を正しく計算する", (testType, expected) => {
       const result = calculateTestTypeTotal(
         testData.subjects,

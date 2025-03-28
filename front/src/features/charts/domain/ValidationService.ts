@@ -1,5 +1,13 @@
-import { ValidationRule, ValidationContext } from "./ValidationRule";
-import { ValidationResult, ValidationError } from "@/types/validation";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+} from "@/constants/validation";
+import {
+  ValidationResult,
+  ValidationError,
+  ValidationRule,
+  ValidationContext,
+} from "@/types/validation-rules";
 
 export interface ValidationMetrics {
   startTime: number;
@@ -29,7 +37,7 @@ export class ValidationService<T> {
   ): [boolean, number, ValidationError?] {
     try {
       const [isValid, executionTime] = this.measurePerformance(() =>
-        rule.validate(value, this.context)
+        rule.condition(value)
       );
 
       if (!isValid) {
@@ -37,6 +45,7 @@ export class ValidationService<T> {
           false,
           executionTime,
           {
+            field: rule.field,
             message: rule.message,
             code: rule.code,
             severity: rule.severity,
@@ -59,9 +68,10 @@ export class ValidationService<T> {
         false,
         0,
         {
+          field: "validation",
           message: `バリデーション実行中にエラーが発生しました: ${errorMessage}`,
-          code: "VALIDATION_ERROR",
-          severity: "error",
+          code: ValidationErrorCode.TRANSFORM_ERROR,
+          severity: ValidationSeverity.ERROR,
           metadata: {
             timestamp: this.context?.timestamp,
             originalError: error,
@@ -87,7 +97,7 @@ export class ValidationService<T> {
 
       if (!isValid && error) {
         errors.push(error);
-        appliedRules.push(rule.name);
+        appliedRules.push(rule.code);
       }
     }
 

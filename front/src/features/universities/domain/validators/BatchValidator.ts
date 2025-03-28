@@ -1,5 +1,5 @@
 import { ValidationError } from "@/lib/validation/error";
-import { ValidationCategory, ValidationSeverity } from "@/types/validation";
+import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
 
 interface BatchValidationResult<T> {
   item: T;
@@ -59,7 +59,7 @@ export class BatchValidator {
               {
                 field: "unknown",
                 message: err.message || "不明なエラー",
-                category: ValidationCategory.SYSTEM,
+                category: ValidationCategory.TRANSFORM,
                 severity: ValidationSeverity.ERROR,
               },
             ])
@@ -76,7 +76,7 @@ export class BatchValidator {
         {
           field: "unknown",
           message: error instanceof Error ? error.message : "不明なエラー",
-          category: ValidationCategory.SYSTEM,
+          category: ValidationCategory.TRANSFORM,
           severity: ValidationSeverity.ERROR,
         },
       ]

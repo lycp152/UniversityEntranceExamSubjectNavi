@@ -1,5 +1,9 @@
 import type { BaseSubjectScore, SubjectScores } from "@/types/score";
-import type { ValidationResult } from "@/types/validation";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+} from "@/constants/validation";
+import type { ValidationResult } from "@/types/validation-rules";
 import { BaseValidator } from "./base-validator";
 
 /**
@@ -31,10 +35,10 @@ export class ScoreValidator extends BaseValidator<SubjectScores> {
         ? []
         : [
             {
-              code: "VALIDATION_ERROR",
+              code: ValidationErrorCode.INVALID_DATA_FORMAT,
               message: "スコアが無効です",
               field: "スコア",
-              severity: "error" as const,
+              severity: ValidationSeverity.ERROR,
             },
           ],
       metadata: {

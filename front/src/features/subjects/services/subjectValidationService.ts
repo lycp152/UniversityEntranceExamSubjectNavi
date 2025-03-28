@@ -1,30 +1,38 @@
 import { BaseValidator } from "@/utils/validation/base-validator";
-import type { ValidationRule, ValidationResult } from "@/types/validation";
+import type {
+  ValidationRule,
+  ValidationResult,
+} from "@/types/validation-rules";
 import type { Subject, SubjectScore } from "@/features/subjects/schemas";
 import { SUBJECT_CONSTRAINTS } from "@/features/subjects/config/constraints";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+  ValidationCategory,
+} from "@/constants/validation";
 
 export class SubjectValidator extends BaseValidator<Subject> {
   private readonly rules: ValidationRule<Subject>[] = [
     {
-      code: "VALID_SCORE_RANGE",
-      name: "スコア範囲の検証",
+      code: ValidationErrorCode.INVALID_DATA_FORMAT,
+      field: "score",
       message: "スコアが有効範囲外です",
-      validate: (subject) =>
+      condition: (subject: Subject) =>
         subject.maxScore >= SUBJECT_CONSTRAINTS.MIN_SCORE &&
         subject.minScore >= SUBJECT_CONSTRAINTS.MIN_SCORE &&
         subject.maxScore >= subject.minScore,
-      severity: "error",
-      category: "validation",
+      severity: ValidationSeverity.ERROR,
+      category: ValidationCategory.FORMAT,
     },
     {
-      code: "VALID_WEIGHT",
-      name: "重みの検証",
+      code: ValidationErrorCode.INVALID_DATA_FORMAT,
+      field: "weight",
       message: "重みが有効範囲外です",
-      validate: (subject) =>
+      condition: (subject: Subject) =>
         subject.weight >= SUBJECT_CONSTRAINTS.MIN_WEIGHT &&
         subject.weight <= SUBJECT_CONSTRAINTS.MAX_WEIGHT,
-      severity: "error",
-      category: "validation",
+      severity: ValidationSeverity.ERROR,
+      category: ValidationCategory.FORMAT,
     },
   ];
 
@@ -45,9 +53,10 @@ export class SubjectValidator extends BaseValidator<Subject> {
         ? []
         : [
             {
-              code: "INVALID_SCORE",
+              code: ValidationErrorCode.INVALID_DATA_FORMAT,
               message: "スコアが無効です",
-              severity: "error" as const,
+              field: "score",
+              severity: ValidationSeverity.ERROR,
             },
           ],
       metadata: {
@@ -63,11 +72,12 @@ export class SubjectValidator extends BaseValidator<Subject> {
     const errors = [];
 
     for (const rule of this.rules) {
-      if (!(await rule.validate(subject))) {
+      if (!rule.condition(subject)) {
         errors.push({
           code: rule.code,
           message: rule.message,
-          severity: "error" as const,
+          field: rule.field,
+          severity: ValidationSeverity.ERROR,
         });
       }
     }

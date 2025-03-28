@@ -35,7 +35,7 @@ export const useSubjectData = () => {
     return type.name === "共通";
   }, []);
 
-  const isIndividualAPITestType = useCallback((type: APITestType): boolean => {
+  const isSecondaryAPITestType = useCallback((type: APITestType): boolean => {
     return type.name === "二次";
   }, []);
 
@@ -79,7 +79,7 @@ export const useSubjectData = () => {
   return {
     calculateUpdatedSubjects,
     isCommonAPITestType,
-    isIndividualAPITestType,
+    isSecondaryAPITestType,
     createNewSubject,
     validateSubject,
     sortSubjects,

@@ -1,4 +1,4 @@
-import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score";
 
 export const calculatePercentage = (value: number, total: number): number => {
   if (total === 0) return 0;

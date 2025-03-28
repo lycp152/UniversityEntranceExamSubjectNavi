@@ -2,7 +2,12 @@ import { AdvancedValidationBuilder } from "@/features/subjects/validators/Advanc
 import type { Score } from "@/types/score";
 import type { ISubjectValidator } from "./ISubjectValidator";
 import { SubjectError } from "@/features/subjects/errors/SubjectError";
-import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+  ValidationCategory,
+} from "@/constants/validation";
 
 export class SubjectValidator implements ISubjectValidator {
   private readonly builder: AdvancedValidationBuilder<Score>;
@@ -15,32 +20,32 @@ export class SubjectValidator implements ISubjectValidator {
   private setupValidationRules(): void {
     this.builder
       .addRule({
-        validate: (score) =>
+        condition: (score: Score) =>
           score.value >= SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE &&
           score.value <= score.maxValue,
         message: "スコアが範囲外です",
-        code: "INVALID_SCORE_RANGE",
-        name: "INVALID_SCORE_RANGE",
-        severity: "error",
-        category: "validation",
+        code: ValidationErrorCode.INVALID_DATA_FORMAT,
+        severity: ValidationSeverity.ERROR,
+        category: ValidationCategory.FORMAT,
+        field: "value",
       })
       .addRule({
-        validate: (score) => score.maxValue > 0,
+        condition: (score: Score) => score.maxValue > 0,
         message: "最大値は0より大きい必要があります",
-        code: "INVALID_MAX_SCORE",
-        name: "INVALID_MAX_SCORE",
-        severity: "error",
-        category: "validation",
+        code: ValidationErrorCode.INVALID_DATA_FORMAT,
+        severity: ValidationSeverity.ERROR,
+        category: ValidationCategory.FORMAT,
+        field: "maxValue",
       })
       .addRule({
-        validate: (score) =>
+        condition: (score: Score) =>
           score.weight >= SUBJECT_SCORE_CONSTRAINTS.MIN_PERCENTAGE &&
           score.weight <= SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE,
         message: "重みは0から1の間で入力してください",
-        code: "INVALID_PERCENTAGE_RANGE",
-        name: "INVALID_PERCENTAGE_RANGE",
-        severity: "error",
-        category: "validation",
+        code: ValidationErrorCode.INVALID_PERCENTAGE,
+        severity: ValidationSeverity.ERROR,
+        category: ValidationCategory.FORMAT,
+        field: "weight",
       });
   }
 

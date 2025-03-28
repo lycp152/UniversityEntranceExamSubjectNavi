@@ -26,17 +26,17 @@ export class ScoreAggregator {
             percentage: score.percentage,
           };
         } else {
-          existing.individual = {
+          existing.secondary = {
             score: score.value,
             percentage: score.percentage,
           };
         }
         existing.total = {
           score:
-            (existing.common?.score || 0) + (existing.individual?.score || 0),
+            (existing.common?.score || 0) + (existing.secondary?.score || 0),
           percentage:
             (existing.common?.percentage || 0) +
-            (existing.individual?.percentage || 0),
+            (existing.secondary?.percentage || 0),
         };
       } else {
         categoryMap.set(category, {
@@ -45,7 +45,7 @@ export class ScoreAggregator {
             score.type === "共通"
               ? { score: score.value, percentage: score.percentage }
               : { score: 0, percentage: 0 },
-          individual:
+          secondary:
             score.type === "二次"
               ? { score: score.value, percentage: score.percentage }
               : { score: 0, percentage: 0 },

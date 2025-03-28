@@ -10,6 +10,6 @@ export type SubjectTableData = {
 export interface CategoryScore {
   category: SubjectCategory;
   common: ScoreMetrics;
-  individual: ScoreMetrics;
+  secondary: ScoreMetrics;
   total: ScoreMetrics;
 }

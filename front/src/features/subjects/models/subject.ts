@@ -1,7 +1,7 @@
 import type { SubjectScore, SubjectMetrics } from "./types";
 import type { SubjectCategory } from "@/constants/subjects";
 import { SubjectError } from "../errors/SubjectError";
-import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score-constraints";
+import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score";
 
 export class Subject {
   private constructor(private readonly score: SubjectScore) {}

@@ -1,10 +1,15 @@
 import { BaseValidator } from "@/utils/validation/base-validator";
+import {
+  ValidationErrorCode,
+  ValidationSeverity,
+  ValidationCategory,
+} from "@/constants/validation";
 import type {
   ValidationRule,
   ValidationResult,
   ValidationContext,
   ValidationMetadata,
-} from "@/types/validation";
+} from "@/types/validation-rules";
 import type { BaseSubjectScore } from "@/types/score";
 import {
   createCacheKey,
@@ -15,30 +20,30 @@ import {
 export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
   private readonly rules: ValidationRule<BaseSubjectScore>[] = [
     {
-      code: "SCORE_FORMAT",
-      name: "スコア形式の検証",
+      code: ValidationErrorCode.INVALID_DATA_FORMAT,
+      field: "score",
+      condition: (score: BaseSubjectScore) => isBaseSubjectScore(score),
       message: "Invalid score format",
-      validate: (score: BaseSubjectScore) => isBaseSubjectScore(score),
-      severity: "error",
-      category: "validation",
+      severity: ValidationSeverity.ERROR,
+      category: ValidationCategory.FORMAT,
     },
     {
-      code: "COMMON_TEST_SCORE",
-      name: "共通テストスコアの検証",
-      message: "Invalid common test score",
-      validate: (score: BaseSubjectScore) =>
+      code: ValidationErrorCode.INVALID_DATA_FORMAT,
+      field: "commonTest",
+      condition: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.commonTest, maxValue: 100 }),
-      severity: "error",
-      category: "validation",
+      message: "Invalid common test score",
+      severity: ValidationSeverity.ERROR,
+      category: ValidationCategory.FORMAT,
     },
     {
-      code: "INDIVIDUAL_TEST_SCORE",
-      name: "個別テストスコアの検証",
-      message: "Invalid individual test score",
-      validate: (score: BaseSubjectScore) =>
+      code: ValidationErrorCode.INVALID_DATA_FORMAT,
+      field: "secondTest",
+      condition: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.secondTest, maxValue: 100 }),
-      severity: "error",
-      category: "validation",
+      message: "Invalid secondary test score",
+      severity: ValidationSeverity.ERROR,
+      category: ValidationCategory.FORMAT,
     },
   ];
 
@@ -105,18 +110,20 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
 
     for (const rule of rules) {
       try {
-        if (!(await rule.validate(score))) {
+        if (!rule.condition(score)) {
           errors.push({
             code: rule.code,
             message: rule.message,
-            severity: "error" as const,
+            field: rule.field,
+            severity: ValidationSeverity.ERROR,
           });
         }
       } catch (error) {
         errors.push({
-          code: "VALIDATION_ERROR",
+          code: ValidationErrorCode.TRANSFORM_ERROR,
           message: error instanceof Error ? error.message : "Unknown error",
-          severity: "error" as const,
+          field: "validation",
+          severity: ValidationSeverity.ERROR,
         });
       }
     }
@@ -139,9 +146,10 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
         isValid: false,
         errors: [
           {
-            code: "INVALID_FORMAT",
+            code: ValidationErrorCode.INVALID_DATA_FORMAT,
             message: "Invalid score format",
-            severity: "error" as const,
+            field: "score",
+            severity: ValidationSeverity.ERROR,
           },
         ],
         metadata: {

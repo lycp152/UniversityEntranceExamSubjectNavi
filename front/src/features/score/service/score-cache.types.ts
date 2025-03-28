@@ -1,4 +1,4 @@
-import type { ValidationResult } from "@/types/validation";
+import type { ValidationResult } from "@/types/validation-rules";
 import type { BaseSubjectScore } from "@/types/score";
 
 /**

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: docker/setup-buildx-action@v2
+      - uses: docker/setup-buildx-action@v3
       - name: Validate docker compose file
         run: docker compose -f deployments/docker/production/docker-compose.yml config
 
@@ -29,7 +29,7 @@ jobs:
           severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: "trivy-results.sarif"
 
@@ -38,19 +38,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: docker/setup-buildx-action@v2
-      - uses: docker/login-action@v2
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/university-exam-backend
-            ${{ secrets.DOCKERHUB_USERNAME }}/university-exam-frontend
+            ${{ secrets.DOCKER_USERNAME }}/university-exam-backend
+            ${{ secrets.DOCKER_USERNAME }}/university-exam-frontend
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}

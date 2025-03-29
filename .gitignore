@@ -13,6 +13,7 @@
 # Docker
 .docker/
 docker-compose.override.yml
+deployments/docker/*/secrets/*
 
 # Environment variables
 **/.env
@@ -31,6 +32,8 @@ back/logs/
 !back/logs/.gitkeep
 !back/logs/tests/.gitkeep
 back/bin/*
+back/internal/repositories/mocks/mock_university_repository.go
+back/coverage.txt
 
 # Frontend
 front/.next/

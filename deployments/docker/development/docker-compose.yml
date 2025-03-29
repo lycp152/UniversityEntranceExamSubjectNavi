@@ -6,10 +6,12 @@ x-backend-variables: &backend-variables
   <<: *common-variables
   DB_HOST: postgres
   DB_USER: postgres
-  DB_PASSWORD: postgres
+  DB_PASSWORD: development_db_password
   DB_NAME: university_exam_db
   DB_PORT: 5432
   GO_ENVIRONMENT: development
+  CSRF_SECRET: development_csrf_secret
+  JWT_SECRET: development_jwt_secret
 
 services:
   postgres:
@@ -17,7 +19,7 @@ services:
     environment:
       <<: *common-variables
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: development_db_password
       POSTGRES_DB: university_exam_db
     ports:
       - "5432:5432"
@@ -36,7 +38,7 @@ services:
       context: ../../../back
       dockerfile: Dockerfile.dev
       args:
-        GO_VERSION: 1.22
+        GO_VERSION: 1.24.1
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,6 +52,10 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    command: >
+      sh -c "go run migrations/scripts/main.go up &&
+             go run migrations/seeds/main.go &&
+             go run cmd/api/main.go"
 
   frontend:
     build:

@@ -1,4 +1,4 @@
-.PHONY: build run test migrate seed lint clean
+.PHONY: build run test migrate seed lint clean test-coverage test-mock
 
 # Build variables
 BINARY_NAME=university-exam-api
@@ -20,6 +20,15 @@ test:
 	@echo "Running tests..."
 	go test -v ./tests/...
 
+test-coverage:
+	@echo "Running tests with coverage..."
+	go test -v -coverprofile=coverage/coverage.out ./tests/...
+	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+
+test-mock:
+	@echo "Generating mocks..."
+	go generate ./...
+
 migrate:
 	@echo "Running migrations..."
 	go run ./scripts/migrate/main.go
@@ -35,6 +44,7 @@ lint:
 clean:
 	@echo "Cleaning..."
 	rm -rf $(BUILD_DIR)
+	rm -rf coverage/
 
 # Development helpers
 dev: migrate seed run

@@ -12,9 +12,9 @@ jobs:
     outputs:
       cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - id: cache-key
-        run: echo "::set-output name=value::$(date +%s)"
+        run: echo "value=$(date +%s)" >> $GITHUB_OUTPUT
 
   test:
     needs: setup
@@ -27,9 +27,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: university_exam_test_db
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
         ports:
           - 5432:5432
         options: >-
@@ -38,11 +38,11 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: "1.21"
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
@@ -57,7 +57,7 @@ jobs:
           go mod download
           cd tests/${{ matrix.test-type }}
           go test -v -race -coverprofile=coverage.out ./...
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: coverage-${{ matrix.test-type }}-${{ matrix.platform }}
           path: back/tests/${{ matrix.test-type }}/coverage.out
@@ -65,11 +65,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
         with:
           go-version: "1.21"
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
@@ -87,15 +87,15 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
       - name: Process coverage
         run: |
           echo "mode: atomic" > coverage.txt
           for f in coverage-*/*; do
             tail -n +2 $f >> coverage.txt
           done
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
         with:
           file: ./coverage.txt
           flags: unittests

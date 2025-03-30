@@ -1,16 +1,10 @@
-import type { Score } from "@/types/score";
-import type { ValidationResult } from "@/types/validation-rules";
-import {
-  ValidationErrorCode,
-  ValidationSeverity,
-} from "@/constants/validation";
+import type { Score } from '@/types/score';
+import type { ValidationResult } from '@/lib/validation/types';
+import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
 
 export class ScoreCalculator {
   calculateTotalScore(scores: Score[]): number {
-    return scores.reduce(
-      (total, score) => total + score.value * score.weight,
-      0
-    );
+    return scores.reduce((total, score) => total + score.value * score.weight, 0);
   }
 
   calculatePercentage(value: number, total: number): number {
@@ -23,8 +17,7 @@ export class ScoreCalculator {
   }
 
   validateScore(score: Score): ValidationResult<Score> {
-    const isValid =
-      score.value >= 0 && score.value <= score.maxValue && score.weight > 0;
+    const isValid = score.value >= 0 && score.value <= score.maxValue && score.weight > 0;
 
     return {
       isValid,
@@ -34,8 +27,8 @@ export class ScoreCalculator {
         : [
             {
               code: ValidationErrorCode.INVALID_DATA_FORMAT,
-              message: "点数が有効範囲外です",
-              field: "value",
+              message: '点数が有効範囲外です',
+              field: 'value',
               severity: ValidationSeverity.ERROR,
             },
           ],

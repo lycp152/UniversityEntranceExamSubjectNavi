@@ -1,12 +1,8 @@
-import type { DepartmentRowProps } from "@/types/universities/university-list";
-import { EditButtons } from "@/components/universities/buttons/edit-buttons";
-import { DepartmentInfo } from "@/components/universities/department-info/department-info";
-import { ExamSections } from "@/components/exam/exam-sections";
-import type {
-  APIAdmissionInfo,
-  APITestType,
-  APISubject,
-} from "@/types/api/models";
+import type { DepartmentRowProps } from '@/types/universities/university-list';
+import { EditButtons } from '@/components/universities/buttons/edit-buttons';
+import { DepartmentInfo } from '@/components/universities/department-info/department-info';
+import { ExamSections } from '@/components/exam/exam-sections';
+import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/api-response-types';
 
 export const DepartmentRow = ({
   university,
@@ -24,7 +20,7 @@ export const DepartmentRow = ({
   const admissionSchedule = major?.admissionSchedules?.[0];
   const admissionInfo = admissionSchedule?.admissionInfos?.[0];
 
-  console.log("DepartmentRow Data:", {
+  console.log('DepartmentRow Data:', {
     department,
     major,
     admissionSchedule,
@@ -33,38 +29,35 @@ export const DepartmentRow = ({
 
   if (!major || !admissionSchedule || !admissionInfo) return null;
 
-  const handleScoreChange = (
-    subjectId: number,
-    value: number,
-    isCommon: boolean
-  ) => onScoreChange(university.id, department.id, subjectId, value, isCommon);
+  const handleScoreChange = (subjectId: number, value: number, isCommon: boolean) =>
+    onScoreChange(university.id, department.id, subjectId, value, isCommon);
 
   // Convert TestType and Subject to their API counterparts
-  const mappedTestTypes: APITestType[] = admissionSchedule.testTypes.map(
-    (testType) => ({
-      id: testType.id,
-      admission_schedule_id: testType.admissionScheduleId,
-      name: testType.name,
-      subjects: testType.subjects.map((subject) => ({
-        id: subject.id,
-        test_type_id: testType.id,
-        name: subject.name,
-        score: subject.score || 0,
-        percentage: subject.percentage || 0,
-        display_order: subject.displayOrder,
-        created_at: subject.createdAt,
-        updated_at: subject.updatedAt,
-        version: subject.version,
-        created_by: subject.createdBy,
-        updated_by: subject.updatedBy,
-      })) as APISubject[],
-      created_at: testType.createdAt,
-      updated_at: testType.updatedAt,
-      version: testType.version,
-      created_by: testType.createdBy,
-      updated_by: testType.updatedBy,
-    })
-  );
+  const mappedTestTypes: APITestType[] = admissionSchedule.testTypes.map(testType => ({
+    id: testType.id,
+    admission_schedule_id: testType.admissionScheduleId,
+    name: testType.name,
+    subjects: testType.subjects.map(subject => ({
+      id: subject.id,
+      test_type_id: testType.id,
+      name: subject.name,
+      score: subject.score || 0,
+      percentage: subject.percentage || 0,
+      display_order: subject.displayOrder,
+      created_at: subject.createdAt,
+      updated_at: subject.updatedAt,
+      deleted_at: subject.deletedAt ?? null,
+      version: subject.version,
+      created_by: subject.createdBy,
+      updated_by: subject.updatedBy,
+    })) as APISubject[],
+    created_at: testType.createdAt,
+    updated_at: testType.updatedAt,
+    deleted_at: testType.deletedAt ?? null,
+    version: testType.version,
+    created_by: testType.createdBy,
+    updated_by: testType.updatedBy,
+  }));
 
   const mappedAdmissionInfo: APIAdmissionInfo & { testTypes: APITestType[] } = {
     id: admissionInfo.id,
@@ -86,6 +79,7 @@ export const DepartmentRow = ({
       admission_infos: [],
       created_at: admissionSchedule.createdAt,
       updated_at: admissionSchedule.updatedAt,
+      deleted_at: admissionSchedule.deletedAt ?? null,
       version: admissionSchedule.version,
       created_by: admissionSchedule.createdBy,
       updated_by: admissionSchedule.updatedBy,

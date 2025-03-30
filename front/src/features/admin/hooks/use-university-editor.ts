@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import type {
   University,
   Department,
@@ -6,13 +6,13 @@ import type {
   Subject,
   Major,
   AdmissionSchedule,
-} from "@/types/universities/university";
-import type { APITestType, APISubject } from "@/types/api/models";
-import { useUniversityData } from "@/features/admin/hooks/useUniversityData";
-import { useSubjectData } from "@/features/admin/hooks/useSubjectData";
-import type { EditMode } from "@/types/universities/university-list";
-import type { ExamTypeName, SubjectName } from "@/constants/subjects";
-import type { AdmissionScheduleName } from "@/constants/admission-schedule";
+} from '@/types/universities/university';
+import type { APITestType, APISubject } from '@/types/api/api-response-types';
+import { useUniversityData } from '@/features/admin/hooks/useUniversityData';
+import { useSubjectData } from '@/features/admin/hooks/useSubjectData';
+import type { EditMode } from '@/types/universities/university-list';
+import type { ExamTypeName, SubjectName } from '@/constants/subjects';
+import type { AdmissionScheduleName } from '@/constants/admission-schedule';
 
 interface BackupState {
   university: University;
@@ -28,6 +28,7 @@ const transformSubjectToAPI = (subject: Subject): APISubject => ({
   display_order: 0,
   created_at: subject.createdAt,
   updated_at: subject.updatedAt,
+  deleted_at: subject.deletedAt ?? null,
   version: subject.version,
   created_by: subject.createdBy,
   updated_by: subject.updatedBy,
@@ -40,11 +41,11 @@ const transformSubjectFromAPI = (subject: APISubject): Subject => ({
   score: subject.score,
   percentage: subject.percentage,
   displayOrder: 0,
-  createdAt: subject.created_at ?? "",
-  updatedAt: subject.updated_at ?? "",
+  createdAt: subject.created_at ?? '',
+  updatedAt: subject.updated_at ?? '',
   version: subject.version ?? 1,
-  createdBy: subject.created_by ?? "",
-  updatedBy: subject.updated_by ?? "",
+  createdBy: subject.created_by ?? '',
+  updatedBy: subject.updated_by ?? '',
 });
 
 const transformTestTypeToAPI = (testType: TestType): APITestType => ({
@@ -54,6 +55,7 @@ const transformTestTypeToAPI = (testType: TestType): APITestType => ({
   subjects: testType.subjects.map(transformSubjectToAPI),
   created_at: testType.createdAt,
   updated_at: testType.updatedAt,
+  deleted_at: testType.deletedAt ?? null,
   version: testType.version,
   created_by: testType.createdBy,
   updated_by: testType.updatedBy,
@@ -64,11 +66,11 @@ const transformTestTypeFromAPI = (testType: APITestType): TestType => ({
   admissionScheduleId: testType.admission_schedule_id,
   name: testType.name as ExamTypeName,
   subjects: testType.subjects.map(transformSubjectFromAPI),
-  createdAt: (testType.created_at ?? "").toString(),
-  updatedAt: (testType.updated_at ?? "").toString(),
+  createdAt: (testType.created_at ?? '').toString(),
+  updatedAt: (testType.updated_at ?? '').toString(),
   version: testType.version ?? 1,
-  createdBy: testType.created_by ?? "",
-  updatedBy: testType.updated_by ?? "",
+  createdBy: testType.created_by ?? '',
+  updatedBy: testType.updated_by ?? '',
 });
 
 export function useUniversityEditor() {
@@ -90,20 +92,13 @@ export function useUniversityEditor() {
     updateAdmissionInfo,
   } = useUniversityData();
 
-  const {
-    calculateUpdatedSubjects,
-    isCommonAPITestType,
-    isSecondaryAPITestType,
-  } = useSubjectData();
+  const { calculateUpdatedSubjects, isCommonAPITestType, isSecondaryAPITestType } =
+    useSubjectData();
 
   const [editMode, setEditMode] = useState<EditMode | null>(null);
   const [backupState, setBackupState] = useState<BackupState | null>(null);
 
-  const updateDepartmentField = (
-    department: Department,
-    field: string,
-    value: string | number
-  ) => {
+  const updateDepartmentField = (department: Department, field: string, value: string | number) => {
     const major = department.majors[0];
     const admissionSchedule = major?.admissionSchedules?.[0];
     const admissionInfo = admissionSchedule?.admissionInfos?.[0];
@@ -115,19 +110,19 @@ export function useUniversityEditor() {
     const updatedAdmissionInfo = { ...admissionInfo };
 
     switch (field) {
-      case "universityName":
+      case 'universityName':
         // 大学名は上位のhandleInfoChangeで処理
         break;
-      case "departmentName":
+      case 'departmentName':
         updatedDepartment.name = value as string;
         break;
-      case "majorName":
+      case 'majorName':
         updatedMajor.name = value as string;
         break;
-      case "enrollment":
+      case 'enrollment':
         updatedAdmissionInfo.enrollment = value as number;
         break;
-      case "schedule":
+      case 'schedule':
         updatedAdmissionSchedule.name = value as AdmissionScheduleName;
         break;
       default:
@@ -148,19 +143,17 @@ export function useUniversityEditor() {
     field: string,
     value: string | number
   ): University => {
-    if (field === "universityName") {
+    if (field === 'universityName') {
       return {
         ...university,
         name: value as string,
       };
     }
 
-    const updatedDepartments = university.departments.map(
-      (department: Department) => {
-        if (department.id !== departmentId) return department;
-        return updateDepartmentField(department, field, value);
-      }
-    );
+    const updatedDepartments = university.departments.map((department: Department) => {
+      if (department.id !== departmentId) return department;
+      return updateDepartmentField(department, field, value);
+    });
 
     return {
       ...university,
@@ -174,15 +167,10 @@ export function useUniversityEditor() {
     field: string,
     value: string | number
   ) => {
-    setUniversities((prevUniversities) =>
-      prevUniversities.map((university) => {
+    setUniversities(prevUniversities =>
+      prevUniversities.map(university => {
         if (university.id !== universityId) return university;
-        return updateDepartmentInUniversity(
-          university,
-          departmentId,
-          field,
-          value
-        );
+        return updateDepartmentInUniversity(university, departmentId, field, value);
       })
     );
   };
@@ -220,9 +208,7 @@ export function useUniversityEditor() {
             {
               ...admissionSchedule,
               testTypes: admissionSchedule.testTypes.map((type: TestType) =>
-                type.id === targetTestType.id
-                  ? { ...type, subjects: updatedSubjects }
-                  : type
+                type.id === targetTestType.id ? { ...type, subjects: updatedSubjects } : type
               ),
             },
           ],
@@ -253,21 +239,15 @@ export function useUniversityEditor() {
     isCommon: boolean
   ) => {
     try {
-      setUniversities((prevUniversities) =>
-        prevUniversities.map((university) => {
+      setUniversities(prevUniversities =>
+        prevUniversities.map(university => {
           if (university.id !== universityId) return university;
-          return updateUniversityDepartments(
-            university,
-            departmentId,
-            subjectId,
-            value,
-            isCommon
-          );
+          return updateUniversityDepartments(university, departmentId, subjectId, value, isCommon);
         })
       );
     } catch (error) {
-      console.error("Error updating score:", error);
-      setError("点数の更新に失敗しました。");
+      console.error('Error updating score:', error);
+      setError('点数の更新に失敗しました。');
     }
   };
 
@@ -277,7 +257,7 @@ export function useUniversityEditor() {
     newSubject: Subject
   ): AdmissionSchedule => ({
     ...admissionSchedule,
-    testTypes: admissionSchedule.testTypes.map((testType) => {
+    testTypes: admissionSchedule.testTypes.map(testType => {
       if (testType.id === internalType.id) {
         return {
           ...testType,
@@ -303,11 +283,7 @@ export function useUniversityEditor() {
         {
           ...major,
           admissionSchedules: [
-            updateTestTypesWithNewSubject(
-              admissionSchedule,
-              internalType,
-              newSubject
-            ),
+            updateTestTypesWithNewSubject(admissionSchedule, internalType, newSubject),
           ],
         },
       ],
@@ -321,21 +297,13 @@ export function useUniversityEditor() {
     newSubject: Subject
   ): University => ({
     ...university,
-    departments: university.departments.map((department) => {
+    departments: university.departments.map(department => {
       if (department.id !== departmentId) return department;
-      return updateDepartmentWithNewSubject(
-        department,
-        internalType,
-        newSubject
-      );
+      return updateDepartmentWithNewSubject(department, internalType, newSubject);
     }),
   });
 
-  const handleAddSubject = (
-    universityId: number,
-    departmentId: number,
-    type: APITestType
-  ) => {
+  const handleAddSubject = (universityId: number, departmentId: number, type: APITestType) => {
     const internalType = transformTestTypeFromAPI(type);
     const newSubject: Subject = {
       id: 0,
@@ -347,19 +315,14 @@ export function useUniversityEditor() {
       createdAt: new Date().toString(),
       updatedAt: new Date().toString(),
       version: 1,
-      createdBy: "",
-      updatedBy: "",
+      createdBy: '',
+      updatedBy: '',
     };
 
-    setUniversities((prevUniversities) =>
-      prevUniversities.map((university) => {
+    setUniversities(prevUniversities =>
+      prevUniversities.map(university => {
         if (university.id !== universityId) return university;
-        return updateUniversityWithNewSubject(
-          university,
-          departmentId,
-          internalType,
-          newSubject
-        );
+        return updateUniversityWithNewSubject(university, departmentId, internalType, newSubject);
       })
     );
   };
@@ -369,12 +332,10 @@ export function useUniversityEditor() {
     subjectId: number,
     name: string
   ): TestType[] =>
-    testTypes.map((testType) => ({
+    testTypes.map(testType => ({
       ...testType,
-      subjects: testType.subjects.map((subject) =>
-        subject.id === subjectId
-          ? { ...subject, name: name as SubjectName }
-          : subject
+      subjects: testType.subjects.map(subject =>
+        subject.id === subjectId ? { ...subject, name: name as SubjectName } : subject
       ),
     }));
 
@@ -413,7 +374,7 @@ export function useUniversityEditor() {
     name: string
   ): University => ({
     ...university,
-    departments: (university.departments || []).map((department) => {
+    departments: (university.departments || []).map(department => {
       if (department.id !== departmentId) return department;
       return updateDepartmentWithSubjectName(department, subjectId, name);
     }),
@@ -425,15 +386,10 @@ export function useUniversityEditor() {
     subjectId: number,
     name: string
   ) => {
-    setUniversities((prevUniversities) =>
-      prevUniversities.map((university) => {
+    setUniversities(prevUniversities =>
+      prevUniversities.map(university => {
         if (university.id !== universityId) return university;
-        return updateUniversityWithSubjectName(
-          university,
-          departmentId,
-          subjectId,
-          name
-        );
+        return updateUniversityWithSubjectName(university, departmentId, subjectId, name);
       })
     );
   };
@@ -456,9 +412,7 @@ export function useUniversityEditor() {
   const handleCancel = () => {
     if (backupState) {
       setUniversities((prev: University[]) =>
-        prev.map((u) =>
-          u.id === backupState.university.id ? backupState.university : u
-        )
+        prev.map(u => (u.id === backupState.university.id ? backupState.university : u))
       );
     }
 
@@ -473,9 +427,9 @@ export function useUniversityEditor() {
       setError(null);
 
       const headers = {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
       };
 
       const major = department.majors[0];
@@ -488,10 +442,8 @@ export function useUniversityEditor() {
           updateDepartment(university, department, headers),
           updateSubjects(university, department, headers),
           major && updateMajor(department.id, major, headers),
-          admissionSchedule &&
-            updateAdmissionSchedule(major.id, admissionSchedule, headers),
-          admissionInfo &&
-            updateAdmissionInfo(admissionSchedule.id, admissionInfo, headers),
+          admissionSchedule && updateAdmissionSchedule(major.id, admissionSchedule, headers),
+          admissionInfo && updateAdmissionInfo(admissionSchedule.id, admissionInfo, headers),
         ].filter(Boolean)
       );
 
@@ -499,21 +451,17 @@ export function useUniversityEditor() {
 
       setEditMode(null);
       setBackupState(null);
-      setSuccessMessage("データが正常に更新されました");
+      setSuccessMessage('データが正常に更新されました');
 
       const timeoutId = setTimeout(() => setSuccessMessage(null), 3000);
       return () => clearTimeout(timeoutId);
     } catch (error) {
-      console.error("Error updating data:", error);
-      setError(
-        error instanceof Error ? error.message : "データの更新に失敗しました。"
-      );
+      console.error('Error updating data:', error);
+      setError(error instanceof Error ? error.message : 'データの更新に失敗しました。');
 
       if (backupState) {
         setUniversities((prev: University[]) =>
-          prev.map((u) =>
-            u.id === backupState.university.id ? backupState.university : u
-          )
+          prev.map(u => (u.id === backupState.university.id ? backupState.university : u))
         );
       }
     } finally {
@@ -534,13 +482,13 @@ export function useUniversityEditor() {
 
     const emptyUniversity: University = {
       id: tempId,
-      name: "",
+      name: '',
       departments: [],
       createdAt: new Date().toString(),
       updatedAt: new Date().toString(),
       version: 1,
-      createdBy: "",
-      updatedBy: "",
+      createdBy: '',
+      updatedBy: '',
     };
 
     setUniversities((prev: University[]) => {

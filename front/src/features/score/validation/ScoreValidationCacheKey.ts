@@ -1,6 +1,5 @@
-import { ValidationError } from "@/lib/validation/error";
-import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
-import { ScoreValidationRules } from "@/types/validation-rules";
+import { ValidationSeverity, ValidationErrorCode } from '@/constants/validation';
+import { ValidationError, ScoreValidationRules } from '@/lib/validation/types';
 
 /**
  * スコアバリデーションのキャッシュキー生成を担当するクラス
@@ -11,13 +10,13 @@ export class ScoreValidationCacheKey {
    */
   static createKey(value: number, rules: ScoreValidationRules): string {
     if (!Number.isFinite(value) || !rules) {
-      throw new ValidationError("無効なキーパラメータです", [
-        {
-          message: "無効なキーパラメータです",
-          category: ValidationCategory.TRANSFORM,
-          severity: ValidationSeverity.ERROR,
-        },
-      ]);
+      const error: ValidationError = {
+        field: 'key',
+        message: '無効なキーパラメータです',
+        code: ValidationErrorCode.INVALID_DATA_FORMAT,
+        severity: ValidationSeverity.ERROR,
+      };
+      throw error;
     }
     return `score-validation:${value}:${JSON.stringify(rules)}`;
   }

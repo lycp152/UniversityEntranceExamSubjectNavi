@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import type { UISubject } from "@/types/universities/subjects";
+import { useEffect, useState } from 'react';
+import type { UISubject } from '@/types/universities/subjects';
 import type {
   APIUniversity,
   APIDepartment,
   APIMajor,
   APIAdmissionSchedule,
   APITestType,
-} from "@/types/api/models";
-import { tableStyles } from "./styles";
-import { transformSubjectData } from "@/utils/transformers/subject-mapper";
-import { LoadingSpinner } from "@/components/ui/feedback/loading-spinner";
-import { ErrorMessage } from "@/components/errors/error-message";
+} from '@/types/api/api-response-types';
+import { tableStyles } from './styles';
+import { transformSubjectData } from '@/utils/transformers/subject-mapper';
+import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
+import { ErrorMessage } from '@/components/errors/error-message';
 
 const processTestTypes = (
   testType: APITestType,
@@ -22,12 +22,12 @@ const processTestTypes = (
   schedule: APIAdmissionSchedule
 ) => {
   if (!testType?.subjects?.length) {
-    console.log("No subjects for test type:", testType.name);
+    console.log('No subjects for test type:', testType.name);
     return null;
   }
   const admissionInfo = schedule.admission_infos?.[0];
   if (!admissionInfo) {
-    console.log("No admission info for schedule:", schedule.name);
+    console.log('No admission info for schedule:', schedule.name);
     return null;
   }
   return transformSubjectData(
@@ -48,14 +48,14 @@ const processSchedule = (
   major: APIMajor
 ) => {
   if (!schedule?.test_types) {
-    console.log("No test types for schedule:", schedule.name);
+    console.log('No test types for schedule:', schedule.name);
     return [];
   }
   return schedule.test_types
-    .map((testType) =>
+    .map((testType: APITestType) =>
       processTestTypes(testType, apiUniversity, department, major, schedule)
     )
-    .filter((subject): subject is UISubject => subject !== null);
+    .filter((subject: UISubject | null): subject is UISubject => subject !== null);
 };
 
 const processMajor = (
@@ -64,10 +64,10 @@ const processMajor = (
   department: APIDepartment
 ): UISubject[] => {
   if (!major.admission_schedules?.length) {
-    console.log("No admission schedules found for major:", major.name);
+    console.log('No admission schedules found for major:', major.name);
     return [];
   }
-  return major.admission_schedules.flatMap((schedule) =>
+  return major.admission_schedules.flatMap(schedule =>
     processSchedule(schedule, apiUniversity, department, major)
   );
 };
@@ -77,31 +77,27 @@ const processDepartment = (
   apiUniversity: APIUniversity
 ): UISubject[] => {
   if (!department?.majors) {
-    console.log("No majors for department:", department.name);
+    console.log('No majors for department:', department.name);
     return [];
   }
-  return department.majors.flatMap((major) =>
-    processMajor(major, apiUniversity, department)
-  );
+  return department.majors.flatMap(major => processMajor(major, apiUniversity, department));
 };
 
-const transformUniversityData = (
-  universities: APIUniversity[]
-): UISubject[] => {
-  console.log("Input universities:", universities);
+const transformUniversityData = (universities: APIUniversity[]): UISubject[] => {
+  console.log('Input universities:', universities);
   const transformedSubjectsMap = new Map<string, UISubject>();
 
-  universities.forEach((apiUniversity) => {
+  universities.forEach(apiUniversity => {
     if (!apiUniversity?.departments) {
-      console.log("No departments for university:", apiUniversity.name);
+      console.log('No departments for university:', apiUniversity.name);
       return;
     }
 
-    const subjects = apiUniversity.departments.flatMap((department) =>
+    const subjects = apiUniversity.departments.flatMap(department =>
       processDepartment(department, apiUniversity)
     );
 
-    subjects.forEach((subject) => {
+    subjects.forEach(subject => {
       const key = `${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`;
       if (!transformedSubjectsMap.has(key)) {
         transformedSubjectsMap.set(key, subject);
@@ -110,7 +106,7 @@ const transformUniversityData = (
   });
 
   const result = Array.from(transformedSubjectsMap.values());
-  console.log("Final transformed data:", result);
+  console.log('Final transformed data:', result);
   return result;
 };
 
@@ -125,18 +121,16 @@ const SearchResultTable = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/universities`
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/universities`);
         const responseData = await response.json();
         const data = responseData.data || responseData; // データが.dataプロパティにある場合とない場合の両方に対応
 
         if (!Array.isArray(data)) {
-          console.error("Data is not an array:", typeof data, data); // より詳細なデバッグ情報
-          throw new Error("Invalid response format");
+          console.error('Data is not an array:', typeof data, data); // より詳細なデバッグ情報
+          throw new Error('Invalid response format');
         }
 
-        console.log("API response structure:", {
+        console.log('API response structure:', {
           universities: data.length,
           firstUniversity: data[0]
             ? {
@@ -150,8 +144,7 @@ const SearchResultTable = () => {
                         ? {
                             name: data[0].departments[0].majors[0].name,
                             schedulesCount:
-                              data[0].departments[0].majors[0]
-                                .admissionSchedules?.length,
+                              data[0].departments[0].majors[0].admissionSchedules?.length,
                           }
                         : null,
                     }
@@ -161,13 +154,11 @@ const SearchResultTable = () => {
         }); // デバッグ用
 
         const transformedData = transformUniversityData(data);
-        console.log("Transformed data:", transformedData); // デバッグ用
+        console.log('Transformed data:', transformedData); // デバッグ用
         setSubjects(transformedData);
       } catch (error) {
-        console.error("Failed to fetch universities:", error);
-        setError(
-          "データの取得に失敗しました。サーバーが起動しているか確認してください。"
-        );
+        console.error('Failed to fetch universities:', error);
+        setError('データの取得に失敗しました。サーバーが起動しているか確認してください。');
       } finally {
         setLoading(false);
       }
@@ -188,7 +179,7 @@ const SearchResultTable = () => {
     admissionScheduleId: number
   ) => {
     const url = `/universities/${academicYear}/${universityId}/${departmentId}/${majorId}/${admissionScheduleId}`;
-    window.open(url, "_blank");
+    window.open(url, '_blank');
   };
 
   if (loading) {
@@ -203,9 +194,7 @@ const SearchResultTable = () => {
     return (
       <div className="text-center p-8">
         <p className="text-xl text-gray-600">データが見つかりませんでした。</p>
-        <p className="mt-2 text-gray-500">
-          現在、データベースに大学情報が登録されていません。
-        </p>
+        <p className="mt-2 text-gray-500">現在、データベースに大学情報が登録されていません。</p>
       </div>
     );
   }
@@ -242,12 +231,8 @@ const SearchResultTable = () => {
                 <td className={tableStyles.td}>{subject.university.name}</td>
                 <td className={tableStyles.td}>{subject.department.name}</td>
                 <td className={tableStyles.td}>{subject.major.name}</td>
-                <td className={tableStyles.td}>
-                  {subject.admissionSchedule.name}
-                </td>
-                <td className={tableStyles.td}>
-                  {subject.examInfo.enrollment} 名
-                </td>
+                <td className={tableStyles.td}>{subject.admissionSchedule.name}</td>
+                <td className={tableStyles.td}>{subject.examInfo.enrollment} 名</td>
               </tr>
             ))}
           </tbody>

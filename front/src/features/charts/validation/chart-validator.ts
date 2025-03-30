@@ -1,14 +1,10 @@
-import { BaseValidator } from "@/utils/validation/base-validator";
+import { BaseValidator } from '@/utils/validation/base-validator';
 import {
   ValidationErrorCode,
   ValidationSeverity,
   ValidationCategory,
-} from "@/constants/validation";
-import {
-  ValidationRule,
-  ValidationContext,
-  ValidationResult,
-} from "@/types/validation-rules";
+} from '@/constants/validation';
+import { ValidationRule, ValidationContext, ValidationResult } from '@/lib/validation/types';
 
 interface ChartData {
   name: string;
@@ -22,20 +18,20 @@ interface ChartData {
 const chartRules: ValidationRule<ChartData>[] = [
   {
     code: ValidationErrorCode.INVALID_DATA_FORMAT,
-    field: "value",
+    field: 'value',
     condition: (data: ChartData) => data.value >= 0,
-    message: "値が無効です",
+    message: '値が無効です',
     severity: ValidationSeverity.ERROR,
     category: ValidationCategory.FORMAT,
   },
   {
     code: ValidationErrorCode.INVALID_PERCENTAGE,
-    field: "percentage",
+    field: 'percentage',
     condition: (data: ChartData) => {
       const percentage = parseFloat(data.percentage);
       return !isNaN(percentage) && percentage >= 0 && percentage <= 100;
     },
-    message: "パーセンテージが無効です",
+    message: 'パーセンテージが無効です',
     severity: ValidationSeverity.ERROR,
     category: ValidationCategory.FORMAT,
   },
@@ -64,14 +60,14 @@ export class ChartValidator extends BaseValidator<ChartData> {
         : [
             {
               code: ValidationErrorCode.INVALID_DATA_FORMAT,
-              message: "チャートデータが無効です",
-              field: "chartData",
+              message: 'チャートデータが無効です',
+              field: 'chartData',
               severity: ValidationSeverity.ERROR,
             },
           ],
       metadata: {
         validatedAt: Date.now(),
-        rules: chartRules.map((rule) => rule.code),
+        rules: chartRules.map(rule => rule.code),
       },
     };
   }
@@ -87,7 +83,7 @@ export class ChartValidator extends BaseValidator<ChartData> {
    * パーセンテージを計算
    */
   calculatePercentage(value: number, total: number): string {
-    if (total === 0) return "0";
+    if (total === 0) return '0';
     return ((value / total) * 100).toFixed(2);
   }
 }

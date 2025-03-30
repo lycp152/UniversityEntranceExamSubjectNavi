@@ -1,13 +1,10 @@
-import {
-  ValidationErrorCode,
-  ValidationSeverity,
-} from "@/constants/validation";
+import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
 import {
   ValidationResult,
   ValidationError,
   ValidationRule,
   ValidationContext,
-} from "@/types/validation-rules";
+} from '@/lib/validation/types';
 
 export interface ValidationMetrics {
   startTime: number;
@@ -36,9 +33,7 @@ export class ValidationService<T> {
     value: T
   ): [boolean, number, ValidationError?] {
     try {
-      const [isValid, executionTime] = this.measurePerformance(() =>
-        rule.condition(value)
-      );
+      const [isValid, executionTime] = this.measurePerformance(() => rule.condition(value));
 
       if (!isValid) {
         return [
@@ -61,14 +56,13 @@ export class ValidationService<T> {
       return [true, executionTime];
     } catch (error: unknown) {
       console.error(`Validation error in rule ${rule.code}:`, error);
-      const errorMessage =
-        error instanceof Error ? error.message : "不明なエラー";
+      const errorMessage = error instanceof Error ? error.message : '不明なエラー';
 
       return [
         false,
         0,
         {
-          field: "validation",
+          field: 'validation',
           message: `バリデーション実行中にエラーが発生しました: ${errorMessage}`,
           code: ValidationErrorCode.TRANSFORM_ERROR,
           severity: ValidationSeverity.ERROR,
@@ -89,10 +83,7 @@ export class ValidationService<T> {
     const ruleExecutionTimes: Record<string, number> = {};
 
     for (const rule of this.rules) {
-      const [isValid, executionTime, error] = this.validateSingleRule(
-        rule,
-        value
-      );
+      const [isValid, executionTime, error] = this.validateSingleRule(rule, value);
       ruleExecutionTimes[rule.code] = executionTime;
 
       if (!isValid && error) {

@@ -1,5 +1,5 @@
-import type { University, Department } from "./university";
-import type { APITestType } from "@/types/api/models";
+import type { University, Department } from './university';
+import type { APITestType } from '@/types/api/api-response-types';
 
 export interface EditMode {
   universityId: number;
@@ -66,11 +66,7 @@ export interface UniversityListProps {
     value: string | number
   ) => void;
   readonly onInsert: (index: number) => void;
-  readonly onAddSubject: (
-    universityId: number,
-    departmentId: number,
-    type: APITestType
-  ) => void;
+  readonly onAddSubject: (universityId: number, departmentId: number, type: APITestType) => void;
   readonly onSubjectNameChange: (
     universityId: number,
     departmentId: number,

@@ -1,16 +1,10 @@
-import type { SubjectScores } from "@/types/score";
-import {
-  ValidationErrorCode,
-  ValidationSeverity,
-} from "@/constants/validation";
-import { ValidationResult } from "@/types/validation-rules";
-import type { ChartData } from "@/features/charts/types/chart";
-import { ScoreValidator } from "@/utils/validation/score-validator";
-import {
-  formatScore,
-  formatPercentage,
-} from "@/utils/formatters/chart-value-formatter";
-import { SUBJECTS, SUBJECT_CATEGORIES } from "@/constants/subjects";
+import type { SubjectScores } from '@/types/score';
+import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
+import { ValidationResult } from '@/lib/validation/types';
+import type { ChartData } from '@/features/charts/types/chart';
+import { ScoreValidator } from '@/utils/validation/score-validator';
+import { formatScore, formatPercentage } from '@/utils/formatters/chart-value-formatter';
+import { SUBJECTS, SUBJECT_CATEGORIES } from '@/constants/subjects';
 
 /**
  * 共通のチャートデータ変換関数
@@ -40,8 +34,8 @@ export const transformDetailedData = async (
   try {
     const data = Object.entries(subjects).map(([subject, scores]) => {
       const displayName = SUBJECTS[subject as keyof typeof SUBJECTS] || subject;
-      const category = subject.replace(/[RL]$/, "");
-      const color = SUBJECT_CATEGORIES[category].color || "#000000";
+      const category = subject.replace(/[RL]$/, '');
+      const color = SUBJECT_CATEGORIES[category].color || '#000000';
       const value = scores.commonTest + scores.secondTest;
 
       return createChartData(displayName, value, color, totalScore, category);
@@ -63,7 +57,7 @@ export const transformDetailedData = async (
         {
           code: ValidationErrorCode.TRANSFORM_ERROR,
           message: (error as Error).message,
-          field: "チャートデータ",
+          field: 'チャートデータ',
           severity: ValidationSeverity.ERROR,
         },
       ],
@@ -83,12 +77,6 @@ export const transformOuterData = (
     const displayName = SUBJECTS[category as keyof typeof SUBJECTS] || category;
     const value = getCategoryTotal(subjects, category);
 
-    return createChartData(
-      displayName,
-      value,
-      color.color,
-      totalScore,
-      category
-    );
+    return createChartData(displayName, value, color.color, totalScore, category);
   });
 };

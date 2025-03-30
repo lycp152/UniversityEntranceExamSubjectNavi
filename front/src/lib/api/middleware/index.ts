@@ -1,9 +1,7 @@
-import type { HttpRequestConfig } from "@/types/api/http";
+import type { HttpRequestConfig } from '@/types/api/http-types';
 
 // APIリクエスト・レスポンスの加工処理を定義するインターフェース
-export type RequestInterceptor = (
-  config: HttpRequestConfig
-) => Promise<HttpRequestConfig>;
+export type RequestInterceptor = (config: HttpRequestConfig) => Promise<HttpRequestConfig>;
 
 // レスポンスを加工するインターセプター
 export type ResponseInterceptor = (response: Response) => Promise<Response>;
@@ -33,9 +31,7 @@ export class InterceptorManager {
 
   // リクエストインターセプターを順次実行
   // 前のインターセプターの結果を次のインターセプターに渡す
-  async runRequestInterceptors(
-    config: HttpRequestConfig
-  ): Promise<HttpRequestConfig> {
+  async runRequestInterceptors(config: HttpRequestConfig): Promise<HttpRequestConfig> {
     return this.requestInterceptors.reduce(
       async (promise, interceptor) => interceptor(await promise),
       Promise.resolve({ ...config })
@@ -61,8 +57,6 @@ export class InterceptorManager {
         error = e;
       }
     }
-    return Promise.reject(
-      error instanceof Error ? error : new Error(String(error))
-    );
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
   }
 }

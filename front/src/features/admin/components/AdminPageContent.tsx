@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import type { APITestType } from "@/types/api/models";
-import type { University, Department } from "@/types/universities/university";
-import type { EditMode } from "@/types/universities/university-list";
-import { UniversityList } from "@/features/admin/components/UniversityList";
-import { AdminLayout } from "@/features/admin/components/AdminLayout";
-import { memo, useCallback } from "react";
+import type { APITestType } from '@/types/api/api-response-types';
+import type { University, Department } from '@/types/universities/university';
+import type { EditMode } from '@/types/universities/university-list';
+import { UniversityList } from '@/features/admin/components/UniversityList';
+import { AdminLayout } from '@/features/admin/components/AdminLayout';
+import { memo, useCallback } from 'react';
 
 interface AdminPageContentProps {
   readonly universities: University[];
@@ -33,11 +33,7 @@ interface AdminPageContentProps {
   ) => Promise<(() => void) | undefined>;
   readonly onCancel: () => void;
   readonly onInsert: (index: number) => void;
-  readonly onAddSubject: (
-    universityId: number,
-    departmentId: number,
-    type: APITestType
-  ) => void;
+  readonly onAddSubject: (universityId: number, departmentId: number, type: APITestType) => void;
   readonly onSubjectNameChange: (
     universityId: number,
     departmentId: number,
@@ -69,12 +65,7 @@ export const AdminPageContent = memo(function AdminPageContent({
   );
 
   const handleInfoChangeCallback = useCallback(
-    (
-      universityId: number,
-      departmentId: number,
-      field: string,
-      value: string | number
-    ) => {
+    (universityId: number, departmentId: number, field: string, value: string | number) => {
       onInfoChange(universityId, departmentId, field, value);
     },
     [onInfoChange]

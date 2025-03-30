@@ -1,7 +1,7 @@
-import React from "react";
-import type { University, Department } from "@/types/universities/university";
-import type { APITestType } from "@/types/api/models";
-import { DepartmentRow } from "@/components/universities/table/department-row";
+import React from 'react';
+import type { University, Department } from '@/types/universities/university';
+import type { APITestType } from '@/types/api/api-response-types';
+import { DepartmentRow } from '@/components/universities/table/department-row';
 
 interface UniversityCardProps {
   readonly university: University;
@@ -28,11 +28,7 @@ interface UniversityCardProps {
     field: string,
     value: string | number
   ) => void;
-  readonly onAddSubject: (
-    universityId: number,
-    departmentId: number,
-    type: APITestType
-  ) => void;
+  readonly onAddSubject: (universityId: number, departmentId: number, type: APITestType) => void;
   readonly onSubjectNameChange: (
     universityId: number,
     departmentId: number,
@@ -55,7 +51,7 @@ export const UniversityCard = ({
   return (
     <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
       <div className="divide-y divide-gray-100">
-        {university.departments?.map((department) => (
+        {university.departments?.map(department => (
           <DepartmentRow
             key={`department-${university.id}-${department.id}`}
             university={university}
@@ -70,9 +66,7 @@ export const UniversityCard = ({
             onCancel={onCancel}
             onScoreChange={onScoreChange}
             onInfoChange={onInfoChange}
-            onAddSubject={(type) =>
-              onAddSubject(university.id, department.id, type)
-            }
+            onAddSubject={type => onAddSubject(university.id, department.id, type)}
             onSubjectNameChange={(subjectId, name) =>
               onSubjectNameChange(university.id, department.id, subjectId, name)
             }

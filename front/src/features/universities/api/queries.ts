@@ -1,15 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import type { APIUniversity } from "@/types/api/models";
-import type { University } from "@/types/api/schemas";
-import { UniversityService } from "@/features/universities/lib/university-service";
-import { UNIVERSITY_KEYS } from "./queryKeys";
-import type { UniversityFilters, UniversityQueryError } from "./types";
+import { useQuery } from '@tanstack/react-query';
+import type { APIUniversity } from '@/types/api/api-response-types';
+import type { University } from '@/types/api/api-schemas';
+import { UniversityService } from '@/features/universities/lib/university-service';
+import { UNIVERSITY_KEYS } from './queryKeys';
+import type { UniversityFilters, UniversityQueryError } from './types';
 
 export const useUniversities = (filters?: Partial<UniversityFilters>) => {
   return useQuery<University[], UniversityQueryError>({
-    queryKey: UNIVERSITY_KEYS.list(
-      filters ? (filters as Record<string, unknown>) : {}
-    ),
+    queryKey: UNIVERSITY_KEYS.list(filters ? (filters as Record<string, unknown>) : {}),
     queryFn: async () => {
       const response = await UniversityService.getUniversities();
       return response.universities.map(transformUniversity);
@@ -33,14 +31,20 @@ const transformUniversity = (apiUniversity: APIUniversity): University => {
   return {
     id: apiUniversity.id,
     name: apiUniversity.name,
-    created_at: apiUniversity.created_at ?? "",
-    updated_at: apiUniversity.updated_at ?? "",
-    departments: apiUniversity.departments.map((dept) => ({
+    created_at: apiUniversity.created_at ?? '',
+    updated_at: apiUniversity.updated_at ?? '',
+    version: apiUniversity.version,
+    created_by: apiUniversity.created_by,
+    updated_by: apiUniversity.updated_by,
+    departments: apiUniversity.departments.map(dept => ({
       id: dept.id,
       university_id: dept.university_id,
       name: dept.name,
-      created_at: dept.created_at ?? "",
-      updated_at: dept.updated_at ?? "",
+      created_at: dept.created_at ?? '',
+      updated_at: dept.updated_at ?? '',
+      version: dept.version,
+      created_by: dept.created_by,
+      updated_by: dept.updated_by,
     })),
   };
 };

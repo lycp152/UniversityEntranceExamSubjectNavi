@@ -1,23 +1,16 @@
 // HTTPリクエストを実行し、インターセプターを管理するコアクラス
 // タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
-import type { ApiClientConfig } from "@/types/api/client";
-import type { HttpResponse, HttpRequestConfig } from "@/types/api/http";
-import {
-  ApiClientError,
-  NetworkError,
-  TimeoutError,
-} from "@/lib/api/errors/client";
-import { InterceptorManager } from "@/lib/api/middleware";
-import { ENV } from "@/lib/config/env";
-import {
-  ERROR_MESSAGES,
-  API_ERROR_CODES,
-} from "@/constants/domain-error-codes";
+import type { ApiClientConfig } from '@/types/api/api-client-config';
+import type { HttpResponse, HttpRequestConfig } from '@/types/api/http-types';
+import { ApiClientError, NetworkError, TimeoutError } from '@/lib/api/errors/client';
+import { InterceptorManager } from '@/lib/api/middleware';
+import { ENV } from '@/lib/config/env';
+import { ERROR_MESSAGES, API_ERROR_CODES } from '@/constants/domain-error-codes';
 import type {
   RequestInterceptor,
   ResponseInterceptor,
   ErrorInterceptor,
-} from "@/lib/api/middleware/index";
+} from '@/lib/api/middleware/index';
 
 export class ApiClient {
   private readonly baseURL: string;
@@ -28,7 +21,7 @@ export class ApiClient {
   constructor(config: ApiClientConfig) {
     this.baseURL = config.baseURL;
     this.defaultHeaders = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...config.defaultHeaders,
     };
     this.timeout = config.timeout ?? ENV.API.TIMEOUT;
@@ -40,14 +33,12 @@ export class ApiClient {
   // デフォルトのエラーインターセプターを設定
   // サーバーエラーをApiClientErrorに変換
   private setupDefaultInterceptors(): void {
-    this.interceptors.addErrorInterceptor(async (error) => {
+    this.interceptors.addErrorInterceptor(async error => {
       if (error instanceof Response) {
         const data = await error.json();
         throw new ApiClientError({
           code: data.code ?? API_ERROR_CODES.INTERNAL_SERVER_ERROR,
-          message:
-            data.message ??
-            ERROR_MESSAGES[API_ERROR_CODES.INTERNAL_SERVER_ERROR],
+          message: data.message ?? ERROR_MESSAGES[API_ERROR_CODES.INTERNAL_SERVER_ERROR],
           status: error.status,
           details: data.details,
         });
@@ -76,10 +67,7 @@ export class ApiClient {
 
   // HTTPリクエストを実行する汎用メソッド
   // タイムアウト制御とインターセプターの実行を管理
-  async request<T>(
-    path: string,
-    config: HttpRequestConfig
-  ): Promise<HttpResponse<T>> {
+  async request<T>(path: string, config: HttpRequestConfig): Promise<HttpResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -96,9 +84,7 @@ export class ApiClient {
       const response = await fetch(`${this.baseURL}${path}`, finalConfig);
       clearTimeout(timeoutId);
 
-      const processedResponse = await this.interceptors.runResponseInterceptors(
-        response
-      );
+      const processedResponse = await this.interceptors.runResponseInterceptors(response);
 
       if (!processedResponse.ok) {
         await this.interceptors.runErrorInterceptors(processedResponse);
@@ -123,7 +109,7 @@ export class ApiClient {
         throw error;
       }
 
-      if (error instanceof DOMException && error.name === "AbortError") {
+      if (error instanceof DOMException && error.name === 'AbortError') {
         throw new TimeoutError();
       }
 
@@ -132,11 +118,8 @@ export class ApiClient {
   }
 
   // GETリクエストを実行
-  async get<T>(
-    path: string,
-    config?: Omit<HttpRequestConfig, "method">
-  ): Promise<T> {
-    const response = await this.request<T>(path, { ...config, method: "GET" });
+  async get<T>(path: string, config?: Omit<HttpRequestConfig, 'method'>): Promise<T> {
+    const response = await this.request<T>(path, { ...config, method: 'GET' });
     return response.data;
   }
 
@@ -144,11 +127,11 @@ export class ApiClient {
   async post<T>(
     path: string,
     data?: unknown,
-    config?: Omit<HttpRequestConfig, "method" | "body">
+    config?: Omit<HttpRequestConfig, 'method' | 'body'>
   ): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
-      method: "POST",
+      method: 'POST',
       body: data ? JSON.stringify(data) : null,
     });
     return response.data;
@@ -158,24 +141,21 @@ export class ApiClient {
   async put<T>(
     path: string,
     data?: unknown,
-    config?: Omit<HttpRequestConfig, "method" | "body">
+    config?: Omit<HttpRequestConfig, 'method' | 'body'>
   ): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
-      method: "PUT",
+      method: 'PUT',
       body: data ? JSON.stringify(data) : null,
     });
     return response.data;
   }
 
   // DELETEリクエストを実行
-  async delete<T>(
-    path: string,
-    config?: Omit<HttpRequestConfig, "method">
-  ): Promise<T> {
+  async delete<T>(path: string, config?: Omit<HttpRequestConfig, 'method'>): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
-      method: "DELETE",
+      method: 'DELETE',
     });
     return response.data;
   }

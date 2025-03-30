@@ -1,6 +1,5 @@
-import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
-import { ScoreValidationRules } from "@/types/validation-rules";
-import { ValidationError } from "@/lib/validation/error";
+import { ValidationSeverity, ValidationErrorCode } from '@/constants/validation';
+import { ValidationError, ScoreValidationRules } from '@/lib/validation/types';
 
 /**
  * チャートデータのキャッシュキー生成を担当するクラス
@@ -11,13 +10,13 @@ export class ChartDataCacheKey {
    */
   static createKey(value: number, rules: ScoreValidationRules): string {
     if (!Number.isFinite(value) || !rules) {
-      throw new ValidationError("無効なキーパラメータです", [
-        {
-          message: "無効なキーパラメータです",
-          category: ValidationCategory.TRANSFORM,
-          severity: ValidationSeverity.ERROR,
-        },
-      ]);
+      const error: ValidationError = {
+        field: 'key',
+        message: '無効なキーパラメータです',
+        code: ValidationErrorCode.INVALID_DATA_FORMAT,
+        severity: ValidationSeverity.ERROR,
+      };
+      throw error;
     }
     return `chart-data:${value}:${JSON.stringify(rules)}`;
   }

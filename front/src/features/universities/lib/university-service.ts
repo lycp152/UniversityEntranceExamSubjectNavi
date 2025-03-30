@@ -1,30 +1,23 @@
-import { apiClient } from "@/lib/api/client";
-import { API_ENDPOINTS } from "@/features/universities/lib/api-endpoints-paths";
+import { apiClient } from '@/lib/api/client';
+import { API_ENDPOINTS } from '@/features/universities/lib/api-endpoints-paths';
 import type {
   APIUniversity,
   APIDepartment,
   APISubject,
   GetUniversitiesResponse,
-} from "@/types/api/models";
+} from '@/types/api/api-response-types';
 
 export class UniversityService {
   static async getUniversities(): Promise<GetUniversitiesResponse> {
     return apiClient.get<GetUniversitiesResponse>(API_ENDPOINTS.UNIVERSITIES);
   }
 
-  static async getUniversity(
-    universityId: string | number
-  ): Promise<APIUniversity> {
+  static async getUniversity(universityId: string | number): Promise<APIUniversity> {
     return apiClient.get<APIUniversity>(API_ENDPOINTS.UNIVERSITY(universityId));
   }
 
-  static async updateUniversity(
-    university: APIUniversity
-  ): Promise<APIUniversity> {
-    return apiClient.put<APIUniversity>(
-      API_ENDPOINTS.UNIVERSITY(university.id),
-      university
-    );
+  static async updateUniversity(university: APIUniversity): Promise<APIUniversity> {
+    return apiClient.put<APIUniversity>(API_ENDPOINTS.UNIVERSITY(university.id), university);
   }
 
   static async updateDepartment(

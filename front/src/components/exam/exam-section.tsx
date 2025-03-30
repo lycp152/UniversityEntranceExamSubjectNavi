@@ -1,8 +1,8 @@
 import type {
   APITestType as TestType,
   APISubject as Subject,
-} from "@/types/api/models";
-import { useState, useCallback } from "react";
+} from '@/types/api/api-response-types';
+import { useState, useCallback } from 'react';
 
 interface ScoreDisplayProps {
   score: number;
@@ -19,7 +19,7 @@ const handleInputChange =
 const EditScore = ({
   score,
   onScoreChange,
-}: Omit<ScoreDisplayProps, "isEditing" | "percentage">) => {
+}: Omit<ScoreDisplayProps, 'isEditing' | 'percentage'>) => {
   if (!onScoreChange) return null;
 
   return (
@@ -36,7 +36,7 @@ const EditScore = ({
 const ViewScore = ({
   score,
   percentage,
-}: Omit<ScoreDisplayProps, "isEditing" | "onScoreChange">) => (
+}: Omit<ScoreDisplayProps, 'isEditing' | 'onScoreChange'>) => (
   <>
     <div className="text-xs font-semibold text-gray-900 whitespace-nowrap text-center w-[50px]">
       {score}点
@@ -81,7 +81,7 @@ const SubjectCard = ({
         <input
           type="text"
           value={subject.name}
-          onChange={(e) => onNameChange(e.target.value)}
+          onChange={e => onNameChange(e.target.value)}
           className="text-xs font-medium text-gray-900 py-1.5 px-1 text-center border-b border-gray-100 bg-gray-100 truncate focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="科目名"
         />
@@ -130,11 +130,7 @@ const createSubjectCard = (
       isEditing={isEditing}
       editValue={editValues[subject.id] ?? score}
       onScoreChange={scoreHandler}
-      onNameChange={
-        onSubjectNameChange
-          ? (name) => onSubjectNameChange(subject.id, name)
-          : undefined
-      }
+      onNameChange={onSubjectNameChange ? name => onSubjectNameChange(subject.id, name) : undefined}
     />
   );
 };
@@ -149,21 +145,12 @@ const SubjectList = ({
   onSubjectNameChange,
 }: SubjectListProps) => {
   // 科目を表示順序でソート
-  const sortedSubjects = [...subjects].sort(
-    (a, b) => a.display_order - b.display_order
-  );
+  const sortedSubjects = [...subjects].sort((a, b) => a.display_order - b.display_order);
 
   return (
     <div className="flex gap-1">
-      {sortedSubjects.map((subject) =>
-        createSubjectCard(
-          subject,
-          type,
-          isEditing,
-          editValues,
-          onScoreChange,
-          onSubjectNameChange
-        )
+      {sortedSubjects.map(subject =>
+        createSubjectCard(subject, type, isEditing, editValues, onScoreChange, onSubjectNameChange)
       )}
       {isEditing && onAddSubject && (
         <button
@@ -183,9 +170,7 @@ const SubjectList = ({
               clipRule="evenodd"
             />
           </svg>
-          <span className="text-xs text-gray-400 group-hover:text-gray-500 mt-1">
-            追加
-          </span>
+          <span className="text-xs text-gray-400 group-hover:text-gray-500 mt-1">追加</span>
         </button>
       )}
     </div>
@@ -195,13 +180,11 @@ const SubjectList = ({
 const createScoreHandler =
   (
     subjectId: number,
-    setEditValues: (
-      fn: (prev: Record<number, number>) => Record<number, number>
-    ) => void,
+    setEditValues: (fn: (prev: Record<number, number>) => Record<number, number>) => void,
     onScoreChange?: (subjectId: number, value: number) => void
   ) =>
   (value: number) => {
-    setEditValues((prev) => ({ ...prev, [subjectId]: value }));
+    setEditValues(prev => ({ ...prev, [subjectId]: value }));
     onScoreChange?.(subjectId, value);
   };
 
@@ -223,21 +206,16 @@ export const ExamSection = ({
   const [editValues, setEditValues] = useState<Record<number, number>>({});
 
   const handleScoreChange = useCallback(
-    (subjectId: number) =>
-      createScoreHandler(subjectId, setEditValues, onScoreChange),
+    (subjectId: number) => createScoreHandler(subjectId, setEditValues, onScoreChange),
     [onScoreChange]
   );
 
   // 現在の試験タイプに属する科目のみをフィルタリング
-  const filteredSubjects = subjects.filter(
-    (subject) => subject.test_type_id === type.id
-  );
+  const filteredSubjects = subjects.filter(subject => subject.test_type_id === type.id);
 
   return (
     <div className="w-full">
-      <div className="text-xs font-medium text-gray-700 mb-2">
-        {type.name}試験
-      </div>
+      <div className="text-xs font-medium text-gray-700 mb-2">{type.name}試験</div>
       <SubjectList
         subjects={filteredSubjects}
         type={type}

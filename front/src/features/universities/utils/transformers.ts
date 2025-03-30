@@ -6,7 +6,7 @@ import type {
   AdmissionSchedule,
   TestType,
   Subject,
-} from "@/types/universities/university";
+} from '@/types/universities/university';
 import type {
   APIUniversity,
   APIDepartment,
@@ -15,7 +15,7 @@ import type {
   APIAdmissionInfo,
   APITestType,
   APISubject,
-} from "@/types/api/models";
+} from '@/types/api/api-response-types';
 
 export const transformToAPISubject = (subject: Subject): APISubject => ({
   id: subject.id,
@@ -23,9 +23,10 @@ export const transformToAPISubject = (subject: Subject): APISubject => ({
   name: subject.name,
   score: subject.score,
   percentage: subject.percentage,
-  display_order: 0,
+  display_order: subject.displayOrder,
   created_at: subject.createdAt,
   updated_at: subject.updatedAt,
+  deleted_at: subject.deletedAt ?? null,
   version: subject.version,
   created_by: subject.createdBy,
   updated_by: subject.updatedBy,
@@ -38,6 +39,7 @@ export const transformToAPITestType = (testType: TestType): APITestType => ({
   subjects: testType.subjects.map(transformToAPISubject),
   created_at: testType.createdAt,
   updated_at: testType.updatedAt,
+  deleted_at: testType.deletedAt ?? null,
   version: testType.version,
   created_by: testType.createdBy,
   updated_by: testType.updatedBy,
@@ -59,9 +61,7 @@ export const transformToAPIAdmissionSchedule = (
   updated_by: schedule.updatedBy,
 });
 
-export const transformToAPIAdmissionInfo = (
-  admissionInfo: AdmissionInfo
-): APIAdmissionInfo => ({
+export const transformToAPIAdmissionInfo = (admissionInfo: AdmissionInfo): APIAdmissionInfo => ({
   id: admissionInfo.id,
   admission_schedule_id: admissionInfo.admissionScheduleId,
   academic_year: admissionInfo.academicYear,
@@ -75,7 +75,7 @@ export const transformToAPIAdmissionInfo = (
   admission_schedule: {
     id: 0,
     major_id: admissionInfo.admissionScheduleId,
-    name: "",
+    name: '',
     display_order: 0,
     test_types: [],
     admission_infos: [],
@@ -97,13 +97,10 @@ export const transformToAPIMajor = (major: Major): APIMajor => ({
   version: major.version,
   created_by: major.createdBy,
   updated_by: major.updatedBy,
-  admission_schedules:
-    major.admissionSchedules?.map(transformToAPIAdmissionSchedule) || [],
+  admission_schedules: major.admissionSchedules?.map(transformToAPIAdmissionSchedule) || [],
 });
 
-export const transformToAPIDepartment = (
-  department: Department
-): APIDepartment => ({
+export const transformToAPIDepartment = (department: Department): APIDepartment => ({
   id: department.id,
   name: department.name,
   university_id: department.universityId,
@@ -115,9 +112,7 @@ export const transformToAPIDepartment = (
   updated_by: department.updatedBy,
 });
 
-export const transformToAPIUniversity = (
-  university: University
-): APIUniversity => ({
+export const transformToAPIUniversity = (university: University): APIUniversity => ({
   id: university.id,
   name: university.name,
   departments: university.departments.map(transformToAPIDepartment),

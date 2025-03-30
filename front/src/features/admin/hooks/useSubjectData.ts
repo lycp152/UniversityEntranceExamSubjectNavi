@@ -1,29 +1,22 @@
-import { useCallback } from "react";
-import type { APITestType, APISubject } from "@/types/api/models";
+import { useCallback } from 'react';
+import type { APITestType, APISubject } from '@/types/api/api-response-types';
 
 export const useSubjectData = () => {
   const calculateUpdatedSubjects = useCallback(
-    (
-      subjects: APISubject[] | undefined,
-      subjectId: number,
-      value: number
-    ): APISubject[] => {
+    (subjects: APISubject[] | undefined, subjectId: number, value: number): APISubject[] => {
       if (!subjects || subjects.length === 0) return [];
 
       // 科目のスコアを更新
-      const updatedSubjects = subjects.map((subject) => ({
+      const updatedSubjects = subjects.map(subject => ({
         ...subject,
         score: subject.id === subjectId ? value : subject.score,
       }));
 
       // 合計スコアを計算
-      const totalScore = updatedSubjects.reduce(
-        (sum, subject) => sum + subject.score,
-        0
-      );
+      const totalScore = updatedSubjects.reduce((sum, subject) => sum + subject.score, 0);
 
       // パーセンテージを更新
-      return updatedSubjects.map((subject) => ({
+      return updatedSubjects.map(subject => ({
         ...subject,
         percentage: totalScore > 0 ? (subject.score / totalScore) * 100 : 0,
       }));
@@ -32,33 +25,30 @@ export const useSubjectData = () => {
   );
 
   const isCommonAPITestType = useCallback((type: APITestType): boolean => {
-    return type.name === "共通";
+    return type.name === '共通';
   }, []);
 
   const isSecondaryAPITestType = useCallback((type: APITestType): boolean => {
-    return type.name === "二次";
+    return type.name === '二次';
   }, []);
 
-  const createNewSubject = useCallback(
-    (testTypeId: number, displayOrder: number): APISubject => {
-      const now = new Date().toISOString();
-      return {
-        id: Date.now(),
-        test_type_id: testTypeId,
-        name: "新規科目",
-        score: 0,
-        percentage: 0,
-        display_order: displayOrder,
-        created_at: now,
-        updated_at: now,
-        deleted_at: null,
-        version: 1,
-        created_by: "",
-        updated_by: "",
-      };
-    },
-    []
-  );
+  const createNewSubject = useCallback((testTypeId: number, displayOrder: number): APISubject => {
+    const now = new Date().toISOString();
+    return {
+      id: Date.now(),
+      test_type_id: testTypeId,
+      name: '新規科目',
+      score: 0,
+      percentage: 0,
+      display_order: displayOrder,
+      created_at: now,
+      updated_at: now,
+      deleted_at: null,
+      version: 1,
+      created_by: '',
+      updated_by: '',
+    };
+  }, []);
 
   const validateSubject = useCallback((subject: APISubject): boolean => {
     return (

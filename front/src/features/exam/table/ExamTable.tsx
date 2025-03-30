@@ -1,25 +1,14 @@
-import {
-  Department,
-  University,
-  Subject,
-  TestType,
-} from "@/types/universities/university";
-import { DepartmentInfo } from "@/components/universities/department-info/department-info";
-import { ExamSection } from "@/components/exam/exam-section";
-import { APISubject, APITestType } from "@/types/api/models";
+import { Department, University, Subject, TestType } from '@/types/universities/university';
+import { DepartmentInfo } from '@/components/universities/department-info/department-info';
+import { ExamSection } from '@/components/exam/exam-section';
+import { APISubject, APITestType } from '@/types/api/api-response-types';
 
 interface ExamTableProps {
   departments: Department[];
   universities: University[];
   isEditing?: boolean;
-  onInfoChange?: (
-    departmentId: number
-  ) => (field: string, value: string | number) => void;
-  onScoreChange?: (
-    departmentId: number,
-    subjectId: number,
-    value: number
-  ) => void;
+  onInfoChange?: (departmentId: number) => (field: string, value: string | number) => void;
+  onScoreChange?: (departmentId: number, subjectId: number, value: number) => void;
 }
 
 const transformToAPISubject = (subject: Subject): APISubject => ({
@@ -31,6 +20,7 @@ const transformToAPISubject = (subject: Subject): APISubject => ({
   display_order: subject.displayOrder,
   created_at: subject.createdAt,
   updated_at: subject.updatedAt,
+  deleted_at: subject.deletedAt ?? null,
   version: subject.version,
   created_by: subject.createdBy,
   updated_by: subject.updatedBy,
@@ -43,6 +33,7 @@ const transformToAPITestType = (testType: TestType): APITestType => ({
   subjects: testType.subjects.map(transformToAPISubject),
   created_at: testType.createdAt,
   updated_at: testType.updatedAt,
+  deleted_at: testType.deletedAt ?? null,
   version: testType.version,
   created_by: testType.createdBy,
   updated_by: testType.updatedBy,
@@ -56,8 +47,8 @@ export const ExamTable = ({
   onScoreChange,
 }: ExamTableProps) => {
   const getUniversity = (departmentId: number) => {
-    const department = departments.find((d) => d.id === departmentId);
-    return universities.find((u) => u.id === department?.universityId);
+    const department = departments.find(d => d.id === departmentId);
+    return universities.find(u => u.id === department?.universityId);
   };
 
   const handleInfoChange = (departmentId: number) => {
@@ -66,31 +57,21 @@ export const ExamTable = ({
 
   const handleScoreChange = (departmentId: number) => {
     return onScoreChange
-      ? (subjectId: number, value: number) =>
-          onScoreChange(departmentId, subjectId, value)
+      ? (subjectId: number, value: number) => onScoreChange(departmentId, subjectId, value)
       : undefined;
   };
 
   return (
     <div className="flex flex-col gap-2">
-      {departments.map((department) => {
+      {departments.map(department => {
         const university = getUniversity(department.id);
         const major = department.majors[0];
         const schedule = major?.admissionSchedules?.[0];
         const examInfo = schedule?.admissionInfos?.[0];
-        const commonType = schedule?.testTypes?.find((t) => t.name === "共通");
-        const secondaryType = schedule?.testTypes?.find(
-          (t) => t.name === "二次"
-        );
+        const commonType = schedule?.testTypes?.find(t => t.name === '共通');
+        const secondaryType = schedule?.testTypes?.find(t => t.name === '二次');
 
-        if (
-          !university ||
-          !major ||
-          !schedule ||
-          !examInfo ||
-          !commonType ||
-          !secondaryType
-        ) {
+        if (!university || !major || !schedule || !examInfo || !commonType || !secondaryType) {
           return null;
         }
 
@@ -98,10 +79,7 @@ export const ExamTable = ({
         const secondaryApiType = transformToAPITestType(secondaryType);
 
         return (
-          <div
-            key={department.id}
-            className="flex items-start bg-white rounded-lg shadow-sm p-2"
-          >
+          <div key={department.id} className="flex items-start bg-white rounded-lg shadow-sm p-2">
             <DepartmentInfo
               department={department}
               university={university}

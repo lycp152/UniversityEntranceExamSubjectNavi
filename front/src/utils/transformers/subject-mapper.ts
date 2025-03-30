@@ -5,9 +5,10 @@ import type {
   APIMajor,
   APIAdmissionInfo,
   APIAdmissionSchedule,
-} from "@/types/api/models";
-import type { UISubject } from "@/types/universities/subjects";
-import type { BaseSubjectScore } from "@/types/score";
+  APITestType,
+} from '@/types/api/api-response-types';
+import type { UISubject } from '@/types/universities/subjects';
+import type { BaseSubjectScore } from '@/types/score';
 
 const updateSubjectScores = (
   subject: APISubject,
@@ -15,7 +16,7 @@ const updateSubjectScores = (
   subjects: Record<string, BaseSubjectScore>
 ) => {
   if (subject.name in subjects) {
-    const isCommonTest = testType.name === "共通";
+    const isCommonTest = testType.name === '共通';
     const currentScores = subjects[subject.name];
     subjects[subject.name] = {
       commonTest: isCommonTest
@@ -42,9 +43,7 @@ const calculateSubjectScores = (
   };
 
   for (const subject of allSubjects) {
-    const testType = schedule.test_types.find(
-      (tt) => tt.id === subject.test_type_id
-    );
+    const testType = schedule.test_types.find((tt: APITestType) => tt.id === subject.test_type_id);
     if (testType) {
       updateSubjectScores(subject, testType, subjects);
     }

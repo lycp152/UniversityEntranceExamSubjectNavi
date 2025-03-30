@@ -1,38 +1,36 @@
-"use client";
+'use client';
 
-import { useState, useEffect, use } from "react";
-import { notFound } from "next/navigation";
-import { ScoreDisplay } from "@/features/universities/utils/ScoreDisplay";
-import SubjectInfo from "@/features/universities/utils/SubjectInfo";
-import SubjectScoreTable from "@/features/universities/table";
-import { ErrorMessage } from "@/components/errors/error-message";
-import { LoadingSpinner } from "@/components/ui/feedback/loading-spinner";
-import { transformSubjectData } from "@/utils/transformers/subject-mapper";
-import { UniversityService } from "@/features/universities/lib/university-service";
+import { useState, useEffect, use } from 'react';
+import { notFound } from 'next/navigation';
+import { ScoreDisplay } from '@/features/universities/utils/ScoreDisplay';
+import SubjectInfo from '@/features/universities/utils/SubjectInfo';
+import SubjectScoreTable from '@/features/universities/table';
+import { ErrorMessage } from '@/components/errors/error-message';
+import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
+import { transformSubjectData } from '@/utils/transformers/subject-mapper';
+import { UniversityService } from '@/features/universities/lib/university-service';
 import type {
   APIUniversity,
   APIDepartment,
   APIMajor,
   APIAdmissionSchedule,
   APITestType,
-} from "@/types/api/models";
-import type { UISubject } from "@/types/universities/subjects";
-import { UniversityPageParams } from "@/features/universities/types/params";
+} from '@/types/api/api-response-types';
+import type { UISubject } from '@/types/universities/subjects';
+import { UniversityPageParams } from '@/features/universities/types/params';
 
 const findDepartmentAndMajor = (
   university: APIUniversity,
   departmentId: string,
   majorId: string
 ): { department: APIDepartment; major: APIMajor } | null => {
-  const department = university.departments?.find(
-    (d) => d.id === parseInt(departmentId, 10)
-  );
+  const department = university.departments?.find(d => d.id === parseInt(departmentId, 10));
 
   if (!department) {
     return null;
   }
 
-  const major = department.majors?.find((m) => m.id === parseInt(majorId, 10));
+  const major = department.majors?.find(m => m.id === parseInt(majorId, 10));
 
   if (!major) {
     return null;
@@ -47,12 +45,9 @@ interface Props {
 
 const UniversityPage = ({ params }: Props) => {
   const resolvedParams = use(params);
-  const { academicYear, universityId, departmentId, majorId, schedule } =
-    resolvedParams;
+  const { academicYear, universityId, departmentId, majorId, schedule } = resolvedParams;
 
-  const [selectedSubject, setSelectedSubject] = useState<UISubject | null>(
-    null
-  );
+  const [selectedSubject, setSelectedSubject] = useState<UISubject | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,18 +57,12 @@ const UniversityPage = ({ params }: Props) => {
         setLoading(true);
         setError(null);
 
-        const universityData = await UniversityService.getUniversity(
-          universityId
-        );
-        console.log("API Response:", universityData);
-        const result = findDepartmentAndMajor(
-          universityData,
-          departmentId,
-          majorId
-        );
+        const universityData = await UniversityService.getUniversity(universityId);
+        console.log('API Response:', universityData);
+        const result = findDepartmentAndMajor(universityData, departmentId, majorId);
 
         if (!result) {
-          throw new Error("Department or major not found");
+          throw new Error('Department or major not found');
         }
 
         const { department, major } = result;
@@ -82,29 +71,21 @@ const UniversityPage = ({ params }: Props) => {
         );
 
         if (!admissionSchedule) {
-          throw new Error("Admission schedule not found");
+          throw new Error('Admission schedule not found');
         }
 
-        console.log(
-          "Admission Schedule:",
-          JSON.stringify(admissionSchedule, null, 2)
-        );
-        console.log("Test Types:", admissionSchedule.test_types);
+        console.log('Admission Schedule:', JSON.stringify(admissionSchedule, null, 2));
+        console.log('Test Types:', admissionSchedule.test_types);
 
         const admissionInfo = admissionSchedule.admission_infos?.[0];
-        console.log("Academic Year from URL:", academicYear);
-        console.log("Admission Infos:", admissionSchedule.admission_infos);
-        if (
-          !admissionInfo ||
-          admissionInfo.academic_year !== parseInt(academicYear, 10)
-        ) {
-          throw new Error(
-            "Admission info not found for the specified academic year"
-          );
+        console.log('Academic Year from URL:', academicYear);
+        console.log('Admission Infos:', admissionSchedule.admission_infos);
+        if (!admissionInfo || admissionInfo.academic_year !== parseInt(academicYear, 10)) {
+          throw new Error('Admission info not found for the specified academic year');
         }
 
         if (!admissionSchedule.test_types) {
-          throw new Error("Test types not found in admission schedule");
+          throw new Error('Test types not found in admission schedule');
         }
 
         const allSubjectsData = admissionSchedule.test_types.flatMap(
@@ -112,7 +93,7 @@ const UniversityPage = ({ params }: Props) => {
         );
 
         if (!allSubjectsData.length) {
-          throw new Error("No subjects found");
+          throw new Error('No subjects found');
         }
 
         const transformedSubject = transformSubjectData(
@@ -126,13 +107,13 @@ const UniversityPage = ({ params }: Props) => {
         );
 
         if (!transformedSubject) {
-          throw new Error("Failed to transform subject data");
+          throw new Error('Failed to transform subject data');
         }
 
         setSelectedSubject(transformedSubject);
       } catch (error) {
-        console.error("Failed to fetch exam details:", error);
-        setError(error instanceof Error ? error.message : "An error occurred");
+        console.error('Failed to fetch exam details:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred');
       } finally {
         setLoading(false);
       }

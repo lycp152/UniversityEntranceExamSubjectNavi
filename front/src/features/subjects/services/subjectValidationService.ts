@@ -1,22 +1,19 @@
-import { BaseValidator } from "@/utils/validation/base-validator";
-import type {
-  ValidationRule,
-  ValidationResult,
-} from "@/types/validation-rules";
-import type { Subject, SubjectScore } from "@/features/subjects/schemas";
-import { SUBJECT_CONSTRAINTS } from "@/features/subjects/config/constraints";
+import { BaseValidator } from '@/utils/validation/base-validator';
+import type { ValidationRule, ValidationResult } from '@/lib/validation/types';
+import type { Subject, SubjectScore } from '@/features/subjects/schemas';
+import { SUBJECT_CONSTRAINTS } from '@/features/subjects/config/constraints';
 import {
   ValidationErrorCode,
   ValidationSeverity,
   ValidationCategory,
-} from "@/constants/validation";
+} from '@/constants/validation';
 
 export class SubjectValidator extends BaseValidator<Subject> {
   private readonly rules: ValidationRule<Subject>[] = [
     {
       code: ValidationErrorCode.INVALID_DATA_FORMAT,
-      field: "score",
-      message: "スコアが有効範囲外です",
+      field: 'score',
+      message: 'スコアが有効範囲外です',
       condition: (subject: Subject) =>
         subject.maxScore >= SUBJECT_CONSTRAINTS.MIN_SCORE &&
         subject.minScore >= SUBJECT_CONSTRAINTS.MIN_SCORE &&
@@ -26,8 +23,8 @@ export class SubjectValidator extends BaseValidator<Subject> {
     },
     {
       code: ValidationErrorCode.INVALID_DATA_FORMAT,
-      field: "weight",
-      message: "重みが有効範囲外です",
+      field: 'weight',
+      message: '重みが有効範囲外です',
       condition: (subject: Subject) =>
         subject.weight >= SUBJECT_CONSTRAINTS.MIN_WEIGHT &&
         subject.weight <= SUBJECT_CONSTRAINTS.MAX_WEIGHT,
@@ -54,8 +51,8 @@ export class SubjectValidator extends BaseValidator<Subject> {
         : [
             {
               code: ValidationErrorCode.INVALID_DATA_FORMAT,
-              message: "スコアが無効です",
-              field: "score",
+              message: 'スコアが無効です',
+              field: 'score',
               severity: ValidationSeverity.ERROR,
             },
           ],
@@ -88,7 +85,7 @@ export class SubjectValidator extends BaseValidator<Subject> {
       errors,
       metadata: {
         validatedAt: Date.now(),
-        rules: this.rules.map((rule) => rule.code),
+        rules: this.rules.map(rule => rule.code),
       },
     };
   }

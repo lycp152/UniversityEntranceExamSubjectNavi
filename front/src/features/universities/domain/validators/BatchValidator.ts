@@ -1,5 +1,5 @@
-import { ValidationError } from "@/lib/validation/error";
-import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
+import { ValidationError } from '@/lib/validation/types';
+import { ValidationSeverity, ValidationErrorCode } from '@/constants/validation';
 
 interface BatchValidationResult<T> {
   item: T;
@@ -44,7 +44,7 @@ export class BatchValidator {
     processingTime: number,
     stopOnFirstError: boolean
   ): BatchValidationResult<unknown> {
-    if (error instanceof ValidationError) {
+    if (this.isValidationError(error)) {
       if (stopOnFirstError) {
         throw error;
       }
@@ -52,17 +52,15 @@ export class BatchValidator {
     }
 
     if (error instanceof Array) {
-      const validationErrors = error.map((err) =>
-        err instanceof ValidationError
+      const validationErrors = error.map(err =>
+        this.isValidationError(err)
           ? err
-          : new ValidationError("バリデーションエラー", [
-              {
-                field: "unknown",
-                message: err.message || "不明なエラー",
-                category: ValidationCategory.TRANSFORM,
-                severity: ValidationSeverity.ERROR,
-              },
-            ])
+          : {
+              field: 'unknown',
+              message: err.message || '不明なエラー',
+              code: ValidationErrorCode.INVALID_DATA_FORMAT,
+              severity: ValidationSeverity.ERROR,
+            }
       );
       if (stopOnFirstError) {
         throw validationErrors[0];
@@ -70,21 +68,27 @@ export class BatchValidator {
       return { item, errors: validationErrors, processingTime };
     }
 
-    const validationError = new ValidationError(
-      "バリデーション中に予期せぬエラーが発生しました",
-      [
-        {
-          field: "unknown",
-          message: error instanceof Error ? error.message : "不明なエラー",
-          category: ValidationCategory.TRANSFORM,
-          severity: ValidationSeverity.ERROR,
-        },
-      ]
-    );
+    const validationError: ValidationError = {
+      field: 'unknown',
+      message: error instanceof Error ? error.message : '不明なエラー',
+      code: ValidationErrorCode.INVALID_DATA_FORMAT,
+      severity: ValidationSeverity.ERROR,
+    };
     if (stopOnFirstError) {
       throw validationError;
     }
     return { item, errors: [validationError], processingTime };
+  }
+
+  private static isValidationError(error: unknown): error is ValidationError {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'field' in error &&
+      'message' in error &&
+      'code' in error &&
+      'severity' in error
+    );
   }
 
   static async validateBatch<T>(
@@ -101,7 +105,7 @@ export class BatchValidator {
 
     for (const chunk of chunks) {
       const chunkStartTime = Date.now();
-      const chunkPromises = chunk.map(async (item) => {
+      const chunkPromises = chunk.map(async item => {
         const itemStartTime = Date.now();
         try {
           const validationPromise = Promise.resolve(validator(item));
@@ -141,9 +145,7 @@ export class BatchValidator {
     return results;
   }
 
-  private static calculateOptimalBatchSize(
-    options: BatchValidationOptions
-  ): number {
+  private static calculateOptimalBatchSize(options: BatchValidationOptions): number {
     if (!options.adaptiveBatchSize) {
       return options.maxConcurrent!;
     }
@@ -151,10 +153,7 @@ export class BatchValidator {
     // メトリクスに基づいて最適なバッチサイズを計算
     const baseSize = options.maxConcurrent!;
     const successFactor = Math.min(this.metrics.successRate * 1.5, 1);
-    const timingFactor = Math.max(
-      1 - this.metrics.averageProcessingTime / options.timeoutMs!,
-      0.5
-    );
+    const timingFactor = Math.max(1 - this.metrics.averageProcessingTime / options.timeoutMs!, 0.5);
 
     return Math.max(Math.floor(baseSize * successFactor * timingFactor), 1);
   }
@@ -164,17 +163,13 @@ export class BatchValidator {
     processingTime: number,
     batchSize: number
   ): void {
-    const successCount = results.filter((r) => r.errors.length === 0).length;
+    const successCount = results.filter(r => r.errors.length === 0).length;
     const newSuccessRate = successCount / results.length;
 
     this.metrics = {
       totalProcessingTime: this.metrics.totalProcessingTime + processingTime,
-      averageProcessingTime:
-        (this.metrics.averageProcessingTime + processingTime / batchSize) / 2,
-      maxProcessingTime: Math.max(
-        this.metrics.maxProcessingTime,
-        processingTime
-      ),
+      averageProcessingTime: (this.metrics.averageProcessingTime + processingTime / batchSize) / 2,
+      maxProcessingTime: Math.max(this.metrics.maxProcessingTime, processingTime),
       successRate: (this.metrics.successRate + newSuccessRate) / 2,
       batchSize: Math.round((this.metrics.batchSize + batchSize) / 2),
     };
@@ -184,7 +179,7 @@ export class BatchValidator {
     results: BatchValidationResult<T>[],
     totalProcessingTime: number
   ): void {
-    const successCount = results.filter((r) => r.errors.length === 0).length;
+    const successCount = results.filter(r => r.errors.length === 0).length;
     this.metrics.successRate = successCount / results.length;
     this.metrics.totalProcessingTime = totalProcessingTime;
   }
@@ -203,11 +198,7 @@ export class BatchValidator {
 
   private static createTimeout(ms: number): Promise<never> {
     return new Promise((_, reject) =>
-      setTimeout(
-        () =>
-          reject(new Error(`バリデーションがタイムアウトしました (${ms}ms)`)),
-        ms
-      )
+      setTimeout(() => reject(new Error(`バリデーションがタイムアウトしました (${ms}ms)`)), ms)
     );
   }
 
@@ -243,11 +234,8 @@ export class BatchValidator {
       } else {
         summary.invalidItems++;
         for (const error of result.errors) {
-          const details = error.details || [];
-          for (const detail of details) {
-            const field = detail.field ?? "unknown";
-            summary.errors[field] = (summary.errors[field] || 0) + 1;
-          }
+          const field = error.field ?? 'unknown';
+          summary.errors[field] = (summary.errors[field] || 0) + 1;
         }
       }
 

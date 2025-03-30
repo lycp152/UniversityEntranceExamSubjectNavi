@@ -1,7 +1,11 @@
-import type { ValidationRule } from "@/types/validation-rules";
-import { ValidationError, ValidationErrorDetail } from "@/lib/validation/error";
-import { ValidationRuleCache } from "@/features/subjects/constants/validation-rule-cache";
-import { ValidationCategory, ValidationSeverity } from "@/constants/validation";
+import type { ValidationRule } from '@/lib/validation/types';
+import { ValidationError } from '@/lib/validation/types';
+import { ValidationRuleCache } from '@/features/subjects/constants/validation-rule-cache';
+import {
+  ValidationCategory,
+  ValidationSeverity,
+  ValidationErrorCode,
+} from '@/constants/validation';
 
 interface ConditionalRule<T> {
   condition: (value: T) => boolean;
@@ -26,7 +30,7 @@ export class AdvancedValidationBuilder<T> {
     if (cacheKey) {
       const cachedRules = this.cache.getCachedRules(cacheKey);
       if (cachedRules) {
-        this.rules = cachedRules.map((rule) => ({
+        this.rules = cachedRules.map(rule => ({
           ...rule,
           name: rule.code,
           severity: ValidationSeverity.ERROR,
@@ -44,10 +48,7 @@ export class AdvancedValidationBuilder<T> {
     return this;
   }
 
-  addConditionalRules(
-    condition: (value: T) => boolean,
-    rules: ValidationRule<T>[]
-  ): this {
+  addConditionalRules(condition: (value: T) => boolean, rules: ValidationRule<T>[]): this {
     this.conditionalRules.push({ condition, rules });
     return this;
   }
@@ -57,27 +58,27 @@ export class AdvancedValidationBuilder<T> {
     return this;
   }
 
-  private validateBasicRules(value: T): ValidationErrorDetail[] {
+  private validateBasicRules(value: T): ValidationError[] {
     return this.rules
-      .filter((rule) => !rule.condition(value))
-      .map((rule) => ({
+      .filter(rule => !rule.condition(value))
+      .map(rule => ({
         field: rule.code,
         message: rule.message,
-        category: ValidationCategory.FORMAT,
+        code: ValidationErrorCode.INVALID_DATA_FORMAT,
         severity: ValidationSeverity.ERROR,
       }));
   }
 
-  private validateConditionalRules(value: T): ValidationErrorDetail[] {
+  private validateConditionalRules(value: T): ValidationError[] {
     return this.conditionalRules
-      .filter((rule) => rule.condition(value))
-      .flatMap((rule) =>
+      .filter(rule => rule.condition(value))
+      .flatMap(rule =>
         rule.rules
-          .filter((r) => !r.condition(value))
-          .map((r) => ({
+          .filter(r => !r.condition(value))
+          .map(r => ({
             field: r.code,
             message: r.message,
-            category: ValidationCategory.FORMAT,
+            code: ValidationErrorCode.INVALID_DATA_FORMAT,
             severity: ValidationSeverity.ERROR,
           }))
       );
@@ -86,26 +87,26 @@ export class AdvancedValidationBuilder<T> {
   private validateDependencyRules(
     value: T,
     dependencies?: Record<string, unknown>
-  ): ValidationErrorDetail[] {
+  ): ValidationError[] {
     return this.dependencyRules
-      .filter((rule) => !rule.validate(value, dependencies || {}))
-      .map((rule) => ({
+      .filter(rule => !rule.validate(value, dependencies || {}))
+      .map(rule => ({
         field: rule.field,
         message: rule.message,
-        category: ValidationCategory.TRANSFORM,
+        code: ValidationErrorCode.INVALID_DATA_FORMAT,
         severity: ValidationSeverity.ERROR,
       }));
   }
 
   validate(value: T, dependencies?: Record<string, unknown>): void {
-    const errors: ValidationErrorDetail[] = [
+    const errors: ValidationError[] = [
       ...this.validateBasicRules(value),
       ...this.validateConditionalRules(value),
       ...this.validateDependencyRules(value, dependencies),
     ];
 
     if (errors.length > 0) {
-      throw new ValidationError("バリデーションエラー", errors);
+      throw errors[0];
     }
 
     // キャッシュの更新

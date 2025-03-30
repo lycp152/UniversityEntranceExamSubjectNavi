@@ -1,10 +1,7 @@
-import { z } from "zod";
-import type { BaseSubjectScore, SubjectScores } from "@/types/score";
-import {
-  ValidationErrorCode,
-  ValidationSeverity,
-} from "@/constants/validation";
-import type { ValidationResult } from "@/types/validation-rules";
+import { z } from 'zod';
+import type { BaseSubjectScore, SubjectScores } from '@/types/score';
+import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
+import type { ValidationResult } from '@/lib/validation/types';
 
 const SCORE_CONSTRAINTS = {
   MIN_SCORE: 0,
@@ -37,8 +34,8 @@ export const validateSubjectScore = (
         errors: [
           {
             code: ValidationErrorCode.INVALID_DATA_FORMAT,
-            message: "点数が無効です",
-            field: !isValidCommonTest ? "commonTest" : "secondTest",
+            message: '点数が無効です',
+            field: !isValidCommonTest ? 'commonTest' : 'secondTest',
             severity: ValidationSeverity.ERROR,
           },
         ],
@@ -57,7 +54,7 @@ export const validateSubjectScore = (
         errors: error.errors.map((err: z.ZodIssue) => ({
           code: ValidationErrorCode.INVALID_DATA_FORMAT,
           message: err.message,
-          field: err.path.join("."),
+          field: err.path.join('.'),
           severity: ValidationSeverity.ERROR,
         })),
       };
@@ -67,8 +64,8 @@ export const validateSubjectScore = (
       errors: [
         {
           code: ValidationErrorCode.TRANSFORM_ERROR,
-          message: "不明なエラーが発生しました",
-          field: "validation",
+          message: '不明なエラーが発生しました',
+          field: 'validation',
           severity: ValidationSeverity.ERROR,
         },
       ],
@@ -77,17 +74,15 @@ export const validateSubjectScore = (
 };
 
 // 全科目のスコアの検証
-export const validateSubjectScores = (
-  subjects: SubjectScores
-): ValidationResult<SubjectScores> => {
-  const errors: ValidationResult<BaseSubjectScore>["errors"] = [];
+export const validateSubjectScores = (subjects: SubjectScores): ValidationResult<SubjectScores> => {
+  const errors: ValidationResult<BaseSubjectScore>['errors'] = [];
   const validatedSubjects: Partial<SubjectScores> = {};
 
   for (const [subject, score] of Object.entries(subjects)) {
     const result = validateSubjectScore(score);
     if (!result.isValid) {
       errors.push(
-        ...result.errors.map((err) => ({
+        ...result.errors.map(err => ({
           ...err,
           field: err.field ? `${subject}.${err.field}` : subject,
         }))
@@ -99,8 +94,7 @@ export const validateSubjectScores = (
 
   return {
     isValid: errors.length === 0,
-    data:
-      errors.length === 0 ? (validatedSubjects as SubjectScores) : undefined,
+    data: errors.length === 0 ? (validatedSubjects as SubjectScores) : undefined,
     errors,
   };
 };

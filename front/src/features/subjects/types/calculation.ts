@@ -1,6 +1,6 @@
-import type { ExamTypeName, SubjectName } from "@/constants/subjects";
-import type { SubjectScores } from "@/types/score";
-import type { ValidationResult } from "@/types/validation-rules";
+import type { ExamTypeName, SubjectName } from '@/constants/subjects';
+import type { SubjectScores } from '@/types/score';
+import type { ValidationResult } from '@/lib/validation/types';
 
 /**
  * 詳細な科目スコアの型

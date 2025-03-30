@@ -2,14 +2,7 @@ import {
   ValidationCategory,
   ValidationErrorCode,
   ValidationSeverity,
-} from "@/constants/validation";
-
-export interface ValidationContext {
-  fieldName: string;
-  value: unknown;
-  timestamp: number;
-  [key: string]: unknown;
-}
+} from '@/constants/validation';
 
 export interface ValidationError {
   field: string;
@@ -17,6 +10,25 @@ export interface ValidationError {
   code: ValidationErrorCode;
   severity: ValidationSeverity;
   metadata?: Record<string, unknown>;
+  category?: ValidationCategory;
+  value?: unknown;
+}
+
+export interface ValidationResult<T = unknown> {
+  isValid: boolean;
+  errors: ValidationError[];
+  metadata?: ValidationMetadata;
+  data?: T;
+}
+
+// バリデーション関数の型
+export type Validator<T> = (data: unknown) => ValidationResult<T>;
+
+export interface ValidationContext {
+  fieldName: string;
+  value: unknown;
+  timestamp: number;
+  [key: string]: unknown;
 }
 
 export type ValidationRule<T> = {
@@ -42,13 +54,6 @@ export interface ValidationMetadata {
     validationDuration: number;
     ruleExecutionTimes: Record<string, number>;
   };
-}
-
-export interface ValidationResult<T = unknown> {
-  isValid: boolean;
-  errors: ValidationError[];
-  metadata?: ValidationMetadata;
-  data?: T;
 }
 
 export type ScoreValidationRules = {

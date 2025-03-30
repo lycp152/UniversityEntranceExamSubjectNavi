@@ -1,7 +1,4 @@
-import type {
-  ValidationContext,
-  ValidationResult,
-} from "@/types/validation-rules";
+import type { ValidationContext, ValidationResult } from '@/lib/validation/types';
 
 /**
  * バリデーションの基底クラス
@@ -12,7 +9,7 @@ export abstract class BaseValidator<T> {
 
   constructor(
     context: ValidationContext = {
-      fieldName: "",
+      fieldName: '',
       value: undefined,
       timestamp: Date.now(),
     }

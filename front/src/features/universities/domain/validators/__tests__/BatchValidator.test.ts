@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { BatchValidator } from '../BatchValidator';
 import { ValidationError } from '@/lib/validation/types';
 import type { TestType as TestTypeCreateInput } from '@/types/universities/university';
-import { ValidationSeverity, ValidationErrorCode } from '@/constants/validation';
+import { ValidationSeverity, ValidationErrorCode } from '@/lib/validation/constants';
 
 const createTimeoutValidator = () => {
   return vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 2000)));

@@ -1,4 +1,4 @@
-import type { SubjectCategory } from "@/constants/subjects";
+import type { SubjectCategory } from '@/constants/subjects';
 
 export interface SubjectCategoryWithColor {
   category: SubjectCategory;

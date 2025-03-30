@@ -1,10 +1,10 @@
-import type { SubjectCategoryWithColor } from "@/types/subjects";
+import type { SubjectCategoryWithColor } from '@/types/subject-categories';
 
 /**
  * システム関連の定数
  */
 export const SYSTEM_CONSTANTS = {
-  DEFAULT_USER: "system",
+  DEFAULT_USER: 'system',
 } as const;
 
 /**
@@ -14,18 +14,18 @@ export const SYSTEM_CONSTANTS = {
  */
 export const EXAM_TYPES = {
   COMMON: {
-    name: "共通",
+    name: '共通',
     id: 1,
   },
   SECONDARY: {
-    name: "二次",
+    name: '二次',
     id: 2,
   },
 } as const;
 
 // 型定義のエクスポート
-export type ExamType = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["name"];
-export type ExamTypeId = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["id"];
+export type ExamType = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]['name'];
+export type ExamTypeId = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]['id'];
 
 /**
  * 試験区分の制約
@@ -34,7 +34,7 @@ export type ExamTypeId = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]["id"];
  */
 export const EXAM_TYPE_CONSTRAINTS = {
   MAX_NAME_LENGTH: 10,
-  VALID_NAMES: ["共通", "二次"] as const,
+  VALID_NAMES: ['共通', '二次'] as const,
 } as const;
 
 // 型定義のエクスポート
@@ -46,24 +46,24 @@ export type ExamTypeName = (typeof EXAM_TYPE_CONSTRAINTS.VALID_NAMES)[number];
  */
 export const SUBJECT_CATEGORIES: Record<string, SubjectCategoryWithColor> = {
   ENGLISH: {
-    category: "英語",
-    color: "#DAA520",
+    category: '英語',
+    color: '#DAA520',
   },
   MATH: {
-    category: "数学",
-    color: "#0047AB",
+    category: '数学',
+    color: '#0047AB',
   },
   JAPANESE: {
-    category: "国語",
-    color: "#228B22",
+    category: '国語',
+    color: '#228B22',
   },
   SCIENCE: {
-    category: "理科",
-    color: "#D35400",
+    category: '理科',
+    color: '#D35400',
   },
   SOCIAL: {
-    category: "地歴公",
-    color: "#C71585",
+    category: '地歴公',
+    color: '#C71585',
   },
 } as const;
 
@@ -76,12 +76,12 @@ export type SubjectCategory = keyof typeof SUBJECT_CATEGORIES;
  * @see back/internal/domain/models/models.go
  */
 export const SUBJECTS = {
-  ENGLISH_R: "英語R",
-  ENGLISH_L: "英語L",
-  MATH: "数学",
-  JAPANESE: "国語",
-  SCIENCE: "理科",
-  SOCIAL: "地歴公",
+  ENGLISH_R: '英語R',
+  ENGLISH_L: '英語L',
+  MATH: '数学',
+  JAPANESE: '国語',
+  SCIENCE: '理科',
+  SOCIAL: '地歴公',
 } as const;
 
 // 型定義のエクスポート
@@ -90,6 +90,6 @@ export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS];
 export const FORMAT_PATTERNS = {
   // テストタイプに基づくフォーマット
   TEST_TYPE: (name: string, testType: string) => {
-    return testType === "common" ? `${name}(共通)` : `${name}(二次)`;
+    return testType === 'common' ? `${name}(共通)` : `${name}(二次)`;
   },
 } as const;

@@ -1,17 +1,17 @@
 // 科目チャートのデータを生成・管理するフック
 // 科目別チャートと試験別チャートそれぞれの詳細データとカテゴリデータを生成し、適切な順序でソート
 // チャートの表示に必要な全てのデータ構造とその加工処理を提供
-import { useMemo } from "react";
-import type { UISubject } from "@/types/universities/subjects";
-import type { DisplaySubjectScore } from "@/types/score";
-import { useChartData } from "@/hooks/chart/use-chart-data";
-import { EXAM_TYPES } from "@/constants/subjects";
-import { calculatePercentage } from "@/utils/math/percentage";
+import { useMemo } from 'react';
+import type { UISubject } from '@/types/universities/university-subjects';
+import type { DisplaySubjectScore } from '@/types/score';
+import { useChartData } from '@/hooks/chart/use-chart-data';
+import { EXAM_TYPES } from '@/constants/subjects';
+import { calculatePercentage } from '@/utils/math/percentage';
 import {
   sortByCommonSubject,
   getCategoryType,
   sortSubjectDetailedData,
-} from "@/utils/chart-utils";
+} from '@/utils/charts/chart-utils';
 
 // チャート表示用のデータから部分的な合計点を計算する関数
 // 表示用に変換済みのスコア（DisplaySubjectScore）の合計を計算
@@ -26,10 +26,7 @@ const calculateChartTotalScore = (data: DisplaySubjectScore[]): number => {
 // 共通テストを優先的に表示するためのソート関数
 // 入力: 2つのDisplaySubjectScoreオブジェクト
 // 出力: ソート順序を示す数値（-1, 0, 1）
-const sortByExamType = (
-  a: DisplaySubjectScore,
-  b: DisplaySubjectScore
-): number => {
+const sortByExamType = (a: DisplaySubjectScore, b: DisplaySubjectScore): number => {
   if (a.name === EXAM_TYPES.COMMON.name) return -1;
   if (b.name === EXAM_TYPES.COMMON.name) return 1;
   return 0;
@@ -40,22 +37,17 @@ const sortByExamType = (
 // 各カテゴリの合計点と割合を計算し、共通テスト優先でソート
 // 入力: 詳細データ（DisplaySubjectScore配列）
 // 出力: カテゴリごとに集計されたDisplaySubjectScore配列
-const createExamChartCategory = (
-  detailedData: DisplaySubjectScore[]
-): DisplaySubjectScore[] => {
+const createExamChartCategory = (detailedData: DisplaySubjectScore[]): DisplaySubjectScore[] => {
   const totalScore = calculateChartTotalScore(detailedData);
 
   return detailedData
     .reduce<DisplaySubjectScore[]>((acc, current) => {
       const type = getCategoryType(current.name);
-      const existingItem = acc.find((item) => item.name === type);
+      const existingItem = acc.find(item => item.name === type);
 
       if (existingItem) {
         existingItem.value += current.value;
-        existingItem.percentage = calculatePercentage(
-          existingItem.value,
-          totalScore
-        );
+        existingItem.percentage = calculatePercentage(existingItem.value, totalScore);
       } else {
         acc.push({
           name: type,
@@ -74,10 +66,8 @@ const createExamChartCategory = (
 // 各科目データにカテゴリ情報を付加し、共通科目優先でソート
 // 入力: 詳細データ（DisplaySubjectScore配列）
 // 出力: カテゴリ情報が付加されたDisplaySubjectScore配列
-const createExamChartDetail = (
-  detailedData: DisplaySubjectScore[]
-): DisplaySubjectScore[] => {
-  const mappedData = [...detailedData].map((item) => ({
+const createExamChartDetail = (detailedData: DisplaySubjectScore[]): DisplaySubjectScore[] => {
+  const mappedData = [...detailedData].map(item => ({
     ...item,
     category: getCategoryType(item.name),
   }));
@@ -113,7 +103,7 @@ export const useSubjectChart = (subjectData: UISubject): SubjectChartData => {
     return {
       subjectChart: {
         detailedData: sortSubjectDetailedData(chartData.detailedData),
-        outerData: chartData.outerData.map((item) => ({
+        outerData: chartData.outerData.map(item => ({
           ...item,
           category: getCategoryType(item.name),
         })),

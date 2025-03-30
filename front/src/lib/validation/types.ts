@@ -2,7 +2,7 @@ import {
   ValidationCategory,
   ValidationErrorCode,
   ValidationSeverity,
-} from '@/constants/validation';
+} from '@/lib/validation/constants';
 
 export interface ValidationError {
   field: string;

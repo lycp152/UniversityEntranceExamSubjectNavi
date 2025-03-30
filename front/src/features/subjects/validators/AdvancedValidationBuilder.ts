@@ -5,7 +5,7 @@ import {
   ValidationCategory,
   ValidationSeverity,
   ValidationErrorCode,
-} from '@/constants/validation';
+} from '@/lib/validation/constants';
 
 interface ConditionalRule<T> {
   condition: (value: T) => boolean;

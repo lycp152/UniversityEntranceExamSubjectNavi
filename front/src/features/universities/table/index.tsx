@@ -1,7 +1,7 @@
-import { FC } from "react";
-import styles from "./SubjectScoreTable.module.css";
-import { UISubject } from "@/types/universities/subjects";
-import { calculatePercentage } from "@/utils/math/percentage";
+import { FC } from 'react';
+import styles from './SubjectScoreTable.module.css';
+import { UISubject } from '@/types/universities/university-subjects';
+import { calculatePercentage } from '@/utils/math/percentage';
 
 interface SubjectScoreTableProps {
   subjectData: UISubject;
@@ -34,7 +34,7 @@ const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {
           <thead>
             <tr>
               <th className="whitespace-nowrap border-b">項目</th>
-              {Object.keys(subjects).map((subject) => (
+              {Object.keys(subjects).map(subject => (
                 <th key={subject} className="whitespace-nowrap border-b">
                   {subject}
                 </th>
@@ -56,17 +56,11 @@ const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {
               <td className="border-b">配点割合</td>
               {Object.entries(subjects).map(([subject, scores]) => (
                 <td key={subject} className="border-b">
-                  {calculatePercentage(scores.commonTest, totals.total).toFixed(
-                    1
-                  )}
-                  %
+                  {calculatePercentage(scores.commonTest, totals.total).toFixed(1)}%
                 </td>
               ))}
               <td className="border-b">
-                {calculatePercentage(totals.commonTest, totals.total).toFixed(
-                  1
-                )}
-                %
+                {calculatePercentage(totals.commonTest, totals.total).toFixed(1)}%
               </td>
             </tr>
             <tr className="hover:bg-gray-50">
@@ -82,17 +76,11 @@ const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {
               <td className="border-b">配点割合</td>
               {Object.entries(subjects).map(([subject, scores]) => (
                 <td key={subject} className="border-b">
-                  {calculatePercentage(scores.secondTest, totals.total).toFixed(
-                    1
-                  )}
-                  %
+                  {calculatePercentage(scores.secondTest, totals.total).toFixed(1)}%
                 </td>
               ))}
               <td className="border-b">
-                {calculatePercentage(totals.secondTest, totals.total).toFixed(
-                  1
-                )}
-                %
+                {calculatePercentage(totals.secondTest, totals.total).toFixed(1)}%
               </td>
             </tr>
             <tr className="hover:bg-gray-50">
@@ -108,10 +96,9 @@ const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {
               <td className="border-b">配点割合</td>
               {Object.entries(subjects).map(([subject, scores]) => (
                 <td key={subject} className="border-b">
-                  {calculatePercentage(
-                    scores.commonTest + scores.secondTest,
-                    totals.total
-                  ).toFixed(1)}
+                  {calculatePercentage(scores.commonTest + scores.secondTest, totals.total).toFixed(
+                    1
+                  )}
                   %
                 </td>
               ))}

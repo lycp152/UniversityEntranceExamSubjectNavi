@@ -3,7 +3,7 @@ import {
   ValidationErrorCode,
   ValidationSeverity,
   ValidationCategory,
-} from '@/constants/validation';
+} from '@/lib/validation/constants';
 import { ValidationRule, ValidationContext, ValidationResult } from '@/lib/validation/types';
 
 interface ChartData {

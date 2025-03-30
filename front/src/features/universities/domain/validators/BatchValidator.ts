@@ -1,5 +1,5 @@
 import { ValidationError } from '@/lib/validation/types';
-import { ValidationSeverity, ValidationErrorCode } from '@/constants/validation';
+import { ValidationSeverity, ValidationErrorCode } from '@/lib/validation/constants';
 
 interface BatchValidationResult<T> {
   item: T;

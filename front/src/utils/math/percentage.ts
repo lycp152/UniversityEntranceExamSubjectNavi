@@ -1,11 +1,9 @@
-import { SUBJECT_SCORE_CONSTRAINTS } from "@/constants/subject-score";
+import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/subject-score';
 
 export const calculatePercentage = (value: number, total: number): number => {
   if (total === 0) return 0;
   const percentage = (value / total) * 100;
-  return Number(
-    percentage.toFixed(SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES)
-  );
+  return Number(percentage.toFixed(SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES));
 };
 
 export const calculateWeightedPercentage = (
@@ -15,7 +13,5 @@ export const calculateWeightedPercentage = (
 ): number => {
   if (maxValue === 0) return 0;
   const percentage = (value / maxValue) * weight * 100;
-  return Number(
-    percentage.toFixed(SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES)
-  );
+  return Number(percentage.toFixed(SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES));
 };

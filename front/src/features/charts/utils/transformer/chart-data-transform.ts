@@ -1,5 +1,5 @@
 import type { SubjectScores } from '@/types/score';
-import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
+import { ValidationErrorCode, ValidationSeverity } from '@/lib/validation/constants';
 import { ValidationResult } from '@/lib/validation/types';
 import type { ChartData } from '@/features/charts/types/chart';
 import { ScoreValidator } from '@/utils/validation/score-validator';

@@ -1,41 +1,37 @@
-import { FC } from "react";
-import { DonutChart } from "@/components/charts/DonutChart";
-import { useSubjectChart } from "@/hooks/subject/use-subject-chart";
-import {
-  containerStyles,
-  containerClassName,
-  chartStyles,
-} from "@/styles/chart-styles";
-import type { UISubject } from "@/types/universities/subjects";
+import { FC } from 'react';
+import { DonutChart } from '@/components/charts/DonutChart';
+import { useSubjectChart } from '@/hooks/subject/use-subject-chart';
+import { containerStyles, containerClassName, chartStyles } from '@/styles/chart-styles';
+import type { UISubject } from '@/types/universities/university-subjects';
 
 const mockSubject: UISubject = {
   id: 1,
-  name: "英語L",
+  name: '英語L',
   score: 100,
   percentage: 100,
   displayOrder: 1,
   testTypeId: 1,
   university: {
     id: 1,
-    name: "テスト大学",
+    name: 'テスト大学',
   },
   department: {
     id: 1,
-    name: "テスト学部",
+    name: 'テスト学部',
   },
   major: {
     id: 1,
-    name: "テスト学科",
+    name: 'テスト学科',
   },
   examInfo: {
     id: 1,
     enrollment: 100,
     academicYear: 2024,
-    status: "active",
+    status: 'active',
   },
   admissionSchedule: {
     id: 1,
-    name: "前期",
+    name: '前期',
     displayOrder: 1,
   },
   subjects: {
@@ -73,10 +69,7 @@ const SubjectScoreDonutChart: FC = () => {
     <div className="flex w-full gap-4">
       <div className={containerClassName} style={containerStyles}>
         <style>{chartStyles}</style>
-        <DonutChart
-          detailedData={subjectChart.detailedData}
-          outerData={subjectChart.outerData}
-        />
+        <DonutChart detailedData={subjectChart.detailedData} outerData={subjectChart.outerData} />
       </div>
       <div className={containerClassName} style={containerStyles}>
         <style>{chartStyles}</style>

@@ -1,6 +1,6 @@
 import type { Score } from '@/types/score';
 import type { ValidationResult } from '@/lib/validation/types';
-import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
+import { ValidationErrorCode, ValidationSeverity } from '@/lib/validation/constants';
 
 export class ScoreCalculator {
   calculateTotalScore(scores: Score[]): number {

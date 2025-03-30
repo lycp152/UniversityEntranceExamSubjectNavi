@@ -1,5 +1,5 @@
 import type { BaseSubjectScore, SubjectScores } from '@/types/score';
-import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
+import { ValidationErrorCode, ValidationSeverity } from '@/lib/validation/constants';
 import type { ValidationResult } from '@/lib/validation/types';
 import { BaseValidator } from './base-validator';
 

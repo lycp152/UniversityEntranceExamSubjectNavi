@@ -1,12 +1,12 @@
-import { EXAM_TYPES } from "@/constants/subjects";
+import { EXAM_TYPES } from '@/constants/subjects';
 import {
   isCommonSubject,
   isSecondarySubject,
   compareSubjectOrder,
-} from "@/utils/validation/subject-type-validator";
-import { extractSubjectMainCategory } from "@/utils/formatters/subject-name";
-import type { DisplaySubjectScore } from "@/types/score";
-import type { ChartResult, ChartError } from "@/types/charts/pie-chart";
+} from '@/utils/validation/subject-type-validator';
+import { extractSubjectMainCategory } from '@/utils/formatters/subject-name-display-formatter';
+import type { DisplaySubjectScore } from '@/types/score';
+import type { ChartResult, ChartError } from '@/types/charts/pie-chart';
 
 // チャートのメタデータを生成する関数
 // 処理時間、総アイテム数、成功数、エラー数などの情報を含む
@@ -35,8 +35,8 @@ export const getCategoryType = (name: string): string => {
 export const getSubjectChartOrder = (name: string): number => {
   const isCommon = isCommonSubject(name);
   const isSecondary = isSecondarySubject(name);
-  const isLeft = name.includes("L");
-  const isRight = name.includes("R");
+  const isLeft = name.includes('L');
+  const isRight = name.includes('R');
 
   if (isCommon && isLeft) return 0;
   if (isCommon && isRight) return 1;
@@ -47,9 +47,7 @@ export const getSubjectChartOrder = (name: string): number => {
 
 // 共通科目を優先的にソートする関数
 // 共通テストを先頭に配置し、その後に科目名の順序でソート
-export const sortByCommonSubject = (
-  items: DisplaySubjectScore[]
-): DisplaySubjectScore[] => {
+export const sortByCommonSubject = (items: DisplaySubjectScore[]): DisplaySubjectScore[] => {
   return [...items].sort((a, b) => {
     const aIsCommon = isCommonSubject(a.name);
     const bIsCommon = isCommonSubject(b.name);
@@ -60,21 +58,15 @@ export const sortByCommonSubject = (
 
 // 科目チャートのデータを時計回りに並び替える関数
 // 共通テストと二次試験の左右の順序に従ってソート
-export const sortSubjectDetailedData = (
-  data: DisplaySubjectScore[]
-): DisplaySubjectScore[] => {
-  return [...data].sort(
-    (a, b) => getSubjectChartOrder(a.name) - getSubjectChartOrder(b.name)
-  );
+export const sortSubjectDetailedData = (data: DisplaySubjectScore[]): DisplaySubjectScore[] => {
+  return [...data].sort((a, b) => getSubjectChartOrder(a.name) - getSubjectChartOrder(b.name));
 };
 
 // エラー結果を生成する関数
 // エラー情報を含むチャート結果オブジェクトを生成
-export const createChartErrorResult = <T>(
-  errors: ChartError[]
-): ChartResult<T> => ({
+export const createChartErrorResult = <T>(errors: ChartError[]): ChartResult<T> => ({
   data: [],
   errors,
   hasErrors: errors.length > 0,
-  status: errors.length > 0 ? "error" : "success",
+  status: errors.length > 0 ? 'error' : 'success',
 });

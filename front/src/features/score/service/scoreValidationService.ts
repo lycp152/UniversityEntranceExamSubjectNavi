@@ -3,7 +3,7 @@ import {
   ValidationErrorCode,
   ValidationSeverity,
   ValidationCategory,
-} from '@/constants/validation';
+} from '@/lib/validation/constants';
 import type {
   ValidationRule,
   ValidationResult,
@@ -23,7 +23,7 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
       code: ValidationErrorCode.INVALID_DATA_FORMAT,
       field: 'score',
       condition: (score: BaseSubjectScore) => isBaseSubjectScore(score),
-      message: 'Invalid score format',
+      message: 'スコアの形式が無効です',
       severity: ValidationSeverity.ERROR,
       category: ValidationCategory.FORMAT,
     },
@@ -32,7 +32,7 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
       field: 'commonTest',
       condition: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.commonTest, maxValue: 100 }),
-      message: 'Invalid common test score',
+      message: '共通テストのスコアが無効です',
       severity: ValidationSeverity.ERROR,
       category: ValidationCategory.FORMAT,
     },
@@ -41,7 +41,7 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
       field: 'secondTest',
       condition: (score: BaseSubjectScore) =>
         validateTestScore({ value: score.secondTest, maxValue: 100 }),
-      message: 'Invalid secondary test score',
+      message: '二次テストのスコアが無効です',
       severity: ValidationSeverity.ERROR,
       category: ValidationCategory.FORMAT,
     },
@@ -121,7 +121,7 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
       } catch (error) {
         errors.push({
           code: ValidationErrorCode.TRANSFORM_ERROR,
-          message: error instanceof Error ? error.message : 'Unknown error',
+          message: error instanceof Error ? error.message : '不明なエラーが発生しました',
           field: 'validation',
           severity: ValidationSeverity.ERROR,
         });
@@ -145,7 +145,7 @@ export class ScoreValidator extends BaseValidator<BaseSubjectScore> {
         errors: [
           {
             code: ValidationErrorCode.INVALID_DATA_FORMAT,
-            message: 'Invalid score format',
+            message: 'スコアの形式が無効です',
             field: 'score',
             severity: ValidationSeverity.ERROR,
           },

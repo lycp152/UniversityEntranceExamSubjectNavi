@@ -1,11 +1,8 @@
-import type { SubjectScores } from "@/types/score";
-import { isValidScore } from "@/utils/validation/score-validator";
-import {
-  formatScore,
-  formatPercentage,
-} from "@/utils/formatters/chart-value-formatter";
-import { SUBJECT_CATEGORIES } from "@/constants/subjects";
-import { extractSubjectMainCategory } from "@/utils/formatters/subject-name";
+import type { SubjectScores } from '@/types/score';
+import { isValidScore } from '@/utils/validation/score-validator';
+import { formatScore, formatPercentage } from '@/utils/formatters/chart-value-formatter';
+import { SUBJECT_CATEGORIES } from '@/constants/subjects';
+import { extractSubjectMainCategory } from '@/utils/formatters/subject-name-display-formatter';
 
 /**
  * 全科目の合計点を計算する
@@ -21,10 +18,7 @@ export const calculateTotal = (subjects: SubjectScores): number => {
 /**
  * カテゴリごとの合計点を計算する
  */
-export const calculateCategoryTotal = (
-  subjects: SubjectScores,
-  category: string
-): number => {
+export const calculateCategoryTotal = (subjects: SubjectScores, category: string): number => {
   return Object.entries(subjects).reduce((total, [subjectName, score]) => {
     if (!isValidScore(score)) return total;
     if (extractSubjectMainCategory(subjectName) !== category) return total;

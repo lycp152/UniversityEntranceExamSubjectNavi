@@ -7,7 +7,7 @@ import SubjectInfo from '@/features/universities/utils/SubjectInfo';
 import SubjectScoreTable from '@/features/universities/table';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
-import { transformSubjectData } from '@/utils/transformers/subject-mapper';
+import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';
 import { UniversityService } from '@/features/universities/lib/university-service';
 import type {
   APIUniversity,
@@ -16,7 +16,7 @@ import type {
   APIAdmissionSchedule,
   APITestType,
 } from '@/types/api/api-response-types';
-import type { UISubject } from '@/types/universities/subjects';
+import type { UISubject } from '@/types/universities/university-subjects';
 import { UniversityPageParams } from '@/features/universities/types/params';
 
 const findDepartmentAndMajor = (

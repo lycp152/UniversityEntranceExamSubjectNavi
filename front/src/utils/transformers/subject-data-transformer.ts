@@ -7,7 +7,7 @@ import type {
   APIAdmissionSchedule,
   APITestType,
 } from '@/types/api/api-response-types';
-import type { UISubject } from '@/types/universities/subjects';
+import type { UISubject } from '@/types/universities/university-subjects';
 import type { BaseSubjectScore } from '@/types/score';
 
 const updateSubjectScores = (

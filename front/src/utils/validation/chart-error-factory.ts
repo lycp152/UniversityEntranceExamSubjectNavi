@@ -1,11 +1,9 @@
-import { ChartError } from "@/types/charts/pie-chart";
-import { ChartErrorCode } from "@/constants/chart-error-codes";
+import { ChartError } from '@/types/charts/pie-chart';
+import { ChartErrorCode } from '@/constants/chart-error-codes';
 
 export interface ErrorOptions {
-  severity?: ChartError["severity"];
+  severity?: ChartError['severity'];
   details?: unknown;
-  timestamp?: number;
-  cacheable?: boolean;
 }
 
 export const createChartError = (
@@ -17,5 +15,5 @@ export const createChartError = (
   code,
   field: subjectName,
   message,
-  severity: options.severity ?? "error",
+  severity: options.severity ?? 'error',
 });

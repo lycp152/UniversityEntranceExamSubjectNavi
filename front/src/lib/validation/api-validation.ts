@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ValidationError } from '@/lib/validation/types';
 import { API_ERROR_CODES, ERROR_MESSAGES } from '@/constants/domain-error-codes';
-import { ValidationSeverity, ValidationErrorCode } from '@/constants/validation';
+import { ValidationSeverity, ValidationErrorCode } from '@/lib/validation/constants';
 
 export class ValidationException extends Error {
   readonly code: string;

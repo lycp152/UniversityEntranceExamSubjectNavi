@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { UISubject } from '@/types/universities/subjects';
+import type { UISubject } from '@/types/universities/university-subjects';
 import type {
   APIUniversity,
   APIDepartment,
@@ -10,7 +10,7 @@ import type {
   APITestType,
 } from '@/types/api/api-response-types';
 import { tableStyles } from './styles';
-import { transformSubjectData } from '@/utils/transformers/subject-mapper';
+import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';
 import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
 import { ErrorMessage } from '@/components/errors/error-message';
 

@@ -1,9 +1,9 @@
-import { EXAM_TYPES, SYSTEM_CONSTANTS } from "@/constants/subjects";
-import type { SubjectScore } from "@/types/charts/subject-scores";
-import type { SubjectName } from "@/constants/subjects";
+import { EXAM_TYPES, SYSTEM_CONSTANTS } from '@/constants/subjects';
+import type { SubjectScore } from '@/types/charts/subject-scores';
+import type { SubjectName } from '@/constants/subjects';
 
 export interface SubjectScoreError {
-  type: "error";
+  type: 'error';
   message: string;
   subjectName: SubjectName;
 }
@@ -17,7 +17,7 @@ export const extractScores = (
   if (!scores) {
     return [
       {
-        type: "error",
+        type: 'error',
         message: `科目「${normalizedSubjectName}」のスコアが見つかりません`,
         subjectName: normalizedSubjectName,
       },
@@ -25,11 +25,11 @@ export const extractScores = (
   }
 
   const extractedScores = Object.values(EXAM_TYPES)
-    .map((type) => ({
+    .map(type => ({
       id: 0,
       name: normalizedSubjectName,
       type: type.name,
-      value: type.name === "共通" ? scores.commonTest : scores.secondTest,
+      value: type.name === '共通' ? scores.commonTest : scores.secondTest,
       category: type.name,
       testTypeId: type.id,
       percentage: 0,
@@ -40,12 +40,12 @@ export const extractScores = (
       createdBy: SYSTEM_CONSTANTS.DEFAULT_USER,
       updatedBy: SYSTEM_CONSTANTS.DEFAULT_USER,
     }))
-    .filter((score) => score.value > 0);
+    .filter(score => score.value > 0);
 
   if (extractedScores.length === 0) {
     return [
       {
-        type: "error",
+        type: 'error',
         message: `科目「${normalizedSubjectName}」の有効なスコアがありません`,
         subjectName: normalizedSubjectName,
       },

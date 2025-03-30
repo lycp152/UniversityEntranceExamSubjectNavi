@@ -1,17 +1,17 @@
-import { TestType } from "@/types/score";
-import { TransformedSubjectData } from "@/types/charts/transformers";
+import { TestType } from '@/types/score';
+import { TransformedSubjectData } from '@/types/charts/transformers';
 import {
-  getCategoryFromSubject,
-  getDisplayName,
-} from "@/utils/extractors/subject-name-extractor";
-import { formatWithTestType } from "@/utils/formatters/subject-name-display-formatter";
+  extractSubjectMainCategory,
+  removeSubjectNamePrefix,
+  formatWithTestType,
+} from '@/utils/formatters/subject-name-display-formatter';
 
 export const transformSubjectData = (
   subjectName: string,
   testType: TestType
 ): TransformedSubjectData => {
-  const category = getCategoryFromSubject(subjectName);
-  const baseDisplayName = getDisplayName(subjectName);
+  const category = extractSubjectMainCategory(subjectName);
+  const baseDisplayName = removeSubjectNamePrefix(subjectName);
 
   return {
     name: formatWithTestType(subjectName, testType),

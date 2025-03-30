@@ -1,0 +1,33 @@
+name: Lint and Type Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # golangci-lintのインストール
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      # バックエンドのlintチェック
+      - name: Lint Backend
+        run: |
+          cd back
+          golangci-lint run ./...
+
+      # フロントエンドのlintチェック
+      - name: Lint Frontend
+        run: |
+          cd ../front
+          yarn install
+          yarn lint
+          yarn type-check

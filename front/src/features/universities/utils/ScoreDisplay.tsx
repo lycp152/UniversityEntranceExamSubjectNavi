@@ -1,7 +1,7 @@
-import { FC } from "react";
-import SubjectScoreDonutChart from "@/features/universities/components/SubjectScoreDonutChart";
-import styles from "./ScoreDisplay.module.css";
-import { UISubject } from "@/types/universities/subjects";
+import { FC } from 'react';
+import SubjectScoreDonutChart from '@/features/universities/components/SubjectScoreDonutChart';
+import styles from './ScoreDisplay.module.css';
+import { UISubject } from '@/types/universities/university-subjects';
 
 type ScoreDisplayProps = {
   subject: UISubject;

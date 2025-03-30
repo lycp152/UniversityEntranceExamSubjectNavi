@@ -7,10 +7,7 @@ import type {
   AdmissionInfo,
 } from '@/types/universities/university';
 import type { HttpError } from '@/types/api/http-types';
-import {
-  transformAPIResponse,
-  transformToAPITestType,
-} from '@/utils/transformers/university-data-transformer';
+import { transformAPIResponse, transformToAPITestType } from '@/utils/api/transformers';
 
 const API_ENDPOINTS = {
   UNIVERSITIES: `${process.env.NEXT_PUBLIC_API_URL}/universities`,

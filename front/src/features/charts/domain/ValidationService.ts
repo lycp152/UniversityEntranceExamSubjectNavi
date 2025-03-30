@@ -1,4 +1,4 @@
-import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation';
+import { ValidationErrorCode, ValidationSeverity } from '@/lib/validation/constants';
 import {
   ValidationResult,
   ValidationError,

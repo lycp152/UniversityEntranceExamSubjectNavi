@@ -6,7 +6,7 @@ import {
   ValidationErrorCode,
   ValidationSeverity,
   ValidationCategory,
-} from '@/constants/validation';
+} from '@/lib/validation/constants';
 
 export class SubjectValidator extends BaseValidator<Subject> {
   private readonly rules: ValidationRule<Subject>[] = [

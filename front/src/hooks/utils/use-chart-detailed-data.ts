@@ -1,23 +1,16 @@
 // 科目別の詳細チャートデータを生成・管理するフック
 // 各科目のスコアを詳細な円グラフデータに変換し、エラー情報も含めて返す
 // 処理時間の計測とメタデータの生成も行う
-import { useMemo } from "react";
-import type { UISubject } from "@/types/universities/subjects";
-import { SUBJECTS } from "@/constants/subjects";
-import {
-  CHART_ERROR_CODES,
-  CHART_ERROR_MESSAGES,
-} from "@/constants/chart-error-codes";
-import type {
-  DetailedPieData,
-  ChartResult,
-  ChartError,
-} from "@/types/charts/pie-chart";
-import { createDetailedPieData } from "@/utils/builders/pie-chart-data-builder";
-import { createChartError } from "@/utils/validation/chart-error-factory";
-import { extractScores } from "@/utils/extractors/subject-score-extractor";
-import { TEST_TYPES } from "@/types/score";
-import { createChartMetadata } from "@/utils/chart-utils";
+import { useMemo } from 'react';
+import type { UISubject } from '@/types/universities/university-subjects';
+import { SUBJECTS } from '@/constants/subjects';
+import { CHART_ERROR_CODES, CHART_ERROR_MESSAGES } from '@/constants/chart-error-codes';
+import type { DetailedPieData, ChartResult, ChartError } from '@/types/charts/pie-chart';
+import { createDetailedPieData } from '@/lib/charts/chart-data-transformer';
+import { createChartError } from '@/utils/validation/chart-error-factory';
+import { extractScores } from '@/utils/extractors/subject-score-extractor';
+import { TEST_TYPES } from '@/types/score';
+import { createChartMetadata } from '@/utils/charts/chart-utils';
 
 export const useDetailedData = (
   subjectData: UISubject,
@@ -35,15 +28,15 @@ export const useDetailedData = (
         const extractedScores = extractScores(scores, subjectName);
 
         // 各スコアを処理し、円グラフデータまたはエラー情報として追加
-        extractedScores.forEach((score) => {
-          if (score.type === "error") {
+        extractedScores.forEach(score => {
+          if (score.type === 'error') {
             // エラーケースの処理
             const error: ChartError = createChartError(
               CHART_ERROR_CODES.CALCULATION_ERROR,
               CHART_ERROR_MESSAGES[CHART_ERROR_CODES.CALCULATION_ERROR],
               score.subjectName,
               {
-                severity: "error",
+                severity: 'error',
                 details: { originalMessage: score.message },
               }
             );
@@ -54,7 +47,7 @@ export const useDetailedData = (
               score.name,
               score.value,
               totalScore,
-              score.type === "共通" ? TEST_TYPES.COMMON : TEST_TYPES.SECONDARY
+              score.type === '共通' ? TEST_TYPES.COMMON : TEST_TYPES.SECONDARY
             );
             acc.data.push(pieData);
           }
@@ -62,7 +55,7 @@ export const useDetailedData = (
 
         return acc;
       },
-      { data: [], errors: [], hasErrors: false, status: "success" }
+      { data: [], errors: [], hasErrors: false, status: 'success' }
     );
 
     // エラー状態の更新とメタデータの付加

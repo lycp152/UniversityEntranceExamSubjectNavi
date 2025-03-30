@@ -126,13 +126,13 @@ export class ApiClient {
   // POSTリクエストを実行
   async post<T>(
     path: string,
-    data?: unknown,
+    data?: Record<string, unknown>,
     config?: Omit<HttpRequestConfig, 'method' | 'body'>
   ): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
       method: 'POST',
-      body: data ? JSON.stringify(data) : null,
+      body: data ? JSON.stringify(data) : undefined,
     });
     return response.data;
   }
@@ -140,13 +140,13 @@ export class ApiClient {
   // PUTリクエストを実行
   async put<T>(
     path: string,
-    data?: unknown,
+    data?: Record<string, unknown>,
     config?: Omit<HttpRequestConfig, 'method' | 'body'>
   ): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
       method: 'PUT',
-      body: data ? JSON.stringify(data) : null,
+      body: data ? JSON.stringify(data) : undefined,
     });
     return response.data;
   }

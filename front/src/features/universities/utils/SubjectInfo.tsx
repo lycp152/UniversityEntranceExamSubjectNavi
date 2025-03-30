@@ -1,4 +1,4 @@
-import DetailSection from '@/components/DetailSection';
+import DetailSection from '@/features/universities/components/DetailSection';
 import type { UISubject } from '@/types/universities/university-subjects';
 
 const SubjectInfo = ({ subjectDetail }: { subjectDetail: UISubject }) => {

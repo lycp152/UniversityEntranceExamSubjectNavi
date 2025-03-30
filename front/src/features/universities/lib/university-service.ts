@@ -35,9 +35,8 @@ export class UniversityService {
     departmentId: number,
     subjects: APISubject[]
   ): Promise<APISubject[]> {
-    return apiClient.put<APISubject[]>(
-      API_ENDPOINTS.SUBJECTS_BATCH(universityId, departmentId),
-      subjects
-    );
+    return apiClient.put<APISubject[]>(API_ENDPOINTS.SUBJECTS_BATCH(universityId, departmentId), {
+      subjects,
+    });
   }
 }

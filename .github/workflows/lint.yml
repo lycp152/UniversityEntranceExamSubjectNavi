@@ -12,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Goのセットアップ
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
       # golangci-lintのインストール
       - name: Install golangci-lint
         run: |
@@ -31,3 +37,18 @@ jobs:
           yarn install
           yarn lint
           yarn type-check
+
+      # Dependency Checkの実行
+      - name: Run Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "UniversityEntranceExamSubjectNavi"
+          path: "."
+          format: "SARIF"
+          out: "dependency-check-report.sarif"
+
+      # SARIFファイルのアップロード
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: dependency-check-report.sarif

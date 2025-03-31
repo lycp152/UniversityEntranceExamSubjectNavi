@@ -26,13 +26,19 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          export PATH=$PATH:$(go env GOPATH)/bin
+          echo "GOPATH: $(go env GOPATH)"
+          echo "PATH: $PATH"
+          which golangci-lint
           golangci-lint --version
 
       # バックエンドのlintチェック
       - name: Lint Backend
         run: |
           cd back
-          export PATH=$PATH:$(go env GOPATH)/bin
+          echo "Current directory: $(pwd)"
+          echo "PATH: $PATH"
+          which golangci-lint
           golangci-lint run ./...
 
       # フロントエンドのlintチェック

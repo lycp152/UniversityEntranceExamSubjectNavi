@@ -21,19 +21,12 @@ jobs:
           cache: true
           cache-dependency-path: back/go.sum
 
-      # golangci-lintのインストール
+      # golangci-lintのセットアップと実行
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.55.2
+          version: latest
           working-directory: back
-          args: ./...
-
-      # バックエンドのlintチェック
-      - name: Lint Backend
-        run: |
-          cd back
-          golangci-lint run ./...
 
       # フロントエンドのlintチェック
       - name: Set up Node.js

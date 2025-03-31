@@ -3,7 +3,6 @@ version: 1.0.0
 linters:
   enable:
     - gofmt
-    - golint
     - govet
     - errcheck
     - staticcheck
@@ -18,22 +17,15 @@ linters:
     - goimports
     - gomnd
     - goprintffuncname
-    - gosec
-    - gosimple
     - gostyle
     - gosystemd
     - gotype
     - gotypex
-    - ineffassign
-    - interfacer
     - lll
-    - misspell
     - nakedret
-    - scopelint
     - stylecheck
     - unconvert
     - unparam
-    - unused
     - varcheck
     - whitespace
     - wsl

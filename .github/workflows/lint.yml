@@ -22,11 +22,12 @@ jobs:
           cache-dependency-path: back/go.sum
 
       # golangci-lintのインストール
-      - name: Install golangci-lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-          golangci-lint --version
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.55.2
+          working-directory: back
+          args: ./...
 
       # バックエンドのlintチェック
       - name: Lint Backend

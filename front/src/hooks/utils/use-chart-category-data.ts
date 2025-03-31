@@ -1,6 +1,8 @@
-// カテゴリ別の集計チャートデータを生成・管理するフック
-// 科目カテゴリーごとの合計スコアを円グラフデータに変換し、エラー情報も含めて返す
-// エラーハンドリングとメタデータの生成を統合的に管理
+/**
+ * カテゴリ別の集計チャートデータを生成・管理するフック
+ * 科目カテゴリーごとの合計スコアを円グラフデータに変換し、エラー情報も含めて返す
+ * エラーハンドリングとメタデータの生成を統合的に管理
+ */
 import { useMemo } from 'react';
 import type { UISubject } from '@/types/universities/university-subjects';
 import { SUBJECTS } from '@/constants/subjects';
@@ -14,16 +16,23 @@ import {
   getCategoryType,
 } from '@/utils/charts/chart-utils';
 
+/**
+ * カテゴリ別の集計チャートデータを生成するフック
+ * @param subjectData - 科目データ
+ * @param totalScore - 全科目の合計点
+ * @param calculateCategoryTotal - カテゴリ別合計点を計算する関数
+ * @returns カテゴリ別の集計データとエラー情報
+ */
 export const useCategoryData = (
   subjectData: UISubject,
   totalScore: number,
   calculateCategoryTotal: (subjects: UISubject['subjects'], category: string) => number
 ): ChartResult<PieData> => {
   return useMemo(() => {
-    // 処理開始時間を記録
+    /** 処理開始時間を記録 */
     const startTime = Date.now();
 
-    // 結果オブジェクトの初期化
+    /** 結果オブジェクトの初期化 */
     const result: ChartResult<PieData> = {
       data: [],
       errors: [],
@@ -32,10 +41,10 @@ export const useCategoryData = (
     };
 
     try {
-      // 科目カテゴリごとの集計データを生成
+      /** 科目カテゴリごとの集計データを生成 */
       result.data = Object.values(SUBJECTS).reduce<PieData[]>((acc, subject) => {
         const category = getCategoryType(subject);
-        // 未処理のカテゴリのみ処理
+        /** 未処理のカテゴリのみ処理 */
         if (!acc.some(item => item.name === category)) {
           const total = calculateCategoryTotal(subjectData.subjects, category);
           acc.push(createOuterPieData(category, total, totalScore));
@@ -43,7 +52,7 @@ export const useCategoryData = (
         return acc;
       }, []);
 
-      // メタデータを生成して結果に追加
+      /** メタデータを生成して結果に追加 */
       result.metadata = createChartMetadata(
         startTime,
         Object.values(SUBJECTS).length,
@@ -51,7 +60,7 @@ export const useCategoryData = (
         result.errors
       );
     } catch (error) {
-      // エラー発生時の処理
+      /** エラー発生時の処理 */
       const chartError = createChartError(
         CHART_ERROR_CODES.CALCULATION_ERROR,
         CHART_ERROR_MESSAGES[CHART_ERROR_CODES.CALCULATION_ERROR],

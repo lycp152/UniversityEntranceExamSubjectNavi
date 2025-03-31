@@ -2,11 +2,23 @@ import type { ValidationContext, ValidationResult } from '@/lib/validation/types
 
 /**
  * バリデーションの基底クラス
+ * 共通のバリデーション機能を提供
+ *
+ * @module base-validator
+ * @description
+ * - バリデーションコンテキストの管理
+ * - バリデーション結果の型定義
+ * - バリデーション実行の抽象化
+ *
  * @template T - バリデーション対象の型
  */
 export abstract class BaseValidator<T> {
   protected readonly context: ValidationContext;
 
+  /**
+   * バリデーターのコンストラクタ
+   * @param context - バリデーションコンテキスト
+   */
   constructor(
     context: ValidationContext = {
       fieldName: '',

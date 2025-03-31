@@ -1,13 +1,37 @@
+/**
+ * 科目スコアの抽出処理
+ * 科目スコアの抽出と検証に関する処理を提供
+ *
+ * @module subject-score-extractor
+ * @description
+ * - 科目スコアの抽出処理
+ * - スコアの検証処理
+ * - エラー情報の生成
+ */
+
 import { EXAM_TYPES, SYSTEM_CONSTANTS } from '@/constants/subjects';
 import type { SubjectScore } from '@/types/charts/subject-scores';
 import type { SubjectName } from '@/constants/subjects';
 
+/** 科目スコアのエラー型 */
 export interface SubjectScoreError {
+  /** エラータイプ */
   type: 'error';
+  /** エラーメッセージ */
   message: string;
+  /** 科目名 */
   subjectName: SubjectName;
 }
 
+/**
+ * 科目スコアを抽出
+ * @param scores - 共通テストと二次テストのスコア
+ * @param subjectName - 科目名
+ * @returns 抽出された科目スコアまたはエラー情報
+ * @example
+ * - スコアが存在する場合: [{ id: 0, name: "英語", type: "共通", value: 80, ... }]
+ * - スコアが存在しない場合: [{ type: "error", message: "科目「英語」のスコアが見つかりません", ... }]
+ */
 export const extractScores = (
   scores: { commonTest: number; secondTest: number },
   subjectName: string

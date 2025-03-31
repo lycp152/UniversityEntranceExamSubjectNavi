@@ -1,11 +1,32 @@
+/**
+ * APIレスポンスの変換処理
+ * APIから取得したデータをフロントエンドで使用する形式に変換
+ *
+ * @module api-transformers
+ * @description
+ * - APIレスポンスの変換処理
+ * - テスト種別の変換処理
+ * - 科目情報の変換処理
+ */
+
 import type { APITestType, APISubject, APIUniversity } from '@/types/api/api-response-types';
 import type { TestType, Subject, University } from '@/types/universities/university';
 import { transformUniversity } from '../transformers/university-data-transformer';
 
+/**
+ * APIレスポンスをフロントエンド用の形式に変換
+ * @param data - APIから取得した大学データの配列
+ * @returns 変換後の大学データの配列
+ */
 export const transformAPIResponse = (data: APIUniversity[]): University[] => {
   return data.map(transformUniversity);
 };
 
+/**
+ * テスト種別をAPIリクエスト用の形式に変換
+ * @param testType - フロントエンド用のテスト種別データ
+ * @returns APIリクエスト用のテスト種別データ
+ */
 export function transformToAPITestType(testType: TestType): APITestType {
   return {
     id: testType.id,
@@ -21,6 +42,11 @@ export function transformToAPITestType(testType: TestType): APITestType {
   };
 }
 
+/**
+ * 科目情報をAPIリクエスト用の形式に変換
+ * @param subject - フロントエンド用の科目データ
+ * @returns APIリクエスト用の科目データ
+ */
 export function transformToAPISubject(subject: Subject): APISubject {
   return {
     id: subject.id,

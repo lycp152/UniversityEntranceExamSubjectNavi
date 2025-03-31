@@ -1,5 +1,14 @@
-// HTTPリクエストを実行し、インターセプターを管理するコアクラス
-// タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
+/**
+ * HTTPリクエストを実行し、インターセプターを管理するコアクラス
+ * タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
+ *
+ * @class ApiClient
+ * @description
+ * - すべてのHTTPリクエストの実行を担当
+ * - インターセプターによるリクエスト/レスポンスの加工
+ * - エラーハンドリングとタイムアウト制御
+ * - シングルトンとして提供され、アプリケーション全体で共有
+ */
 import type { ApiClientConfig } from '@/types/api/api-client-config';
 import type { HttpResponse, HttpRequestConfig } from '@/types/api/http-types';
 import { ApiClientError, NetworkError, TimeoutError } from '@/lib/api/errors/client';
@@ -18,6 +27,14 @@ export class ApiClient {
   private readonly timeout: number;
   private readonly interceptors: InterceptorManager;
 
+  /**
+   * APIクライアントのコンストラクタ
+   *
+   * @param {ApiClientConfig} config - クライアントの設定
+   * @property {string} baseURL - APIのベースURL
+   * @property {Record<string, string>} defaultHeaders - デフォルトのHTTPヘッダー
+   * @property {number} timeout - リクエストのタイムアウト時間（ミリ秒）
+   */
   constructor(config: ApiClientConfig) {
     this.baseURL = config.baseURL;
     this.defaultHeaders = {
@@ -30,8 +47,12 @@ export class ApiClient {
     this.setupDefaultInterceptors();
   }
 
-  // デフォルトのエラーインターセプターを設定
-  // サーバーエラーをApiClientErrorに変換
+  /**
+   * デフォルトのエラーインターセプターを設定
+   * サーバーエラーをApiClientErrorに変換し、エラーハンドリングを統一
+   *
+   * @private
+   */
   private setupDefaultInterceptors(): void {
     this.interceptors.addErrorInterceptor(async error => {
       if (error instanceof Response) {
@@ -47,26 +68,54 @@ export class ApiClient {
     });
   }
 
-  // インターセプターマネージャーへのアクセスを提供
+  /**
+   * インターセプターマネージャーへのアクセスを提供
+   *
+   * @returns {InterceptorManager} インターセプターマネージャーのインスタンス
+   */
   public getInterceptorManager(): InterceptorManager {
     return this.interceptors;
   }
 
-  // 各種インターセプターを追加するメソッド
+  /**
+   * リクエストインターセプターを追加
+   *
+   * @param {RequestInterceptor} interceptor - 追加するリクエストインターセプター
+   */
   public addRequestInterceptor(interceptor: RequestInterceptor): void {
     this.interceptors.addRequestInterceptor(interceptor);
   }
 
+  /**
+   * レスポンスインターセプターを追加
+   *
+   * @param {ResponseInterceptor} interceptor - 追加するレスポンスインターセプター
+   */
   public addResponseInterceptor(interceptor: ResponseInterceptor): void {
     this.interceptors.addResponseInterceptor(interceptor);
   }
 
+  /**
+   * エラーインターセプターを追加
+   *
+   * @param {ErrorInterceptor} interceptor - 追加するエラーインターセプター
+   */
   public addErrorInterceptor(interceptor: ErrorInterceptor): void {
     this.interceptors.addErrorInterceptor(interceptor);
   }
 
-  // HTTPリクエストを実行する汎用メソッド
-  // タイムアウト制御とインターセプターの実行を管理
+  /**
+   * HTTPリクエストを実行する汎用メソッド
+   * タイムアウト制御とインターセプターの実行を管理
+   *
+   * @template T - レスポンスデータの型
+   * @param {string} path - APIエンドポイントのパス
+   * @param {HttpRequestConfig} config - リクエスト設定
+   * @returns {Promise<HttpResponse<T>>} レスポンスデータ
+   * @throws {TimeoutError} リクエストがタイムアウトした場合
+   * @throws {NetworkError} ネットワークエラーが発生した場合
+   * @throws {ApiClientError} APIエラーが発生した場合
+   */
   async request<T>(path: string, config: HttpRequestConfig): Promise<HttpResponse<T>> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -117,13 +166,28 @@ export class ApiClient {
     }
   }
 
-  // GETリクエストを実行
+  /**
+   * GETリクエストを実行
+   *
+   * @template T - レスポンスデータの型
+   * @param {string} path - APIエンドポイントのパス
+   * @param {Omit<HttpRequestConfig, 'method'>} [config] - リクエスト設定（methodを除く）
+   * @returns {Promise<T>} レスポンスデータ
+   */
   async get<T>(path: string, config?: Omit<HttpRequestConfig, 'method'>): Promise<T> {
     const response = await this.request<T>(path, { ...config, method: 'GET' });
     return response.data;
   }
 
-  // POSTリクエストを実行
+  /**
+   * POSTリクエストを実行
+   *
+   * @template T - レスポンスデータの型
+   * @param {string} path - APIエンドポイントのパス
+   * @param {Record<string, unknown>} [data] - リクエストボディ
+   * @param {Omit<HttpRequestConfig, 'method' | 'body'>} [config] - リクエスト設定（methodとbodyを除く）
+   * @returns {Promise<T>} レスポンスデータ
+   */
   async post<T>(
     path: string,
     data?: Record<string, unknown>,
@@ -137,7 +201,15 @@ export class ApiClient {
     return response.data;
   }
 
-  // PUTリクエストを実行
+  /**
+   * PUTリクエストを実行
+   *
+   * @template T - レスポンスデータの型
+   * @param {string} path - APIエンドポイントのパス
+   * @param {Record<string, unknown>} [data] - リクエストボディ
+   * @param {Omit<HttpRequestConfig, 'method' | 'body'>} [config] - リクエスト設定（methodとbodyを除く）
+   * @returns {Promise<T>} レスポンスデータ
+   */
   async put<T>(
     path: string,
     data?: Record<string, unknown>,
@@ -151,7 +223,14 @@ export class ApiClient {
     return response.data;
   }
 
-  // DELETEリクエストを実行
+  /**
+   * DELETEリクエストを実行
+   *
+   * @template T - レスポンスデータの型
+   * @param {string} path - APIエンドポイントのパス
+   * @param {Omit<HttpRequestConfig, 'method'>} [config] - リクエスト設定（methodを除く）
+   * @returns {Promise<T>} レスポンスデータ
+   */
   async delete<T>(path: string, config?: Omit<HttpRequestConfig, 'method'>): Promise<T> {
     const response = await this.request<T>(path, {
       ...config,
@@ -161,7 +240,10 @@ export class ApiClient {
   }
 }
 
-// シングルトンとしてAPIクライアントをエクスポート
+/**
+ * シングルトンとしてAPIクライアントをエクスポート
+ * アプリケーション全体で共有される単一のインスタンス
+ */
 export const apiClient = new ApiClient({
   baseURL: ENV.API.BASE_URL,
 });

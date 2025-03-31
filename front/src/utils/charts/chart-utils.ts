@@ -1,3 +1,15 @@
+/**
+ * チャート関連のユーティリティ関数
+ * チャートのデータ処理や表示に関する補助関数を提供
+ *
+ * @module chart-utils
+ * @description
+ * - チャートメタデータの生成
+ * - 科目カテゴリの分類
+ * - チャートデータのソート処理
+ * - エラー結果の生成
+ */
+
 import { EXAM_TYPES } from '@/constants/subjects';
 import {
   isCommonSubject,
@@ -8,8 +20,14 @@ import { extractSubjectMainCategory } from '@/utils/formatters/subject-name-disp
 import type { DisplaySubjectScore } from '@/types/score';
 import type { ChartResult, ChartError } from '@/types/charts/pie-chart';
 
-// チャートのメタデータを生成する関数
-// 処理時間、総アイテム数、成功数、エラー数などの情報を含む
+/**
+ * チャートのメタデータを生成
+ * @param startTime - 処理開始時間
+ * @param totalItems - 総アイテム数
+ * @param data - 処理済みデータ
+ * @param errors - エラー情報
+ * @returns チャートのメタデータ
+ */
 export const createChartMetadata = <T>(
   startTime: number,
   totalItems: number,
@@ -22,16 +40,22 @@ export const createChartMetadata = <T>(
   errorCount: errors.length,
 });
 
-// 科目名からカテゴリタイプを取得する関数
-// 共通テスト、二次試験、その他の科目を分類
+/**
+ * 科目名からカテゴリタイプを取得
+ * @param name - 科目名
+ * @returns カテゴリタイプ
+ */
 export const getCategoryType = (name: string): string => {
   if (isCommonSubject(name)) return EXAM_TYPES.COMMON.name;
   if (isSecondarySubject(name)) return EXAM_TYPES.SECONDARY.name;
   return extractSubjectMainCategory(name);
 };
 
-// 科目チャートのソート順序を取得する関数
-// 共通テスト（左）→ 共通テスト（右）→ 二次試験（左）→ 二次試験（右）の順でソート
+/**
+ * 科目チャートのソート順序を取得
+ * @param name - 科目名
+ * @returns ソート順序の数値
+ */
 export const getSubjectChartOrder = (name: string): number => {
   const isCommon = isCommonSubject(name);
   const isSecondary = isSecondarySubject(name);
@@ -45,8 +69,11 @@ export const getSubjectChartOrder = (name: string): number => {
   return 999;
 };
 
-// 共通科目を優先的にソートする関数
-// 共通テストを先頭に配置し、その後に科目名の順序でソート
+/**
+ * 共通科目を優先的にソート
+ * @param items - 科目スコアの配列
+ * @returns ソート済みの科目スコア配列
+ */
 export const sortByCommonSubject = (items: DisplaySubjectScore[]): DisplaySubjectScore[] => {
   return [...items].sort((a, b) => {
     const aIsCommon = isCommonSubject(a.name);
@@ -56,14 +83,20 @@ export const sortByCommonSubject = (items: DisplaySubjectScore[]): DisplaySubjec
   });
 };
 
-// 科目チャートのデータを時計回りに並び替える関数
-// 共通テストと二次試験の左右の順序に従ってソート
+/**
+ * 科目チャートのデータを時計回りに並び替え
+ * @param data - 科目スコアの配列
+ * @returns ソート済みの科目スコア配列
+ */
 export const sortSubjectDetailedData = (data: DisplaySubjectScore[]): DisplaySubjectScore[] => {
   return [...data].sort((a, b) => getSubjectChartOrder(a.name) - getSubjectChartOrder(b.name));
 };
 
-// エラー結果を生成する関数
-// エラー情報を含むチャート結果オブジェクトを生成
+/**
+ * エラー結果を生成
+ * @param errors - エラー情報の配列
+ * @returns エラー結果オブジェクト
+ */
 export const createChartErrorResult = <T>(errors: ChartError[]): ChartResult<T> => ({
   data: [],
   errors,

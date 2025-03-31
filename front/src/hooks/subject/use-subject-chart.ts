@@ -1,6 +1,8 @@
-// 科目チャートのデータを生成・管理するフック
-// 科目別チャートと試験別チャートそれぞれの詳細データとカテゴリデータを生成し、適切な順序でソート
-// チャートの表示に必要な全てのデータ構造とその加工処理を提供
+/**
+ * 科目チャートのデータを生成・管理するフック
+ * 科目別チャートと試験別チャートそれぞれの詳細データとカテゴリデータを生成し、適切な順序でソート
+ * チャートの表示に必要な全てのデータ構造とその加工処理を提供
+ */
 import { useMemo } from 'react';
 import type { UISubject } from '@/types/universities/university-subjects';
 import type { DisplaySubjectScore } from '@/types/score';
@@ -13,30 +15,37 @@ import {
   sortSubjectDetailedData,
 } from '@/utils/charts/chart-utils';
 
-// チャート表示用のデータから部分的な合計点を計算する関数
-// 表示用に変換済みのスコア（DisplaySubjectScore）の合計を計算
-// チャートの各セクションやカテゴリの合計点を算出する際に使用
-// 入力: DisplaySubjectScore配列
-// 出力: 合計スコア
+/**
+ * チャート表示用のデータから部分的な合計点を計算する関数
+ * 表示用に変換済みのスコア（DisplaySubjectScore）の合計を計算
+ * チャートの各セクションやカテゴリの合計点を算出する際に使用
+ * @param data - 表示用スコアデータの配列
+ * @returns 合計スコア
+ */
 const calculateChartTotalScore = (data: DisplaySubjectScore[]): number => {
   return data.reduce((sum, item) => sum + item.value, 0);
 };
 
-// 試験タイプでソートする関数
-// 共通テストを優先的に表示するためのソート関数
-// 入力: 2つのDisplaySubjectScoreオブジェクト
-// 出力: ソート順序を示す数値（-1, 0, 1）
+/**
+ * 試験タイプでソートする関数
+ * 共通テストを優先的に表示するためのソート関数
+ * @param a - 比較対象のスコアデータ1
+ * @param b - 比較対象のスコアデータ2
+ * @returns ソート順序を示す数値（-1, 0, 1）
+ */
 const sortByExamType = (a: DisplaySubjectScore, b: DisplaySubjectScore): number => {
   if (a.name === EXAM_TYPES.COMMON.name) return -1;
   if (b.name === EXAM_TYPES.COMMON.name) return 1;
   return 0;
 };
 
-// 試験別チャートのカテゴリデータを生成する関数
-// 詳細データからカテゴリごとの集計データを生成
-// 各カテゴリの合計点と割合を計算し、共通テスト優先でソート
-// 入力: 詳細データ（DisplaySubjectScore配列）
-// 出力: カテゴリごとに集計されたDisplaySubjectScore配列
+/**
+ * 試験別チャートのカテゴリデータを生成する関数
+ * 詳細データからカテゴリごとの集計データを生成
+ * 各カテゴリの合計点と割合を計算し、共通テスト優先でソート
+ * @param detailedData - 詳細データの配列
+ * @returns カテゴリごとに集計されたスコアデータの配列
+ */
 const createExamChartCategory = (detailedData: DisplaySubjectScore[]): DisplaySubjectScore[] => {
   const totalScore = calculateChartTotalScore(detailedData);
 
@@ -62,10 +71,12 @@ const createExamChartCategory = (detailedData: DisplaySubjectScore[]): DisplaySu
     .sort(sortByExamType);
 };
 
-// 試験別チャートの詳細データを生成する関数
-// 各科目データにカテゴリ情報を付加し、共通科目優先でソート
-// 入力: 詳細データ（DisplaySubjectScore配列）
-// 出力: カテゴリ情報が付加されたDisplaySubjectScore配列
+/**
+ * 試験別チャートの詳細データを生成する関数
+ * 各科目データにカテゴリ情報を付加し、共通科目優先でソート
+ * @param detailedData - 詳細データの配列
+ * @returns カテゴリ情報が付加されたスコアデータの配列
+ */
 const createExamChartDetail = (detailedData: DisplaySubjectScore[]): DisplaySubjectScore[] => {
   const mappedData = [...detailedData].map(item => ({
     ...item,
@@ -74,8 +85,10 @@ const createExamChartDetail = (detailedData: DisplaySubjectScore[]): DisplaySubj
   return sortByCommonSubject(mappedData);
 };
 
-// チャートデータの型定義
-// 左右のチャートそれぞれの詳細データと外側データを含む
+/**
+ * チャートデータの型定義
+ * 左右のチャートそれぞれの詳細データと外側データを含む
+ */
 type SubjectChartData = {
   subjectChart: {
     detailedData: DisplaySubjectScore[];
@@ -87,19 +100,24 @@ type SubjectChartData = {
   };
 };
 
+/**
+ * 科目チャートデータを生成・管理するフック
+ * @param subjectData - 科目データ
+ * @returns 科目別と試験別のチャートデータ
+ */
 export const useSubjectChart = (subjectData: UISubject): SubjectChartData => {
-  // チャートの基本データを取得
+  /** チャートの基本データを取得 */
   const chartData = useChartData(subjectData);
 
-  // メモ化された最終的なチャートデータを生成
+  /** メモ化された最終的なチャートデータを生成 */
   return useMemo(() => {
-    // 右側チャートのデータを生成
+    /** 右側チャートのデータを生成 */
     const examChartData = {
       detailedData: createExamChartDetail(chartData.detailedData),
       outerData: createExamChartCategory(chartData.detailedData),
     };
 
-    // 左右のチャートデータを結合して返却
+    /** 左右のチャートデータを結合して返却 */
     return {
       subjectChart: {
         detailedData: sortSubjectDetailedData(chartData.detailedData),

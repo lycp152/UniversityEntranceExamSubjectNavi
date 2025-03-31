@@ -1,4 +1,15 @@
-import { PieData, ChartError } from "@/types/charts/pie-chart";
+/**
+ * データ変換の型定義
+ * チャートデータの変換処理に関する型定義を管理
+ *
+ * @module transformers
+ * @description
+ * - 変換後の科目データの型定義
+ * - 基本的な変換パラメータの型定義
+ * - 変換結果の型定義
+ */
+
+import { PieData, ChartError } from '@/types/charts/pie-chart';
 
 /**
  * 変換後の科目データの型
@@ -12,9 +23,9 @@ export interface TransformedSubjectData {
   category: string;
   /** テストタイプID */
   testTypeId: number;
-  /** パーセンテージ */
+  /** 科目の得点率（0-100%） */
   percentage: number;
-  /** 表示順序 */
+  /** UI表示時の順序 */
   displayOrder: number;
 }
 
@@ -22,17 +33,17 @@ export interface TransformedSubjectData {
  * 基本的な変換パラメータの型
  */
 export interface BaseTransformParams {
-  /** 点数 */
+  /** 科目の得点 */
   value: number;
-  /** 総点 */
+  /** 科目の総点 */
   totalScore: number;
-  /** 科目名 */
+  /** 科目の名称 */
   name: string;
-  /** テストタイプID */
+  /** 関連するテストタイプのID */
   testTypeId: number;
-  /** パーセンテージ */
+  /** 科目の得点率（0-100%） */
   percentage: number;
-  /** 表示順序 */
+  /** UI表示時の順序 */
   displayOrder: number;
 }
 
@@ -40,8 +51,8 @@ export interface BaseTransformParams {
  * 変換結果の型
  */
 export type TransformResult = {
-  /** 変換後のデータ */
+  /** 変換後のチャートデータ */
   data: PieData;
-  /** エラー情報 */
+  /** 変換処理中のエラー情報 */
   error?: ChartError;
 };

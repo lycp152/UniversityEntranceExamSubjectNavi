@@ -1,3 +1,8 @@
+/**
+ * チャートデータの変換を行うモジュール
+ * 科目データを円グラフ用のデータ形式に変換し、詳細情報と集計情報を生成
+ */
+
 import { DetailedPieData, PieData } from '@/types/charts/pie-chart';
 import { BaseTransformParams } from '@/types/charts/transformers';
 import { TestType, TEST_TYPES } from '@/types/score';
@@ -5,9 +10,25 @@ import { EXAM_TYPES } from '@/constants/subjects';
 import { transformSubjectData } from '@/utils/formatters/subject-data-formatter';
 import { transformToPieData } from '@/utils/transformers/pie-data-transformer';
 
+/**
+ * テストタイプを科目タイプに変換する関数
+ *
+ * @param {TestType} testType - テストタイプ（共通テストまたは二次試験）
+ * @returns {typeof EXAM_TYPES[keyof typeof EXAM_TYPES]} 対応する科目タイプ
+ */
 const mapTestTypeToSubjectType = (testType: TestType) =>
   testType === TEST_TYPES.COMMON ? EXAM_TYPES.COMMON : EXAM_TYPES.SECONDARY;
 
+/**
+ * 詳細な円グラフデータを生成する関数
+ * 科目ごとのスコア情報を円グラフ用のデータ形式に変換
+ *
+ * @param {string} subjectName - 科目名
+ * @param {number} value - 科目のスコア
+ * @param {number} totalScore - 合計スコア
+ * @param {TestType} testType - テストタイプ
+ * @returns {DetailedPieData} 詳細な円グラフデータ
+ */
 export const createDetailedPieData = (
   subjectName: string,
   value: number,
@@ -40,6 +61,15 @@ export const createDetailedPieData = (
   };
 };
 
+/**
+ * 集計用の円グラフデータを生成する関数
+ * カテゴリーごとの合計スコアを円グラフ用のデータ形式に変換
+ *
+ * @param {string} category - カテゴリー名
+ * @param {number} total - カテゴリーの合計スコア
+ * @param {number} totalScore - 全体の合計スコア
+ * @returns {PieData} 集計用の円グラフデータ
+ */
 export const createOuterPieData = (category: string, total: number, totalScore: number): PieData =>
   transformToPieData({
     value: total,

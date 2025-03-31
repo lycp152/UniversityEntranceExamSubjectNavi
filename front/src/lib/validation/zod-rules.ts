@@ -1,6 +1,30 @@
+/**
+ * Zodバリデーションルールの定義
+ * アプリケーション全体で使用される共通のZodバリデーションルールを提供
+ *
+ * @module zod-rules
+ * @description
+ * - 文字列バリデーションルール
+ * - 数値バリデーションルール
+ * - URLバリデーションルール
+ * - 日付バリデーションルール
+ * - その他の共通バリデーションルール
+ */
+
 import { z } from 'zod';
 
-// 共通のバリデーションルール
+/**
+ * 共通のバリデーションルールを定義するオブジェクト
+ *
+ * @constant {Object} commonRules
+ * @property {Object} string - 文字列バリデーションルール
+ * @property {Object} number - 数値バリデーションルール
+ * @property {Function} url - URLバリデーションルール
+ * @property {Function} date - 日付バリデーションルール
+ * @property {Function} optional - オプショナルフィールド用ルール
+ * @property {Function} array - 配列バリデーションルール
+ * @property {Function} enum - 列挙型バリデーションルール
+ */
 export const commonRules = {
   // 文字列の最小・最大長
   string: {

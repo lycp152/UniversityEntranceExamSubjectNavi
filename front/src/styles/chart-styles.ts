@@ -1,15 +1,22 @@
 /**
  * チャートの共通スタイル定義
- * 円グラフのセクター間の区切り線を定義
+ * Rechartsライブラリを使用したチャートのスタイリングを管理
+ *
+ * @module chart-styles
+ * @description
+ * - チャートコンテナの基本スタイル
+ * - 円グラフのセクター間の区切り線
+ * - アクセシビリティ対応のフォーカススタイル
+ * - レスポンシブ対応のレイアウト
  */
 
 /** チャートコンテナの基本スタイル */
 export const containerStyles = {
-  WebkitTapHighlightColor: "transparent",
+  WebkitTapHighlightColor: 'transparent',
 } as const;
 
 /** チャートコンテナのクラス名 */
-export const containerClassName = "w-full h-[500px] bg-transparent p-4";
+export const containerClassName = 'w-full h-[500px] bg-transparent p-4';
 
 /** チャートの共通スタイル */
 export const chartStyles = `

@@ -1,3 +1,25 @@
+/**
+ * バリデーションエラーメッセージの定義
+ * アプリケーション全体で使用されるバリデーションエラーメッセージを集約
+ *
+ * @module validation-messages
+ * @description
+ * - 共通のバリデーションメッセージ
+ * - 文字列、数値、日付などの型別メッセージ
+ * - 配列や検索フォームなどの機能別メッセージ
+ */
+
+/**
+ * バリデーションエラーメッセージの定義オブジェクト
+ *
+ * @constant {Object} validationMessages
+ * @property {Object} 共通メッセージ - 基本的なバリデーションメッセージ
+ * @property {Object} string - 文字列バリデーション用メッセージ
+ * @property {Object} number - 数値バリデーション用メッセージ
+ * @property {Object} date - 日付バリデーション用メッセージ
+ * @property {Object} array - 配列バリデーション用メッセージ
+ * @property {Object} search - 検索フォーム用メッセージ
+ */
 export const validationMessages = {
   // 共通メッセージ
   required: '必須項目です',

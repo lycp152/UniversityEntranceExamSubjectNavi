@@ -22,11 +22,12 @@ jobs:
           cache-dependency-path: back/go.sum
 
       # golangci-lintのセットアップと実行
-      - name: Lint Code
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60
           working-directory: back
+          args: --timeout=5m
 
       # フロントエンドのlintチェック
       - name: Set up Node.js

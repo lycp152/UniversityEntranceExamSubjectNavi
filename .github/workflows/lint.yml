@@ -22,10 +22,10 @@ jobs:
           cache-dependency-path: back/go.sum
 
       # golangci-lintのセットアップと実行
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+      - name: Lint Code
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
+          version: v1.60
           working-directory: back
 
       # フロントエンドのlintチェック

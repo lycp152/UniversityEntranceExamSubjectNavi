@@ -22,7 +22,7 @@ export const ENV = {
   /** API関連の設定 */
   API: {
     /** APIのベースURL（環境変数から取得） */
-    BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL ?? '',
+    BASE_URL: process.env.NEXT_PUBLIC_API_URL ?? '',
     /** APIリクエストのタイムアウト時間（ミリ秒） */
     TIMEOUT: 30000,
   },

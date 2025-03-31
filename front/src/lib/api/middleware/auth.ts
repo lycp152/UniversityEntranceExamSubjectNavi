@@ -7,7 +7,7 @@
  */
 import type { RequestInterceptor } from '.';
 import type { HttpRequestConfig } from '@/types/api/http-types';
-import { ENV } from '@/lib/config/env';
+import { ENV } from '@/lib/env';
 
 class AuthInterceptorImpl {
   /**

@@ -13,7 +13,7 @@ import type { ApiClientConfig } from '@/types/api/api-client-config';
 import type { HttpResponse, HttpRequestConfig } from '@/types/api/http-types';
 import { ApiClientError, NetworkError, TimeoutError } from '@/lib/api/errors/client';
 import { InterceptorManager } from '@/lib/api/middleware';
-import { ENV } from '@/lib/config/env';
+import { ENV } from '@/lib/env';
 import { ERROR_MESSAGES, API_ERROR_CODES } from '@/constants/domain-error-codes';
 import type {
   RequestInterceptor,

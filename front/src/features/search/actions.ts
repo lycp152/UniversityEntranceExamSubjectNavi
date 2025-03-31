@@ -28,7 +28,7 @@ export async function searchUniversities(
     keyword: formData.get('keyword'),
     region: formData.getAll('region'),
     academicField: formData.getAll('academicField'),
-    schedule: formData.getAll('schedule'),
+    schedule: formData.getAll('schedule') as string[],
     classification: formData.getAll('classification'),
     sortOrder: JSON.parse((formData.get('sortOrder') as string) || '[]'),
     page: Number(formData.get('page')) || 1,

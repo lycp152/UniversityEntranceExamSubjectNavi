@@ -5,7 +5,7 @@
  * @class LoggingInterceptor
  */
 import type { HttpRequestConfig } from '@/types/api/http-types';
-import { isDevelopment } from '@/lib/config/env';
+import { isDevelopment } from '@/lib/env';
 
 export class LoggingInterceptor {
   /**

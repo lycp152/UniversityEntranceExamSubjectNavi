@@ -1,5 +1,5 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
-import { Button } from "@/components/ui/buttons/button";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Button } from '@/components/ui/buttons/button';
 
 interface Props {
   children: ReactNode;
@@ -21,17 +21,11 @@ const DefaultErrorFallback: React.FC<{
 }> = ({ error, errorInfo, onRetry }) => (
   <div className="min-h-screen flex items-center justify-center bg-gray-100">
     <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-red-600 mb-4">
-        エラーが発生しました
-      </h2>
-      <div className="text-gray-600 mb-4">
-        申し訳ありませんが、予期せぬエラーが発生しました。
-      </div>
-      {process.env.NODE_ENV === "development" && error && (
+      <h2 className="text-2xl font-bold text-red-600 mb-4">エラーが発生しました</h2>
+      <div className="text-gray-600 mb-4">申し訳ありませんが、予期せぬエラーが発生しました。</div>
+      {process.env.NODE_ENV === 'development' && error && (
         <div className="mb-4">
-          <p className="text-sm font-mono bg-gray-100 p-2 rounded">
-            {error.toString()}
-          </p>
+          <p className="text-sm font-mono bg-gray-100 p-2 rounded">{error.toString()}</p>
           {errorInfo && (
             <pre className="text-xs font-mono bg-gray-100 p-2 mt-2 rounded overflow-auto">
               {errorInfo.componentStack}
@@ -77,7 +71,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     // エラーログの送信
-    console.error("Uncaught error:", error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
   }
 
   private readonly handleRetry = () => {

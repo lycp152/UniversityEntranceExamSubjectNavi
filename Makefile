@@ -4,6 +4,10 @@ DOCKER_COMPOSE_DIR = deployments/docker/$(ENV)
 DOCKER_COMPOSE = docker compose -f $(DOCKER_COMPOSE_DIR)/docker-compose.yml
 CURRENT_TIME := $(shell date "+%Y%m%d_%H%M%S")
 
+# 環境変数ファイルのパス
+ENV_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV)
+ENV_EXAMPLE_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV).example
+
 # 基本コマンド
 .PHONY: help
 help: ## ヘルプを表示
@@ -11,7 +15,7 @@ help: ## ヘルプを表示
 
 # 開発環境セットアップ
 .PHONY: setup
-setup: check-deps init build start-db migrate seed ## 開発環境の完全セットアップ
+setup: check-deps init front-install back-install build start-db ## 開発環境の完全セットアップ
 	@echo "🎉 セットアップが完了しました！"
 	@echo "👉 開発を開始するには 'make dev' を実行してください"
 
@@ -29,9 +33,19 @@ verify: ## 開発環境の状態を検証
 	@test -d front/node_modules || (echo "❌ フロントエンドの依存関係がインストールされていません" && exit 1)
 	@echo "✅ 検証が完了しました"
 
+# 開発環境の起動
 .PHONY: dev
 dev: verify ## 開発環境を起動
-	$(DOCKER_COMPOSE) up --build
+	@echo "🚀 開発環境を起動しています..."
+	$(DOCKER_COMPOSE) up -d --build
+	@echo "⏳ コンテナの起動を待機しています..."
+	sleep 10
+	@echo "🐘 マイグレーションを実行しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
+	@echo "🌱 シードデータを投入しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
+	@echo "✅ 開発環境の準備が完了しました"
+	@echo "👉 ログを確認するには 'make logs' を実行してください"
 
 .PHONY: dev-reset
 dev-reset: ## 開発環境を完全にリセット
@@ -39,6 +53,7 @@ dev-reset: ## 開発環境を完全にリセット
 	make down
 	make clean
 	make clean-volumes
+	make init
 	make setup
 
 .PHONY: dev-update
@@ -93,19 +108,22 @@ back-lint: ## バックエンドのリントを実行
 # データベース関連
 .PHONY: migrate
 migrate: ## マイグレーションを実行
-	cd back && go run migrations/scripts/main.go up
+	@echo "🐘 マイグレーションを実行しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
 
 .PHONY: migrate-down
 migrate-down: ## マイグレーションをロールバック
-	cd back && go run migrations/scripts/main.go down
+	@echo "🐘 マイグレーションをロールバックしています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go down
 
 .PHONY: migrate-create
 migrate-create: ## 新しいマイグレーションファイルを作成
 	cd back && go run migrations/scripts/main.go create $(name)
 
 .PHONY: seed
-seed: ## データベースにシードデータを投入
-	cd back && go run migrations/seeds/main.go
+seed: ## シードデータを投入
+	@echo "🌱 シードデータを投入しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
 
 .PHONY: db-backup
 db-backup: ## データベースのバックアップを作成
@@ -173,11 +191,13 @@ clean-volumes: ## Dockerボリュームを削除
 
 # その他
 .PHONY: init
-init: ## プロジェクトの初期化
-	cp front/.env.example front/.env.local
-	cp back/.env.example back/.env
-	make front-install
-	make back-install
+init: ## 環境変数ファイルを初期化
+	@if [ ! -f $(ENV_FILE) ]; then \
+		cp $(ENV_EXAMPLE_FILE) $(ENV_FILE); \
+		echo "✅ 環境変数ファイルを作成しました: $(ENV_FILE)"; \
+	else \
+		echo "✅ 環境変数ファイルは既に存在します: $(ENV_FILE)"; \
+	fi
 
 .PHONY: release
 release: ## 新しいバージョンをリリース

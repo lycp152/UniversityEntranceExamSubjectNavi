@@ -1,1 +1,87 @@
-.DS_Store
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
+**/node_modules
+**/.pnp
+**/.pnp.js
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/versions
+
+# Docker
+.docker/
+docker-compose.override.yml
+deployments/docker/*/secrets/*
+
+# Environment variables
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.staging
+**/.env.test
+
+# Backend
+back/vendor/
+back/tmp/*
+back/dist/
+back/**/*.log
+back/logs/
+!back/logs/.gitkeep
+!back/logs/tests/.gitkeep
+back/bin/*
+back/internal/repositories/mocks/mock_university_repository.go
+back/coverage.txt
+
+# Frontend
+front/.next/
+front/dist/
+front/build/
+front/out/
+front/**/*.log
+front/npm-debug.log*
+front/yarn-debug.log*
+front/yarn-error.log*
+front/.pnpm-debug.log*
+front/.pnp
+front/.pnp.*
+front/.yarn/*
+front/!.yarn/patches
+front/!.yarn/plugins
+front/!.yarn/releases
+front/!.yarn/versions
+front/coverage/
+front/*.pem
+front/*.tsbuildinfo
+front/next-env.d.ts
+front/.vercel
+
+# Testing
+**/coverage
+**/.nyc_output
+
+# Debug logs
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+**/*.swp
+**/*.swo
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Build
+**/.next
+**/out
+**/dist
+**/build
+**/*.tsbuildinfo

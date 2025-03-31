@@ -1,0 +1,19 @@
+FROM golang:1.24.1-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache git make tzdata && \
+    go install github.com/cosmtrek/air@v1.49.0 && \
+    cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
+ENV TZ=Asia/Tokyo
+ENV GO111MODULE=on
+ENV GOPROXY=direct
+ENV GOSUMDB=off
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+EXPOSE 8080
+
+CMD ["air", "-c", ".air.toml"]

@@ -1,0 +1,62 @@
+name: Security Checks
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 毎日実行
+  push:
+    branches: [main, develop]
+    paths:
+      - "**.go"
+      - "**.ts"
+      - "**.tsx"
+      - "**/package.json"
+      - "**/yarn.lock"
+      - "**/go.mod"
+      - "**/go.sum"
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "UniversityEntranceExamSubjectNavi"
+          path: "."
+          format: "SARIF"
+
+      - name: Upload dependency scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "dependency-check-report.sarif"
+
+  code-scanning:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: "go,javascript,typescript"
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  secret-scanning:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Gitleaks
+        uses: zricethezav/gitleaks-action@master

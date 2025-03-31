@@ -1,0 +1,28 @@
+name: 大学入試科目ナビゲーター
+description: 大学入試科目ナビゲーターのIssueトラッカー
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issueを作成する前に、既存のIssueを確認してください。
+  - type: dropdown
+    attributes:
+      label: Issue Type
+      options:
+        - バグ報告
+        - 機能要望
+        - ドキュメント
+        - その他
+    validations:
+      required: true
+blank_issues_enabled: false
+contact_links:
+  - name: 質問・相談
+    url: https://github.com/yourusername/UniversityEntranceExamSubjectNavi/discussions
+    about: 一般的な質問や相談はDiscussionsをご利用ください。
+  - name: セキュリティ報告
+    url: https://github.com/yourusername/UniversityEntranceExamSubjectNavi/security/policy
+    about: セキュリティに関する問題は、セキュリティポリシーに従って報告してください。
+  - name: ドキュメント改善
+    url: https://github.com/yourusername/UniversityEntranceExamSubjectNavi/tree/main/docs
+    about: ドキュメントの改善提案は、docsディレクトリを参照してください。

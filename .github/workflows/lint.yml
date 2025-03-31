@@ -10,11 +10,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Goのセットアップ
-      - name: Setup Go
-        uses: actions/setup-go@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: "1.24.1"
           check-latest: true
@@ -34,10 +34,20 @@ jobs:
           golangci-lint run ./...
 
       # フロントエンドのlintチェック
-      - name: Lint Frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: Install Frontend Dependencies
         run: |
-          cd ../front
-          yarn install
+          cd front
+          yarn install --frozen-lockfile
+
+      - name: Lint and Type Check Frontend
+        run: |
+          cd front
           yarn lint
           yarn type-check
 

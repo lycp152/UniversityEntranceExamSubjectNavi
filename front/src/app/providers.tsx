@@ -1,34 +1,30 @@
+/**
+ * アプリケーションのプロバイダーコンポーネント
+ *
+ * React Queryの設定とプロバイダーを提供します。
+ * - クエリのキャッシュ設定
+ * - エラーハンドリング
+ * - リトライロジック
+ * - 開発環境でのデバッグツール
+ */
 import { QueryClient, QueryClientConfig, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { BaseApiError } from '@/lib/api/errors/base';
+import { ENV, isDevToolsEnabled } from '@/lib/env';
 
+// React Queryの設定
 const queryConfig: QueryClientConfig = {
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5分
-      gcTime: 1000 * 60 * 30, // 30分
-      retry: (failureCount: number, error: Error) => {
-        if (error instanceof BaseApiError) {
-          // 認証エラーや不正なリクエストの場合はリトライしない
-          if (error.code === 'UNAUTHORIZED' || error.code === 'BAD_REQUEST') {
-            return false;
-          }
-        }
-        return failureCount < 3;
-      },
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
+      staleTime: ENV.API.QUERY.STALE_TIME,
+      gcTime: ENV.API.QUERY.GC_TIME,
+      retry: ENV.API.QUERY.DEFAULT_OPTIONS.RETRY,
+      refetchOnWindowFocus: ENV.API.QUERY.REFETCH_ON_WINDOW_FOCUS,
+      refetchOnReconnect: ENV.API.QUERY.REFETCH_ON_RECONNECT,
+      retryDelay: ENV.API.QUERY.DEFAULT_OPTIONS.RETRY_DELAY,
     },
     mutations: {
-      retry: (failureCount: number, error: Error) => {
-        if (error instanceof BaseApiError) {
-          // 認証エラーや不正なリクエストの場合はリトライしない
-          if (error.code === 'UNAUTHORIZED' || error.code === 'BAD_REQUEST') {
-            return false;
-          }
-        }
-        return failureCount < 1;
-      },
+      retry: ENV.API.QUERY.MUTATION_OPTIONS.RETRY,
+      retryDelay: ENV.API.QUERY.MUTATION_OPTIONS.RETRY_DELAY,
     },
   },
 };
@@ -43,7 +39,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools initialIsOpen={false} />
+      {isDevToolsEnabled && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

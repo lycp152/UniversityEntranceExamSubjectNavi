@@ -1,5 +1,5 @@
-name: 大学入試科目ナビゲーター
-description: 大学入試科目ナビゲーターのIssueトラッカー
+name: 大学入試科目ナビ
+description: 大学入試科目ナビのIssueトラッカー
 body:
   - type: markdown
     attributes:

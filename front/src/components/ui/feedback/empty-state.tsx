@@ -44,9 +44,8 @@ export const EmptyState = ({
   description = '表示するデータが存在しません',
   iconColor = 'gray-400',
 }: EmptyStateProps) => (
-  <div
+  <output
     className="flex flex-col items-center justify-center py-12"
-    role="status"
     aria-label="データが存在しません"
   >
     <svg
@@ -65,5 +64,5 @@ export const EmptyState = ({
     </svg>
     <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
     <p className="text-sm text-gray-500">{description}</p>
-  </div>
+  </output>
 );

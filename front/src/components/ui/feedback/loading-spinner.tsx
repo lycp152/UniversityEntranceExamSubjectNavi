@@ -47,9 +47,8 @@ export const LoadingSpinner = ({
 }: LoadingSpinnerProps) => {
   if (useSkeleton) {
     return (
-      <div
+      <output
         className="flex flex-col items-center justify-center py-12"
-        role="status"
         aria-label="データを読み込み中"
       >
         <div
@@ -58,14 +57,13 @@ export const LoadingSpinner = ({
           aria-hidden="true"
         />
         <div className="animate-pulse bg-gray-200 h-4 w-48 rounded" />
-      </div>
+      </output>
     );
   }
 
   return (
-    <div
+    <output
       className="flex flex-col items-center justify-center py-12"
-      role="status"
       aria-label="データを読み込み中"
     >
       <div
@@ -74,6 +72,6 @@ export const LoadingSpinner = ({
         aria-hidden="true"
       />
       <p className="text-sm text-gray-600">{message}</p>
-    </div>
+    </output>
   );
 };

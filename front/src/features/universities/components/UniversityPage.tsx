@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { notFound } from 'next/navigation';
-import { ScoreDisplay } from '@/components/universities/ScoreDisplay';
+import { ScoreDisplay } from '@/components/universities/score-display';
 import SubjectInfo from '@/features/universities/utils/SubjectInfo';
 import SubjectScoreTable from '@/features/universities/table';
 import { ErrorMessage } from '@/components/errors/error-message';
@@ -137,7 +137,7 @@ const UniversityPage = ({ params }: Props) => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col lg:flex-row mb-16">
+      <div className="flex flex-col lg:flex-row">
         <div className="lg:w-1/4 lg:pr-4">
           <SubjectInfo subjectDetail={selectedSubject} />
         </div>

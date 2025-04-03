@@ -1,22 +1,36 @@
-import React from "react";
+/**
+ * 大学情報の挿入ボタンコンポーネント
+ *
+ * このコンポーネントは、大学リストの特定の位置に新しい大学情報を
+ * 挿入するためのボタンを提供します。
+ */
+import React from 'react';
 
+/**
+ * InsertUniversityButtonコンポーネントのプロパティ
+ */
 interface InsertUniversityButtonProps {
+  /** 挿入ボタンがクリックされたときに呼び出される関数 */
   onInsert: (index: number) => void;
+  /** 挿入位置のインデックス */
   index: number;
+  /** 単独表示モードかどうか（区切り線の表示を制御） */
   isOnly?: boolean;
 }
 
+/**
+ * 大学情報の挿入ボタンコンポーネント
+ *
+ * 大学リストの特定の位置に新しい大学情報を挿入するためのボタンを表示します。
+ * 必要に応じて区切り線も表示します。
+ */
 export const InsertUniversityButton: React.FC<InsertUniversityButtonProps> = ({
   onInsert,
   index,
   isOnly = false,
 }) => {
   return (
-    <div
-      className={`relative flex justify-center items-center ${
-        isOnly ? "py-8" : ""
-      }`}
-    >
+    <div className={`relative flex justify-center items-center ${isOnly ? 'py-8' : ''}`}>
       {!isOnly && (
         <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-300 dark:border-gray-600" />
       )}

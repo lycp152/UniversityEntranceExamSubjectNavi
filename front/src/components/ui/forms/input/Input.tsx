@@ -1,6 +1,20 @@
+/**
+ * 入力フィールドコンポーネント
+ *
+ * このコンポーネントは、標準的なHTML input要素を拡張した再利用可能な入力フィールドを提供します。
+ * アクセシビリティに配慮したスタイリングと、カスタマイズ可能なプロパティをサポートします。
+ */
 import { InputHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/utils/styles/style-utils';
 
+/**
+ * Inputコンポーネント
+ *
+ * @param className - 追加のCSSクラス名
+ * @param type - 入力フィールドのタイプ（text, password, email等）
+ * @param props - その他のHTML input要素のプロパティ
+ * @param ref - 入力フィールドへの参照
+ */
 const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className, type, ...props }, ref) => {
     return (

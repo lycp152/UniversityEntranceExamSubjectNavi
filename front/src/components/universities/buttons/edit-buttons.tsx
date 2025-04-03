@@ -1,17 +1,36 @@
-import React from "react";
-import type { EditButtonsProps } from "@/types/universities/university-list";
+/**
+ * 大学情報の編集ボタンコンポーネント
+ *
+ * このファイルは、大学情報の編集、保存、キャンセル機能を提供する
+ * ボタンコンポーネントを定義します。
+ */
+import React from 'react';
+import type { EditButtonsProps } from '@/types/universities/university-list';
 
+/**
+ * 保存ボタンのプロパティ
+ */
 interface SaveButtonProps {
+  /** 保存ボタンがクリックされたときに呼び出される関数 */
   onSave: () => void;
 }
 
+/**
+ * キャンセルボタンのプロパティ
+ */
 interface CancelButtonProps {
+  /** キャンセルボタンがクリックされたときに呼び出される関数 */
   onCancel: () => void;
 }
 
+/**
+ * 保存ボタンコンポーネント
+ *
+ * 変更内容を保存するためのボタンを表示します。
+ */
 export const SaveButton = ({ onSave }: SaveButtonProps) => (
   <button
-    onClick={() => window.confirm("変更を保存しますか？") && onSave()}
+    onClick={() => window.confirm('変更を保存しますか？') && onSave()}
     className="p-1.5 rounded-full text-green-600 hover:text-green-800 hover:bg-green-50 transition-colors"
   >
     <svg
@@ -29,11 +48,14 @@ export const SaveButton = ({ onSave }: SaveButtonProps) => (
   </button>
 );
 
+/**
+ * キャンセルボタンコンポーネント
+ *
+ * 編集をキャンセルするためのボタンを表示します。
+ */
 export const CancelButton = ({ onCancel }: CancelButtonProps) => (
   <button
-    onClick={() =>
-      window.confirm("変更は破棄されますが、よろしいですか？") && onCancel()
-    }
+    onClick={() => window.confirm('変更は破棄されますが、よろしいですか？') && onCancel()}
     className="p-1.5 rounded-full text-red-600 hover:text-red-800 hover:bg-red-50 transition-colors"
   >
     <svg
@@ -51,6 +73,11 @@ export const CancelButton = ({ onCancel }: CancelButtonProps) => (
   </button>
 );
 
+/**
+ * 編集ボタンコンポーネント
+ *
+ * 編集モードを開始するためのボタンを表示します。
+ */
 const EditButton = ({ onEdit }: { readonly onEdit: () => void }) => (
   <button
     onClick={onEdit}
@@ -67,12 +94,12 @@ const EditButton = ({ onEdit }: { readonly onEdit: () => void }) => (
   </button>
 );
 
-export const EditButtons = ({
-  isEditing,
-  onEdit,
-  onSave,
-  onCancel,
-}: EditButtonsProps) => {
+/**
+ * 編集ボタングループコンポーネント
+ *
+ * 編集状態に応じて、編集ボタンまたは保存/キャンセルボタンを表示します。
+ */
+export const EditButtons = ({ isEditing, onEdit, onSave, onCancel }: EditButtonsProps) => {
   if (isEditing) {
     return (
       <div className="flex flex-col space-y-1">

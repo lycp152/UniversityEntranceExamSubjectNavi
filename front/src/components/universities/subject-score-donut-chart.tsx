@@ -4,7 +4,14 @@ import { useSubjectChart } from '@/hooks/subject/use-subject-chart';
 import { containerStyles, containerClassName, chartStyles } from '@/styles/chart-styles';
 import { DonutChart } from '@/components/charts/donut-chart';
 
+/**
+ * 科目スコアのドーナツチャートを表示するコンポーネント
+ *
+ * 科目データと試験データの2つのドーナツチャートを表示します。
+ * 左側に科目データ、右側に試験データを表示します。
+ */
 interface SubjectScoreDonutChartProps {
+  /** 表示する科目データ */
   subjectData: UISubject;
 }
 

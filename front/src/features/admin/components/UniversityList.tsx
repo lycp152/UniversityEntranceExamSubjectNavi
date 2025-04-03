@@ -1,7 +1,7 @@
-import React from "react";
-import type { UniversityListProps } from "@/types/universities/university-list";
-import { UniversityCard } from "@/components/universities/card/university-card";
-import { InsertUniversityButton } from "@/components/universities/buttons/insert-button";
+import React from 'react';
+import type { UniversityListProps } from '@/types/universities/university-list';
+import { UniversityCard } from '@/components/universities/card/university-card';
+import { InsertUniversityButton } from '@/components/universities/buttons/insert-button';
 
 export const UniversityList = ({
   universities,
@@ -49,9 +49,7 @@ export const UniversityList = ({
             onAddSubject={onAddSubject}
             onSubjectNameChange={onSubjectNameChange}
           />
-          {showInsertButtons && (
-            <InsertUniversityButton onInsert={onInsert} index={index + 1} />
-          )}
+          {showInsertButtons && <InsertUniversityButton onInsert={onInsert} index={index + 1} />}
         </React.Fragment>
       ))}
     </div>

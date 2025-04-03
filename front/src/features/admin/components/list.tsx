@@ -1,7 +1,26 @@
+/**
+ * 大学リストコンポーネント
+ *
+ * このコンポーネントは以下の機能を提供します：
+ * - 大学リストの表示とソート
+ * - 新規大学の追加ボタンの表示
+ * - 編集モードの制御
+ *
+ * @param universities - 表示する大学データの配列
+ * @param editMode - 編集モードの状態
+ * @param onEdit - 編集開始時のコールバック
+ * @param onSave - 保存時のコールバック
+ * @param onCancel - キャンセル時のコールバック
+ * @param onScoreChange - スコア変更時のコールバック
+ * @param onInfoChange - 大学情報変更時のコールバック
+ * @param onInsert - 新規追加時のコールバック
+ * @param onAddSubject - 科目追加時のコールバック
+ * @param onSubjectNameChange - 科目名変更時のコールバック
+ */
 import React from 'react';
 import type { UniversityListProps } from '@/types/universities/university-list';
-import { UniversityCard } from '@/components/universities/card/university-card';
-import { InsertUniversityButton } from '@/components/universities/buttons/insert-button';
+import { UniversityCard } from '@/components/admin/card/university-card';
+import { InsertUniversityButton } from '@/components/admin/buttons/insert-button';
 
 export const UniversityList = ({
   universities,
@@ -15,6 +34,7 @@ export const UniversityList = ({
   onAddSubject,
   onSubjectNameChange,
 }: UniversityListProps) => {
+  // 編集モードでない場合のみ挿入ボタンを表示
   const showInsertButtons = !editMode?.isEditing;
 
   // 大学データを安定的にソート

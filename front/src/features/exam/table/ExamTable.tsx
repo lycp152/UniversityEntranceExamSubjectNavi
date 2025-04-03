@@ -1,5 +1,5 @@
 import { Department, University, Subject, TestType } from '@/types/universities/university';
-import { DepartmentInfo } from '@/components/universities/department-info/department-info';
+import { DepartmentInfo } from '@/components/admin/department-info/department-info';
 import { ExamSection } from '@/components/admin/exam-section';
 import { APISubject, APITestType } from '@/types/api/api-response-types';
 

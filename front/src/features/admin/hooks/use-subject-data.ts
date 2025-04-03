@@ -1,6 +1,23 @@
 import { useCallback } from 'react';
 import type { APITestType, APISubject } from '@/types/api/api-response-types';
 
+/**
+ * 科目データの操作と検証機能を提供するカスタムフック
+ *
+ * @remarks
+ * - 科目データの計算、検証、ソート機能を提供
+ * - テストタイプの判定機能
+ * - パフォーマンス最適化のためのuseCallback使用
+ * - データの整合性チェック
+ *
+ * @returns {Object} 科目データ操作機能を提供するオブジェクト
+ * @property {Function} calculateUpdatedSubjects - 科目データの更新計算関数
+ * @property {Function} isCommonAPITestType - 共通テストタイプ判定関数
+ * @property {Function} isSecondaryAPITestType - 二次テストタイプ判定関数
+ * @property {Function} createNewSubject - 新規科目作成関数
+ * @property {Function} validateSubject - 科目データ検証関数
+ * @property {Function} sortSubjects - 科目データソート関数
+ */
 export const useSubjectData = () => {
   const calculateUpdatedSubjects = useCallback(
     (subjects: APISubject[] | undefined, subjectId: number, value: number): APISubject[] => {

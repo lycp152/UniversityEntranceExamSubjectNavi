@@ -1,5 +1,5 @@
 import type { University, Department, TestType } from '@/types/universities/university';
-import { SaveButton, CancelButton } from '@/components/universities/buttons/edit-buttons';
+import { SaveButton, CancelButton } from '@/components/admin/buttons/edit-buttons';
 
 type UniversityEditorProps = Readonly<{
   university: University;

@@ -4,9 +4,9 @@
  */
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { DisplaySubjectScore } from '@/types/score';
-import CustomLabel from '@/features/charts/components/CustomLabel';
+import CustomLabel from '@/features/charts/components/pie-chart-label';
 import Patterns from '@/features/charts/patterns';
-import { ChartTooltip } from '@/features/charts/components/ChartTooltip';
+import { ChartTooltip } from '@/features/charts/components/chart-tooltip';
 import { getSubjectBaseCategory } from '@/utils/validation/subject-type-validator';
 import { CHART_CONFIG } from '@/features/charts/constants/chart';
 
@@ -74,7 +74,6 @@ export const DonutChart = ({ detailedData, outerData, isRightChart = false }: Ch
           labelLine={false}
           innerRadius={CHART_CONFIG.INNER_CHART.INNER_RADIUS}
           outerRadius={CHART_CONFIG.INNER_CHART.OUTER_RADIUS}
-          fill={CHART_CONFIG.INNER_CHART.DEFAULT_FILL}
           label={label}
         >
           {detailedData.map(entry => (
@@ -90,7 +89,6 @@ export const DonutChart = ({ detailedData, outerData, isRightChart = false }: Ch
           labelLine={false}
           innerRadius={CHART_CONFIG.OUTER_CHART.INNER_RADIUS}
           outerRadius={CHART_CONFIG.OUTER_CHART.OUTER_RADIUS}
-          fill={CHART_CONFIG.OUTER_CHART.DEFAULT_FILL}
           label={label}
         >
           {outerData.map(entry => (

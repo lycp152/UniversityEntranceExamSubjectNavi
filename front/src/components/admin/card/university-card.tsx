@@ -8,7 +8,7 @@
 import React from 'react';
 import type { University, Department } from '@/types/universities/university';
 import type { APITestType } from '@/types/api/api-response-types';
-import { DepartmentRow } from '@/components/universities/table/department-row';
+import { DepartmentRow } from '@/components/admin/table/department-row';
 import { Card, CardContent } from '@/components/ui/cards';
 
 /**

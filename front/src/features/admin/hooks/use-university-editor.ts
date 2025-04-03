@@ -8,8 +8,8 @@ import type {
   AdmissionSchedule,
 } from '@/types/universities/university';
 import type { APITestType, APISubject } from '@/types/api/api-response-types';
-import { useUniversityData } from '@/features/admin/hooks/useUniversityData';
-import { useSubjectData } from '@/features/admin/hooks/useSubjectData';
+import { useUniversityData } from '@/features/admin/hooks/use-university-data';
+import { useSubjectData } from '@/features/admin/hooks/use-subject-data';
 import type { EditMode } from '@/types/universities/university-list';
 import type { ExamTypeName, SubjectName } from '@/constants/subjects';
 import type { AdmissionScheduleName } from '@/constants/admission-schedule';
@@ -73,6 +73,29 @@ const transformTestTypeFromAPI = (testType: APITestType): TestType => ({
   updatedBy: testType.updated_by ?? '',
 });
 
+/**
+ * 大学データの編集機能を提供するカスタムフック
+ *
+ * @remarks
+ * - 大学データの編集、保存、キャンセル機能を提供
+ * - 編集モードの状態管理
+ * - バックアップ機能による編集の取り消し
+ * - エラーハンドリングとローディング状態の管理
+ *
+ * @returns {Object} 編集機能を提供するオブジェクト
+ * @property {University[]} universities - 大学データの配列
+ * @property {boolean} isLoading - ローディング状態
+ * @property {string | null} error - エラーメッセージ
+ * @property {EditMode | null} editMode - 編集モードの状態
+ * @property {Function} handleEdit - 編集開始時のハンドラ
+ * @property {Function} handleSave - 保存時のハンドラ
+ * @property {Function} handleCancel - キャンセル時のハンドラ
+ * @property {Function} handleInfoChange - 大学情報変更時のハンドラ
+ * @property {Function} handleScoreChange - スコア変更時のハンドラ
+ * @property {Function} handleAddSubject - 科目追加時のハンドラ
+ * @property {Function} handleSubjectNameChange - 科目名変更時のハンドラ
+ * @property {Function} handleInsert - 新規追加時のハンドラ
+ */
 export function useUniversityEditor() {
   const {
     universities,

@@ -8,7 +8,7 @@
  */
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { AdminPage } from '@/features/admin/components/AdminPage';
+import { AdminPage } from '@/features/admin/components/page';
 import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
 
 // ページのメタデータ設定

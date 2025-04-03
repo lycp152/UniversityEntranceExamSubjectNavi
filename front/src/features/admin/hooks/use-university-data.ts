@@ -23,6 +23,27 @@ const API_ENDPOINTS = {
     `${process.env.NEXT_PUBLIC_API_URL}/schedules/${scheduleId}/info/${infoId}`,
 } as const;
 
+/**
+ * 大学データの取得と更新機能を提供するカスタムフック
+ *
+ * @remarks
+ * - APIを使用した大学データの取得と更新機能を提供
+ * - エラーハンドリングとローディング状態の管理
+ * - キャッシュ制御による効率的なデータ取得
+ * - データの永続化と整合性の維持
+ *
+ * @returns {Object} 大学データ管理機能を提供するオブジェクト
+ * @property {University[]} universities - 大学データの配列
+ * @property {boolean} isLoading - ローディング状態
+ * @property {string | null} error - エラーメッセージ
+ * @property {Function} fetchUniversities - 大学データ取得関数
+ * @property {Function} updateUniversity - 大学情報更新関数
+ * @property {Function} updateDepartment - 学部情報更新関数
+ * @property {Function} updateSubjects - 科目情報更新関数
+ * @property {Function} updateMajor - 学科情報更新関数
+ * @property {Function} updateAdmissionSchedule - 入試日程更新関数
+ * @property {Function} updateAdmissionInfo - 入試情報更新関数
+ */
 export const useUniversityData = () => {
   const [universities, setUniversities] = useState<University[]>([]);
   const [error, setError] = useState<string | null>(null);

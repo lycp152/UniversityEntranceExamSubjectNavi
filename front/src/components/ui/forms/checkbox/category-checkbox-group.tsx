@@ -1,14 +1,36 @@
-import React, { useEffect, useRef } from "react";
-import AllCheckbox from "./all-checkbox";
+/**
+ * カテゴリチェックボックスグループコンポーネント
+ *
+ * このコンポーネントは、カテゴリごとにグループ化されたチェックボックスを提供します。
+ * 各カテゴリは独自の選択状態を持ち、カテゴリ内のアイテムを一括で選択/解除できます。
+ */
+import React from 'react';
+import BaseCheckboxGroup from './base-checkbox-group';
+import CategoryCheckbox from './category-checkbox';
+import { BaseCheckboxGroupProps } from './checkbox-utils';
 
-interface CategoryCheckboxGroupProps<T> {
+/**
+ * CategoryCheckboxGroupコンポーネントのプロパティ
+ *
+ * @template T - チェックボックスアイテムの型
+ */
+interface CategoryCheckboxGroupProps<T> extends BaseCheckboxGroupProps<T> {
+  /** カテゴリごとにグループ化されたアイテム */
   categories: Record<string, T[]>;
-  selectedItems: T[];
-  setSelectedItems: React.Dispatch<React.SetStateAction<T[]>>;
-  label: string;
+  /** アイテムのラベルを取得する関数 */
   itemLabel: (item: T) => string;
 }
 
+/**
+ * カテゴリチェックボックスグループコンポーネント
+ *
+ * @template T - チェックボックスアイテムの型
+ * @param categories - カテゴリごとにグループ化されたアイテム
+ * @param selectedItems - 現在選択されているアイテムの配列
+ * @param setSelectedItems - 選択されたアイテムを更新する関数
+ * @param label - チェックボックスグループのラベル
+ * @param itemLabel - アイテムのラベルを取得する関数
+ */
 const CategoryCheckboxGroup = <T,>({
   categories,
   selectedItems,
@@ -16,102 +38,29 @@ const CategoryCheckboxGroup = <T,>({
   label,
   itemLabel,
 }: CategoryCheckboxGroupProps<T>) => {
-  const allRef = useRef<HTMLInputElement | null>(null);
-
-  const handleItemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    setSelectedItems((prev) =>
-      checked
-        ? [...prev, value as T]
-        : prev.filter((item) => item !== (value as T))
-    );
-  };
-
-  const handleCategoryChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    categoryItems: T[]
-  ) => {
-    const { checked } = e.target;
-    setSelectedItems(
-      checked
-        ? [...selectedItems, ...categoryItems]
-        : selectedItems.filter((item) => !categoryItems.includes(item))
-    );
-  };
-
-  const handleSelectAllChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { checked } = e.target;
-    if (checked) {
-      setSelectedItems([
-        ...new Set([...selectedItems, ...Object.values(categories).flat()]),
-      ]);
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
-  useEffect(() => {
-    if (allRef.current) {
-      const allItems = Object.values(categories).flat();
-      const allChecked = allItems.every((item) => selectedItems.includes(item));
-      const someChecked = allItems.some((item) => selectedItems.includes(item));
-      allRef.current.indeterminate = someChecked && !allChecked;
-      allRef.current.checked = allChecked;
-    }
-  }, [selectedItems, categories]);
+  const allItems = Object.values(categories).flat();
 
   return (
-    <div className="mt-2 mb-4">
-      <label htmlFor="category-checkbox" className="block text-gray-700 mb-2">
-        {label}
-      </label>
-      <AllCheckbox
-        allChecked={Object.values(categories)
-          .flat()
-          .every((item) => selectedItems.includes(item))}
-        indeterminate={
-          Object.values(categories)
-            .flat()
-            .some((item) => selectedItems.includes(item)) &&
-          !Object.values(categories)
-            .flat()
-            .every((item) => selectedItems.includes(item))
-        }
-        onChange={handleSelectAllChange}
-        label="すべて"
-      />
-      <div className="flex flex-wrap gap-4">
-        {Object.entries(categories).map(([categoryName, categoryItems]) => (
-          <div key={categoryName} className="flex-1 min-w-[150px] p-2">
-            <AllCheckbox
-              allChecked={categoryItems.every((item) =>
-                selectedItems.includes(item)
-              )}
-              indeterminate={
-                categoryItems.some((item) => selectedItems.includes(item)) &&
-                !categoryItems.every((item) => selectedItems.includes(item))
-              }
-              onChange={(e) => handleCategoryChange(e, categoryItems)}
-              label={categoryName}
+    <BaseCheckboxGroup
+      items={allItems}
+      selectedItems={selectedItems}
+      setSelectedItems={setSelectedItems}
+      label={label}
+      renderItems={({ selectedItems, handleItemChange }) => (
+        <>
+          {Object.entries(categories).map(([categoryName, categoryItems]) => (
+            <CategoryCheckbox
+              key={categoryName}
+              categoryName={categoryName}
+              categoryItems={categoryItems}
+              selectedItems={selectedItems}
+              onItemChange={handleItemChange}
+              itemLabel={itemLabel}
             />
-            <div className="ml-4">
-              {categoryItems.map((item) => (
-                <label key={String(item)} className="flex items-center mb-1">
-                  <input
-                    type="checkbox"
-                    value={item as string}
-                    checked={selectedItems.includes(item)}
-                    onChange={handleItemChange}
-                    className="mr-2"
-                  />
-                  <span>{itemLabel(item)}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+          ))}
+        </>
+      )}
+    />
   );
 };
 

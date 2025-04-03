@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import SubjectScoreDonutChart from '@/features/universities/components/SubjectScoreDonutChart';
+import SubjectScoreDonutChart from '@/components/universities/SubjectScoreDonutChart';
 import styles from './ScoreDisplay.module.css';
 import { UISubject } from '@/types/universities/university-subjects';
 

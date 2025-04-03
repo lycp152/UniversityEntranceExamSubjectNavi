@@ -1,7 +1,7 @@
 import type { DepartmentRowProps } from '@/types/universities/university-list';
 import { EditButtons } from '@/components/universities/buttons/edit-buttons';
 import { DepartmentInfo } from '@/components/universities/department-info/department-info';
-import { ExamSections } from '@/components/exam/exam-sections';
+import { ExamSections } from '@/components/admin/exam-sections';
 import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/api-response-types';
 
 export const DepartmentRow = ({

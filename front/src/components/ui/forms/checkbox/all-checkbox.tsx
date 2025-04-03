@@ -1,36 +1,47 @@
-import React, { useEffect, useRef } from "react";
+/**
+ * すべてのチェックボックスを制御するコンポーネント
+ *
+ * このコンポーネントは、グループ内のすべてのチェックボックスを一括で選択/解除するための
+ * 親チェックボックスを提供します。中間状態（一部選択）もサポートしています。
+ */
+import React from 'react';
+import BaseCheckbox from './base-checkbox';
 
+/**
+ * AllCheckboxコンポーネントのプロパティ
+ */
 interface AllCheckboxProps {
+  /** すべてのアイテムが選択されているかどうか */
   allChecked: boolean;
+  /** 一部のアイテムのみが選択されているかどうか（中間状態） */
   indeterminate: boolean;
+  /** チェックボックスの状態が変更されたときに呼び出される関数 */
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  /** チェックボックスのラベル */
   label: string;
 }
 
+/**
+ * すべてのチェックボックスを制御するコンポーネント
+ *
+ * @param allChecked - すべてのアイテムが選択されているかどうか
+ * @param indeterminate - 一部のアイテムのみが選択されているかどうか
+ * @param onChange - チェックボックスの状態が変更されたときに呼び出される関数
+ * @param label - チェックボックスのラベル
+ */
 const AllCheckbox: React.FC<AllCheckboxProps> = ({
   allChecked,
   indeterminate,
   onChange,
   label,
 }) => {
-  const checkboxRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = indeterminate;
-    }
-  }, [indeterminate]);
-
   return (
-    <label className="flex items-center space-x-2">
-      <input
-        type="checkbox"
-        ref={checkboxRef}
-        checked={allChecked}
-        onChange={onChange}
-      />
-      <span>{label}</span>
-    </label>
+    <BaseCheckbox
+      checked={allChecked}
+      indeterminate={indeterminate}
+      onChange={onChange}
+      label={label}
+    />
   );
 };
 

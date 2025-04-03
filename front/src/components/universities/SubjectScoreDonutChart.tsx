@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { UISubject } from '@/types/universities/university-subjects';
 import { useSubjectChart } from '@/hooks/subject/use-subject-chart';
 import { containerStyles, containerClassName, chartStyles } from '@/styles/chart-styles';
-import { DonutChart } from '@/components/charts/DonutChart';
+import { DonutChart } from '@/components/charts/donut-chart';
 
 interface SubjectScoreDonutChartProps {
   subjectData: UISubject;

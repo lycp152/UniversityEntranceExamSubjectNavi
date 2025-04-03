@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import RegionCheckbox from "../filters/RegionCheckbox";
-import AcademicFieldCheckbox from "../filters/AcademicFieldCheckbox";
-import ScheduleCheckbox from "../filters/ScheduleCheckbox";
-import ClassificationCheckbox from "../filters/ClassificationCheckbox";
-import { SectionTitle } from "@/components/ui/typography/section-title";
+import React, { useState } from 'react';
+import RegionCheckbox from '../filters/RegionCheckbox';
+import AcademicFieldCheckbox from '../filters/AcademicFieldCheckbox';
+import ScheduleCheckbox from '../filters/ScheduleCheckbox';
+import ClassificationCheckbox from '../filters/ClassificationCheckbox';
+import { SectionTitle } from '@/components/ui/typography/section-title';
 
 interface DetailSearchProps {
   region: string[];
@@ -29,7 +29,7 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = () => {
-    setIsExpanded((prev) => !prev);
+    setIsExpanded(prev => !prev);
   };
 
   const closeSearch = () => {
@@ -45,7 +45,7 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
         aria-controls="detail-search-content"
       >
         <SectionTitle>詳細条件</SectionTitle>
-        <span className="ml-2 text-gray-600">{isExpanded ? "▲" : "▼"}</span>
+        <span className="ml-2 text-gray-600">{isExpanded ? '▲' : '▼'}</span>
       </button>
       {isExpanded && (
         <div id="detail-search-content" className="mt-4">
@@ -65,7 +65,7 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
               <ScheduleCheckbox schedule={schedule} setSchedule={setSchedule} />
             </div>
           </div>
-          {/* 分類 */}
+          {/* 設置区分 */}
           <div className="mt-4">
             <ClassificationCheckbox
               classification={classification}

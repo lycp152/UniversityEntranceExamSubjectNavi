@@ -16,7 +16,7 @@ export const containerStyles = {
 } as const;
 
 /** チャートコンテナのクラス名 */
-export const containerClassName = 'w-full h-[500px] bg-transparent p-4';
+export const containerClassName = 'w-full min-h-[400px] bg-transparent';
 
 /** チャートの共通スタイル */
 export const chartStyles = `

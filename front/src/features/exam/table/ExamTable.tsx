@@ -1,6 +1,6 @@
 import { Department, University, Subject, TestType } from '@/types/universities/university';
 import { DepartmentInfo } from '@/components/universities/department-info/department-info';
-import { ExamSection } from '@/components/exam/exam-section';
+import { ExamSection } from '@/components/admin/exam-section';
 import { APISubject, APITestType } from '@/types/api/api-response-types';
 
 interface ExamTableProps {
@@ -42,7 +42,7 @@ const transformToAPITestType = (testType: TestType): APITestType => ({
 export const ExamTable = ({
   departments,
   universities,
-  isEditing,
+  isEditing = false,
   onInfoChange,
   onScoreChange,
 }: ExamTableProps) => {

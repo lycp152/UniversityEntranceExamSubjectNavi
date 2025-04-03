@@ -204,7 +204,7 @@ export const SearchFormSchema = z.object({
   academicField: z.array(z.string()).optional(),
   /** 入試スケジュール（複数選択可能） */
   schedule: z.array(z.string()).optional(),
-  /** 分類（複数選択可能） */
+  /** 設置区分（複数選択可能） */
   classification: z.array(z.string()).optional(),
   /** ソート順の設定 */
   sortOrder: z

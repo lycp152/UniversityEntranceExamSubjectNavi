@@ -1,71 +1,54 @@
-import React, { useState, useEffect } from "react";
-import AllCheckbox from "./all-checkbox";
+/**
+ * シンプルチェックボックスグループコンポーネント
+ *
+ * このコンポーネントは、シンプルなチェックボックスグループを提供します。
+ * 文字列の配列をチェックボックスアイテムとして表示し、選択状態を管理します。
+ */
+import React from 'react';
+import BaseCheckboxGroup from './base-checkbox-group';
+import { checkboxStyles } from './checkbox-styles';
+import {
+  BaseCheckboxGroupProps,
+  DEFAULT_GET_ITEM_KEY,
+  renderCheckboxItems,
+} from './checkbox-utils';
 
-interface SimpleCheckboxGroupProps {
+/**
+ * SimpleCheckboxGroupコンポーネントのプロパティ
+ */
+interface SimpleCheckboxGroupProps extends BaseCheckboxGroupProps<string> {
+  /** チェックボックスアイテムの配列 */
   items: string[];
-  selectedItems: string[];
-  setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
-  label: string;
 }
 
+/**
+ * シンプルチェックボックスグループコンポーネント
+ *
+ * @param items - チェックボックスアイテムの配列
+ * @param selectedItems - 現在選択されているアイテムの配列
+ * @param setSelectedItems - 選択されたアイテムを更新する関数
+ * @param label - チェックボックスグループのラベル
+ * @param getItemKey - アイテムのキーを取得する関数
+ */
 const SimpleCheckboxGroup: React.FC<SimpleCheckboxGroupProps> = ({
   items,
   selectedItems,
   setSelectedItems,
   label,
+  getItemKey = DEFAULT_GET_ITEM_KEY,
 }) => {
-  const [allChecked, setAllChecked] = useState(false);
-  const [isIndeterminate, setIsIndeterminate] = useState(false);
-
-  const handleItemChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      setSelectedItems([...selectedItems, value]);
-    } else {
-      setSelectedItems(selectedItems.filter((item) => item !== value));
-    }
-  };
-
-  const handleAllChange = () => {
-    if (allChecked) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(items);
-    }
-    setAllChecked(!allChecked);
-  };
-
-  useEffect(() => {
-    const allChecked = items.every((item) => selectedItems.includes(item));
-    const someChecked = items.some((item) => selectedItems.includes(item));
-    setAllChecked(allChecked);
-    setIsIndeterminate(someChecked && !allChecked);
-  }, [selectedItems, items]);
-
   return (
-    <div className="mt-2">
-      <label className="block text-gray-700 mb-2">{label}</label>
-      <AllCheckbox
-        allChecked={allChecked}
-        indeterminate={isIndeterminate}
-        onChange={handleAllChange}
-        label="すべて"
-      />
-      <div className="flex flex-wrap p-2">
-        {items.map((item) => (
-          <label key={item} className="mr-4 mb-2">
-            <input
-              type="checkbox"
-              value={item}
-              checked={selectedItems.includes(item)}
-              onChange={handleItemChange}
-              className="mr-2"
-            />
-            {item}
-          </label>
-        ))}
-      </div>
-    </div>
+    <BaseCheckboxGroup
+      items={items}
+      selectedItems={selectedItems}
+      setSelectedItems={setSelectedItems}
+      label={label}
+      getItemKey={getItemKey}
+      renderItems={({ items, selectedItems, handleItemChange }) =>
+        renderCheckboxItems(items, selectedItems, handleItemChange, getItemKey)
+      }
+      className={checkboxStyles.categoryItemsContainer}
+    />
   );
 };
 

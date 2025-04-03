@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Department,
   University,
@@ -6,37 +6,25 @@ import {
   TestType,
   AdmissionSchedule,
   Major,
-} from "@/types/universities/university";
-import { ExamTable } from "../table/ExamTable";
+} from '@/types/universities/university';
+import { ExamTable } from '../table/ExamTable';
 
 const updateSubject = (subject: Subject, subjectId: number, value: number) =>
   subject.id === subjectId ? { ...subject, maxScore: value } : subject;
 
-const updateTestType = (
-  testType: TestType,
-  subjectId: number,
-  value: number
-) => ({
+const updateTestType = (testType: TestType, subjectId: number, value: number) => ({
   ...testType,
-  subjects: testType.subjects.map((subject) =>
-    updateSubject(subject, subjectId, value)
-  ),
+  subjects: testType.subjects.map(subject => updateSubject(subject, subjectId, value)),
 });
 
-const updateSchedule = (
-  schedule: AdmissionSchedule,
-  subjectId: number,
-  value: number
-) => ({
+const updateSchedule = (schedule: AdmissionSchedule, subjectId: number, value: number) => ({
   ...schedule,
-  testTypes: schedule.testTypes.map((testType) =>
-    updateTestType(testType, subjectId, value)
-  ),
+  testTypes: schedule.testTypes.map(testType => updateTestType(testType, subjectId, value)),
 });
 
 const updateMajor = (major: Major, subjectId: number, value: number) => ({
   ...major,
-  admissionSchedules: major.admissionSchedules.map((schedule) =>
+  admissionSchedules: major.admissionSchedules.map(schedule =>
     updateSchedule(schedule, subjectId, value)
   ),
 });
@@ -50,9 +38,7 @@ const updateDepartment = (
   if (department.id !== departmentId) return department;
   return {
     ...department,
-    majors: department.majors.map((major) =>
-      updateMajor(major, subjectId, value)
-    ),
+    majors: department.majors.map(major => updateMajor(major, subjectId, value)),
   };
 };
 
@@ -62,32 +48,21 @@ interface ExamFormProps {
   onSave: (departments: Department[]) => void;
 }
 
-export const ExamForm = ({
-  departments,
-  universities,
-  onSave,
-}: ExamFormProps) => {
+export const ExamForm = ({ departments, universities, onSave }: ExamFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedDepartments, setEditedDepartments] =
-    useState<Department[]>(departments);
+  const [editedDepartments, setEditedDepartments] = useState<Department[]>(departments);
 
   const handleInfoChange = (department: Department, value: string) => {
-    const updatedDepartments = departments.map((d) => {
+    const updatedDepartments = departments.map(d => {
       if (d.id !== department.id) return d;
       return { ...d, universityId: parseInt(value, 10) };
     });
     onSave(updatedDepartments);
   };
 
-  const handleScoreChange = (
-    departmentId: number,
-    subjectId: number,
-    value: number
-  ) => {
-    setEditedDepartments((prev) =>
-      prev.map((department) =>
-        updateDepartment(department, departmentId, subjectId, value)
-      )
+  const handleScoreChange = (departmentId: number, subjectId: number, value: number) => {
+    setEditedDepartments(prev =>
+      prev.map(department => updateDepartment(department, departmentId, subjectId, value))
     );
   };
 
@@ -101,10 +76,7 @@ export const ExamForm = ({
       <div className="flex justify-end mb-4">
         {isEditing ? (
           <>
-            <button
-              onClick={handleSave}
-              className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
-            >
+            <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
               保存
             </button>
             <button
@@ -127,8 +99,8 @@ export const ExamForm = ({
         departments={editedDepartments}
         universities={universities}
         isEditing={isEditing}
-        onInfoChange={(departmentId) => (field, value) => {
-          const department = departments.find((d) => d.id === departmentId);
+        onInfoChange={departmentId => (field, value) => {
+          const department = departments.find(d => d.id === departmentId);
           if (department) {
             handleInfoChange(department, value.toString());
           }

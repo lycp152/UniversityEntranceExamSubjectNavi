@@ -6,8 +6,8 @@
  * - 検索結果の表示
  * - レスポンシブなレイアウト
  */
-import SearchForm from '@/features/search/form/SearchForm';
-import SearchResultTable from '@/features/search/result/SearchResultTable';
+import SearchForm from '@/features/search/components/form/search-form';
+import SearchResultTable from '@/features/search/components/result/search-result-table';
 import { generateMetadata } from '@/lib/metadata';
 
 // ページのメタデータ設定

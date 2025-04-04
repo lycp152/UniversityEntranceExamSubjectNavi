@@ -2,17 +2,36 @@
 
 import { useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import SortConditions from './SortConditions';
-import DetailSearch from './DetailSearch';
+import SortConditions from './sort-conditions';
+import DetailSearch from './detail-search';
 import { formStyles } from './styles';
 import { SectionTitle } from '@/components/ui/typography/section-title';
-import { searchUniversities, SearchFormState } from '@/features/search/actions';
+import { searchUniversities } from '@/features/search/api/actions';
+import { SearchFormState } from '@/features/search/types';
 
+/**
+ * 検索フォームの初期状態
+ * @type {SearchFormState}
+ */
 const initialState: SearchFormState = {
   message: '',
   errors: undefined,
 };
 
+/**
+ * 大学検索フォームコンポーネント
+ *
+ * 大学検索のためのフォームを提供するコンポーネントです。
+ * キーワード検索、詳細条件、並び順の設定が可能です。
+ *
+ * @component
+ * @returns {JSX.Element} 検索フォームコンポーネント
+ *
+ * @example
+ * ```tsx
+ * <SearchForm />
+ * ```
+ */
 export default function SearchForm() {
   const [state, formAction] = useActionState(searchUniversities, initialState);
   const { pending } = useFormStatus();
@@ -23,6 +42,7 @@ export default function SearchForm() {
   const [academicField, setAcademicField] = useState<string[]>([]);
   const [schedule, setSchedule] = useState<string[]>([]);
   const [classification, setClassification] = useState<string[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className={formStyles.container}>
@@ -43,14 +63,16 @@ export default function SearchForm() {
         </div>
 
         <DetailSearch
-          region={region}
-          setRegion={setRegion}
+          selectedItems={region}
+          setSelectedItems={setRegion}
           academicField={academicField}
           setAcademicField={setAcademicField}
           schedule={schedule}
           setSchedule={setSchedule}
           classification={classification}
           setClassification={setClassification}
+          isExpanded={isExpanded}
+          onToggleExpanded={() => setIsExpanded(prev => !prev)}
         />
 
         <div className="mt-4">

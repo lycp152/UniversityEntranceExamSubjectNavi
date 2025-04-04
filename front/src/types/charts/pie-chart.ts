@@ -78,10 +78,8 @@ export type PatternConfig = {
   color: string;
   /** パターンの設定 */
   pattern: {
-    /** パターンの幅（ピクセル） */
-    width: number;
-    /** パターンの高さ（ピクセル） */
-    height: number;
+    /** パターンの大きさ（ピクセル） */
+    size: number;
     /** パターンの変形設定 */
     transform?: string;
     /** パターンの内容を生成する関数 */

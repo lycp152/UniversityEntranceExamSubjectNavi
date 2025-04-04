@@ -4,11 +4,11 @@
  */
 import { PieChart as RechartsPieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { DisplaySubjectScore } from '@/types/score';
-import CustomLabel from '@/features/charts/components/pie-chart-label';
-import Patterns from '@/features/charts/patterns';
-import { ChartTooltip } from '@/features/charts/components/chart-tooltip';
+import CustomLabel from './chart-label';
+import Patterns from '@/features/charts/components/pattern-renderer';
+import { ChartTooltip } from './chart-tooltip';
 import { getSubjectBaseCategory } from '@/utils/validation/subject-type-validator';
-import { CHART_CONFIG } from '@/features/charts/constants/chart';
+import { CHART, COMMON_PIE_PROPS } from '@/features/charts/constants/chart';
 
 /**
  * ドーナツチャートのプロパティ型定義
@@ -31,14 +31,6 @@ type ChartProps = {
 const getChartFillColor = (entry: DisplaySubjectScore, isRightChart: boolean) =>
   `url(#pattern-${isRightChart ? entry.category : getSubjectBaseCategory(entry.name)})`;
 
-// 内側と外側の円グラフで共通して使用するプロパティ
-const commonPieProps = {
-  cx: CHART_CONFIG.COMMON.CENTER_X,
-  cy: CHART_CONFIG.COMMON.CENTER_Y,
-  startAngle: CHART_CONFIG.COMMON.START_ANGLE,
-  endAngle: CHART_CONFIG.COMMON.END_ANGLE,
-};
-
 /**
  * ラベルコンポーネントを生成する関数
  */
@@ -55,7 +47,7 @@ const createLabel = (isRightChart: boolean) => {
  * @param {ChartProps} props - コンポーネントのプロパティ
  * @returns {JSX.Element} ドーナツチャート
  */
-export const DonutChart = ({ detailedData, outerData, isRightChart = false }: ChartProps) => {
+export const BaseChart = ({ detailedData, outerData, isRightChart = false }: ChartProps) => {
   const label = createLabel(isRightChart);
 
   return (
@@ -68,12 +60,12 @@ export const DonutChart = ({ detailedData, outerData, isRightChart = false }: Ch
 
         {/* 内側の円グラフ：詳細データ表示 */}
         <Pie
-          {...commonPieProps}
+          {...COMMON_PIE_PROPS}
           data={detailedData}
           dataKey="value"
           labelLine={false}
-          innerRadius={CHART_CONFIG.INNER_CHART.INNER_RADIUS}
-          outerRadius={CHART_CONFIG.INNER_CHART.OUTER_RADIUS}
+          innerRadius={CHART.INNER_CHART.INNER_RADIUS}
+          outerRadius={CHART.INNER_CHART.OUTER_RADIUS}
           label={label}
         >
           {detailedData.map(entry => (
@@ -83,12 +75,12 @@ export const DonutChart = ({ detailedData, outerData, isRightChart = false }: Ch
 
         {/* 外側の円グラフ：集計データ表示 */}
         <Pie
-          {...commonPieProps}
+          {...COMMON_PIE_PROPS}
           data={outerData}
           dataKey="value"
           labelLine={false}
-          innerRadius={CHART_CONFIG.OUTER_CHART.INNER_RADIUS}
-          outerRadius={CHART_CONFIG.OUTER_CHART.OUTER_RADIUS}
+          innerRadius={CHART.OUTER_CHART.INNER_RADIUS}
+          outerRadius={CHART.OUTER_CHART.OUTER_RADIUS}
           label={label}
         >
           {outerData.map(entry => (

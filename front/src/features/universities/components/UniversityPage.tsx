@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { notFound } from 'next/navigation';
-import { ScoreDisplay } from '@/components/charts/score-display';
+import { ScoreDisplay } from '@/features/charts/components/score-display';
 import SubjectInfo from '@/features/universities/utils/SubjectInfo';
 import SubjectScoreTable from '@/features/universities/table';
 import { ErrorMessage } from '@/components/errors/error-message';

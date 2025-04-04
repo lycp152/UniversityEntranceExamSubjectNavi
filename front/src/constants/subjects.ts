@@ -19,11 +19,13 @@ export const EXAM_TYPES = {
   COMMON: {
     name: '共通',
     id: 1,
+    color: '#4169E1',
   },
   /** 二次試験の定義 */
   SECONDARY: {
     name: '二次',
     id: 2,
+    color: '#A9A9A9',
   },
 } as const;
 

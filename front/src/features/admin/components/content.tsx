@@ -20,46 +20,9 @@
  * @param onAddSubject - 科目追加時のコールバック
  * @param onSubjectNameChange - 科目名変更時のコールバック
  */
-import type { APITestType } from '@/types/api/api-response-types';
-import type { University, Department } from '@/types/universities/university';
-import type { EditMode } from '@/types/universities/university-list';
+import type { AdminPageContentProps } from '../types/admin-props';
 import { UniversityList } from '@/features/admin/components/list';
 import { AdminLayout } from '@/features/admin/components/layout';
-
-interface AdminPageContentProps {
-  readonly universities: University[];
-  readonly error: string | null;
-  readonly isLoading: boolean;
-  readonly successMessage: string | null;
-  readonly editMode: EditMode | null;
-  readonly onEdit: (university: University, department: Department) => void;
-  readonly onInfoChange: (
-    universityId: number,
-    departmentId: number,
-    field: string,
-    value: string | number
-  ) => void;
-  readonly onScoreChange: (
-    universityId: number,
-    departmentId: number,
-    subjectId: number,
-    value: number,
-    isCommon: boolean
-  ) => Promise<void>;
-  readonly onSave: (
-    university: University,
-    department: Department
-  ) => Promise<(() => void) | undefined>;
-  readonly onCancel: () => void;
-  readonly onInsert: (index: number) => void;
-  readonly onAddSubject: (universityId: number, departmentId: number, type: APITestType) => void;
-  readonly onSubjectNameChange: (
-    universityId: number,
-    departmentId: number,
-    subjectId: number,
-    name: string
-  ) => void;
-}
 
 export function AdminPageContent({
   universities,
@@ -75,7 +38,7 @@ export function AdminPageContent({
   onInsert,
   onAddSubject,
   onSubjectNameChange,
-}: AdminPageContentProps) {
+}: Readonly<AdminPageContentProps>) {
   return (
     <AdminLayout
       isLoading={isLoading}

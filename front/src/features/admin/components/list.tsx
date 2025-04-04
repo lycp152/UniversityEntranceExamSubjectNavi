@@ -21,6 +21,7 @@ import React from 'react';
 import type { UniversityListProps } from '@/types/universities/university-list';
 import { UniversityCard } from '@/components/admin/card/university-card';
 import { InsertUniversityButton } from '@/components/admin/buttons/insert-button';
+import { sortUniversities } from '../utils/sort-universities';
 
 export const UniversityList = ({
   universities,
@@ -38,14 +39,7 @@ export const UniversityList = ({
   const showInsertButtons = !editMode?.isEditing;
 
   // 大学データを安定的にソート
-  const sortedUniversities = [...universities].sort((a, b) => {
-    // 新規データの場合は指定されたindexの位置を維持
-    if (editMode?.isNew && editMode.universityId === a.id) {
-      return 0;
-    }
-    // それ以外は既存のID順でソート
-    return a.id - b.id;
-  });
+  const sortedUniversities = sortUniversities(universities, editMode);
 
   return (
     <div className="space-y-2">

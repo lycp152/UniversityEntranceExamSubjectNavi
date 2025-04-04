@@ -10,17 +10,7 @@
  * @module ChartTooltip
  */
 
-import { Payload } from 'recharts/types/component/DefaultTooltipContent';
-
-/**
- * ツールチップのペイロード型定義
- * @typedef {Object} TooltipPayload
- * @property {number} value - 表示する値
- * @property {string} name - 表示するラベル名
- * @property {Object} payload - 追加のデータペイロード
- * @property {number} [payload.percentage] - パーセンテージ値（オプション）
- */
-export type TooltipPayload = Payload<number, string>;
+import { TooltipPayload } from '../types/chart';
 
 /**
  * 円グラフのツールチップを生成する関数

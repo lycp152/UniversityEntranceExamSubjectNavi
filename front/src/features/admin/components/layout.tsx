@@ -6,25 +6,11 @@
  * - エラー状態
  * - 空の状態
  * - 成功メッセージの表示
- *
- * @param children - レイアウト内に表示する子コンポーネント
- * @param isLoading - ローディング状態を示すフラグ
- * @param error - エラーメッセージ
- * @param isEmpty - データが空かどうかを示すフラグ
- * @param successMessage - 成功メッセージ
  */
-import { ReactNode } from 'react';
+import type { AdminLayoutProps } from '../types/admin-layout';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
 import { EmptyState } from '@/components/ui/feedback/empty-state';
-
-interface AdminLayoutProps {
-  readonly children: ReactNode;
-  readonly isLoading?: boolean;
-  readonly error?: string | null;
-  readonly isEmpty?: boolean;
-  readonly successMessage?: string | null;
-}
 
 export function AdminLayout({
   children,
@@ -32,7 +18,7 @@ export function AdminLayout({
   error,
   isEmpty,
   successMessage,
-}: AdminLayoutProps) {
+}: Readonly<AdminLayoutProps>) {
   // ローディング状態の場合はローディングスピナーを表示
   if (isLoading) return <LoadingSpinner />;
   // エラー状態の場合はエラーメッセージを表示

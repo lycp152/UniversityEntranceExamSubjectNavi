@@ -4,6 +4,7 @@
  * @remarks
  * - パターンの基本設定（サイズ、透明度、線の太さなど）を定義
  * - 各科目のパターンパスを定義
+ * - パターンのオプション設定を定義
  */
 export const PATTERN_CONFIG = {
   /** パターンの基本サイズ（px） */
@@ -14,8 +15,6 @@ export const PATTERN_CONFIG = {
   strokeWidth: 3,
   /** パターンの線の色 */
   strokeColor: 'white',
-  /** パターンの塗りつぶし色 */
-  color: 'white',
 
   /** 各科目のパターンパス定義 */
   paths: {
@@ -29,5 +28,33 @@ export const PATTERN_CONFIG = {
     science: 'M0,4 Q2,0 4,4 T8,4',
     /** 社会のパターンパス */
     social: 'M0,0 M0,8 L8,8 L8,0 L0,0',
+    /** 共通試験のパターンパス */
+    common: 'M0,4 L8,4',
+    /** 二次試験のパターンパス */
+    secondary: '',
+  },
+
+  /** パターンのオプション設定 */
+  options: {
+    /** 英語のパターンオプション */
+    english: {
+      transform: 'rotate(45)',
+    },
+    /** 数学のパターンオプション */
+    math: {
+      fill: true,
+    },
+    /** 国語のパターンオプション */
+    japanese: {
+      fill: false,
+    },
+    /** 理科のパターンオプション */
+    science: {
+      fill: false,
+    },
+    /** 社会のパターンオプション */
+    social: {
+      fill: false,
+    },
   },
 } as const;

@@ -9,18 +9,7 @@ import Patterns from '@/features/charts/components/pattern-renderer';
 import { ChartTooltip } from './chart-tooltip';
 import { getSubjectBaseCategory } from '@/utils/validation/subject-type-validator';
 import { CHART, COMMON_PIE_PROPS } from '@/features/charts/constants/chart';
-
-/**
- * ドーナツチャートのプロパティ型定義
- * @property {DisplaySubjectScore[]} detailedData - 内側の円グラフに表示する詳細データ
- * @property {DisplaySubjectScore[]} outerData - 外側の円グラフに表示する集計データ
- * @property {boolean} [isRightChart] - 右側のチャートかどうかを示すフラグ（デフォルト: false）
- */
-type ChartProps = {
-  detailedData: DisplaySubjectScore[];
-  outerData: DisplaySubjectScore[];
-  isRightChart?: boolean;
-};
+import { ChartProps } from '../types/chart';
 
 /**
  * チャートの塗りつぶしパターンを取得する関数

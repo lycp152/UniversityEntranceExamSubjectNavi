@@ -8,18 +8,10 @@
  * - ツールチップによる詳細情報の表示
  */
 import { FC } from 'react';
-import { UISubject } from '@/types/universities/university-subjects';
 import { useSubjectChart } from '@/hooks/subject/use-subject-chart';
 import { containerStyles, containerClassName, chartStyles } from '@/styles/chart-styles';
 import { BaseChart } from './base-chart';
-
-/**
- * 科目と試験の比較チャートコンポーネントのプロパティ型定義
- */
-interface SubjectExamComparisonChartProps {
-  /** 表示する科目データ */
-  subjectData: UISubject;
-}
+import { SubjectExamComparisonChartProps } from '../types/chart';
 
 /**
  * 科目と試験の比較チャートコンポーネント

@@ -1,19 +1,24 @@
 /**
- * ラベルフォーマットユーティリティ
+ * チャートのラベルフォーマットユーティリティ
  *
  * @remarks
- * - チャートのラベル表示形式を制御
+ * - チャートのラベル表示形式を制御するユーティリティ関数を提供
  * - 右側と左側のラベルで異なるフォーマットを適用
  * - 正規表現を使用してラベルテキストを整形
+ * - パーセンテージ表示の制御も含む
  */
 
 /**
  * ラベルフォーマット関数の型定義
+ * @param name - フォーマット対象のラベル名
+ * @returns フォーマットされたラベル文字列
  */
 type LabelFormatter = (name: string) => string;
 
 /**
  * ラベルフォーマット関数の定義
+ * @property right - 右側のラベル用フォーマッター
+ * @property left - 左側のラベル用フォーマッター
  */
 export const labelFormatters: Record<'right' | 'left', LabelFormatter> = {
   /** 右側のラベルフォーマット */
@@ -35,6 +40,12 @@ export const labelFormatters: Record<'right' | 'left', LabelFormatter> = {
  * @param name - フォーマットするラベル名
  * @param isRight - 右側のラベルかどうか
  * @returns フォーマットされたラベルテキスト
+ *
+ * @example
+ * ```ts
+ * formatLabelText("数学(L)", false) // "数学\n(L)"
+ * formatLabelText("(数学)L", true)  // "(数学)\nL"
+ * ```
  */
 export const formatLabelText = (name: string, isRight: boolean): string => {
   const formatter = labelFormatters[isRight ? 'right' : 'left'];

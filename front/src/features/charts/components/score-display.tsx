@@ -8,15 +8,7 @@
  */
 import { FC } from 'react';
 import SubjectExamComparisonChart from './subject-exam-comparison-chart';
-import { UISubject } from '@/types/universities/university-subjects';
-
-/**
- * 科目スコア表示コンポーネントのプロパティ型定義
- */
-type ScoreDisplayProps = {
-  /** 表示する科目データ */
-  subject: UISubject;
-};
+import { ScoreDisplayProps } from '../types/chart';
 
 /**
  * 科目スコアを表示するコンポーネント

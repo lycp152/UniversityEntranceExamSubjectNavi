@@ -10,26 +10,15 @@
 
 /**
  * エラーの重要度を表す型
- * - critical: システム全体に影響する致命的なエラー
  * - error: 機能に影響する重大なエラー
  * - warning: 注意が必要だが機能は継続可能な警告
- * - info: 参考情報として表示する軽微な通知
  */
-export type ErrorSeverity = 'critical' | 'error' | 'warning' | 'info';
+export type ErrorSeverity = 'error' | 'warning';
 
 /**
  * エラーのカテゴリを表す型
  * - validation: 入力値の検証エラー
- * - business: ビジネスロジックの違反エラー
- * - system: システム内部のエラー
- * - network: 通信関連のエラー
- * - security: セキュリティ関連のエラー
- * - performance: パフォーマンス関連の警告
+ * - calculation: 計算関連のエラー
+ * - render: 表示関連のエラー
  */
-export type ErrorCategory =
-  | 'validation'
-  | 'business'
-  | 'system'
-  | 'network'
-  | 'security'
-  | 'performance';
+export type ErrorCategory = 'validation' | 'calculation' | 'render';

@@ -35,6 +35,7 @@ import type {
   AdmissionScheduleName,
   DisplayOrder,
 } from '@/constants/constraint/admission-schedule';
+import type { AdmissionStatus } from '@/constants/constraint/admission-info';
 
 /**
  * 日付文字列をフォーマット
@@ -174,3 +175,19 @@ export function transformSubject(apiSubject: APISubject): Subject {
     updatedBy: apiSubject.updated_by ?? '',
   };
 }
+
+/**
+ * 入試情報のステータス変更を検証します
+ * @param currentStatus 現在のステータス
+ * @param newStatus 新しいステータス
+ * @returns 検証結果
+ */
+export const validateStatusTransition = (
+  currentStatus: keyof typeof ADMISSION_INFO_CONSTRAINTS.STATUS_TRANSITIONS,
+  newStatus: AdmissionStatus
+): boolean => {
+  const validTransitions = ADMISSION_INFO_CONSTRAINTS.STATUS_TRANSITIONS[
+    currentStatus
+  ] as readonly AdmissionStatus[];
+  return validTransitions.includes(newStatus);
+};

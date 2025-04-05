@@ -27,6 +27,18 @@ const transformValue = (field: string, value: string): string | number => {
 };
 
 /**
+ * 表示順序を検証します
+ * @param order 検証する表示順序
+ * @returns 検証結果
+ */
+const validateDisplayOrder = (order: number): boolean => {
+  return (
+    order >= ADMISSION_SCHEDULE_CONSTRAINTS.DISPLAY_ORDER_CONSTRAINTS.MIN &&
+    order <= ADMISSION_SCHEDULE_CONSTRAINTS.DISPLAY_ORDER_CONSTRAINTS.MAX
+  );
+};
+
+/**
  * 学部情報コンポーネント
  *
  * @param department - 表示・編集対象の学部情報
@@ -56,7 +68,11 @@ export const DepartmentInfo = ({
    */
   const handleChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      onInfoChange(field, transformValue(field, e.target.value));
+      const value = transformValue(field, e.target.value);
+      if (field === 'displayOrder' && !validateDisplayOrder(Number(value))) {
+        return;
+      }
+      onInfoChange(field, value);
     };
 
   return (

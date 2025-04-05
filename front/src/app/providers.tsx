@@ -9,7 +9,7 @@
  */
 import { QueryClient, QueryClientConfig, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ENV, isDevToolsEnabled } from '@/lib/env';
+import { ENV, isDevToolsEnabled } from '@/lib/config/env';
 
 // React Queryの設定
 const queryConfig: QueryClientConfig = {

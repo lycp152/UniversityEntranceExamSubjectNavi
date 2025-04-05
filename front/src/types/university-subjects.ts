@@ -10,11 +10,10 @@
  */
 
 import type { BaseSubjectScore } from '@/types/score';
+import type { BaseModel } from './base-model';
 
 /** UI科目情報の型 */
-export interface UISubject {
-  /** 科目の一意の識別子 */
-  id: number;
+export interface UISubject extends BaseModel {
   /** 科目の名称 */
   name: string;
   /** 科目の得点 */

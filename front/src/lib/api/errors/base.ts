@@ -6,6 +6,7 @@
  * @property {string} message - エラーメッセージ（ユーザー向けの説明）
  * @property {number} [status] - HTTPステータスコード（デフォルト: 500）
  * @property {Record<string, unknown>} [details] - 追加のエラー詳細情報
+ * @see {@link ../validation/validation-messages.ts} バリデーションエラーメッセージの定義
  */
 export interface ApiErrorDetails {
   code: string;
@@ -23,6 +24,8 @@ export interface ApiErrorDetails {
  * @property {readonly string} code - エラーコード
  * @property {readonly number} status - HTTPステータスコード
  * @property {readonly Record<string, unknown>} [details] - 追加のエラー詳細
+ * @see {@link ../validation/validation-messages.ts} バリデーションエラーメッセージの定義
+ * @see {@link ../config/env.ts} 環境変数の設定と検証
  */
 export class BaseApiError extends Error {
   readonly code: string;

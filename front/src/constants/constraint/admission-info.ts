@@ -16,6 +16,13 @@ export const ADMISSION_INFO_CONSTRAINTS = {
   /** 学年度の制約 */
   MIN_ACADEMIC_YEAR: 2000,
   MAX_ACADEMIC_YEAR: 2100,
+
+  /** 入試情報のステータス変更制約 */
+  STATUS_TRANSITIONS: {
+    draft: ['published', 'archived'],
+    published: ['archived'],
+    archived: ['draft'],
+  } as const,
 } as const;
 
 /** 入試ステータスの型定義 */
@@ -28,3 +35,5 @@ export type Enrollment =
 export type AcademicYear =
   | typeof ADMISSION_INFO_CONSTRAINTS.MIN_ACADEMIC_YEAR
   | typeof ADMISSION_INFO_CONSTRAINTS.MAX_ACADEMIC_YEAR;
+/** ステータス遷移の型定義 */
+export type StatusTransition = keyof typeof ADMISSION_INFO_CONSTRAINTS.STATUS_TRANSITIONS;

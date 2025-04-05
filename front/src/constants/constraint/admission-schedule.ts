@@ -13,6 +13,13 @@ export const ADMISSION_SCHEDULE_CONSTRAINTS = {
   MIN_DISPLAY_ORDER: 0,
   /** 最大表示順序（前期、中期、後期の3つに対応） */
   MAX_DISPLAY_ORDER: 3,
+
+  /** 入試スケジュールの表示順序制約 */
+  DISPLAY_ORDER_CONSTRAINTS: {
+    MIN: 0,
+    MAX: 3,
+    DEFAULT: 0,
+  } as const,
 } as const;
 
 /** 入試スケジュール名の型定義 */
@@ -21,3 +28,6 @@ export type AdmissionScheduleName = (typeof ADMISSION_SCHEDULE_CONSTRAINTS.VALID
 export type DisplayOrder =
   | typeof ADMISSION_SCHEDULE_CONSTRAINTS.MIN_DISPLAY_ORDER
   | typeof ADMISSION_SCHEDULE_CONSTRAINTS.MAX_DISPLAY_ORDER;
+/** 表示順序制約の型定義 */
+export type DisplayOrderConstraint =
+  typeof ADMISSION_SCHEDULE_CONSTRAINTS.DISPLAY_ORDER_CONSTRAINTS;

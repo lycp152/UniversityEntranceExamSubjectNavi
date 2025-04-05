@@ -4,7 +4,7 @@ import { useFormStatus } from 'react-dom';
 import { Card } from '@/components/ui/cards';
 import { searchUniversities } from '@/features/search/api/actions';
 import { SectionTitle } from '@/features/search/components/section-title';
-import { SearchFormState } from '@/features/search/types/search-form';
+import { SearchFormState, searchFormSchema } from '@/features/search/types/search-form';
 import DetailSearch from './detail-search';
 import SortConditions from './sort-conditions';
 
@@ -43,10 +43,32 @@ export default function SearchForm() {
   const [classification, setClassification] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const handleSubmit = async (formData: FormData): Promise<void> => {
+    const data = {
+      keyword: formData.get('keyword') as string,
+      region,
+      academicField,
+      schedule,
+      classification,
+      sortOrder,
+      page: formData.get('page') ? Number(formData.get('page')) : undefined,
+      perPage: formData.get('perPage') ? Number(formData.get('perPage')) : undefined,
+    };
+
+    const result = searchFormSchema.safeParse(data);
+    if (!result.success) {
+      state.message = '入力内容に誤りがあります';
+      state.errors = result.error.flatten().fieldErrors;
+      return;
+    }
+
+    formAction(formData);
+  };
+
   return (
     <Card className="mb-4 p-4">
       <SortConditions sortOrder={sortOrder} setSortOrder={setSortOrder} />
-      <form action={formAction}>
+      <form action={handleSubmit}>
         <div className="mt-4">
           <SectionTitle>キーワードで絞り込む</SectionTitle>
           <input
@@ -56,7 +78,7 @@ export default function SearchForm() {
             className="w-full border border-gray-300 p-2"
             placeholder="例：北海道大学 工学部（空白で全てから検索します）"
           />
-          {state?.errors?.keyword && pending && (
+          {state?.errors?.keyword && (
             <p className="mt-1 text-sm text-red-600">{state.errors.keyword[0]}</p>
           )}
         </div>
@@ -80,7 +102,7 @@ export default function SearchForm() {
           </button>
         </div>
 
-        {state?.message && pending && <p className="mt-2 text-sm text-gray-600">{state.message}</p>}
+        {state?.message && <p className="mt-2 text-sm text-gray-600">{state.message}</p>}
       </form>
     </Card>
   );

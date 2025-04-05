@@ -10,7 +10,7 @@
  * - バリデーションルールの作成ヘルパー
  */
 
-import { ValidationRule } from '@/lib/validation/types';
+import { ValidationRule } from '@/features/search/lib/types';
 
 /**
  * バリデーションの重要度を表す列挙型

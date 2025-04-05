@@ -7,6 +7,9 @@
  * - Tailwind CSSの基本レイヤー設定
  * - カスタムユーティリティクラスの定義
  * - テキストバランス調整のユーティリティ
+ *
+ * @see {@link ./tailwind-utils.ts} Tailwind CSSユーティリティ
+ * @see {@link ./error.ts} エラー関連スタイル
  */
 
 @tailwind base;

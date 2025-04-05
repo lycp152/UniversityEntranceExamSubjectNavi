@@ -8,6 +8,9 @@
  * - サーバーサイド環境変数の定義と検証
  * - 環境変数の型安全性の確保
  * - カスタムバリデーションルールの実装
+ * @see {@link ../api/errors/base.ts} APIエラーの基底クラス
+ * @see {@link ../validation/validation-messages.ts} バリデーションエラーメッセージの定義
+ * @see {@link ./metadata.ts} メタデータ生成機能
  */
 
 import { createEnv } from '@t3-oss/env-nextjs';
@@ -22,6 +25,7 @@ import { BaseApiError } from '@/lib/api/errors/base';
  * @property {Object} runtimeEnv - 実行時環境変数の設定
  * @property {boolean} skipValidation - バリデーションスキップフラグ
  * @property {boolean} emptyStringAsUndefined - 空文字列をundefinedとして扱うフラグ
+ * @see {@link ../validation/validation-messages.ts} バリデーションエラーメッセージの定義
  */
 export const env = createEnv({
   client: {

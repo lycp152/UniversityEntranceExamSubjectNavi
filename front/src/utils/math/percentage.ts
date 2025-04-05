@@ -26,6 +26,30 @@ export const calculatePercentage = (value: number, total: number): number => {
 };
 
 /**
+ * パーセンテージを検証します
+ * @param percentage 検証するパーセンテージ
+ * @returns 検証結果
+ */
+export const validatePercentage = (percentage: number): boolean => {
+  return (
+    percentage >= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MIN_TOTAL_PERCENTAGE &&
+    percentage <= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MAX_TOTAL_PERCENTAGE
+  );
+};
+
+/**
+ * スコアを検証します
+ * @param score 検証するスコア
+ * @returns 検証結果
+ */
+export const validateScore = (score: number): boolean => {
+  return (
+    score >= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MIN_TOTAL_SCORE &&
+    score <= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MAX_TOTAL_SCORE
+  );
+};
+
+/**
  * 重み付けパーセンテージを計算
  * @param value - 値
  * @param maxValue - 最大値

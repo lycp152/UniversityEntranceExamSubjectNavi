@@ -12,10 +12,10 @@
 
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
 import type { SubjectName } from '@/constants/constraint/subjects';
+import type { BaseModel } from './base-model';
+
 /** 科目スコアの型 */
-export interface SubjectScore {
-  /** 科目の一意の識別子 */
-  id: number;
+export interface SubjectScore extends BaseModel {
   /** 科目の名称 */
   name: SubjectName;
   /** 科目の試験種別 */
@@ -30,16 +30,4 @@ export interface SubjectScore {
   percentage: number;
   /** UI表示時の順序 */
   displayOrder: number;
-  /** レコードの作成日時 */
-  createdAt: string;
-  /** レコードの更新日時 */
-  updatedAt: string;
-  /** レコードの削除日時 */
-  deletedAt?: string;
-  /** レコードのバージョン（楽観的ロック用） */
-  version: number;
-  /** レコードの作成者ID */
-  createdBy: string;
-  /** レコードの更新者ID */
-  updatedBy: string;
 }

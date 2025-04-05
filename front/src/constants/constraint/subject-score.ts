@@ -17,6 +17,14 @@ export const SUBJECT_SCORE_CONSTRAINTS = {
 
   /** 表示用の小数点以下の桁数 */
   DEFAULT_DECIMAL_PLACES: 2,
+
+  /** スコアの計算制約 */
+  CALCULATION_CONSTRAINTS: {
+    MIN_TOTAL_SCORE: 0,
+    MAX_TOTAL_SCORE: 1000,
+    MIN_TOTAL_PERCENTAGE: 0,
+    MAX_TOTAL_PERCENTAGE: 100,
+  } as const,
 } as const;
 
 /** スコアの型定義 */
@@ -29,3 +37,5 @@ export type Percentage =
   | typeof SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE;
 /** 小数点以下の桁数の型定義 */
 export type DecimalPlaces = typeof SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES;
+/** 計算制約の型定義 */
+export type CalculationConstraint = typeof SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS;

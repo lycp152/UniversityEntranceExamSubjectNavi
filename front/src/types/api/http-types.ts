@@ -10,6 +10,8 @@
  * - HTTPエラーレスポンスの共通型定義
  */
 
+import { ValidationErrors } from './base-types';
+
 /** HTTPメソッドの型定義 */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -42,7 +44,9 @@ export interface HttpResponse<T> {
   headers?: Record<string, string>;
 }
 
-/** HTTPエラーレスポンスの共通型定義 */
+/**
+ * HTTPエラーレスポンスの共通型定義
+ */
 export interface HttpError {
   /** エラーコード */
   code: string;
@@ -50,6 +54,8 @@ export interface HttpError {
   message: string;
   /** HTTPステータスコード */
   status: number;
+  /** バリデーションエラー情報 */
+  validationErrors?: ValidationErrors;
   /** エラー詳細情報 */
   details?: Record<string, unknown>;
 }

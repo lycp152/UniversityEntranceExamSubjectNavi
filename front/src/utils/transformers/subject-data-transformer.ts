@@ -139,5 +139,10 @@ export const transformSubjectData = (
       displayOrder: schedule.display_order,
     },
     subjects,
+    version: targetSubject.version,
+    createdAt: targetSubject.created_at,
+    updatedAt: targetSubject.updated_at,
+    createdBy: targetSubject.created_by,
+    updatedBy: targetSubject.updated_by,
   };
 };

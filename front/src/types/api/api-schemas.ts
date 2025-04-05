@@ -9,74 +9,63 @@
  * - 検索関連のスキーマ定義
  */
 import { z } from 'zod';
-import { validationMessages } from '@/lib/validation/error-messages';
+import { validationMessages } from '@/lib/validation/validation-messages';
+
+/** 共通のバリデーションルール */
+export const commonValidationRules = {
+  /** エンティティの一意の識別子 */
+  id: z.number().min(1),
+  /** 名称（1-100文字） */
+  name: z.string().min(1).max(100),
+  /** レコードの作成日時 */
+  created_at: z.string().datetime(),
+  /** レコードの更新日時 */
+  updated_at: z.string().datetime(),
+  /** レコードの削除日時 */
+  deleted_at: z.string().datetime().nullable(),
+  /** レコードのバージョン（楽観的ロック用） */
+  version: z.number().min(1),
+  /** レコードの作成者ID */
+  created_by: z.string().min(1).max(100),
+  /** レコードの更新者ID */
+  updated_by: z.string().min(1).max(100),
+};
 
 /** 科目情報のスキーマ */
 export const SubjectSchema = z.object({
-  /** 科目の一意の識別子 */
-  id: z.number(),
+  ...commonValidationRules,
   /** 関連するテストタイプのID */
-  test_type_id: z.number(),
+  test_type_id: z.number().min(1),
   /** 科目名 */
-  name: z.string(),
+  name: z.string().min(1).max(100),
   /** 科目の得点 */
-  score: z.number(),
+  score: z.number().min(0),
   /** 科目の得点率（0-100%） */
-  percentage: z.number(),
+  percentage: z.number().min(0).max(100),
   /** UI表示時の順序 */
-  display_order: z.number(),
-  /** レコードの作成日時 */
-  created_at: z.string(),
-  /** レコードの更新日時 */
-  updated_at: z.string(),
-  /** レコードの削除日時 */
-  deleted_at: z.string().nullable(),
-  /** レコードのバージョン（楽観的ロック用） */
-  version: z.number(),
-  /** レコードの作成者ID */
-  created_by: z.string(),
-  /** レコードの更新者ID */
-  updated_by: z.string(),
+  display_order: z.number().min(0),
 });
 
 /** 試験種別のスキーマ */
 export const TestTypeSchema = z.object({
-  /** 試験種別の一意の識別子 */
-  id: z.number(),
+  ...commonValidationRules,
   /** 関連する入試スケジュールのID */
-  admission_schedule_id: z.number(),
+  admission_schedule_id: z.number().min(1),
   /** 試験種別名 */
-  name: z.string(),
-  /** レコードの作成日時 */
-  created_at: z.string(),
-  /** レコードの更新日時 */
-  updated_at: z.string(),
-  /** レコードの削除日時 */
-  deleted_at: z.string().nullable(),
-  /** レコードのバージョン（楽観的ロック用） */
-  version: z.number(),
-  /** レコードの作成者ID */
-  created_by: z.string(),
-  /** レコードの更新者ID */
-  updated_by: z.string(),
+  name: z.string().min(1).max(100),
   /** 関連する科目情報の配列 */
   subjects: z.array(SubjectSchema),
 });
 
 /** 入試スケジュールのスキーマ */
 export const AdmissionScheduleSchema: z.ZodType = z.object({
-  /** 入試スケジュールの一意の識別子 */
-  id: z.number(),
+  ...commonValidationRules,
   /** 関連する学科のID */
-  major_id: z.number(),
+  major_id: z.number().min(1),
   /** 入試スケジュール名 */
-  name: z.string(),
+  name: z.string().min(1).max(100),
   /** UI表示時の順序 */
-  display_order: z.number(),
-  /** レコードの作成日時 */
-  created_at: z.string(),
-  /** レコードの更新日時 */
-  updated_at: z.string(),
+  display_order: z.number().min(0),
   /** 関連する試験種別の配列 */
   test_types: z.array(TestTypeSchema),
   /** 関連する入試情報の配列 */
@@ -85,20 +74,15 @@ export const AdmissionScheduleSchema: z.ZodType = z.object({
 
 /** 入試情報のスキーマ */
 export const AdmissionInfoSchema: z.ZodType = z.object({
-  /** 入試情報の一意の識別子 */
-  id: z.number(),
+  ...commonValidationRules,
   /** 関連する入試スケジュールのID */
-  admission_schedule_id: z.number(),
+  admission_schedule_id: z.number().min(1),
   /** 募集人数 */
-  enrollment: z.number(),
+  enrollment: z.number().min(1).max(9999),
   /** 対象学年 */
-  academic_year: z.number(),
+  academic_year: z.number().min(2000).max(2100),
   /** 入試の状態 */
-  status: z.string(),
-  /** レコードの作成日時 */
-  created_at: z.string(),
-  /** レコードの更新日時 */
-  updated_at: z.string(),
+  status: z.enum(['draft', 'published', 'archived']),
   /** 関連する入試スケジュール情報 */
   admission_schedule: z.lazy(() => AdmissionScheduleSchema),
   /** 関連する試験種別の配列 */
@@ -107,85 +91,31 @@ export const AdmissionInfoSchema: z.ZodType = z.object({
 
 /** 学科情報のスキーマ */
 export const MajorSchema = z.object({
-  /** 学科の一意の識別子 */
-  id: z.number(),
+  ...commonValidationRules,
   /** 関連する学部のID */
-  department_id: z.number(),
+  department_id: z.number().min(1),
   /** 学科名 */
-  name: z.string(),
-  /** レコードの作成日時 */
-  created_at: z.string(),
-  /** レコードの更新日時 */
-  updated_at: z.string(),
-  /** レコードのバージョン（楽観的ロック用） */
-  version: z.number(),
-  /** レコードの作成者ID */
-  created_by: z.string(),
-  /** レコードの更新者ID */
-  updated_by: z.string(),
+  name: z.string().min(1).max(100),
   /** 関連する入試スケジュールの配列 */
   admission_schedules: z.array(AdmissionScheduleSchema),
 });
 
 /** 学部情報のスキーマ */
 export const DepartmentSchema = z.object({
-  /** 学部の一意の識別子 */
-  id: z.number(),
+  ...commonValidationRules,
   /** 関連する大学のID */
-  university_id: z.number(),
+  university_id: z.number().min(1),
   /** 学部名 */
-  name: z.string(),
-  /** レコードの作成日時 */
-  created_at: z.string(),
-  /** レコードの更新日時 */
-  updated_at: z.string(),
-  /** レコードのバージョン（楽観的ロック用） */
-  version: z.number(),
-  /** レコードの作成者ID */
-  created_by: z.string(),
-  /** レコードの更新者ID */
-  updated_by: z.string(),
+  name: z.string().min(1).max(100),
   /** 関連する学科情報の配列（オプション） */
   majors: z.array(MajorSchema).optional(),
 });
 
-/** 共通のバリデーションルール */
-export const commonRules = {
-  /** エンティティの一意の識別子 */
-  id: z.number().min(1, validationMessages.number.min(1)),
-  /** 名称（1-100文字） */
-  name: z.string().min(1, validationMessages.required).max(100, validationMessages.string.max(100)),
-  /** 場所（1-100文字） */
-  location: z
-    .string()
-    .min(1, validationMessages.required)
-    .max(100, validationMessages.string.max(100)),
-  /** 説明（最大1000文字） */
-  description: z.string().max(1000, validationMessages.string.max(1000)).optional(),
-  /** WebサイトのURL */
-  website: z.string().url(validationMessages.url).optional(),
-  /** 大学の種類（国立/公立/私立） */
-  type: z.enum(['国立', '公立', '私立'], {
-    errorMap: () => ({ message: validationMessages.enum }),
-  }),
-};
-
 /** 大学情報のスキーマ */
 export const UniversitySchema = z.object({
-  /** 大学の一意の識別子 */
-  id: z.number().min(1, validationMessages.number.min(1)),
+  ...commonValidationRules,
   /** 大学名 */
-  name: z.string().min(1, validationMessages.required).max(100, validationMessages.string.max(100)),
-  /** レコードの作成日時 */
-  created_at: z.string().datetime(),
-  /** レコードの更新日時 */
-  updated_at: z.string().datetime(),
-  /** レコードのバージョン（楽観的ロック用） */
-  version: z.number().min(1, validationMessages.number.min(1)),
-  /** レコードの作成者ID */
-  created_by: z.string(),
-  /** レコードの更新者ID */
-  updated_by: z.string(),
+  name: z.string().min(1).max(100),
   /** 関連する学部情報の配列 */
   departments: z.array(DepartmentSchema),
 });

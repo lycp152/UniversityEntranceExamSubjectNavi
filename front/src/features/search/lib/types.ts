@@ -14,7 +14,7 @@ import {
   ValidationCategory,
   ValidationErrorCode,
   ValidationSeverity,
-} from '@/lib/validation/constants';
+} from '@/features/search/lib/constants';
 
 /**
  * バリデーションエラーを表すインターフェース

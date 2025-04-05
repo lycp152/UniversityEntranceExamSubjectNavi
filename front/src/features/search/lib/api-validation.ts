@@ -11,8 +11,8 @@
 
 import { z } from 'zod';
 import { API_ERROR_CODES, ERROR_MESSAGES } from '@/constants/errors/domain';
-import { ValidationErrorCode, ValidationSeverity } from '@/lib/validation/constants';
-import { ValidationError } from '@/lib/validation/types';
+import { ValidationErrorCode, ValidationSeverity } from '@/features/search/lib/constants';
+import { ValidationError } from '@/features/search/lib/types';
 
 /**
  * APIバリデーションエラーを表す例外クラス

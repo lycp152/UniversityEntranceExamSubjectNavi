@@ -2,17 +2,18 @@
  * HTTPリクエストを実行し、インターセプターを管理するコアクラス
  * タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
  *
- * @class ApiClient
+ * @module api-client
  * @description
  * - すべてのHTTPリクエストの実行を担当
  * - インターセプターによるリクエスト/レスポンスの加工
  * - エラーハンドリングとタイムアウト制御
  * - シングルトンとして提供され、アプリケーション全体で共有
  */
+
 import type { ApiClientConfig } from '@/features/universities/types/api-client-config';
 import type { HttpResponse, HttpRequestConfig } from '@/types/api/http-types';
-import { ApiClientError, NetworkError, TimeoutError } from '@/lib/api/errors/client';
-import { ENV } from '@/lib/env';
+import { BaseApiError } from '@/lib/api/errors/base';
+import { ENV } from '@/lib/config/env';
 import { ERROR_MESSAGES, API_ERROR_CODES } from '@/constants/errors/domain';
 import type {
   RequestInterceptor,
@@ -21,6 +22,64 @@ import type {
 } from '@/features/universities/lib/middleware';
 import { InterceptorManager } from '@/features/universities/lib/middleware';
 
+/**
+ * APIクライアントエラーの基底クラス
+ * クライアントサイドで発生するAPI関連のエラーを表現
+ *
+ * @class ApiClientError
+ * @extends BaseApiError
+ */
+export class ApiClientError extends BaseApiError {
+  static isApiClientError(error: unknown): error is ApiClientError {
+    return error instanceof ApiClientError;
+  }
+}
+
+/**
+ * ネットワークエラーを表現するクラス
+ * 通信エラーや接続エラーを表現
+ *
+ * @class NetworkError
+ * @extends BaseApiError
+ */
+export class NetworkError extends BaseApiError {
+  constructor(message = ERROR_MESSAGES[API_ERROR_CODES.NETWORK_ERROR]) {
+    super({
+      code: API_ERROR_CODES.NETWORK_ERROR,
+      message,
+      status: 0,
+    });
+  }
+}
+
+/**
+ * タイムアウトエラーを表現するクラス
+ * リクエストが指定時間内に完了しなかった場合のエラーを表現
+ *
+ * @class TimeoutError
+ * @extends BaseApiError
+ */
+export class TimeoutError extends BaseApiError {
+  constructor(message = ERROR_MESSAGES[API_ERROR_CODES.TIMEOUT_ERROR]) {
+    super({
+      code: API_ERROR_CODES.TIMEOUT_ERROR,
+      message,
+      status: 408,
+    });
+  }
+}
+
+/**
+ * HTTPリクエストを実行し、インターセプターを管理するコアクラス
+ * タイムアウト制御、エラーハンドリング、レスポンス加工を一元管理
+ *
+ * @class ApiClient
+ * @description
+ * - すべてのHTTPリクエストの実行を担当
+ * - インターセプターによるリクエスト/レスポンスの加工
+ * - エラーハンドリングとタイムアウト制御
+ * - シングルトンとして提供され、アプリケーション全体で共有
+ */
 export class ApiClient {
   private readonly baseURL: string;
   private readonly defaultHeaders: Record<string, string>;

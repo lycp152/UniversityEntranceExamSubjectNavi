@@ -8,7 +8,7 @@
  */
 import SearchForm from '@/features/search/components/form/search-form';
 import SearchResultTable from '@/features/search/components/result/search-result-table';
-import { generateMetadata } from '@/lib/metadata';
+import { generateMetadata } from '@/lib/config/metadata';
 
 // ページのメタデータ設定
 export const metadata = generateMetadata(

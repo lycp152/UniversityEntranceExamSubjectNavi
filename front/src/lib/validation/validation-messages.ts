@@ -7,6 +7,8 @@
  * - 共通のバリデーションメッセージ
  * - 文字列、数値、日付などの型別メッセージ
  * - 配列や検索フォームなどの機能別メッセージ
+ * @see {@link ../api/errors/base.ts} APIエラーの基底クラス
+ * @see {@link ../config/env.ts} 環境変数の設定と検証
  */
 
 /**
@@ -19,6 +21,7 @@
  * @property {Object} date - 日付バリデーション用メッセージ
  * @property {Object} array - 配列バリデーション用メッセージ
  * @property {Object} search - 検索フォーム用メッセージ
+ * @see {@link ../api/errors/base.ts} APIエラーの基底クラス
  */
 export const validationMessages = {
   // 共通メッセージ

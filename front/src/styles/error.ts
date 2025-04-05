@@ -5,6 +5,10 @@
  * Tailwind CSSのユーティリティクラスを組み合わせて、
  * エラーハンドリング関連のコンポーネントで使用する共通のスタイルを定義します。
  *
+ * @see {@link ../lib/api/errors/base.ts} APIエラーの基底クラス
+ * @see {@link ../lib/validation/validation-messages.ts} バリデーションエラーメッセージの定義
+ * @see {@link ./tailwind-utils.ts} Tailwind CSSユーティリティ
+ *
  * @example
  * ```tsx
  * <div className={errorStyles.container}>

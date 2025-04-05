@@ -8,8 +8,12 @@
  * - ツールチップによる詳細情報の表示
  */
 import { FC } from 'react';
-import { useSubjectChart } from '@/hooks/subject/use-subject-chart';
-import { containerStyles, containerClassName, chartStyles } from '@/styles/chart-styles';
+import { useSubjectChart } from '@/features/charts/hooks/use-subject-chart';
+import {
+  containerStyles,
+  containerClassName,
+  chartStyles,
+} from '@/features/charts/constants/chart-styles';
 import { BaseChart } from './base-chart';
 import { SubjectExamComparisonChartProps } from '../types/chart';
 

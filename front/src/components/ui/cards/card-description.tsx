@@ -6,7 +6,7 @@
  * カードの説明文を表示するコンポーネントです。
  */
 import { HTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/utils/styles/style-utils';
+import { cn } from '@/styles/tailwind-utils';
 
 /**
  * カード説明文コンポーネント

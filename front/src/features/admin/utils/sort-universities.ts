@@ -1,5 +1,5 @@
-import type { University } from '@/types/universities/university';
-import type { EditMode } from '@/types/universities/university-list';
+import type { University } from '@/types/university';
+import type { EditMode } from '@/features/admin/types/university-list';
 
 /**
  * 大学データを安定的にソートする関数

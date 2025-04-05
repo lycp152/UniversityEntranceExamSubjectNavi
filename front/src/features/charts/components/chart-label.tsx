@@ -11,7 +11,7 @@
  */
 
 import { FC } from 'react';
-import { CustomLabelProps } from '@/types/charts/pie-chart';
+import { CustomLabelProps } from '@/types/pie-chart';
 import { RADIAN } from '@/features/charts/constants/chart';
 import { formatLabelText } from '@/features/charts/utils/label-formatters';
 

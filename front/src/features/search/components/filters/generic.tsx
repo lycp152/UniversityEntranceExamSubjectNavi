@@ -2,7 +2,7 @@
  * 一般的なチェックボックスフィルターの共通コンポーネント
  */
 
-import GenericCheckboxGroup from '@/components/ui/forms/checkbox/simple-checkbox-group';
+import GenericCheckboxGroup from '../../components/checkbox/simple-checkbox-group';
 import { FilterCheckboxProps } from '../../types/filter';
 
 /**

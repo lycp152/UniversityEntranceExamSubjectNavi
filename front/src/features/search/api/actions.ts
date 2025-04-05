@@ -2,7 +2,7 @@
 
 import { SearchFormSchema } from '@/types/api/api-schemas';
 import { ERROR_MESSAGES } from '../constants/error-messages';
-import { SearchFormState } from '../types';
+import { SearchFormState } from '../types/search-form';
 import { fetchUniversities } from './universities';
 
 /**

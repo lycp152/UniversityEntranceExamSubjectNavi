@@ -1,4 +1,4 @@
-import type { ErrorMessageProps } from './types';
+import type { ErrorMessageProps } from '@/types/error-types';
 
 /**
  * エラーメッセージを表示するコンポーネント

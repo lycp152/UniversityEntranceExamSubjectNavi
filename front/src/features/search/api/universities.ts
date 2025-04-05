@@ -1,5 +1,8 @@
-import { UniversitiesResponseSchema, ErrorResponseSchema } from '@/types/api/api-response-schemas';
-import { validateApiResponse } from '@/lib/validation/api-validation';
+import {
+  UniversitiesResponseSchema,
+  ErrorResponseSchema,
+} from '@/features/search/types/api-response-schemas';
+import { validateApiResponse } from '@/features/search/lib/api-validation';
 import { SearchFormSchema } from '@/types/api/api-schemas';
 import { z } from 'zod';
 

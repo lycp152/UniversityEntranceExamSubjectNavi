@@ -2,7 +2,7 @@
  * カテゴリー型のチェックボックスフィルターの共通コンポーネント
  */
 
-import CategoryCheckboxGroup from '@/components/ui/forms/checkbox/category-checkbox-group';
+import CategoryCheckboxGroup from '../../components/checkbox/category-checkbox-group';
 import { FilterCheckboxProps } from '../../types/filter';
 
 /**

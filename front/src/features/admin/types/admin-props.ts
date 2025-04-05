@@ -1,6 +1,6 @@
 import type { APITestType } from '@/types/api/api-response-types';
-import type { University, Department } from '@/types/universities/university';
-import type { EditMode } from '@/types/universities/university-list';
+import type { University, Department } from '@/types/university';
+import type { EditMode } from '@/features/admin/types/university-list';
 
 /**
  * 管理ページのコンテンツコンポーネントのプロパティ型定義

@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { UISubject } from '@/types/universities/university-subjects';
-import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
-import { ErrorMessage } from '@/components/errors/error-message';
-import { transformUniversityData } from '../../utils/university-data-transformer';
 import { Card } from '@/components/ui/cards';
+import { ErrorMessage } from '@/components/errors/error-message';
+import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
+import type { UISubject } from '@/types/university-subjects';
+import { transformUniversityData } from '../../utils/university-data-transformer';
 
 /**
  * 検索結果テーブルコンポーネント

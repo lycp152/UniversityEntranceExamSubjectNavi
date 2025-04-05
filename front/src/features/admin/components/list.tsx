@@ -18,9 +18,9 @@
  * @param onSubjectNameChange - 科目名変更時のコールバック
  */
 import React from 'react';
-import type { UniversityListProps } from '@/types/universities/university-list';
-import { UniversityCard } from '@/components/admin/card/university-card';
-import { InsertUniversityButton } from '@/components/admin/buttons/insert-button';
+import type { UniversityListProps } from '@/features/admin/types/university-list';
+import { UniversityCard } from '@/features/admin/components/card/university-card';
+import { InsertUniversityButton } from '@/features/admin/components/buttons/insert-button';
 import { sortUniversities } from '../utils/sort-universities';
 
 export const UniversityList = ({

@@ -6,7 +6,7 @@
  * - メタデータの動的生成
  * - 詳細情報の表示
  */
-import UniversityPage from '@/features/universities/components/UniversityPage';
+import UniversityPage from '@/features/universities/components/page';
 import { UniversityPageParams } from '@/features/universities/types/params';
 import { Metadata } from 'next';
 

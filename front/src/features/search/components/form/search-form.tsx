@@ -1,13 +1,12 @@
 'use client';
-
 import { useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import SortConditions from './sort-conditions';
-import DetailSearch from './detail-search';
-import { SectionTitle } from '@/components/ui/typography/section-title';
-import { searchUniversities } from '@/features/search/api/actions';
-import { SearchFormState } from '@/features/search/types';
 import { Card } from '@/components/ui/cards';
+import { searchUniversities } from '@/features/search/api/actions';
+import { SectionTitle } from '@/features/search/components/section-title';
+import { SearchFormState } from '@/features/search/types/search-form';
+import DetailSearch from './detail-search';
+import SortConditions from './sort-conditions';
 
 /**
  * 検索フォームの初期状態

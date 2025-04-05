@@ -1,5 +1,5 @@
 import { BaseApiError } from './base';
-import { API_ERROR_CODES, ERROR_MESSAGES } from '@/constants/domain-error-codes';
+import { API_ERROR_CODES, ERROR_MESSAGES } from '@/constants/errors/domain';
 
 /**
  * APIクライアントエラーの基底クラス

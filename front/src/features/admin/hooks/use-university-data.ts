@@ -5,9 +5,12 @@ import type {
   Major,
   AdmissionSchedule,
   AdmissionInfo,
-} from '@/types/universities/university';
+} from '@/types/university';
 import type { HttpError } from '@/types/api/http-types';
-import { transformAPIResponse, transformToAPITestType } from '@/utils/api/transformers';
+import {
+  transformAPIResponse,
+  transformToAPITestType,
+} from '@/features/admin/utils/api-transformers';
 
 const API_ENDPOINTS = {
   UNIVERSITIES: `${process.env.NEXT_PUBLIC_API_URL}/universities`,

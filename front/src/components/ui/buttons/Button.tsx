@@ -14,7 +14,7 @@
  */
 import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { VariantProps } from 'class-variance-authority';
-import { cn } from '@/utils/styles/style-utils';
+import { cn } from '@/styles/tailwind-utils';
 import { buttonVariants } from './button-variants';
 
 /**

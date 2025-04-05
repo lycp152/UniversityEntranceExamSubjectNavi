@@ -1,4 +1,4 @@
-import type { UISubject } from '@/types/universities/university-subjects';
+import type { UISubject } from '@/types/university-subjects';
 import type {
   APIUniversity,
   APIDepartment,

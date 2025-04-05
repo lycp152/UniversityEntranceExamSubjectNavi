@@ -11,7 +11,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { ReactNode } from 'react';
-import Header from '@/components/layouts/header/header';
+import Header from '@/components/layouts/header';
 
 // Interフォントの設定
 const inter = Inter({ subsets: ['latin'] });

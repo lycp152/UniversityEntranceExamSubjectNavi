@@ -1,9 +1,8 @@
-import React from 'react';
-import { Region } from '../filters/region';
-import { AcademicField } from '../filters/academic-field';
-import { Schedule } from '../filters/schedule';
-import { Classification } from '../filters/classification';
-import { SectionTitle } from '@/components/ui/typography/section-title';
+import { Region } from '@/features/search/components/filters/region';
+import { AcademicField } from '@/features/search/components/filters/academic-field';
+import { Schedule } from '@/features/search/components/filters/schedule';
+import { Classification } from '@/features/search/components/filters/classification';
+import { SectionTitle } from '@/features/search/components/section-title';
 
 /**
  * 詳細検索コンポーネントのプロパティ定義

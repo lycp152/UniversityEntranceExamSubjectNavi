@@ -27,10 +27,14 @@ import type {
   AdmissionSchedule,
   TestType,
   Subject,
-} from '@/types/universities/university';
-import type { ExamTypeName, SubjectName } from '@/constants/subjects';
-import { ADMISSION_INFO_CONSTRAINTS } from '@/constants/admission-schedule';
-import type { AdmissionScheduleName, DisplayOrder } from '@/constants/admission-schedule';
+} from '@/types/university';
+import type { SubjectName } from '@/constants/constraint/subjects';
+import type { ExamTypeName } from '@/constants/constraint/exam-types';
+import { ADMISSION_INFO_CONSTRAINTS } from '@/constants/constraint/admission-info';
+import type {
+  AdmissionScheduleName,
+  DisplayOrder,
+} from '@/constants/constraint/admission-schedule';
 
 /**
  * 日付文字列をフォーマット

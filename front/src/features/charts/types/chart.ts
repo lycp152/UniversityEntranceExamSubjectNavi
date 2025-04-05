@@ -6,10 +6,10 @@
  * - 内側と外側の円グラフのデータ型を定義
  */
 
-import type { SubjectName } from '@/constants/subjects';
-import type { DisplaySubjectScore } from '@/types/score';
 import type { Payload } from 'recharts/types/component/DefaultTooltipContent';
-import type { UISubject } from '@/types/universities/university-subjects';
+import type { SubjectName } from '@/constants/constraint/subjects';
+import type { DisplaySubjectScore } from '@/types/score';
+import type { UISubject } from '@/types/university-subjects';
 
 /**
  * 詳細な円グラフデータの型定義

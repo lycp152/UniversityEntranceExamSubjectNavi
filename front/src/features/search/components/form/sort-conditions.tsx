@@ -1,4 +1,4 @@
-import { SectionTitle } from '@/components/ui/typography/section-title';
+import { SectionTitle } from '@/features/search/components/section-title';
 
 /**
  * 並び順の条件を表すインターフェース

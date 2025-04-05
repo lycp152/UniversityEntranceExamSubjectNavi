@@ -6,14 +6,14 @@ import type {
   Subject,
   Major,
   AdmissionSchedule,
-} from '@/types/universities/university';
+} from '@/types/university';
 import type { APITestType, APISubject } from '@/types/api/api-response-types';
 import { useUniversityData } from '@/features/admin/hooks/use-university-data';
 import { useSubjectData } from '@/features/admin/hooks/use-subject-data';
-import type { EditMode } from '@/types/universities/university-list';
-import type { ExamTypeName, SubjectName } from '@/constants/subjects';
-import type { AdmissionScheduleName } from '@/constants/admission-schedule';
-
+import type { EditMode } from '@/features/admin/types/university-list';
+import type { SubjectName } from '@/constants/constraint/subjects';
+import type { AdmissionScheduleName } from '@/constants/constraint/admission-schedule';
+import type { ExamTypeName } from '@/constants/constraint/exam-types';
 interface BackupState {
   university: University;
   department: Department;

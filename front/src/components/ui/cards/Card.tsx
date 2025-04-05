@@ -7,7 +7,7 @@
  * 白背景と影を持つ共通のカードレイアウトを提供します。
  */
 import { HTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/utils/styles/style-utils';
+import { cn } from '@/styles/tailwind-utils';
 
 /**
  * カードコンポーネント

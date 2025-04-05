@@ -8,7 +8,7 @@
  * - 重み付けパーセンテージ計算
  */
 
-import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/subject-score';
+import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/constraint/subject-score';
 
 /**
  * 通常のパーセンテージを計算

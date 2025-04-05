@@ -11,8 +11,10 @@
  * - スコア表示の型定義
  */
 
-import type { ExamTypeName, SubjectCategory, SubjectName } from '@/constants/subjects';
-import type { PieData } from '@/types/charts/pie-chart';
+import type { SubjectCategory } from '@/constants/constraint/subject-categories';
+import type { SubjectName } from '@/constants/constraint/subjects';
+import type { ExamTypeName } from '@/constants/constraint/exam-types';
+import type { PieData } from '@/types/pie-chart';
 
 /** 基本スコアの型 */
 export interface BaseScore {

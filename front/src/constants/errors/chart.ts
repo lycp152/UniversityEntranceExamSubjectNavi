@@ -1,4 +1,4 @@
-import { ErrorSeverity } from '@/types/error-categories';
+import { ErrorSeverity } from '@/types/error/categories';
 
 /**
  * チャート関連のエラーコード定義

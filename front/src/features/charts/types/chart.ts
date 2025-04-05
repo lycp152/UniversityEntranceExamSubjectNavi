@@ -7,55 +7,8 @@
  */
 
 import type { Payload } from 'recharts/types/component/DefaultTooltipContent';
-import type { SubjectName } from '@/constants/constraint/subjects';
 import type { DisplaySubjectScore } from '@/types/score';
 import type { UISubject } from '@/types/university-subjects';
-
-/**
- * 詳細な円グラフデータの型定義
- * @property name - データの名前
- * @property value - データの値
- * @property category - 科目カテゴリ
- */
-interface DetailedPieData {
-  name: string;
-  value: number;
-  category: SubjectName;
-}
-
-/**
- * 外側の円グラフデータの型定義
- * @property name - データの名前
- * @property value - データの値
- * @property percentage - パーセンテージ
- */
-interface OuterPieData {
-  name: string;
-  value: number;
-  percentage: number;
-}
-
-/**
- * チャートデータの型定義
- * @property name - データの名前
- * @property value - データの値
- * @property color - 表示色
- * @property percentage - パーセンテージ
- * @property score - スコア
- * @property category - カテゴリ（オプション）
- * @property detailedData - 詳細データ（オプション）
- * @property outerData - 外側の円グラフデータ（オプション）
- */
-export interface ChartData {
-  name: string;
-  value: number;
-  color: string;
-  percentage: number;
-  score: string;
-  category?: string;
-  detailedData?: DetailedPieData[];
-  outerData?: OuterPieData[];
-}
 
 /**
  * チャートコンポーネントのプロパティ型定義

@@ -72,21 +72,6 @@ export type CustomLabelProps = {
   isRightChart?: boolean;
 };
 
-/** パターン設定の型 */
-export type PatternConfig = {
-  /** パターンの色コード */
-  color: string;
-  /** パターンの設定 */
-  pattern: {
-    /** パターンの大きさ（ピクセル） */
-    size: number;
-    /** パターンの変形設定 */
-    transform?: string;
-    /** パターンの内容を生成する関数 */
-    content: (color: string) => string;
-  };
-};
-
 /** チャートエラーの型 */
 export type ChartError = {
   /** エラーの一意のコード */

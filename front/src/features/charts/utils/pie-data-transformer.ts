@@ -9,7 +9,7 @@
  * - 表示用データの生成
  */
 
-import { BaseTransformParams, TransformResult } from '@/types/transformers';
+import { BaseTransformParams, TransformResult } from '@/features/charts/types/transformers';
 import { calculatePercentage } from '@/utils/math/percentage';
 
 /**

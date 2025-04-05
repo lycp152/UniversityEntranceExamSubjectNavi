@@ -24,7 +24,7 @@
  */
 
 import { ReactNode, ErrorInfo } from 'react';
-import { errorVariants } from '../styles/error';
+import { errorVariants } from '../../styles/error';
 
 export interface ErrorBoundaryProps {
   children: ReactNode;

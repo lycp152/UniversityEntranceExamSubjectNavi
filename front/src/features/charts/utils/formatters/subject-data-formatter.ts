@@ -9,7 +9,7 @@
  */
 
 import { TestType } from '@/types/score';
-import { TransformedSubjectData } from '@/types/transformers';
+import { TransformedSubjectData } from '@/features/charts/types/transformers';
 import {
   extractSubjectMainCategory,
   removeSubjectNamePrefix,

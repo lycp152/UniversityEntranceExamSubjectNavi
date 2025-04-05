@@ -1,4 +1,4 @@
-import type { University } from '@/types/university';
+import type { University } from '@/features/admin/types/university';
 import type { EditMode } from '@/features/admin/types/university-list';
 
 /**

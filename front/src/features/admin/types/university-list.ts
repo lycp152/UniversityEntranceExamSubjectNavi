@@ -10,7 +10,7 @@
  * - 大学一覧のプロパティ型定義
  */
 
-import type { University, Department } from '@/types/university';
+import type { University, Department } from '@/features/admin/types/university';
 import type { APITestType } from '@/types/api/api-response-types';
 
 /** 編集モードの状態を管理する型 */

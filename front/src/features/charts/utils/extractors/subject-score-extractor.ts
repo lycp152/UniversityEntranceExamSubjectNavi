@@ -11,7 +11,7 @@
 
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 import { SYSTEM_CONSTANTS } from '@/features/charts/constants/system';
-import type { SubjectScore } from '@/types/subject-scores';
+import type { SubjectScore } from '@/features/charts/types/subject-scores';
 import type { SubjectName } from '@/constants/constraint/subjects';
 
 /** 科目スコアのエラー型 */

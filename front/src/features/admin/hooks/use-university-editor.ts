@@ -6,7 +6,7 @@ import type {
   Subject,
   Major,
   AdmissionSchedule,
-} from '@/types/university';
+} from '@/features/admin/types/university';
 import type { APITestType, APISubject } from '@/types/api/api-response-types';
 import { useUniversityData } from '@/features/admin/hooks/use-university-data';
 import { useSubjectData } from '@/features/admin/hooks/use-subject-data';

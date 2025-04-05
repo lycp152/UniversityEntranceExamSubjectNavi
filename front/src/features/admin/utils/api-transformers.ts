@@ -10,8 +10,8 @@
  */
 
 import type { APITestType, APISubject, APIUniversity } from '@/types/api/api-response-types';
-import type { TestType, Subject, University } from '@/types/university';
-import { transformUniversity } from '@/utils/transformers/university-data-transformer';
+import type { TestType, Subject, University } from '@/features/admin/types/university';
+import { transformUniversity } from '@/features/admin/utils/university-data-transformer';
 
 /**
  * APIレスポンスをフロントエンド用の形式に変換

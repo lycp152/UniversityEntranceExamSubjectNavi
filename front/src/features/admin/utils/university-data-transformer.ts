@@ -27,7 +27,7 @@ import type {
   AdmissionSchedule,
   TestType,
   Subject,
-} from '@/types/university';
+} from '@/features/admin/types/university';
 import type { SubjectName } from '@/constants/constraint/subjects';
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
 import { ADMISSION_INFO_CONSTRAINTS } from '@/constants/constraint/admission-info';

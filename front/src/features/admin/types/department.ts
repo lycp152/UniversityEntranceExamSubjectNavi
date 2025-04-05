@@ -8,7 +8,7 @@
  * - 編集機能の型定義
  */
 
-import type { Department, University } from '@/types/university';
+import type { Department, University } from '@/features/admin/types/university';
 
 /** 学部情報のプロパティ型 */
 export interface DepartmentInfoProps {

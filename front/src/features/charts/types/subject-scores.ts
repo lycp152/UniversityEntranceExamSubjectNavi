@@ -12,7 +12,7 @@
 
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
 import type { SubjectName } from '@/constants/constraint/subjects';
-import type { BaseModel } from './base-model';
+import type { BaseModel } from '../../../types/base-model';
 
 /** 科目スコアの型 */
 export interface SubjectScore extends BaseModel {

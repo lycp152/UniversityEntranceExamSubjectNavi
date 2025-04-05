@@ -4,7 +4,7 @@
  */
 
 import { DetailedPieData, PieData } from '@/types/pie-chart';
-import { BaseTransformParams } from '@/types/transformers';
+import { BaseTransformParams } from '@/features/charts/types/transformers';
 import { TestType, TEST_TYPES } from '@/types/score';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 import { transformSubjectData } from '@/features/charts/utils/formatters/subject-data-formatter';

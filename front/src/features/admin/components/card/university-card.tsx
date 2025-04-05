@@ -5,7 +5,7 @@
  * 大学の基本情報と学部情報を表示し、編集モード時には
  * 情報の編集や科目の追加・変更が可能です。
  */
-import type { University, Department } from '@/types/university';
+import type { University, Department } from '@/features/admin/types/university';
 import type { APITestType } from '@/types/api/api-response-types';
 import { DepartmentRow } from '@/features/admin/components/table/department-row';
 import { Card, CardContent } from '@/components/ui/cards';

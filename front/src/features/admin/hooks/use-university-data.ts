@@ -5,7 +5,7 @@ import type {
   Major,
   AdmissionSchedule,
   AdmissionInfo,
-} from '@/types/university';
+} from '@/features/admin/types/university';
 import type { HttpError } from '@/types/api/http-types';
 import {
   transformAPIResponse,

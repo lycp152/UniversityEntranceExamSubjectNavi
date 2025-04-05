@@ -1,5 +1,6 @@
-import DetailSection from '@/features/universities/components/DetailSection';
 import type { UISubject } from '@/types/universities/university-subjects';
+
+const DetailSection = ({ value }: { value: string | null }) => <p className="mb-2">{value}</p>;
 
 const SubjectInfo = ({ subjectDetail }: { subjectDetail: UISubject }) => {
   return (

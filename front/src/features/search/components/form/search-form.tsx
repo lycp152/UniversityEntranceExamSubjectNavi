@@ -4,10 +4,10 @@ import { useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import SortConditions from './sort-conditions';
 import DetailSearch from './detail-search';
-import { formStyles } from './styles';
 import { SectionTitle } from '@/components/ui/typography/section-title';
 import { searchUniversities } from '@/features/search/api/actions';
 import { SearchFormState } from '@/features/search/types';
+import { Card } from '@/components/ui/cards';
 
 /**
  * 検索フォームの初期状態
@@ -45,7 +45,7 @@ export default function SearchForm() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={formStyles.container}>
+    <Card className="mb-4 p-4">
       <SortConditions sortOrder={sortOrder} setSortOrder={setSortOrder} />
       <form action={formAction}>
         <div className="mt-4">
@@ -54,7 +54,7 @@ export default function SearchForm() {
             type="text"
             id="keyword"
             name="keyword"
-            className={formStyles.input}
+            className="w-full border border-gray-300 p-2"
             placeholder="例：北海道大学 工学部（空白で全てから検索します）"
           />
           {state?.errors?.keyword && pending && (
@@ -76,13 +76,13 @@ export default function SearchForm() {
         />
 
         <div className="mt-4">
-          <button type="submit" className={formStyles.button} disabled={pending}>
+          <button type="submit" className="bg-blue-600 text-white py-2 px-4" disabled={pending}>
             {pending ? '検索中...' : '検索'}
           </button>
         </div>
 
         {state?.message && pending && <p className="mt-2 text-sm text-gray-600">{state.message}</p>}
       </form>
-    </div>
+    </Card>
   );
 }

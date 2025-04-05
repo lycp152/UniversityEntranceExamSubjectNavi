@@ -16,8 +16,6 @@ import { cn } from '@/utils/styles/style-utils';
  * @returns カードヘッダーのJSX
  */
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
-  )
+  ({ className, ...props }, ref) => <div ref={ref} className={cn('mb-4', className)} {...props} />
 );
 CardHeader.displayName = 'CardHeader';

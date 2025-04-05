@@ -3,8 +3,8 @@
 import { useState, useEffect, use } from 'react';
 import { notFound } from 'next/navigation';
 import { ScoreDisplay } from '@/features/charts/components/score-display';
-import SubjectInfo from '@/features/universities/utils/SubjectInfo';
-import SubjectScoreTable from '@/features/universities/table';
+import SubjectInfo from '@/features/universities/components/SubjectInfo';
+import SubjectScoreTable from '@/features/universities/components/UniversityTable';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
 import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';

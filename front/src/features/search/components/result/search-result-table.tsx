@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import type { UISubject } from '@/types/universities/university-subjects';
-import { tableStyles } from './styles';
 import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { transformUniversityData } from '../../utils/university-data-transformer';
+import { Card } from '@/components/ui/cards';
 
 /**
  * 検索結果テーブルコンポーネント
@@ -104,24 +104,24 @@ const SearchResultTable = () => {
   }
 
   return (
-    <div className={tableStyles.container}>
-      <h2 className={tableStyles.title}>{title}</h2>
-      <div className={tableStyles.tableWrapper}>
-        <table className={tableStyles.table}>
+    <Card className="p-4">
+      <h2 className="text-xl font-bold mb-4">{title}</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border">
           <thead>
             <tr>
-              <th className={tableStyles.th}>大学名</th>
-              <th className={tableStyles.th}>学部</th>
-              <th className={tableStyles.th}>学科</th>
-              <th className={tableStyles.th}>日程</th>
-              <th className={tableStyles.th}>募集人員</th>
+              <th className="py-2 px-4 border-b text-left whitespace-nowrap">大学名</th>
+              <th className="py-2 px-4 border-b text-left whitespace-nowrap">学部</th>
+              <th className="py-2 px-4 border-b text-left whitespace-nowrap">学科</th>
+              <th className="py-2 px-4 border-b text-left whitespace-nowrap">日程</th>
+              <th className="py-2 px-4 border-b text-left whitespace-nowrap">募集人員</th>
             </tr>
           </thead>
           <tbody>
             {subjects.map((subject: UISubject) => (
               <tr
                 key={`${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`}
-                className={tableStyles.row}
+                className="cursor-pointer hover:bg-gray-100"
                 onClick={() =>
                   handleRowClick(
                     subject.examInfo.academicYear,
@@ -132,17 +132,21 @@ const SearchResultTable = () => {
                   )
                 }
               >
-                <td className={tableStyles.td}>{subject.university.name}</td>
-                <td className={tableStyles.td}>{subject.department.name}</td>
-                <td className={tableStyles.td}>{subject.major.name}</td>
-                <td className={tableStyles.td}>{subject.admissionSchedule.name}</td>
-                <td className={tableStyles.td}>{subject.examInfo.enrollment} 名</td>
+                <td className="py-2 px-4 border-b whitespace-nowrap">{subject.university.name}</td>
+                <td className="py-2 px-4 border-b whitespace-nowrap">{subject.department.name}</td>
+                <td className="py-2 px-4 border-b whitespace-nowrap">{subject.major.name}</td>
+                <td className="py-2 px-4 border-b whitespace-nowrap">
+                  {subject.admissionSchedule.name}
+                </td>
+                <td className="py-2 px-4 border-b whitespace-nowrap">
+                  {subject.examInfo.enrollment} 名
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 };
 

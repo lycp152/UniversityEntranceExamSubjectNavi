@@ -1,9 +1,10 @@
 package cache
 
 import (
+	"context"
 	"sync"
 	"time"
-	"university-exam-api/pkg/logger"
+	applogger "university-exam-api/internal/logger"
 )
 
 type cacheItem struct {
@@ -48,7 +49,7 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
 		value:      value,
 		expiration: expiration,
 	}
-	logger.Info("Cache: Set item with key: %s", key)
+	applogger.Info(context.Background(), "Cache: Set item with key: %s", key)
 }
 
 // Get はキャッシュからアイテムを取得します
@@ -65,7 +66,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	logger.Info("Cache: Hit for key: %s", key)
+	applogger.Info(context.Background(), "Cache: Hit for key: %s", key)
 	return item.value, true
 }
 
@@ -75,7 +76,7 @@ func (c *Cache) Delete(key string) {
 	defer c.mu.Unlock()
 
 	delete(c.items, key)
-	logger.Info("Cache: Deleted item with key: %s", key)
+	applogger.Info(context.Background(), "Cache: Deleted item with key: %s", key)
 }
 
 // cleanup は期限切れのアイテムを削除します
@@ -87,7 +88,7 @@ func (c *Cache) cleanup() {
 	for key, item := range c.items {
 		if now.After(item.expiration) {
 			delete(c.items, key)
-			logger.Info("Cache: Cleaned up expired item with key: %s", key)
+			applogger.Info(context.Background(), "Cache: Cleaned up expired item with key: %s", key)
 		}
 	}
 }

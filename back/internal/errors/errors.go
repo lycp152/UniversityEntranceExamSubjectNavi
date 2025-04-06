@@ -4,190 +4,158 @@ import (
 	"fmt"
 )
 
-// ErrorCode はエラーコードを定義します
-type ErrorCode string
+// Code はエラーコードを定義します
+type Code string
 
 const (
 	// システムエラー
-	ErrorCodeSystem ErrorCode = "SYSTEM_ERROR"
+	System Code = "SYSTEM_ERROR"
 	// 認証エラー
-	ErrorCodeAuthentication ErrorCode = "AUTHENTICATION_ERROR"
+	Authentication Code = "AUTHENTICATION_ERROR"
 	// 認可エラー
-	ErrorCodeAuthorization ErrorCode = "AUTHORIZATION_ERROR"
+	Authorization Code = "AUTHORIZATION_ERROR"
 	// リソースが見つからない
-	ErrorCodeNotFound ErrorCode = "NOT_FOUND"
+	NotFound Code = "NOT_FOUND"
 	// 入力値が不正
-	ErrorCodeInvalidInput ErrorCode = "INVALID_INPUT"
+	InvalidInput Code = "INVALID_INPUT"
 	// データベースエラー
-	ErrorCodeDatabase ErrorCode = "DATABASE_ERROR"
+	Database Code = "DATABASE_ERROR"
 	// バリデーションエラー
-	ErrorCodeValidation ErrorCode = "VALIDATION_ERROR"
+	Validation Code = "VALIDATION_ERROR"
 	// 外部APIエラー
-	ErrorCodeExternalAPI ErrorCode = "EXTERNAL_API_ERROR"
+	ExternalAPI Code = "EXTERNAL_API_ERROR"
 )
 
-// AppError はアプリケーション全体で使用されるエラー型
-type AppError struct {
-	Code    ErrorCode
-	Message string
-	Err     error
-	Details map[string]interface{}
+// ErrorDetails はエラーの詳細情報を保持する構造体
+type ErrorDetails struct {
+	Resource  string            `json:"resource,omitempty"`
+	ID        uint             `json:"id,omitempty"`
+	Field     string            `json:"field,omitempty"`
+	Operation string            `json:"operation,omitempty"`
+	Service   string            `json:"service,omitempty"`
+	Extra     map[string]string `json:"extra,omitempty"`
 }
 
-func (e *AppError) Error() string {
+// Error はアプリケーション全体で使用されるエラー型
+type Error struct {
+	Code    Code         `json:"code"`
+	Message string       `json:"message"`
+	Err     error        `json:"-"`
+	Details ErrorDetails `json:"details,omitempty"`
+}
+
+// Error はerrorインターフェースを実装します
+func (e *Error) Error() string {
 	if e.Err != nil {
 		return fmt.Sprintf("%s: %s (%v)", e.Code, e.Message, e.Err)
 	}
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
+// Unwrap はラップされたエラーを返します
+func (e *Error) Unwrap() error {
+	return e.Err
+}
+
 // WithDetails はエラーに詳細情報を追加します
-func (e *AppError) WithDetails(details map[string]interface{}) *AppError {
+func (e *Error) WithDetails(details ErrorDetails) *Error {
 	e.Details = details
 	return e
 }
 
-// ErrNotFound はリソースが見つからない場合のエラー
-type ErrNotFound struct {
-	Resource string
-	ID       interface{}
-}
-
-func (e *ErrNotFound) Error() string {
-	return fmt.Sprintf("%s with ID %v not found", e.Resource, e.ID)
-}
-
-// ErrInvalidInput は入力値が不正な場合のエラー
-type ErrInvalidInput struct {
-	Field   string
-	Message string
-}
-
-func (e *ErrInvalidInput) Error() string {
-	return fmt.Sprintf("invalid input for field %s: %s", e.Field, e.Message)
-}
-
-// ErrDatabaseOperation はデータベース操作に失敗した場合のエラー
-type ErrDatabaseOperation struct {
-	Operation string
-	Err       error
-}
-
-func (e *ErrDatabaseOperation) Error() string {
-	return fmt.Sprintf("database operation '%s' failed: %v", e.Operation, e.Err)
-}
-
 // NewNotFoundError は新しいNotFoundエラーを生成します
-func NewNotFoundError(resource string, id interface{}, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-	details["resource"] = resource
-	details["id"] = id
-
-	return &AppError{
-		Code:    ErrorCodeNotFound,
-		Message: fmt.Sprintf("%s with ID %v not found", resource, id),
-		Details: details,
+func NewNotFoundError(resource string, id uint, extra map[string]string) *Error {
+	return &Error{
+		Code:    NotFound,
+		Message: fmt.Sprintf("%sが見つかりません", resource),
+		Details: ErrorDetails{
+			Resource: resource,
+			ID:       id,
+			Extra:    extra,
+		},
 	}
 }
 
 // NewInvalidInputError は新しいInvalidInputエラーを生成します
-func NewInvalidInputError(field, message string, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-	details["field"] = field
-	details["message"] = message
-
-	return &AppError{
-		Code:    ErrorCodeInvalidInput,
-		Message: fmt.Sprintf("invalid input for field %s: %s", field, message),
-		Details: details,
+func NewInvalidInputError(field, message string, extra map[string]string) *Error {
+	return &Error{
+		Code:    InvalidInput,
+		Message: fmt.Sprintf("フィールド %s の入力が不正です: %s", field, message),
+		Details: ErrorDetails{
+			Field: field,
+			Extra: extra,
+		},
 	}
 }
 
 // NewDatabaseError は新しいデータベースエラーを生成します
-func NewDatabaseError(operation string, err error, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-	details["operation"] = operation
-
-	return &AppError{
-		Code:    ErrorCodeDatabase,
-		Message: fmt.Sprintf("database operation '%s' failed", operation),
+func NewDatabaseError(operation string, err error, extra map[string]string) *Error {
+	return &Error{
+		Code:    Database,
+		Message: fmt.Sprintf("データベース操作 '%s' に失敗しました", operation),
 		Err:     err,
-		Details: details,
+		Details: ErrorDetails{
+			Operation: operation,
+			Extra:     extra,
+		},
 	}
 }
 
 // NewValidationError は新しいバリデーションエラーを生成します
-func NewValidationError(field, message string, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-	details["field"] = field
-	details["message"] = message
-
-	return &AppError{
-		Code:    ErrorCodeValidation,
-		Message: fmt.Sprintf("validation failed for field %s: %s", field, message),
-		Details: details,
+func NewValidationError(field, message string, extra map[string]string) *Error {
+	return &Error{
+		Code:    Validation,
+		Message: fmt.Sprintf("フィールド %s のバリデーションに失敗しました: %s", field, message),
+		Details: ErrorDetails{
+			Field: field,
+			Extra: extra,
+		},
 	}
 }
 
 // NewSystemError は新しいシステムエラーを生成します
-func NewSystemError(message string, err error, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-
-	return &AppError{
-		Code:    ErrorCodeSystem,
+func NewSystemError(message string, err error, extra map[string]string) *Error {
+	return &Error{
+		Code:    System,
 		Message: message,
 		Err:     err,
-		Details: details,
+		Details: ErrorDetails{
+			Extra: extra,
+		},
 	}
 }
 
 // NewAuthenticationError は新しい認証エラーを生成します
-func NewAuthenticationError(message string, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-
-	return &AppError{
-		Code:    ErrorCodeAuthentication,
+func NewAuthenticationError(message string, extra map[string]string) *Error {
+	return &Error{
+		Code:    Authentication,
 		Message: message,
-		Details: details,
+		Details: ErrorDetails{
+			Extra: extra,
+		},
 	}
 }
 
 // NewAuthorizationError は新しい認可エラーを生成します
-func NewAuthorizationError(message string, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-
-	return &AppError{
-		Code:    ErrorCodeAuthorization,
+func NewAuthorizationError(message string, extra map[string]string) *Error {
+	return &Error{
+		Code:    Authorization,
 		Message: message,
-		Details: details,
+		Details: ErrorDetails{
+			Extra: extra,
+		},
 	}
 }
 
 // NewExternalAPIError は新しい外部APIエラーを生成します
-func NewExternalAPIError(service, message string, err error, details map[string]interface{}) *AppError {
-	if details == nil {
-		details = make(map[string]interface{})
-	}
-	details["service"] = service
-
-	return &AppError{
-		Code:    ErrorCodeExternalAPI,
-		Message: fmt.Sprintf("external API '%s' error: %s", service, message),
+func NewExternalAPIError(service, message string, err error, extra map[string]string) *Error {
+	return &Error{
+		Code:    ExternalAPI,
+		Message: fmt.Sprintf("外部API '%s' でエラーが発生しました: %s", service, message),
 		Err:     err,
-		Details: details,
+		Details: ErrorDetails{
+			Service: service,
+			Extra:   extra,
+		},
 	}
 }

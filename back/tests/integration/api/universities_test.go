@@ -8,7 +8,6 @@ import (
 	"university-exam-api/internal/domain/models"
 	"university-exam-api/internal/handlers"
 	"university-exam-api/internal/repositories"
-	"university-exam-api/pkg/logger"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -99,9 +98,6 @@ func createTestData(db *gorm.DB) error {
 }
 
 func setupTestServer() (*echo.Echo, *handlers.UniversityHandler) {
-	// ロガーの初期化
-	logger.InitLoggers()
-
 	e := echo.New()
 	db := repositories.SetupTestDB()
 

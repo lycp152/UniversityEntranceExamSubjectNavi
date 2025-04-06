@@ -3,13 +3,9 @@ package database
 import (
 	"os"
 	"testing"
-	"university-exam-api/pkg/logger"
 )
 
 func TestDatabaseConnection(t *testing.T) {
-	// ロガーの初期化
-	logger.InitLoggers()
-
 	// テスト用の環境変数を設定
 	os.Setenv("DB_HOST", "localhost")
 	os.Setenv("DB_USER", "user")

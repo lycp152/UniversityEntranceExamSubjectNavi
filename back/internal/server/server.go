@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 	"university-exam-api/internal/config"
+	applogger "university-exam-api/internal/logger"
 	custommiddleware "university-exam-api/internal/middleware"
-	"university-exam-api/pkg/logger"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -40,7 +40,7 @@ func New(cfg *config.Config) *Server {
 	// ミドルウェアの設定
 	e.Use(middleware.Logger())                    // リクエストログ
 	e.Use(middleware.Recover())                   // パニックリカバリー
-	e.Use(logger.AccessLogMiddleware())           // アクセスログ
+	e.Use(applogger.AccessLogMiddleware())           // アクセスログ
 	e.Use(custommiddleware.RequestValidationMiddleware()) // リクエストバリデーション
 
 	// セキュリティミドルウェアの適用
@@ -61,9 +61,9 @@ func New(cfg *config.Config) *Server {
 func (s *Server) Start(ctx context.Context) error {
 	// サーバーの起動
 	go func() {
-		logger.Info("サーバーを起動しています。ポート: %s", s.cfg.Port)
+		applogger.Info(context.Background(), "サーバーを起動しています。ポート: %s", s.cfg.Port)
 		if err := s.echo.Start(":" + s.cfg.Port); err != nil && err != http.ErrServerClosed {
-			logger.Error("サーバーの起動に失敗しました: %v", err)
+			applogger.Error(context.Background(), "サーバーの起動に失敗しました: %v", err)
 		}
 	}()
 
@@ -71,7 +71,7 @@ func (s *Server) Start(ctx context.Context) error {
 	<-ctx.Done()
 
 	// グレースフルシャットダウン
-	logger.Info("サーバーを停止しています...")
+	applogger.Info(context.Background(), "サーバーを停止しています...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
@@ -79,7 +79,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return fmt.Errorf("サーバーのシャットダウンに失敗しました: %w", err)
 	}
 
-	logger.Info("サーバーが正常に停止しました")
+	applogger.Info(context.Background(), "サーバーが正常に停止しました")
 	return nil
 }
 

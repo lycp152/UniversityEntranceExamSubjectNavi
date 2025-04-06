@@ -3,13 +3,9 @@ package cache
 import (
 	"testing"
 	"time"
-	"university-exam-api/pkg/logger"
 )
 
 func TestCacheOperations(t *testing.T) {
-	// ロガーの初期化
-	logger.InitLoggers()
-
 	c := GetInstance()
 
 	// Setのテスト

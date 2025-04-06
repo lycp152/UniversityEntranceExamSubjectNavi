@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 	"university-exam-api/internal/domain/models"
-	apperrors "university-exam-api/internal/errors"
-	"university-exam-api/pkg/logger"
+	appErrors "university-exam-api/internal/errors"
+	applogger "university-exam-api/internal/logger"
 
 	"github.com/cenkalti/backoff/v4"
 	"github.com/microcosm-cc/bluemonday"
@@ -169,7 +169,7 @@ func (r *universityRepository) setCache(key string, value interface{}) {
 // FindAll は全ての大学を取得します
 func (r *universityRepository) FindAll(ctx context.Context) ([]models.University, error) {
 	if cached, found := r.getFromCache(cacheKeyAllUniversities); found {
-		logger.Info("キャッシュから全大学データを取得しました")
+		applogger.Info(context.Background(), "キャッシュから全大学データを取得しました")
 		return cached.([]models.University), nil
 	}
 
@@ -178,10 +178,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 
 	// 総件数を取得
 	if err := r.db.WithContext(ctx).Model(&models.University{}).Count(&totalCount).Error; err != nil {
-		return nil, &apperrors.ErrDatabaseOperation{
-			Operation: "FindAll",
-			Err:      fmt.Errorf("総件数の取得に失敗しました: %w", err),
-		}
+		return nil, appErrors.NewDatabaseError("FindAll", fmt.Errorf("総件数の取得に失敗しました: %w", err), nil)
 	}
 
 	// メモリ使用量を最適化するため、スライスの初期サイズを設定
@@ -199,15 +196,12 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 		}).
 		FindInBatches(&universities, batchSize, func(tx *gorm.DB, batch int) error {
 			processedCount += tx.RowsAffected
-			logger.Info("バッチ処理進捗: %d/%d レコードを処理", processedCount, totalCount)
+			applogger.Info(context.Background(), "バッチ処理進捗: %d/%d レコードを処理", processedCount, totalCount)
 			return nil
 		}).Error
 
 	if err != nil {
-		return nil, &apperrors.ErrDatabaseOperation{
-			Operation: "FindAll",
-			Err:      fmt.Errorf("データ取得中にエラーが発生しました: %w", err),
-		}
+		return nil, appErrors.NewDatabaseError("FindAll", fmt.Errorf("データ取得中にエラーが発生しました: %w", err), nil)
 	}
 
 	// キャッシュに保存（有効期限を設定）
@@ -215,14 +209,14 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 	r.cache.Set(cacheKeyAllUniversities, universities, 5*time.Minute)
 	r.mutex.Unlock()
 
-	logger.Info("全大学データを取得しました（%d件）", len(universities))
+	applogger.Info(context.Background(), "全大学データを取得しました（%d件）", len(universities))
 	return universities, nil
 }
 
 func (r *universityRepository) getUniversityFromCache(id uint) (*models.University, bool) {
 	cacheKey := fmt.Sprintf(cacheKeyUniversityFormat, id)
 	if cached, found := r.getFromCache(cacheKey); found {
-		logger.Info("Cache hit for FindByID: %d", id)
+		applogger.Info(context.Background(), "Cache hit for FindByID: %d", id)
 		if university, ok := cached.(*models.University); ok {
 			return university, true
 		}
@@ -234,9 +228,9 @@ func (r *universityRepository) getUniversityFromDB(id uint) (*models.University,
 	var university models.University
 	if err := r.applyPreloads(r.db).First(&university, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, &apperrors.ErrNotFound{Resource: "University", ID: id}
+			return nil, appErrors.NewNotFoundError("University", id, nil)
 		}
-		return nil, &apperrors.ErrDatabaseOperation{Operation: "FindByID", Err: err}
+		return nil, appErrors.NewDatabaseError("FindByID", err, nil)
 	}
 	return &university, nil
 }
@@ -253,7 +247,7 @@ func (r *universityRepository) FindByID(id uint) (*models.University, error) {
 
 	cacheKey := fmt.Sprintf(cacheKeyUniversityFormat, id)
 	r.setCache(cacheKey, university)
-	logger.Info("Cached university with ID: %d", id)
+	applogger.Info(context.Background(), "Cached university with ID: %d", id)
 
 	return university, nil
 }
@@ -261,12 +255,12 @@ func (r *universityRepository) FindByID(id uint) (*models.University, error) {
 // Search は大学を検索します
 func (r *universityRepository) Search(query string) ([]models.University, error) {
 	if query == "" {
-		return nil, &apperrors.ErrInvalidInput{Field: "query", Message: "検索クエリが空です"}
+		return nil, appErrors.NewInvalidInputError("query", "検索クエリが空です", nil)
 	}
 
 	cacheKey := fmt.Sprintf("universities:search:%s", query)
 	if cached, found := r.getFromCache(cacheKey); found {
-		logger.Info("キャッシュからデータを取得: %d件", len(cached.([]models.University)))
+		applogger.Info(context.Background(), "キャッシュからデータを取得: %d件", len(cached.([]models.University)))
 		return cached.([]models.University), nil
 	}
 
@@ -295,10 +289,7 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 		Find(&universities).Error
 
 	if err != nil {
-		return nil, &apperrors.ErrDatabaseOperation{
-			Operation: "Search",
-			Err:      fmt.Errorf("検索中にエラーが発生しました: %w", err),
-		}
+		return nil, appErrors.NewDatabaseError("Search", fmt.Errorf("検索中にエラーが発生しました: %w", err), nil)
 	}
 
 	// キャッシュの保存（検索結果は短めの有効期限を設定）
@@ -306,7 +297,7 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 	r.cache.Set(cacheKey, universities, time.Minute)
 	r.mutex.Unlock()
 
-	logger.Info("検索結果をキャッシュしました: %d件", len(universities))
+	applogger.Info(context.Background(), "検索結果をキャッシュしました: %d件", len(universities))
 	return universities, nil
 }
 
@@ -315,7 +306,7 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 
 	// キャッシュをチェック
 	if cached, found := r.getFromCache(cacheKey); found {
-		logger.Info("Cache hit for FindDepartment: %d:%d", universityID, departmentID)
+		applogger.Info(context.Background(), "Cache hit for FindDepartment: %d:%d", universityID, departmentID)
 		department := cached.(models.Department)
 		return &department, nil
 	}
@@ -326,14 +317,14 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, &apperrors.ErrNotFound{Resource: "Department", ID: departmentID}
+			return nil, appErrors.NewNotFoundError("Department", departmentID, nil)
 		}
-		return nil, &apperrors.ErrDatabaseOperation{Operation: "FindDepartment", Err: err}
+		return nil, appErrors.NewDatabaseError("FindDepartment", err, nil)
 	}
 
 	// キャッシュに保存
 	r.setCache(cacheKey, department)
-	logger.Info("Cached department: %d:%d", universityID, departmentID)
+	applogger.Info(context.Background(), "Cached department: %d:%d", universityID, departmentID)
 
 	return &department, nil
 }
@@ -343,7 +334,7 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 
 	// キャッシュをチェック
 	if cached, found := r.getFromCache(cacheKey); found {
-		logger.Info("Cache hit for FindSubject: %d:%d", departmentID, subjectID)
+		applogger.Info(context.Background(), "Cache hit for FindSubject: %d:%d", departmentID, subjectID)
 		subject := cached.(models.Subject)
 		return &subject, nil
 	}
@@ -355,14 +346,14 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, &apperrors.ErrNotFound{Resource: "Subject", ID: subjectID}
+			return nil, appErrors.NewNotFoundError("Subject", subjectID, nil)
 		}
-		return nil, &apperrors.ErrDatabaseOperation{Operation: "FindSubject", Err: err}
+		return nil, appErrors.NewDatabaseError("FindSubject", err, nil)
 	}
 
 	// キャッシュに保存
 	r.setCache(cacheKey, subject)
-	logger.Info("Cached subject: %d:%d", departmentID, subjectID)
+	applogger.Info(context.Background(), "Cached subject: %d:%d", departmentID, subjectID)
 
 	return &subject, nil
 }
@@ -373,26 +364,20 @@ func translateDBError(err error) error {
 		return nil
 	}
 
-	var dbErr *apperrors.ErrDatabaseOperation
+	var dbErr *appErrors.Error
 	if errors.As(err, &dbErr) {
 		return dbErr
 	}
 
 	switch {
 	case errors.Is(err, gorm.ErrRecordNotFound):
-		return &apperrors.ErrNotFound{Resource: "Resource", ID: 0}
+		return appErrors.NewNotFoundError("Resource", 0, nil)
 	case errors.Is(err, gorm.ErrDuplicatedKey):
-		return &apperrors.ErrInvalidInput{Field: "key", Message: errDuplicateKey}
+		return appErrors.NewInvalidInputError("key", errDuplicateKey, nil)
 	case strings.Contains(err.Error(), "deadlock"):
-		return &apperrors.ErrDatabaseOperation{
-			Operation: "database_operation",
-			Err:      fmt.Errorf(errDeadlock, err),
-		}
+		return appErrors.NewDatabaseError("database_operation", fmt.Errorf(errDeadlock, err), nil)
 	default:
-		return &apperrors.ErrDatabaseOperation{
-			Operation: "database_operation",
-			Err:      fmt.Errorf(errUnexpectedDB, err),
-		}
+		return appErrors.NewDatabaseError("database_operation", fmt.Errorf(errUnexpectedDB, err), nil)
 	}
 }
 
@@ -426,16 +411,10 @@ func sanitizeName(name string) string {
 func validateName(name string, field string) error {
 	name = strings.TrimSpace(name)
 	if len(name) < minNameLength {
-		return &apperrors.ErrInvalidInput{
-			Field:   field,
-			Message: fmt.Sprintf(errMinLength, field),
-		}
+		return appErrors.NewInvalidInputError(field, fmt.Sprintf(errMinLength, field), nil)
 	}
 	if len(name) > maxNameLength {
-		return &apperrors.ErrInvalidInput{
-			Field:   field,
-			Message: fmt.Sprintf(errMaxLength, field, maxNameLength),
-		}
+		return appErrors.NewInvalidInputError(field, fmt.Sprintf(errMaxLength, field, maxNameLength), nil)
 	}
 	return nil
 }
@@ -443,10 +422,7 @@ func validateName(name string, field string) error {
 // validateUniversity は大学のバリデーションを行います
 func (r *universityRepository) validateUniversity(university *models.University) error {
 	if university == nil {
-		return &apperrors.ErrInvalidInput{
-			Field:   "university",
-			Message: errEmptyUniversity,
-		}
+		return appErrors.NewInvalidInputError("university", errEmptyUniversity, nil)
 	}
 
 	// 大学名のバリデーション
@@ -456,18 +432,12 @@ func (r *universityRepository) validateUniversity(university *models.University)
 
 	// バージョンチェック
 	if university.Version < 1 {
-		return &apperrors.ErrInvalidInput{
-			Field:   "version",
-			Message: errInvalidVersion,
-		}
+		return appErrors.NewInvalidInputError("version", errInvalidVersion, nil)
 	}
 
 	// 学部数のバリデーション
 	if len(university.Departments) > maxDepartmentsPerUniversity {
-		return &apperrors.ErrInvalidInput{
-			Field:   "departments",
-			Message: fmt.Sprintf(errMaxItems, "学部数", maxDepartmentsPerUniversity),
-		}
+		return appErrors.NewInvalidInputError("departments", fmt.Sprintf(errMaxItems, "学部数", maxDepartmentsPerUniversity), nil)
 	}
 
 	// 関連エンティティのバリデーション
@@ -484,10 +454,7 @@ func (r *universityRepository) validateUniversityRelations(university *models.Un
 	for i, dept := range university.Departments {
 		// 学部名の重複チェック
 		if departmentNames[dept.Name] {
-			return &apperrors.ErrInvalidInput{
-				Field:   fmt.Sprintf("departments[%d].name", i),
-				Message: fmt.Sprintf(errDuplicateName, "学部名", dept.Name),
-			}
+			return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].name", i), fmt.Sprintf(errDuplicateName, "学部名", dept.Name), nil)
 		}
 		departmentNames[dept.Name] = true
 
@@ -507,28 +474,19 @@ func (r *universityRepository) validateDepartment(dept models.Department, index 
 
 	// バージョンチェック
 	if dept.Version < 1 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].version", index),
-			Message: errInvalidVersion,
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].version", index), errInvalidVersion, nil)
 	}
 
 	// 学科数のバリデーション
 	if len(dept.Majors) > maxMajorsPerDepartment {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors", index),
-			Message: fmt.Sprintf(errMaxItems, "学科数", maxMajorsPerDepartment),
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors", index), fmt.Sprintf(errMaxItems, "学科数", maxMajorsPerDepartment), nil)
 	}
 
 	majorNames := make(map[string]bool)
 	for j, major := range dept.Majors {
 		// 学科名の重複チェック
 		if majorNames[major.Name] {
-			return &apperrors.ErrInvalidInput{
-				Field:   fmt.Sprintf("departments[%d].majors[%d].name", index, j),
-				Message: fmt.Sprintf(errDuplicateName, "学科名", major.Name),
-			}
+			return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].name", index, j), fmt.Sprintf(errDuplicateName, "学科名", major.Name), nil)
 		}
 		majorNames[major.Name] = true
 
@@ -548,10 +506,7 @@ func (r *universityRepository) validateMajor(major models.Major, deptIndex, majo
 
 	// バージョンチェック
 	if major.Version < 1 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].version", deptIndex, majorIndex),
-			Message: errInvalidVersion,
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].version", deptIndex, majorIndex), errInvalidVersion, nil)
 	}
 
 	// 入試スケジュールのバリデーション
@@ -571,18 +526,12 @@ func (r *universityRepository) validateAdmissionSchedule(schedule models.Admissi
 
 	// バージョンチェック
 	if schedule.Version < 1 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].version", deptIndex, majorIndex, scheduleIndex),
-			Message: errInvalidVersion,
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].version", deptIndex, majorIndex, scheduleIndex), errInvalidVersion, nil)
 	}
 
 	// 表示順序のバリデーション
 	if schedule.DisplayOrder < 0 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].displayOrder", deptIndex, majorIndex, scheduleIndex),
-			Message: fmt.Sprintf(errNonNegative, "表示順序"),
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].displayOrder", deptIndex, majorIndex, scheduleIndex), fmt.Sprintf(errNonNegative, "表示順序"), nil)
 	}
 
 	// テストタイプのバリデーション
@@ -602,28 +551,19 @@ func (r *universityRepository) validateTestType(testType models.TestType, deptIn
 
 	// バージョンチェック
 	if testType.Version < 1 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].version", deptIndex, majorIndex, scheduleIndex, testTypeIndex),
-			Message: errInvalidVersion,
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].version", deptIndex, majorIndex, scheduleIndex, testTypeIndex), errInvalidVersion, nil)
 	}
 
 	// 科目数のバリデーション
 	if len(testType.Subjects) > maxSubjectsPerTestType {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects", deptIndex, majorIndex, scheduleIndex, testTypeIndex),
-			Message: fmt.Sprintf(errMaxItems, "科目数", maxSubjectsPerTestType),
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects", deptIndex, majorIndex, scheduleIndex, testTypeIndex), fmt.Sprintf(errMaxItems, "科目数", maxSubjectsPerTestType), nil)
 	}
 
 	subjectNames := make(map[string]bool)
 	for m, subject := range testType.Subjects {
 		// 科目名の重複チェック
 		if subjectNames[subject.Name] {
-			return &apperrors.ErrInvalidInput{
-				Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].name", deptIndex, majorIndex, scheduleIndex, testTypeIndex, m),
-				Message: fmt.Sprintf(errDuplicateName, "科目名", subject.Name),
-			}
+			return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].name", deptIndex, majorIndex, scheduleIndex, testTypeIndex, m), fmt.Sprintf(errDuplicateName, "科目名", subject.Name), nil)
 		}
 		subjectNames[subject.Name] = true
 
@@ -643,34 +583,22 @@ func (r *universityRepository) validateSubject(subject models.Subject, deptIndex
 
 	// バージョンチェック
 	if subject.Version < 1 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].version", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex),
-			Message: errInvalidVersion,
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].version", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex), errInvalidVersion, nil)
 	}
 
 	// スコアのバリデーション
 	if subject.Score < 0 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].score", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex),
-			Message: fmt.Sprintf(errNonNegative, "得点"),
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].score", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex), fmt.Sprintf(errNonNegative, "得点"), nil)
 	}
 
 	// パーセンテージのバリデーション
 	if subject.Percentage < 0 || subject.Percentage > 100 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].percentage", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex),
-			Message: errPercentageRange,
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].percentage", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex), errPercentageRange, nil)
 	}
 
 	// 表示順序のバリデーション
 	if subject.DisplayOrder < 0 {
-		return &apperrors.ErrInvalidInput{
-			Field:   fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].displayOrder", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex),
-			Message: fmt.Sprintf(errNonNegative, "表示順序"),
-		}
+		return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].displayOrder", deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex), fmt.Sprintf(errNonNegative, "表示順序"), nil)
 	}
 
 	return nil
@@ -691,9 +619,9 @@ func (r *universityRepository) Create(university *models.University) error {
 	}
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-	if err := tx.Create(university).Error; err != nil {
-		return translateDBError(err)
-	}
+		if err := tx.Create(university).Error; err != nil {
+			return translateDBError(err)
+		}
 		return nil
 	})
 
@@ -721,9 +649,9 @@ func (r *universityRepository) Update(university *models.University) error {
 	}
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-	if err := tx.Save(university).Error; err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "Update", Err: err}
-	}
+		if err := tx.Save(university).Error; err != nil {
+			return appErrors.NewDatabaseError("Update", err, nil)
+		}
 		return nil
 	})
 
@@ -739,9 +667,9 @@ func (r *universityRepository) Update(university *models.University) error {
 // Delete は大学を削除します
 func (r *universityRepository) Delete(id uint) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-	if err := tx.Unscoped().Delete(&models.University{}, id).Error; err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "Delete", Err: err}
-	}
+		if err := tx.Unscoped().Delete(&models.University{}, id).Error; err != nil {
+			return appErrors.NewDatabaseError("Delete", err, nil)
+		}
 		return nil
 	})
 
@@ -757,7 +685,7 @@ func (r *universityRepository) Delete(id uint) error {
 // CreateDepartment は新しい学部を作成します
 func (r *universityRepository) CreateDepartment(department *models.Department) error {
 	if err := r.db.Create(department).Error; err != nil {
-		return &apperrors.ErrDatabaseOperation{Operation: "CreateDepartment", Err: err}
+		return appErrors.NewDatabaseError("CreateDepartment", err, nil)
 	}
 	return nil
 }
@@ -765,9 +693,9 @@ func (r *universityRepository) CreateDepartment(department *models.Department) e
 // UpdateDepartment は既存の学部を更新します
 func (r *universityRepository) UpdateDepartment(department *models.Department) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-	if err := tx.Save(department).Error; err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "UpdateDepartment", Err: err}
-	}
+		if err := tx.Save(department).Error; err != nil {
+			return appErrors.NewDatabaseError("UpdateDepartment", err, nil)
+		}
 		return nil
 	})
 
@@ -783,7 +711,7 @@ func (r *universityRepository) UpdateDepartment(department *models.Department) e
 // DeleteDepartment は学部を削除します
 func (r *universityRepository) DeleteDepartment(id uint) error {
 	if err := r.db.Delete(&models.Department{}, id).Error; err != nil {
-		return &apperrors.ErrDatabaseOperation{Operation: "DeleteDepartment", Err: err}
+		return appErrors.NewDatabaseError("DeleteDepartment", err, nil)
 	}
 	return nil
 }
@@ -791,7 +719,7 @@ func (r *universityRepository) DeleteDepartment(id uint) error {
 // CreateSubject は新しい科目を作成します
 func (r *universityRepository) CreateSubject(subject *models.Subject) error {
 	if err := r.db.Create(subject).Error; err != nil {
-		return &apperrors.ErrDatabaseOperation{Operation: "CreateSubject", Err: err}
+		return appErrors.NewDatabaseError("CreateSubject", err, nil)
 	}
 	return nil
 }
@@ -854,7 +782,7 @@ func (r *universityRepository) processBatch(tx *gorm.DB, batch []models.Subject,
 
 // UpdateSubjectsBatch は科目のバッチ更新を行います
 func (r *universityRepository) UpdateSubjectsBatch(testTypeID uint, subjects []models.Subject) error {
-	logger.Info("バッチ更新開始: testTypeID=%d, 科目数=%d", testTypeID, len(subjects))
+	applogger.Info(context.Background(), "バッチ更新開始: testTypeID=%d, 科目数=%d", testTypeID, len(subjects))
 
 	const batchSize = 1000
 	return r.db.Transaction(func(tx *gorm.DB) error {
@@ -892,7 +820,7 @@ func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) e
 		}
 
 		if err := tx.Model(&s).Update("percentage", percentage).Error; err != nil {
-		return err
+			return err
 		}
 	}
 
@@ -923,16 +851,16 @@ func (r *universityRepository) updateSubjectInList(allSubjects []models.Subject,
 
 func (r *universityRepository) UpdateSubject(subject *models.Subject) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-	allSubjects, err := r.getExistingSubjects(tx, subject.TestTypeID)
-	if err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "UpdateSubject", Err: err}
-	}
+		allSubjects, err := r.getExistingSubjects(tx, subject.TestTypeID)
+		if err != nil {
+			return appErrors.NewDatabaseError("UpdateSubject", err, nil)
+		}
 
-	allSubjects = r.updateSubjectInList(allSubjects, subject)
+		allSubjects = r.updateSubjectInList(allSubjects, subject)
 
-	if err := r.updateSubjectScores(tx, allSubjects); err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "UpdateSubject", Err: err}
-	}
+		if err := r.updateSubjectScores(tx, allSubjects); err != nil {
+			return appErrors.NewDatabaseError("UpdateSubject", err, nil)
+		}
 		return nil
 	})
 
@@ -948,7 +876,7 @@ func (r *universityRepository) UpdateSubject(subject *models.Subject) error {
 // DeleteSubject は科目を削除します
 func (r *universityRepository) DeleteSubject(id uint) error {
 	if err := r.db.Delete(&models.Subject{}, id).Error; err != nil {
-		return &apperrors.ErrDatabaseOperation{Operation: "DeleteSubject", Err: err}
+		return appErrors.NewDatabaseError("DeleteSubject", err, nil)
 	}
 	return nil
 }
@@ -983,7 +911,7 @@ func (r *universityRepository) clearAllRelatedCache(universityID uint) {
 		r.cache.Delete(key)
 	}
 
-	logger.Info("Cleared all related cache for university ID: %d", universityID)
+	applogger.Info(context.Background(), "Cleared all related cache for university ID: %d", universityID)
 }
 
 // TransactionOption はトランザクションのオプションを定義します
@@ -1036,7 +964,7 @@ func (r *universityRepository) TransactionWithOption(fn func(repo IUniversityRep
 
 			// トランザクション本体の実行
 			if err := fn(txRepo); err != nil {
-				var dbErr *apperrors.ErrDatabaseOperation
+				var dbErr *appErrors.Error
 				if errors.As(err, &dbErr) && strings.Contains(err.Error(), "deadlock") {
 					return err // リトライ可能なエラー
 				}
@@ -1047,7 +975,7 @@ func (r *universityRepository) TransactionWithOption(fn func(repo IUniversityRep
 	}
 
 	return backoff.RetryNotify(operation, opt.RetryPolicy, func(err error, duration time.Duration) {
-		logger.Error("トランザクションの再試行: %v後 エラー: %v", duration, err)
+		applogger.Error(context.Background(), "トランザクションの再試行: %v後 エラー: %v", duration, err)
 	})
 }
 
@@ -1064,7 +992,7 @@ func (r *universityRepository) WithTx(tx *gorm.DB) IUniversityRepository {
 func (r *universityRepository) UpdateMajor(major *models.Major) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(major).Error; err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "UpdateMajor", Err: err}
+			return appErrors.NewDatabaseError("UpdateMajor", err, nil)
 		}
 		return nil
 	})
@@ -1082,7 +1010,7 @@ func (r *universityRepository) UpdateMajor(major *models.Major) error {
 func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.AdmissionSchedule) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(schedule).Error; err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "UpdateAdmissionSchedule", Err: err}
+			return appErrors.NewDatabaseError("UpdateAdmissionSchedule", err, nil)
 		}
 		return nil
 	})
@@ -1100,7 +1028,7 @@ func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.Admissio
 func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(info).Error; err != nil {
-			return &apperrors.ErrDatabaseOperation{Operation: "UpdateAdmissionInfo", Err: err}
+			return appErrors.NewDatabaseError("UpdateAdmissionInfo", err, nil)
 		}
 		return nil
 	})

@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"university-exam-api/internal/domain/models"
 	"university-exam-api/internal/errors"
+	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/repositories"
-	"university-exam-api/pkg/logger"
 
 	"github.com/labstack/echo/v4"
 )
@@ -31,111 +32,25 @@ func NewUniversityHandler(repo repositories.IUniversityRepository) *UniversityHa
     return &UniversityHandler{repo: repo}
 }
 
-func (h *UniversityHandler) GetUniversities(c echo.Context) error {
-    universities, err := h.repo.FindAll(c.Request().Context())
-    if err != nil {
-        logger.Error("Failed to fetch universities: %v", err)
-        return handleError(c, err)
-    }
-    logger.Info("Successfully fetched %d universities", len(universities))
-    return c.JSON(http.StatusOK, universities)
-}
-
-func (h *UniversityHandler) GetUniversity(c echo.Context) error {
-    id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-    if err != nil {
-        logger.Error(errInvalidUniversityIDFormat, err)
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": errMsgInvalidUniversityID,
-        })
-    }
-
-    university, err := h.repo.FindByID(uint(id))
-    if err != nil {
-        logger.Error("Failed to fetch university with ID %d: %v", id, err)
-        return handleError(c, err)
-    }
-    logger.Info("Successfully fetched university with ID %d", id)
-    return c.JSON(http.StatusOK, university)
-}
-
-func (h *UniversityHandler) SearchUniversities(c echo.Context) error {
-    query := c.QueryParam("q")
-    universities, err := h.repo.Search(query)
-    if err != nil {
-        logger.Error("Failed to search universities with query '%s': %v", query, err)
-        return handleError(c, err)
-    }
-    logger.Info("Successfully searched universities with query '%s', found %d results", query, len(universities))
-    return c.JSON(http.StatusOK, universities)
-}
-
-func (h *UniversityHandler) GetDepartment(c echo.Context) error {
-    universityID, err := strconv.ParseUint(c.Param("universityId"), 10, 32)
-    if err != nil {
-        logger.Error(errInvalidUniversityIDFormat, err)
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": errMsgInvalidUniversityID,
-        })
-    }
-
-    departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
-    if err != nil {
-        logger.Error(errInvalidDepartmentIDFormat, err)
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": errMsgInvalidDepartmentID,
-        })
-    }
-
-    department, err := h.repo.FindDepartment(uint(universityID), uint(departmentID))
-    if err != nil {
-        logger.Error("Failed to fetch department (universityID: %d, departmentID: %d): %v", universityID, departmentID, err)
-        return handleError(c, err)
-    }
-    logger.Info("Successfully fetched department (universityID: %d, departmentID: %d)", universityID, departmentID)
-    return c.JSON(http.StatusOK, department)
-}
-
-func (h *UniversityHandler) GetSubject(c echo.Context) error {
-    departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
-    if err != nil {
-        logger.Error("Invalid department ID format: %v", err)
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": "Invalid department ID format",
-        })
-    }
-
-    subjectID, err := strconv.ParseUint(c.Param("subjectId"), 10, 32)
-    if err != nil {
-        logger.Error(errInvalidSubjectIDFormat, err)
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": errMsgInvalidSubjectID,
-        })
-    }
-
-    subject, err := h.repo.FindSubject(uint(departmentID), uint(subjectID))
-    if err != nil {
-        logger.Error("Failed to fetch subject (departmentID: %d, subjectID: %d): %v", departmentID, subjectID, err)
-        return handleError(c, err)
-    }
-    logger.Info("Successfully fetched subject (departmentID: %d, subjectID: %d)", departmentID, subjectID)
-    return c.JSON(http.StatusOK, subject)
-}
-
 // handleError は各種エラーを適切なHTTPレスポンスに変換します
 func handleError(c echo.Context, err error) error {
     switch e := err.(type) {
-    case *errors.ErrNotFound:
-        return c.JSON(http.StatusNotFound, map[string]string{
-            "error": e.Error(),
-        })
-    case *errors.ErrInvalidInput:
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": e.Error(),
-        })
-    case *errors.ErrDatabaseOperation:
-        return c.JSON(http.StatusInternalServerError, map[string]string{
-            "error": "Internal server error occurred",
+    case *errors.Error:
+        statusCode := http.StatusInternalServerError
+        switch e.Code {
+        case errors.NotFound:
+            statusCode = http.StatusNotFound
+        case errors.InvalidInput, errors.Validation:
+            statusCode = http.StatusBadRequest
+        case errors.Authentication:
+            statusCode = http.StatusUnauthorized
+        case errors.Authorization:
+            statusCode = http.StatusForbidden
+        }
+        return c.JSON(statusCode, map[string]interface{}{
+            "code": e.Code,
+            "message": e.Message,
+            "details": e.Details,
         })
     default:
         return c.JSON(http.StatusInternalServerError, map[string]string{
@@ -144,22 +59,118 @@ func handleError(c echo.Context, err error) error {
     }
 }
 
+// parseID は文字列のIDをuintに変換します
+func parseID(idStr string, errFormat string, errMsg string) (uint, error) {
+    id, err := strconv.ParseUint(idStr, 10, 32)
+    if err != nil {
+        applogger.Error(context.Background(), errFormat, err)
+        return 0, errors.NewInvalidInputError("id", errMsg, nil)
+    }
+    return uint(id), nil
+}
+
+func (h *UniversityHandler) GetUniversities(c echo.Context) error {
+    universities, err := h.repo.FindAll(c.Request().Context())
+    if err != nil {
+        applogger.Error(c.Request().Context(), "Failed to fetch universities: %v", err)
+        return handleError(c, err)
+    }
+    applogger.Info(c.Request().Context(), "Successfully fetched %d universities", len(universities))
+    return c.JSON(http.StatusOK, universities)
+}
+
+func (h *UniversityHandler) GetUniversity(c echo.Context) error {
+    id, err := parseID(c.Param("id"), errInvalidUniversityIDFormat, errMsgInvalidUniversityID)
+    if err != nil {
+        return handleError(c, err)
+    }
+
+    university, err := h.repo.FindByID(id)
+    if err != nil {
+        applogger.Error(c.Request().Context(), "Failed to fetch university with ID %d: %v", id, err)
+        return handleError(c, err)
+    }
+    applogger.Info(c.Request().Context(), "Successfully fetched university with ID %d", id)
+    return c.JSON(http.StatusOK, university)
+}
+
+func (h *UniversityHandler) SearchUniversities(c echo.Context) error {
+    query := c.QueryParam("q")
+    universities, err := h.repo.Search(query)
+    if err != nil {
+        applogger.Error(c.Request().Context(), "Failed to search universities with query '%s': %v", query, err)
+        return handleError(c, err)
+    }
+    applogger.Info(c.Request().Context(), "Successfully searched universities with query '%s', found %d results", query, len(universities))
+    return c.JSON(http.StatusOK, universities)
+}
+
+func (h *UniversityHandler) GetDepartment(c echo.Context) error {
+    universityID, err := strconv.ParseUint(c.Param("universityId"), 10, 32)
+    if err != nil {
+        applogger.Error(c.Request().Context(), errInvalidUniversityIDFormat, err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidUniversityID,
+        })
+    }
+
+    departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
+    if err != nil {
+        applogger.Error(c.Request().Context(), errInvalidDepartmentIDFormat, err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidDepartmentID,
+        })
+    }
+
+    department, err := h.repo.FindDepartment(uint(universityID), uint(departmentID))
+    if err != nil {
+        applogger.Error(c.Request().Context(), "Failed to fetch department (universityID: %d, departmentID: %d): %v", universityID, departmentID, err)
+        return handleError(c, err)
+    }
+    applogger.Info(c.Request().Context(), "Successfully fetched department (universityID: %d, departmentID: %d)", universityID, departmentID)
+    return c.JSON(http.StatusOK, department)
+}
+
+func (h *UniversityHandler) GetSubject(c echo.Context) error {
+    departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
+    if err != nil {
+        applogger.Error(c.Request().Context(), "Invalid department ID format: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": "Invalid department ID format",
+        })
+    }
+
+    subjectID, err := strconv.ParseUint(c.Param("subjectId"), 10, 32)
+    if err != nil {
+        applogger.Error(context.Background(), errInvalidSubjectIDFormat, err)
+        return c.JSON(http.StatusBadRequest, map[string]string{
+            "error": errMsgInvalidSubjectID,
+        })
+    }
+
+    subject, err := h.repo.FindSubject(uint(departmentID), uint(subjectID))
+    if err != nil {
+        applogger.Error(c.Request().Context(), "Failed to fetch subject (departmentID: %d, subjectID: %d): %v", departmentID, subjectID, err)
+        return handleError(c, err)
+    }
+    applogger.Info(c.Request().Context(), "Successfully fetched subject (departmentID: %d, subjectID: %d)", departmentID, subjectID)
+    return c.JSON(http.StatusOK, subject)
+}
+
 // CreateUniversity は新しい大学を作成します
 func (h *UniversityHandler) CreateUniversity(c echo.Context) error {
     var university models.University
     if err := c.Bind(&university); err != nil {
-        logger.Error("Failed to bind university data: %v", err)
-        return c.JSON(http.StatusBadRequest, map[string]string{
-            "error": errMsgInvalidRequestBody,
-        })
+        applogger.Error(c.Request().Context(), "Failed to bind university data: %v", err)
+        return handleError(c, errors.NewInvalidInputError("university", errMsgInvalidRequestBody, nil))
     }
 
     if err := h.repo.Create(&university); err != nil {
-        logger.Error("Failed to create university: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to create university: %v", err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully created university with ID %d", university.ID)
+    applogger.Info(c.Request().Context(), "Successfully created university with ID %d", university.ID)
     return c.JSON(http.StatusCreated, university)
 }
 
@@ -167,7 +178,7 @@ func (h *UniversityHandler) CreateUniversity(c echo.Context) error {
 func (h *UniversityHandler) UpdateUniversity(c echo.Context) error {
     id, err := strconv.ParseUint(c.Param("id"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidUniversityIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidUniversityIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidUniversityID,
         })
@@ -175,7 +186,7 @@ func (h *UniversityHandler) UpdateUniversity(c echo.Context) error {
 
     var university models.University
     if err := c.Bind(&university); err != nil {
-        logger.Error("Failed to bind university data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind university data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -183,11 +194,11 @@ func (h *UniversityHandler) UpdateUniversity(c echo.Context) error {
 
     university.ID = uint(id)
     if err := h.repo.Update(&university); err != nil {
-        logger.Error("Failed to update university with ID %d: %v", id, err)
+        applogger.Error(c.Request().Context(), "Failed to update university with ID %d: %v", id, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated university with ID %d", id)
+    applogger.Info(c.Request().Context(), "Successfully updated university with ID %d", id)
     return c.JSON(http.StatusOK, university)
 }
 
@@ -195,18 +206,18 @@ func (h *UniversityHandler) UpdateUniversity(c echo.Context) error {
 func (h *UniversityHandler) DeleteUniversity(c echo.Context) error {
     id, err := strconv.ParseUint(c.Param("id"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidUniversityIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidUniversityIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidUniversityID,
         })
     }
 
     if err := h.repo.Delete(uint(id)); err != nil {
-        logger.Error("Failed to delete university with ID %d: %v", id, err)
+        applogger.Error(c.Request().Context(), "Failed to delete university with ID %d: %v", id, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully deleted university with ID %d", id)
+    applogger.Info(c.Request().Context(), "Successfully deleted university with ID %d", id)
     return c.NoContent(http.StatusNoContent)
 }
 
@@ -214,7 +225,7 @@ func (h *UniversityHandler) DeleteUniversity(c echo.Context) error {
 func (h *UniversityHandler) CreateDepartment(c echo.Context) error {
     universityID, err := strconv.ParseUint(c.Param("universityId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidUniversityIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidUniversityIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidUniversityID,
         })
@@ -222,7 +233,7 @@ func (h *UniversityHandler) CreateDepartment(c echo.Context) error {
 
     var department models.Department
     if err := c.Bind(&department); err != nil {
-        logger.Error("Failed to bind department data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind department data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -230,11 +241,11 @@ func (h *UniversityHandler) CreateDepartment(c echo.Context) error {
 
     department.UniversityID = uint(universityID)
     if err := h.repo.CreateDepartment(&department); err != nil {
-        logger.Error("Failed to create department: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to create department: %v", err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully created department with ID %d", department.ID)
+    applogger.Info(c.Request().Context(), "Successfully created department with ID %d", department.ID)
     return c.JSON(http.StatusCreated, department)
 }
 
@@ -242,7 +253,7 @@ func (h *UniversityHandler) CreateDepartment(c echo.Context) error {
 func (h *UniversityHandler) UpdateDepartment(c echo.Context) error {
     departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidDepartmentIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidDepartmentIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidDepartmentID,
         })
@@ -250,7 +261,7 @@ func (h *UniversityHandler) UpdateDepartment(c echo.Context) error {
 
     var department models.Department
     if err := c.Bind(&department); err != nil {
-        logger.Error("Failed to bind department data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind department data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -258,11 +269,11 @@ func (h *UniversityHandler) UpdateDepartment(c echo.Context) error {
 
     department.ID = uint(departmentID)
     if err := h.repo.UpdateDepartment(&department); err != nil {
-        logger.Error("Failed to update department with ID %d: %v", departmentID, err)
+        applogger.Error(c.Request().Context(), "Failed to update department with ID %d: %v", departmentID, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated department with ID %d", departmentID)
+    applogger.Info(c.Request().Context(), "Successfully updated department with ID %d", departmentID)
     return c.JSON(http.StatusOK, department)
 }
 
@@ -270,18 +281,18 @@ func (h *UniversityHandler) UpdateDepartment(c echo.Context) error {
 func (h *UniversityHandler) DeleteDepartment(c echo.Context) error {
     departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidDepartmentIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidDepartmentIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidDepartmentID,
         })
     }
 
     if err := h.repo.DeleteDepartment(uint(departmentID)); err != nil {
-        logger.Error("Failed to delete department with ID %d: %v", departmentID, err)
+        applogger.Error(c.Request().Context(), "Failed to delete department with ID %d: %v", departmentID, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully deleted department with ID %d", departmentID)
+    applogger.Info(c.Request().Context(), "Successfully deleted department with ID %d", departmentID)
     return c.NoContent(http.StatusNoContent)
 }
 
@@ -289,7 +300,7 @@ func (h *UniversityHandler) DeleteDepartment(c echo.Context) error {
 func (h *UniversityHandler) CreateSubject(c echo.Context) error {
     scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidScheduleIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidScheduleIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidScheduleID,
         })
@@ -297,7 +308,7 @@ func (h *UniversityHandler) CreateSubject(c echo.Context) error {
 
     var subject models.Subject
     if err := c.Bind(&subject); err != nil {
-        logger.Error("Failed to bind subject data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind subject data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -305,11 +316,11 @@ func (h *UniversityHandler) CreateSubject(c echo.Context) error {
 
     subject.TestTypeID = uint(scheduleID)
     if err := h.repo.CreateSubject(&subject); err != nil {
-        logger.Error("Failed to create subject: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to create subject: %v", err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully created subject with ID %d", subject.ID)
+    applogger.Info(c.Request().Context(), "Successfully created subject with ID %d", subject.ID)
     return c.JSON(http.StatusCreated, subject)
 }
 
@@ -317,7 +328,7 @@ func (h *UniversityHandler) CreateSubject(c echo.Context) error {
 func (h *UniversityHandler) UpdateSubject(c echo.Context) error {
     subjectID, err := strconv.ParseUint(c.Param("subjectId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidSubjectIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidSubjectIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidSubjectID,
         })
@@ -325,7 +336,7 @@ func (h *UniversityHandler) UpdateSubject(c echo.Context) error {
 
     var subject models.Subject
     if err := c.Bind(&subject); err != nil {
-        logger.Error("Failed to bind subject data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind subject data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -333,11 +344,11 @@ func (h *UniversityHandler) UpdateSubject(c echo.Context) error {
 
     subject.ID = uint(subjectID)
     if err := h.repo.UpdateSubject(&subject); err != nil {
-        logger.Error("Failed to update subject with ID %d: %v", subjectID, err)
+        applogger.Error(c.Request().Context(), "Failed to update subject with ID %d: %v", subjectID, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated subject with ID %d", subjectID)
+    applogger.Info(c.Request().Context(), "Successfully updated subject with ID %d", subjectID)
     return c.JSON(http.StatusOK, subject)
 }
 
@@ -345,18 +356,18 @@ func (h *UniversityHandler) UpdateSubject(c echo.Context) error {
 func (h *UniversityHandler) DeleteSubject(c echo.Context) error {
     subjectID, err := strconv.ParseUint(c.Param("subjectId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidSubjectIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidSubjectIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidSubjectID,
         })
     }
 
     if err := h.repo.DeleteSubject(uint(subjectID)); err != nil {
-        logger.Error("Failed to delete subject with ID %d: %v", subjectID, err)
+        applogger.Error(c.Request().Context(), "Failed to delete subject with ID %d: %v", subjectID, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully deleted subject with ID %d", subjectID)
+    applogger.Info(c.Request().Context(), "Successfully deleted subject with ID %d", subjectID)
     return c.NoContent(http.StatusNoContent)
 }
 
@@ -364,7 +375,7 @@ func (h *UniversityHandler) DeleteSubject(c echo.Context) error {
 func (h *UniversityHandler) UpdateSubjectsBatch(c echo.Context) error {
     scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidScheduleIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidScheduleIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidScheduleID,
         })
@@ -372,18 +383,18 @@ func (h *UniversityHandler) UpdateSubjectsBatch(c echo.Context) error {
 
     var subjects []models.Subject
     if err := c.Bind(&subjects); err != nil {
-        logger.Error("Failed to bind subjects data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind subjects data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
     }
 
     if err := h.repo.UpdateSubjectsBatch(uint(scheduleID), subjects); err != nil {
-        logger.Error("Failed to update subjects batch: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to update subjects batch: %v", err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated subjects batch")
+    applogger.Info(c.Request().Context(), "Successfully updated subjects batch")
     return c.JSON(http.StatusOK, subjects)
 }
 
@@ -413,7 +424,7 @@ func (h *UniversityHandler) GetCSRFToken(c echo.Context) error {
 func (h *UniversityHandler) UpdateMajor(c echo.Context) error {
     departmentID, err := strconv.ParseUint(c.Param("departmentId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidDepartmentIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidDepartmentIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidDepartmentID,
         })
@@ -421,7 +432,7 @@ func (h *UniversityHandler) UpdateMajor(c echo.Context) error {
 
     majorID, err := strconv.ParseUint(c.Param("majorId"), 10, 32)
     if err != nil {
-        logger.Error("Invalid major ID format: %v", err)
+        applogger.Error(c.Request().Context(), "Invalid major ID format: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": "Invalid major ID format",
         })
@@ -429,7 +440,7 @@ func (h *UniversityHandler) UpdateMajor(c echo.Context) error {
 
     var major models.Major
     if err := c.Bind(&major); err != nil {
-        logger.Error("Failed to bind major data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind major data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -438,11 +449,11 @@ func (h *UniversityHandler) UpdateMajor(c echo.Context) error {
     major.ID = uint(majorID)
     major.DepartmentID = uint(departmentID)
     if err := h.repo.UpdateMajor(&major); err != nil {
-        logger.Error("Failed to update major with ID %d: %v", majorID, err)
+        applogger.Error(c.Request().Context(), "Failed to update major with ID %d: %v", majorID, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated major with ID %d", majorID)
+    applogger.Info(c.Request().Context(), "Successfully updated major with ID %d", majorID)
     return c.JSON(http.StatusOK, major)
 }
 
@@ -450,7 +461,7 @@ func (h *UniversityHandler) UpdateMajor(c echo.Context) error {
 func (h *UniversityHandler) UpdateAdmissionSchedule(c echo.Context) error {
     majorID, err := strconv.ParseUint(c.Param("majorId"), 10, 32)
     if err != nil {
-        logger.Error("Invalid major ID format: %v", err)
+        applogger.Error(c.Request().Context(), "Invalid major ID format: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": "Invalid major ID format",
         })
@@ -458,7 +469,7 @@ func (h *UniversityHandler) UpdateAdmissionSchedule(c echo.Context) error {
 
     scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidScheduleIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidScheduleIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidScheduleID,
         })
@@ -466,7 +477,7 @@ func (h *UniversityHandler) UpdateAdmissionSchedule(c echo.Context) error {
 
     var schedule models.AdmissionSchedule
     if err := c.Bind(&schedule); err != nil {
-        logger.Error("Failed to bind admission schedule data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind admission schedule data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -475,11 +486,11 @@ func (h *UniversityHandler) UpdateAdmissionSchedule(c echo.Context) error {
     schedule.ID = uint(scheduleID)
     schedule.MajorID = uint(majorID)
     if err := h.repo.UpdateAdmissionSchedule(&schedule); err != nil {
-        logger.Error("Failed to update admission schedule with ID %d: %v", scheduleID, err)
+        applogger.Error(c.Request().Context(), "Failed to update admission schedule with ID %d: %v", scheduleID, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated admission schedule with ID %d", scheduleID)
+    applogger.Info(c.Request().Context(), "Successfully updated admission schedule with ID %d", scheduleID)
     return c.JSON(http.StatusOK, schedule)
 }
 
@@ -487,7 +498,7 @@ func (h *UniversityHandler) UpdateAdmissionSchedule(c echo.Context) error {
 func (h *UniversityHandler) UpdateAdmissionInfo(c echo.Context) error {
     scheduleID, err := strconv.ParseUint(c.Param("scheduleId"), 10, 32)
     if err != nil {
-        logger.Error(errInvalidScheduleIDFormat, err)
+        applogger.Error(c.Request().Context(), errInvalidScheduleIDFormat, err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidScheduleID,
         })
@@ -495,7 +506,7 @@ func (h *UniversityHandler) UpdateAdmissionInfo(c echo.Context) error {
 
     infoID, err := strconv.ParseUint(c.Param("infoId"), 10, 32)
     if err != nil {
-        logger.Error("Invalid info ID format: %v", err)
+        applogger.Error(c.Request().Context(), "Invalid info ID format: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": "Invalid info ID format",
         })
@@ -503,7 +514,7 @@ func (h *UniversityHandler) UpdateAdmissionInfo(c echo.Context) error {
 
     var info models.AdmissionInfo
     if err := c.Bind(&info); err != nil {
-        logger.Error("Failed to bind admission info data: %v", err)
+        applogger.Error(c.Request().Context(), "Failed to bind admission info data: %v", err)
         return c.JSON(http.StatusBadRequest, map[string]string{
             "error": errMsgInvalidRequestBody,
         })
@@ -512,10 +523,10 @@ func (h *UniversityHandler) UpdateAdmissionInfo(c echo.Context) error {
     info.ID = uint(infoID)
     info.AdmissionScheduleID = uint(scheduleID)
     if err := h.repo.UpdateAdmissionInfo(&info); err != nil {
-        logger.Error("Failed to update admission info with ID %d: %v", infoID, err)
+        applogger.Error(c.Request().Context(), "Failed to update admission info with ID %d: %v", infoID, err)
         return handleError(c, err)
     }
 
-    logger.Info("Successfully updated admission info with ID %d", infoID)
+    applogger.Info(c.Request().Context(), "Successfully updated admission info with ID %d", infoID)
     return c.JSON(http.StatusOK, info)
 }

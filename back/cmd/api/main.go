@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"university-exam-api/internal/config"
 	"university-exam-api/internal/database"
+	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/server"
-	"university-exam-api/pkg/logger"
 
 	"github.com/joho/godotenv"
 )
@@ -23,7 +23,7 @@ import (
 func setupEnvironment(cfg *config.Config) error {
 	if cfg.Env == "development" {
 		if err := godotenv.Load(); err != nil {
-			logger.Error("警告: .envファイルが見つかりません: %v", err)
+			applogger.Error(context.Background(), "警告: .envファイルが見つかりません: %v", err)
 		}
 	}
 	return nil
@@ -45,26 +45,26 @@ func main() {
 	defer cancel()
 
 	// ロガーの初期化
-	logger.InitLoggers()
-	logger.Info("アプリケーションを起動しています...")
+	applogger.InitLoggers(applogger.DefaultConfig())
+	applogger.Info(ctx, "アプリケーションを起動しています...")
 
 	// 設定の読み込み
 	cfg, err := config.New()
 	if err != nil {
-		logger.Error("設定の読み込みに失敗しました: %v", err)
+		applogger.Error(ctx, "設定の読み込みに失敗しました: %v", err)
 		log.Fatal(err)
 	}
 
 	// 環境変数の読み込み
 	if err := setupEnvironment(cfg); err != nil {
-		logger.Error("環境変数の読み込みに失敗しました: %v", err)
+		applogger.Error(ctx, "環境変数の読み込みに失敗しました: %v", err)
 		log.Fatal(err)
 	}
 
 	// データベース接続の確立
 	db, cleanup, err := database.Setup(ctx, cfg)
 	if err != nil {
-		logger.Error("データベース接続の確立に失敗しました: %v", err)
+		applogger.Error(ctx, "データベース接続の確立に失敗しました: %v", err)
 		log.Fatal(err)
 	}
 	defer cleanup()
@@ -72,7 +72,7 @@ func main() {
 	// サーバーの初期化
 	srv := server.New(cfg)
 	if err := srv.SetupRoutes(db); err != nil {
-		logger.Error("ルーティングの設定に失敗しました: %v", err)
+		applogger.Error(ctx, "ルーティングの設定に失敗しました: %v", err)
 		log.Fatal(err)
 	}
 
@@ -81,13 +81,13 @@ func main() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 		<-sigChan
-		logger.Info("シャットダウンシグナルを受信しました")
+		applogger.Info(ctx, "シャットダウンシグナルを受信しました")
 		cancel()
 	}()
 
 	// サーバーの起動
 	if err := srv.Start(ctx); err != nil {
-		logger.Error("サーバーの実行中にエラーが発生しました: %v", err)
+		applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
 		log.Fatal(err)
 	}
 }

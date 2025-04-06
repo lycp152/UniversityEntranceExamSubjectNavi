@@ -3,12 +3,13 @@ package repositories
 import (
 	"context"
 	"errors"
+	stdErrors "errors"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 	"university-exam-api/internal/domain/models"
-	apperrors "university-exam-api/internal/errors"
+	appErrors "university-exam-api/internal/errors"
 )
 
 const (
@@ -71,7 +72,7 @@ func TestFindByID(t *testing.T) {
 			name:    "存在しないID",
 			id:      999,
 			wantErr: true,
-			errType: &apperrors.ErrNotFound{},
+			errType: appErrors.NewNotFoundError("university", 999, nil),
 		},
 	}
 
@@ -83,7 +84,8 @@ func TestFindByID(t *testing.T) {
 				return
 			}
 			if tt.wantErr {
-				if _, ok := err.(*apperrors.ErrNotFound); !ok {
+				var notFoundErr *appErrors.Error
+				if !stdErrors.As(err, &notFoundErr) || notFoundErr.Code != appErrors.NotFound {
 					t.Errorf("FindByID() got error type = %T, want %T", err, tt.errType)
 				}
 				return
@@ -110,7 +112,8 @@ func validateSearchResult(t *testing.T, got []models.University, err error, tt s
 		return
 	}
 	if tt.wantErr {
-		if _, ok := err.(*apperrors.ErrInvalidInput); !ok {
+		var invalidInputErr *appErrors.Error
+		if !stdErrors.As(err, &invalidInputErr) || invalidInputErr.Code != appErrors.InvalidInput {
 			t.Errorf("Search() got error type = %T, want %T", err, tt.errType)
 		}
 		return
@@ -155,7 +158,7 @@ func TestSearch(t *testing.T) {
 			name:    "空のクエリ",
 			query:   "",
 			wantErr: true,
-			errType: &apperrors.ErrInvalidInput{},
+			errType: appErrors.NewInvalidInputError("query", "query cannot be empty", nil),
 		},
 	}
 
@@ -179,10 +182,7 @@ func TestTransactionRetry(t *testing.T) {
 		retryCount++
 		if retryCount < maxRetries {
 			// デッドロックエラーをシミュレート
-			return &apperrors.ErrDatabaseOperation{
-				Operation: "Update",
-				Err:      fmt.Errorf("deadlock detected"),
-			}
+			return appErrors.NewDatabaseError("Update", fmt.Errorf("deadlock detected"), nil)
 		}
 		// 最後の試行では成功
 		return repo.Update(university)
@@ -479,13 +479,13 @@ func TestValidation(t *testing.T) {
 				return
 			}
 			if tt.wantErr {
-				var inputErr *apperrors.ErrInvalidInput
-				if !errors.As(err, &inputErr) {
-					t.Errorf("Expected ErrInvalidInput, got %T", err)
+				var inputErr *appErrors.Error
+				if !stdErrors.As(err, &inputErr) {
+					t.Errorf("Expected Error, got %T", err)
 					return
 				}
-				if inputErr.Field != tt.errField {
-					t.Errorf("Expected error field %q, got %q", tt.errField, inputErr.Field)
+				if inputErr.Code != appErrors.InvalidInput {
+					t.Errorf("Expected error code %q, got %q", appErrors.InvalidInput, inputErr.Code)
 				}
 			}
 		})
@@ -543,13 +543,13 @@ func TestValidateName(t *testing.T) {
 				return
 			}
 			if tt.wantErr {
-				var inputErr *apperrors.ErrInvalidInput
-				if !errors.As(err, &inputErr) {
-					t.Errorf("Expected ErrInvalidInput, got %T", err)
+				var inputErr *appErrors.Error
+				if !stdErrors.As(err, &inputErr) {
+					t.Errorf("Expected Error, got %T", err)
 					return
 				}
-				if inputErr.Field != tt.errField {
-					t.Errorf("Expected error field %q, got %q", tt.errField, inputErr.Field)
+				if inputErr.Code != appErrors.InvalidInput {
+					t.Errorf("Expected error code %q, got %q", appErrors.InvalidInput, inputErr.Code)
 				}
 			}
 		})

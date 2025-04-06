@@ -7,16 +7,12 @@ import (
 	"time"
 	"university-exam-api/internal/domain/models"
 	"university-exam-api/internal/infrastructure/database"
-	"university-exam-api/pkg/logger"
 
 	"gorm.io/gorm"
 )
 
 // SetupTestDB はテスト用のデータベース接続を作成します
 func SetupTestDB() *gorm.DB {
-	// ロガーを初期化
-	logger.InitLoggers()
-
 	// テスト用の環境変数を設定
 	os.Setenv("DB_HOST", "localhost")
 	os.Setenv("DB_USER", "user")

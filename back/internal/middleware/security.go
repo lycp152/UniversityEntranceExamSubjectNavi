@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 	"time"
-	"university-exam-api/pkg/logger"
+	applogger "university-exam-api/internal/logger"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -34,7 +34,7 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 		func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
 				if !limiter.Allow() {
-					logger.Error("Rate limit exceeded for IP: %s", c.RealIP())
+					applogger.Error(c.Request().Context(), "Rate limit exceeded for IP: %s", c.RealIP())
 					return c.JSON(http.StatusTooManyRequests, map[string]string{
 						"error":   "Rate Limit Error",
 						"message": "リクエスト制限を超えました",

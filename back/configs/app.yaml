@@ -1,22 +1,154 @@
+# ==========================================
+# サーバー設定
+# ==========================================
 server:
-  port: 8080
-  environment: development
+  # サーバーのポート番号（環境変数PORTが未設定の場合は8080を使用）
+  port: ${PORT:-8080}
+  # 実行環境（development, production, test）
+  environment: ${NODE_ENV:-development}
+  # リクエストタイムアウト時間
   timeout: 30s
+  # シャットダウン時のタイムアウト時間
+  shutdown_timeout: 10s
+  # 許可されたオリジン（CORS）
   allowed_origins:
-    - http://localhost:3000
+    - ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+  # CORS設定
+  cors:
+    # CORSの有効/無効
+    enabled: true
+    # 許可されたオリジン
+    allowed_origins:
+      - ${NEXT_PUBLIC_API_URL:-http://localhost:3000}
+    # 許可されたHTTPメソッド
+    allowed_methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    # 許可されたヘッダー
+    allowed_headers:
+      - Content-Type
+      - Authorization
+    # プリフライトリクエストのキャッシュ時間（秒）
+    max_age: 86400
 
+# ==========================================
+# データベース設定
+# ==========================================
 database:
+  # データベースホスト名
+  host: ${DB_HOST:-postgres}
+  # データベースポート番号
+  port: ${DB_PORT:-5432}
+  # データベース名
+  name: ${DB_NAME:-university_exam_db}
+  # データベースユーザー名
+  user: ${DB_USER:-postgres}
+  # データベースパスワード（環境変数から取得）
+  password: ${DB_PASSWORD}
+  # データベーススキーマ名
+  schema: ${DB_SCHEMA:-public}
+  # SSLモード（開発環境では無効）
+  ssl_mode: disable
+  # 最大接続数
   max_connections: 100
-  idle_timeout: 10m
+  # アイドル接続の最大数
+  max_idle_connections: 25
+  # 接続の最大生存時間
+  max_lifetime: 10m
+  # 接続タイムアウト時間
   connection_timeout: 5s
-  schema: public
+  # ヘルスチェック設定
+  health_check:
+    # ヘルスチェックの有効/無効
+    enabled: true
+    # ヘルスチェックの実行間隔
+    interval: 30s
+    # ヘルスチェックのタイムアウト時間
+    timeout: 5s
 
+# ==========================================
+# セキュリティ設定
+# ==========================================
 security:
-  jwt_expiration: 24h
-  csrf_enabled: true
-  secure_cookie: false # development環境ではfalse
+  # JWT設定
+  jwt:
+    # JWTの秘密鍵（環境変数から取得）
+    secret: ${JWT_SECRET}
+    # JWTの有効期限（秒）
+    expiration: ${NEXT_PUBLIC_AUTH_TOKEN_EXPIRE:-3600}s
+    # JWTの発行者
+    issuer: university-exam-api
+  # CSRF設定
+  csrf:
+    # CSRFの有効/無効
+    enabled: true
+    # CSRFの秘密鍵（環境変数から取得）
+    secret: ${CSRF_SECRET}
+  # Cookie設定
+  cookie:
+    # セキュアフラグ（HTTPSのみ）
+    secure: false
+    # HTTPのみフラグ（JavaScriptからのアクセス不可）
+    http_only: true
+    # SameSite属性
+    same_site: lax
 
+# ==========================================
+# ログ設定
+# ==========================================
 logging:
-  level: debug
-  file_path: logs/app.log
+  # ログレベル（debug, info, warn, error）
+  level: ${LOG_LEVEL:-debug}
+  # ログフォーマット
   format: json
+  # ログ出力先
+  output: file
+  # ファイル出力設定
+  file:
+    # ログファイルのパス
+    path: ${LOG_FILE_PATH:-logs/app.log}
+    # 最大ファイルサイズ
+    max_size: 100MB
+    # 最大バックアップ数
+    max_backups: 3
+    # 最大保存期間
+    max_age: 7d
+    # 圧縮の有無
+    compress: true
+  # コンソール出力設定
+  console:
+    # コンソール出力の有効/無効
+    enabled: true
+    # カラー出力の有無
+    color: true
+
+# ==========================================
+# メトリクス設定
+# ==========================================
+metrics:
+  # メトリクス収集の有効/無効
+  enabled: true
+  # メトリクスサーバーのポート番号
+  port: 9090
+  # メトリクスエンドポイントのパス
+  path: /metrics
+  # メトリクスの名前空間
+  namespace: university_exam
+  # メトリクスのサブシステム
+  subsystem: api
+
+# ==========================================
+# ヘルスチェック設定
+# ==========================================
+health:
+  # ヘルスチェックの有効/無効
+  enabled: true
+  # ヘルスチェックエンドポイントのパス
+  path: /health
+  # ヘルスチェックの実行間隔
+  check_interval: 30s
+  # ヘルスチェックのタイムアウト時間
+  timeout: 5s

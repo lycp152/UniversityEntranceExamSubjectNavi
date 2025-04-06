@@ -1,105 +1,93 @@
+// Package main はアプリケーションのエントリーポイントを提供します。
+// アプリケーションの初期化、設定の読み込み、サーバーの起動などの機能を提供します。
 package main
 
 import (
+	"context"
 	"log"
 	"os"
-	"university-exam-api/internal/handlers"
-	"university-exam-api/internal/infrastructure/database"
-	custommiddleware "university-exam-api/internal/middleware"
-	"university-exam-api/internal/repositories"
+	"os/signal"
+	"syscall"
+	"university-exam-api/internal/config"
+	"university-exam-api/internal/database"
+	"university-exam-api/internal/server"
 	"university-exam-api/pkg/logger"
 
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
-const (
-    departmentPath = "/:universityId/departments/:departmentId"
-    subjectPath = "/:universityId/departments/:departmentId/subjects/:subjectId"
-)
+// setupEnvironment は環境変数の読み込みを行います。
+// 開発環境の場合は.envファイルから環境変数を読み込みます。
+// cfg: アプリケーション設定
+// 戻り値: エラー情報
+func setupEnvironment(cfg *config.Config) error {
+	if cfg.Env == "development" {
+		if err := godotenv.Load(); err != nil {
+			logger.Error("警告: .envファイルが見つかりません: %v", err)
+		}
+	}
+	return nil
+}
 
+// main はアプリケーションのエントリーポイントです。
+// 以下の処理を順番に実行します：
+// 1. コンテキストの作成
+// 2. ロガーの初期化
+// 3. 設定の読み込み
+// 4. 環境変数の読み込み
+// 5. データベース接続の確立
+// 6. サーバーの初期化とルーティングの設定
+// 7. シグナルハンドリングの設定
+// 8. サーバーの起動
 func main() {
-    // ロガーの初期化
-    logger.InitLoggers()
-    logger.Info("Starting the application...")
+	// コンテキストの作成
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-    // Load .env file
-    if err := godotenv.Load(); err != nil {
-        logger.Error("Warning: .env file not found")
-    }
+	// ロガーの初期化
+	logger.InitLoggers()
+	logger.Info("アプリケーションを起動しています...")
 
-    // Initialize Echo instance
-    e := echo.New()
+	// 設定の読み込み
+	cfg, err := config.New()
+	if err != nil {
+		logger.Error("設定の読み込みに失敗しました: %v", err)
+		log.Fatal(err)
+	}
 
-    // セキュリティ設定
-    securityConfig := custommiddleware.NewSecurityConfig()
+	// 環境変数の読み込み
+	if err := setupEnvironment(cfg); err != nil {
+		logger.Error("環境変数の読み込みに失敗しました: %v", err)
+		log.Fatal(err)
+	}
 
-    // Middleware
-    e.Use(middleware.Logger())
-    e.Use(middleware.Recover())
-    e.Use(logger.AccessLogMiddleware())
-    e.Use(custommiddleware.RequestValidationMiddleware())
+	// データベース接続の確立
+	db, cleanup, err := database.Setup(ctx, cfg)
+	if err != nil {
+		logger.Error("データベース接続の確立に失敗しました: %v", err)
+		log.Fatal(err)
+	}
+	defer cleanup()
 
-    // セキュリティミドルウェアの適用
-    securityMiddlewares := custommiddleware.SecurityMiddleware(securityConfig)
-    for _, m := range securityMiddlewares {
-        e.Use(m)
-    }
+	// サーバーの初期化
+	srv := server.New(cfg)
+	if err := srv.SetupRoutes(db); err != nil {
+		logger.Error("ルーティングの設定に失敗しました: %v", err)
+		log.Fatal(err)
+	}
 
-    // Database connection
-    db := database.NewDB()
-    logger.Info("Database connection established")
+	// シグナルハンドリングの設定
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		<-sigChan
+		logger.Info("シャットダウンシグナルを受信しました")
+		cancel()
+	}()
 
-    // Auto migrate database
-    if err := database.AutoMigrate(db); err != nil {
-        logger.Error("Failed to migrate database: %v", err)
-        log.Fatal(err)
-    }
-    logger.Info("Database migration completed")
-
-    // Initialize repositories
-    universityRepo := repositories.NewUniversityRepository(db)
-
-    // Initialize handlers
-    universityHandler := handlers.NewUniversityHandler(universityRepo)
-
-    // Routes
-    api := e.Group("/api")
-    {
-        universities := api.Group("/universities")
-        universities.GET("", universityHandler.GetUniversities)
-        universities.GET("/search", universityHandler.SearchUniversities)
-        universities.GET("/:id", universityHandler.GetUniversity)
-
-        // Admin routes
-        universities.POST("", universityHandler.CreateUniversity)
-        universities.PUT("/:id", universityHandler.UpdateUniversity)
-        universities.DELETE("/:id", universityHandler.DeleteUniversity)
-
-        // Departments
-        universities.GET(departmentPath, universityHandler.GetDepartment)
-        universities.POST("/:universityId/departments", universityHandler.CreateDepartment)
-        universities.PUT(departmentPath, universityHandler.UpdateDepartment)
-        universities.DELETE(departmentPath, universityHandler.DeleteDepartment)
-
-        // Subjects
-        universities.GET(subjectPath, universityHandler.GetSubject)
-        universities.POST("/:universityId/departments/:departmentId/subjects", universityHandler.CreateSubject)
-        universities.PUT(subjectPath, universityHandler.UpdateSubject)
-        universities.DELETE(subjectPath, universityHandler.DeleteSubject)
-        universities.PUT("/:universityId/departments/:departmentId/subjects/batch", universityHandler.UpdateSubjectsBatch)
-    }
-    logger.Info("Routes configured")
-
-    // Start server
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080"
-    }
-    logger.Info("Server starting on port %s", port)
-    if err := e.Start(":" + port); err != nil {
-        logger.Error("Server failed to start: %v", err)
-        log.Fatal(err)
-    }
+	// サーバーの起動
+	if err := srv.Start(ctx); err != nil {
+		logger.Error("サーバーの実行中にエラーが発生しました: %v", err)
+		log.Fatal(err)
+	}
 }

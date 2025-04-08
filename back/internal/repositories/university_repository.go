@@ -66,6 +66,8 @@ type IUniversityRepository interface {
 	Search(query string) ([]models.University, error)
 	FindDepartment(universityID, departmentID uint) (*models.Department, error)
 	FindSubject(departmentID, subjectID uint) (*models.Subject, error)
+	FindMajor(departmentID, majorID uint) (*models.Major, error)
+	FindAdmissionInfo(scheduleID, infoID uint) (*models.AdmissionInfo, error)
 	Create(university *models.University) error
 	Update(university *models.University) error
 	Delete(id uint) error
@@ -75,8 +77,12 @@ type IUniversityRepository interface {
 	CreateSubject(subject *models.Subject) error
 	UpdateSubject(subject *models.Subject) error
 	DeleteSubject(id uint) error
-	UpdateSubjectsBatch(testTypeID uint, subjects []models.Subject) error
+	CreateMajor(major *models.Major) error
 	UpdateMajor(major *models.Major) error
+	DeleteMajor(id uint) error
+	CreateAdmissionInfo(info *models.AdmissionInfo) error
+	DeleteAdmissionInfo(id uint) error
+	UpdateSubjectsBatch(testTypeID uint, subjects []models.Subject) error
 	UpdateAdmissionSchedule(schedule *models.AdmissionSchedule) error
 	UpdateAdmissionInfo(info *models.AdmissionInfo) error
 }
@@ -267,17 +273,16 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 	var universities []models.University
 
 	// サブクエリの最適化：インデックスを効率的に使用
-	subQuery := r.db.Table("universities").
+	subQuery := r.db.Model(&models.University{}).
 		Select("DISTINCT universities.id").
-		Joins("USE INDEX (idx_universities_name)").
-		Joins("LEFT JOIN departments USE INDEX (idx_departments_university_id) ON departments.university_id = universities.id AND "+notDeletedCondition).
-		Joins("LEFT JOIN majors USE INDEX (idx_majors_department_id) ON majors.department_id = departments.id AND "+notDeletedCondition).
-		Where("universities."+notDeletedCondition).
-		Where(`(
+		Joins("LEFT JOIN departments ON departments.university_id = universities.id AND departments.deleted_at IS NULL").
+		Joins("LEFT JOIN majors ON majors.department_id = departments.id AND majors.deleted_at IS NULL").
+		Where("universities.deleted_at IS NULL").
+		Where(`
 			LOWER(universities.name) LIKE LOWER(?) OR
 			LOWER(departments.name) LIKE LOWER(?) OR
 			LOWER(majors.name) LIKE LOWER(?)
-		)`, "%"+query+"%", "%"+query+"%", "%"+query+"%")
+		`, "%"+query+"%", "%"+query+"%", "%"+query+"%")
 
 	// メインクエリの最適化：必要なカラムのみを選択
 	err := r.db.
@@ -1039,5 +1044,93 @@ func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) e
 
 	// 全てのキャッシュをクリア
 	r.clearAllRelatedCache(info.AdmissionScheduleID)
+	return nil
+}
+
+func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Major, error) {
+	cacheKey := fmt.Sprintf("majors:%d:%d", departmentID, majorID)
+
+	// キャッシュをチェック
+	if cached, found := r.getFromCache(cacheKey); found {
+		applogger.Info(context.Background(), "Cache hit for FindMajor: %d:%d", departmentID, majorID)
+		major := cached.(models.Major)
+		return &major, nil
+	}
+
+	var major models.Major
+	err := r.db.Where("department_id = ? AND id = ?", departmentID, majorID).
+		First(&major).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, appErrors.NewNotFoundError("Major", majorID, nil)
+		}
+		return nil, appErrors.NewDatabaseError("FindMajor", err, nil)
+	}
+
+	// キャッシュに保存
+	r.setCache(cacheKey, major)
+	applogger.Info(context.Background(), "Cached major: %d:%d", departmentID, majorID)
+
+	return &major, nil
+}
+
+// CreateMajor は新しい学科を作成します
+func (r *universityRepository) CreateMajor(major *models.Major) error {
+	if err := r.db.Create(major).Error; err != nil {
+		return appErrors.NewDatabaseError("CreateMajor", err, nil)
+	}
+	return nil
+}
+
+// DeleteMajor は学科を削除します
+func (r *universityRepository) DeleteMajor(id uint) error {
+	if err := r.db.Delete(&models.Major{}, id).Error; err != nil {
+		return appErrors.NewDatabaseError("DeleteMajor", err, nil)
+	}
+	return nil
+}
+
+func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*models.AdmissionInfo, error) {
+	cacheKey := fmt.Sprintf("admission_infos:%d:%d", scheduleID, infoID)
+
+	// キャッシュをチェック
+	if cached, found := r.getFromCache(cacheKey); found {
+		applogger.Info(context.Background(), "Cache hit for FindAdmissionInfo: %d:%d", scheduleID, infoID)
+		info := cached.(models.AdmissionInfo)
+		return &info, nil
+	}
+
+	var info models.AdmissionInfo
+	err := r.db.Where("admission_schedule_id = ? AND id = ?", scheduleID, infoID).
+		First(&info).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, appErrors.NewNotFoundError("AdmissionInfo", infoID, nil)
+		}
+		return nil, appErrors.NewDatabaseError("FindAdmissionInfo", err, nil)
+	}
+
+	// キャッシュに保存
+	r.setCache(cacheKey, info)
+	applogger.Info(context.Background(), "Cached admission info: %d:%d", scheduleID, infoID)
+
+	return &info, nil
+}
+
+// CreateAdmissionInfo は新しい募集情報を作成します
+func (r *universityRepository) CreateAdmissionInfo(info *models.AdmissionInfo) error {
+	if err := r.db.Create(info).Error; err != nil {
+		return appErrors.NewDatabaseError("CreateAdmissionInfo", err, nil)
+	}
+	return nil
+}
+
+// DeleteAdmissionInfo は募集情報を削除します
+func (r *universityRepository) DeleteAdmissionInfo(id uint) error {
+	if err := r.db.Delete(&models.AdmissionInfo{}, id).Error; err != nil {
+		return appErrors.NewDatabaseError("DeleteAdmissionInfo", err, nil)
+	}
 	return nil
 }

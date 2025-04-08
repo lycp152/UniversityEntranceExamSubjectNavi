@@ -4,19 +4,33 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
+	"time"
 	"university-exam-api/internal/config"
 	"university-exam-api/internal/database"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/server"
 
+	"runtime"
+
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gorm.io/gorm"
 )
 
-// setupEnvironment は環境変数の読み込みを行います。
+// DB はデータベース接続を表す構造体です
+type DB struct {
+	*gorm.DB
+}
+
+// setupEnvironment は環境変数の読み込みと検証を行います。
 // 開発環境の場合は.envファイルから環境変数を読み込みます。
 // cfg: アプリケーション設定
 // 戻り値: エラー情報
@@ -26,7 +40,112 @@ func setupEnvironment(cfg *config.Config) error {
 			applogger.Error(context.Background(), "警告: .envファイルが見つかりません: %v", err)
 		}
 	}
+
+	// 必須環境変数の検証
+	requiredVars := []string{
+		"DB_HOST",
+		"DB_PORT",
+		"DB_USER",
+		"DB_PASSWORD",
+		"DB_NAME",
+	}
+
+	for _, envVar := range requiredVars {
+		if os.Getenv(envVar) == "" {
+			return fmt.Errorf("必須環境変数 %s が設定されていません", envVar)
+		}
+	}
+
 	return nil
+}
+
+// setupHealthCheck はヘルスチェックエンドポイントを設定します
+func setupHealthCheck(db *gorm.DB) {
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		// データベース接続の確認
+		sqlDB, err := db.DB()
+		if err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("Database connection failed"))
+			return
+		}
+
+		if err := sqlDB.Ping(); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("Database connection failed"))
+			return
+		}
+
+		// メモリ使用量の確認
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		if m.Alloc > 1000000000 { // 1GB以上使用している場合
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("Memory usage too high"))
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
+}
+
+// setupMetrics はメトリクス収集のエンドポイントを設定します
+func setupMetrics() {
+	// HTTPリクエストの総数を計測するカウンター
+	httpRequestsTotal := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests",
+		},
+		[]string{"method", "path", "status"},
+	)
+
+	// HTTPリクエストの処理時間を計測するヒストグラム
+	httpRequestDuration := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "HTTP request duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"method", "path"},
+	)
+
+	// HTTPエラーレスポンスを計測するカウンター
+	httpErrorResponses := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_error_responses_total",
+			Help: "Total number of HTTP error responses",
+		},
+		[]string{"method", "path", "status"},
+	)
+
+	// メモリ使用量を計測するゲージ
+	memoryUsage := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "memory_usage_bytes",
+			Help: "Current memory usage in bytes",
+		},
+	)
+
+	// メトリクスの登録
+	prometheus.MustRegister(httpRequestsTotal)
+	prometheus.MustRegister(httpRequestDuration)
+	prometheus.MustRegister(httpErrorResponses)
+	prometheus.MustRegister(memoryUsage)
+
+	// メトリクスエンドポイントの設定
+	http.Handle("/metrics", promhttp.Handler())
+
+	// メモリ使用量の定期的な更新
+	go func() {
+		for {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			memoryUsage.Set(float64(m.Alloc))
+			time.Sleep(10 * time.Second)
+		}
+	}()
 }
 
 // main はアプリケーションのエントリーポイントです。
@@ -34,11 +153,12 @@ func setupEnvironment(cfg *config.Config) error {
 // 1. コンテキストの作成
 // 2. ロガーの初期化
 // 3. 設定の読み込み
-// 4. 環境変数の読み込み
+// 4. 環境変数の読み込みと検証
 // 5. データベース接続の確立
 // 6. サーバーの初期化とルーティングの設定
-// 7. シグナルハンドリングの設定
-// 8. サーバーの起動
+// 7. ヘルスチェックとメトリクスの設定
+// 8. シグナルハンドリングの設定
+// 9. サーバーの起動
 func main() {
 	// コンテキストの作成
 	ctx, cancel := context.WithCancel(context.Background())
@@ -55,7 +175,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// 環境変数の読み込み
+	// 環境変数の読み込みと検証
 	if err := setupEnvironment(cfg); err != nil {
 		applogger.Error(ctx, "環境変数の読み込みに失敗しました: %v", err)
 		log.Fatal(err)
@@ -69,6 +189,10 @@ func main() {
 	}
 	defer cleanup()
 
+	// ヘルスチェックとメトリクスの設定
+	setupHealthCheck(db)
+	setupMetrics()
+
 	// サーバーの初期化
 	srv := server.New(cfg)
 	if err := srv.SetupRoutes(db); err != nil {
@@ -77,17 +201,46 @@ func main() {
 	}
 
 	// シグナルハンドリングの設定
-	go func() {
-		sigChan := make(chan os.Signal, 1)
-		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-		<-sigChan
-		applogger.Info(ctx, "シャットダウンシグナルを受信しました")
-		cancel()
-	}()
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// シャットダウン用のWaitGroup
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	// サーバーの起動
-	if err := srv.Start(ctx); err != nil {
-		applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
-		log.Fatal(err)
+	go func() {
+		defer wg.Done()
+		if err := srv.Start(ctx); err != nil {
+			applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
+			sigChan <- syscall.SIGTERM
+		}
+	}()
+
+	// シグナル待機
+	sig := <-sigChan
+	applogger.Info(ctx, "シグナルを受信しました: %v", sig)
+
+	// シャットダウンのタイムアウト設定
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+
+	// コンテキストのキャンセル
+	cancel()
+
+	// シャットダウン完了待機
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		applogger.Info(ctx, "シャットダウンが完了しました")
+	case <-shutdownCtx.Done():
+		applogger.Warn(ctx, "シャットダウンがタイムアウトしました")
 	}
+
+	applogger.Info(ctx, "アプリケーションを終了します")
 }

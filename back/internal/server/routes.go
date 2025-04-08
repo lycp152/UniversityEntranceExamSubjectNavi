@@ -4,8 +4,12 @@ package server
 
 import (
 	"net/http"
+	"time"
 	"university-exam-api/internal/config"
-	"university-exam-api/internal/handlers"
+	"university-exam-api/internal/handlers/department"
+	"university-exam-api/internal/handlers/search"
+	"university-exam-api/internal/handlers/subject"
+	"university-exam-api/internal/handlers/university"
 	"university-exam-api/internal/repositories"
 
 	"github.com/labstack/echo/v4"
@@ -47,7 +51,10 @@ func (r *Routes) Setup() error {
 	universityRepo := repositories.NewUniversityRepository(r.db)
 
 	// ハンドラーの初期化
-	universityHandler := handlers.NewUniversityHandler(universityRepo)
+	universityHandler := university.NewUniversityHandler(universityRepo, 5*time.Second)
+	departmentHandler := department.NewDepartmentHandler(universityRepo, 5*time.Second)
+	subjectHandler := subject.NewSubjectHandler(universityRepo, 5*time.Second)
+	searchHandler := search.NewSearchHandler(universityRepo, 5*time.Second)
 
 	// APIルーティングの設定
 	api := r.echo.Group("/api")
@@ -63,24 +70,24 @@ func (r *Routes) Setup() error {
 		// 大学関連エンドポイント
 		universities := api.Group("/universities")
 		universities.GET("", universityHandler.GetUniversities)
-		universities.GET("/search", universityHandler.SearchUniversities)
+		universities.GET("/search", searchHandler.SearchUniversities)
 		universities.GET("/:id", universityHandler.GetUniversity)
 		universities.POST("", universityHandler.CreateUniversity)
 		universities.PUT("/:id", universityHandler.UpdateUniversity)
 		universities.DELETE("/:id", universityHandler.DeleteUniversity)
 
 		// 学部関連エンドポイント
-		universities.GET(departmentPath, universityHandler.GetDepartment)
-		universities.POST("/:universityId/departments", universityHandler.CreateDepartment)
-		universities.PUT(departmentPath, universityHandler.UpdateDepartment)
-		universities.DELETE(departmentPath, universityHandler.DeleteDepartment)
+		universities.GET(departmentPath, departmentHandler.GetDepartment)
+		universities.POST("/:universityId/departments", departmentHandler.CreateDepartment)
+		universities.PUT(departmentPath, departmentHandler.UpdateDepartment)
+		universities.DELETE(departmentPath, departmentHandler.DeleteDepartment)
 
 		// 科目関連エンドポイント
-		universities.GET(subjectPath, universityHandler.GetSubject)
-		universities.POST("/:universityId/departments/:departmentId/subjects", universityHandler.CreateSubject)
-		universities.PUT(subjectPath, universityHandler.UpdateSubject)
-		universities.DELETE(subjectPath, universityHandler.DeleteSubject)
-		universities.PUT("/:universityId/departments/:departmentId/subjects/batch", universityHandler.UpdateSubjectsBatch)
+		universities.GET(subjectPath, subjectHandler.GetSubject)
+		universities.POST("/:universityId/departments/:departmentId/subjects", subjectHandler.CreateSubject)
+		universities.PUT(subjectPath, subjectHandler.UpdateSubject)
+		universities.DELETE(subjectPath, subjectHandler.DeleteSubject)
+		universities.PUT("/:universityId/departments/:departmentId/subjects/batch", subjectHandler.UpdateSubjectsBatch)
 	}
 
 	return nil

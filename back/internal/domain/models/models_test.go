@@ -136,6 +136,8 @@ func validateAcademicYear(info *AdmissionInfo) error {
 
 // TestAcademicYear は学年度のバリデーションテストを実行する
 func TestAcademicYear(t *testing.T) {
+	t.Parallel() // テストの並列実行を有効化
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -161,7 +163,10 @@ func TestAcademicYear(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt // ループ変数のシャドウイング
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel() // サブテストの並列実行を有効化
+
 			info := h.createTestAdmissionInfo(1, 100, tt.academicYear, "draft")
 			err := validateAcademicYear(&info)
 			if tt.wantErr {
@@ -176,6 +181,8 @@ func TestAcademicYear(t *testing.T) {
 
 // TestUniversityValidation は大学モデルのバリデーションテストを実行する
 func TestUniversityValidation(t *testing.T) {
+	t.Parallel()
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -206,7 +213,10 @@ func TestUniversityValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.university.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -219,6 +229,8 @@ func TestUniversityValidation(t *testing.T) {
 
 // TestDepartmentValidation は学部モデルのバリデーションテストを実行する
 func TestDepartmentValidation(t *testing.T) {
+	t.Parallel()
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -249,7 +261,10 @@ func TestDepartmentValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.department.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -262,6 +277,8 @@ func TestDepartmentValidation(t *testing.T) {
 
 // TestMajorValidation は学科モデルのバリデーションテストを実行する
 func TestMajorValidation(t *testing.T) {
+	t.Parallel()
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -292,7 +309,10 @@ func TestMajorValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.major.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -305,6 +325,8 @@ func TestMajorValidation(t *testing.T) {
 
 // TestAdmissionScheduleValidation は入試日程モデルのバリデーションテストを実行する
 func TestAdmissionScheduleValidation(t *testing.T) {
+	t.Parallel()
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -335,7 +357,10 @@ func TestAdmissionScheduleValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.admissionSchedule.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -348,6 +373,8 @@ func TestAdmissionScheduleValidation(t *testing.T) {
 
 // TestAdmissionInfoValidation は入試情報モデルのバリデーションテストを実行する
 func TestAdmissionInfoValidation(t *testing.T) {
+	t.Parallel()
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -378,7 +405,10 @@ func TestAdmissionInfoValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.admissionInfo.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -391,6 +421,8 @@ func TestAdmissionInfoValidation(t *testing.T) {
 
 // TestTestTypeValidation は試験種別モデルのバリデーションテストを実行する
 func TestTestTypeValidation(t *testing.T) {
+	t.Parallel()
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -416,7 +448,10 @@ func TestTestTypeValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.testType.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -429,6 +464,8 @@ func TestTestTypeValidation(t *testing.T) {
 
 // TestSubjectValidation は科目モデルのバリデーションテストを実行する
 func TestSubjectValidation(t *testing.T) {
+	t.Parallel()
+
 	h := newTestHelper(t)
 
 	tests := []struct {
@@ -459,7 +496,10 @@ func TestSubjectValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.subject.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -472,6 +512,8 @@ func TestSubjectValidation(t *testing.T) {
 
 // TestBaseModelValidation は基本モデルのバリデーションテストを実行する
 func TestBaseModelValidation(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
 		baseModel BaseModel
@@ -494,7 +536,10 @@ func TestBaseModelValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			err := tt.baseModel.Validate()
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
@@ -507,6 +552,8 @@ func TestBaseModelValidation(t *testing.T) {
 
 // TestBaseModelBeforeUpdate は基本モデルの更新前フックのテストを実行する
 func TestBaseModelBeforeUpdate(t *testing.T) {
+	t.Parallel()
+
 	baseModel := BaseModel{
 		Version: 1,
 	}

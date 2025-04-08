@@ -23,6 +23,33 @@ type ValidationError struct {
 	Message  string // エラーメッセージ
 	Code     string // エラーコード
 	Severity string // エラーの重要度（error, warning, info）
+	Err      error  // 元のエラー
+	Details  map[string]interface{} // エラーの詳細情報
+}
+
+// Unwrap は元のエラーを返す
+func (e *ValidationError) Unwrap() error {
+	return e.Err
+}
+
+// Is はエラーの比較を行う
+func (e *ValidationError) Is(target error) bool {
+	if target == nil {
+		return false
+	}
+	if err, ok := target.(*ValidationError); ok {
+		return e.Code == err.Code
+	}
+	return false
+}
+
+// As はエラーの型変換を行う
+func (e *ValidationError) As(target interface{}) bool {
+	if err, ok := target.(*ValidationError); ok {
+		*err = *e
+		return true
+	}
+	return false
 }
 
 // エラーコードの定義
@@ -203,6 +230,9 @@ func validateRules(v interface{}, rules []ValidationRule) error {
 				Field:   rule.Field,
 				Message: rule.Message,
 				Code:    rule.Code,
+				Details: map[string]interface{}{
+					"value": field.Interface(),
+				},
 			})
 		}
 	}

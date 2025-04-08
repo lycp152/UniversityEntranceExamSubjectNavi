@@ -9,22 +9,31 @@ import (
 )
 
 // BatchSize はバッチ処理のサイズを定義
-const BatchSize = 100
+const (
+	DefaultBatchSize = 100
+	MaxBatchSize     = 1000
+)
 
 // BatchInsertUniversities は大学データを一括で挿入する
-func BatchInsertUniversities(ctx context.Context, db *gorm.DB, universities []University) error {
+func BatchInsertUniversities(ctx context.Context, db *gorm.DB, universities []University, batchSize int) error {
 	if len(universities) == 0 {
 		return fmt.Errorf("挿入する大学データがありません")
 	}
 
+	if batchSize <= 0 {
+		batchSize = DefaultBatchSize
+	} else if batchSize > MaxBatchSize {
+		batchSize = MaxBatchSize
+	}
+
 	return db.Session(&gorm.Session{
-		CreateBatchSize: BatchSize,
+		CreateBatchSize: batchSize,
 		PrepareStmt:     true,
 	}).
 		WithContext(ctx).
 		Transaction(func(tx *gorm.DB) error {
-			if err := tx.CreateInBatches(universities, BatchSize).Error; err != nil {
-				return fmt.Errorf("大学データの一括挿入に失敗しました: %v", err)
+			if err := tx.CreateInBatches(universities, batchSize).Error; err != nil {
+				return fmt.Errorf("大学データの一括挿入に失敗しました: %w", err)
 			}
 			return nil
 		})
@@ -48,9 +57,9 @@ func GetUniversityByID(ctx context.Context, db *gorm.DB, id uint) (*University, 
 		First(&university, id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("ID %d の大学が見つかりません", id)
+			return nil, fmt.Errorf("ID %d の大学が見つかりません: %w", id, err)
 		}
-		return nil, fmt.Errorf("大学の取得に失敗しました: %v", err)
+		return nil, fmt.Errorf("大学の取得に失敗しました: %w", err)
 	}
 	return &university, nil
 }
@@ -64,7 +73,7 @@ func GetUniversities(ctx context.Context, db *gorm.DB) ([]University, error) {
 	}).
 		WithContext(ctx).
 		Find(&universities).Error; err != nil {
-		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %v", err)
+		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %w", err)
 	}
 	return universities, nil
 }
@@ -80,7 +89,7 @@ func CreateUniversity(ctx context.Context, db *gorm.DB, university *University) 
 			tx.SavePoint("sp1")
 			if err := tx.Create(university).Error; err != nil {
 				tx.RollbackTo("sp1")
-				return fmt.Errorf("大学の作成に失敗しました: %v", err)
+				return fmt.Errorf("大学の作成に失敗しました: %w", err)
 			}
 			return nil
 		})
@@ -97,7 +106,7 @@ func UpdateUniversity(ctx context.Context, db *gorm.DB, university *University) 
 			tx.SavePoint("sp1")
 			if err := tx.Save(university).Error; err != nil {
 				tx.RollbackTo("sp1")
-				return fmt.Errorf("大学の更新に失敗しました: %v", err)
+				return fmt.Errorf("大学の更新に失敗しました: %w", err)
 			}
 			return nil
 		})
@@ -114,7 +123,7 @@ func DeleteUniversity(ctx context.Context, db *gorm.DB, id uint) error {
 			tx.SavePoint("sp1")
 			if err := tx.Delete(&University{}, id).Error; err != nil {
 				tx.RollbackTo("sp1")
-				return fmt.Errorf("大学の削除に失敗しました: %v", err)
+				return fmt.Errorf("大学の削除に失敗しました: %w", err)
 			}
 			return nil
 		})
@@ -131,7 +140,7 @@ func UpdateUniversities(ctx context.Context, db *gorm.DB, universities []*Univer
 			tx.SavePoint("sp1")
 			if err := tx.Save(universities).Error; err != nil {
 				tx.RollbackTo("sp1")
-				return fmt.Errorf("大学の一括更新に失敗しました: %v", err)
+				return fmt.Errorf("大学の一括更新に失敗しました: %w", err)
 			}
 			return nil
 		})
@@ -148,7 +157,7 @@ func DeleteUniversities(ctx context.Context, db *gorm.DB, universityIDs []uint) 
 			tx.SavePoint("sp1")
 			if err := tx.Delete(&University{}, universityIDs).Error; err != nil {
 				tx.RollbackTo("sp1")
-				return fmt.Errorf("大学の一括削除に失敗しました: %v", err)
+				return fmt.Errorf("大学の一括削除に失敗しました: %w", err)
 			}
 			return nil
 		})
@@ -171,7 +180,7 @@ func GetUniversitiesWithRelations(ctx context.Context, db *gorm.DB) ([]Universit
 		Joins("LEFT JOIN subjects ON subjects.test_type_id = test_types.id").
 		Find(&universities).Error
 	if err != nil {
-		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %v", err)
+		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %w", err)
 	}
 	return universities, nil
 }

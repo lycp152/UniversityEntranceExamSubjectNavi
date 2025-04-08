@@ -9,9 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 	"university-exam-api/internal/domain/models"
-	"university-exam-api/internal/handlers"
-	intmiddleware "university-exam-api/internal/middleware"
+	"university-exam-api/internal/handlers/university"
+	"university-exam-api/internal/middleware"
 	"university-exam-api/internal/repositories"
 
 	"errors"
@@ -76,7 +77,7 @@ func LoadTestData(t *testing.T, filename string) TestData {
 }
 
 // SetupTestServer はテストサーバーをセットアップします
-func SetupTestServer(t *testing.T) (*echo.Echo, *handlers.UniversityHandler, *gorm.DB, error) {
+func SetupTestServer(t *testing.T) (*echo.Echo, *university.UniversityHandler, *gorm.DB, error) {
 	t.Helper()
 
 	e := echo.New()
@@ -91,13 +92,13 @@ func SetupTestServer(t *testing.T) (*echo.Echo, *handlers.UniversityHandler, *go
 	}
 
 	// ミドルウェアの設定
-	e.Use(intmiddleware.CSRFMiddleware())
-	e.Use(intmiddleware.Sanitizer(intmiddleware.SanitizerConfig{
+	e.Use(middleware.CSRFMiddleware())
+	e.Use(middleware.Sanitizer(middleware.SanitizerConfig{
 		Fields: []string{"name"},
 	}))
 
 	repo := repositories.NewUniversityRepository(db)
-	handler := handlers.NewUniversityHandler(repo)
+	handler := university.NewUniversityHandler(repo, 5*time.Second)
 
 	return e, handler, db, nil
 }

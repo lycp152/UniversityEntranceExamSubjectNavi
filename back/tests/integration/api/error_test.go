@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 	"university-exam-api/internal/errors"
-	"university-exam-api/internal/handlers"
+	"university-exam-api/internal/handlers/university"
 	"university-exam-api/internal/repositories"
 
 	"github.com/labstack/echo/v4"
@@ -21,7 +22,7 @@ func TestAPIErrorHandling(t *testing.T) {
 	// エコーインスタンスとハンドラーを作成
 	e := echo.New()
 	repo := repositories.NewUniversityRepository(db)
-	handler := handlers.NewUniversityHandler(repo)
+	handler := university.NewUniversityHandler(repo, 5*time.Second)
 
 	tests := []struct {
 		name           string

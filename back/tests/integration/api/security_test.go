@@ -121,7 +121,7 @@ func TestInputValidation(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "大学名が空",
 			Method: http.MethodPost,
@@ -257,12 +257,12 @@ func TestInputValidation(t *testing.T) {
 		},
 	}
 
-	runInputValidationTestCases(t, env, testCases)
+	runInputValidationTestCases(t, env, TestCases)
 }
 
 // runInputValidationTestCases は入力値検証のテストケースを実行します
-func runInputValidationTestCases(t *testing.T, env *TestEnvironment, testCases []TestCase) {
-	for _, tc := range testCases {
+func runInputValidationTestCases(t *testing.T, env *TestEnvironment, TestCases []TestCase) {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
 			tc.Setup(rec, c)
@@ -284,7 +284,7 @@ func TestSQLInjectionPrevention(t *testing.T) {
 	}
 	defer test_helpers.CleanupTest(t, env.DB)
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "SQLインジェクション攻撃（UNION SELECT）",
 			Method: http.MethodGet,
@@ -357,7 +357,7 @@ func TestSQLInjectionPrevention(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
 			tc.Setup(rec, c)
@@ -378,7 +378,7 @@ func TestErrorHandling(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "存在しない大学のID",
 			Method: http.MethodGet,
@@ -484,12 +484,12 @@ func TestErrorHandling(t *testing.T) {
 		},
 	}
 
-	runErrorHandlingTestCases(t, env, testCases)
+	runErrorHandlingTestCases(t, env, TestCases)
 }
 
 // runErrorHandlingTestCases はエラーハンドリングのテストケースを実行します
-func runErrorHandlingTestCases(t *testing.T, env *TestEnvironment, testCases []TestCase) {
-	for _, tc := range testCases {
+func runErrorHandlingTestCases(t *testing.T, env *TestEnvironment, TestCases []TestCase) {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
 			tc.Setup(rec, c)
@@ -524,7 +524,7 @@ func TestRateLimiting(t *testing.T) {
 
 	rateConfig := middleware.LoadTestConfig()
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "レート制限の基本機能",
 			Method: http.MethodGet,
@@ -617,7 +617,7 @@ func TestRateLimiting(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			rec, c := test_helpers.CreateTestContext(env.E, tc.Method, tc.Path, nil)
 			tc.Setup(rec, c)
@@ -760,8 +760,8 @@ func runInvalidEndpointTest(t *testing.T, env *TestEnvironment, config *middlewa
 	test_helpers.AssertRateLimitResult(t, result, config.TestNumRequests-config.TestMaxRequests, config.TestMaxRequests)
 }
 
-// executeRequest は単一のリクエストを実行し、ステータスコードを返します
-func executeRequest(handler interface{}, e *echo.Echo) (int, error) {
+// ExecuteRequest は単一のリクエストを実行し、ステータスコードを返します
+func ExecuteRequest(handler interface{}, e *echo.Echo) (int, error) {
 	rec, c := test_helpers.CreateTestContext(e, http.MethodGet, test_helpers.APIUniversitiesPath, nil)
 	if h, ok := handler.(interface{ GetUniversities(echo.Context) error }); ok {
 		if err := h.GetUniversities(c); err != nil {
@@ -776,7 +776,7 @@ func executeRequest(handler interface{}, e *echo.Echo) (int, error) {
 func makeRequests(t *testing.T, handler interface{}, e *echo.Echo, numRequests int) []int {
 	results := make([]int, numRequests)
 	for j := 0; j < numRequests; j++ {
-		code, err := executeRequest(handler, e)
+		code, err := ExecuteRequest(handler, e)
 	if err != nil {
 			t.Errorf("リクエスト %d が失敗: %v", j, err)
 			continue
@@ -809,7 +809,7 @@ func TestConcurrentRateLimiting(t *testing.T) {
 
 	rateConfig := middleware.LoadTestConfig()
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "並行アクセス時のレート制限",
 			Method: http.MethodGet,
@@ -855,7 +855,7 @@ func TestConcurrentRateLimiting(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			runConcurrentTest(t, env, tc)
 		})
@@ -977,7 +977,7 @@ func TestAuthentication(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "認証トークンなし",
 			Method: http.MethodPost,
@@ -1047,7 +1047,7 @@ func TestAuthentication(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			executeAuthTestCase(t, env, tc)
 		})
@@ -1116,7 +1116,7 @@ func TestAuthorization(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "権限なし",
 			Method: http.MethodPost,
@@ -1169,7 +1169,7 @@ func TestAuthorization(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			executeAuthzTestCase(t, env, tc)
 		})
@@ -1298,7 +1298,7 @@ func TestXSSPrevention(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "スクリプトタグを含む大学名",
 			Method: http.MethodPost,
@@ -1349,7 +1349,7 @@ func TestXSSPrevention(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			executeXSSTestCase(t, env, tc)
 		})
@@ -1406,7 +1406,7 @@ func TestCSRFProtection(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "CSRFトークンなし",
 			Method: http.MethodPost,
@@ -1461,7 +1461,7 @@ func TestCSRFProtection(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			executeCSRFTestCase(t, env, tc)
 		})
@@ -1514,7 +1514,7 @@ func TestInputSanitization(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []TestCase{
+	TestCases := []TestCase{
 		{
 			Name:   "HTMLタグの除去",
 			Method: http.MethodPost,
@@ -1597,7 +1597,7 @@ func TestInputSanitization(t *testing.T) {
 		},
 	}
 
-	runSanitizationTestCases(t, env, testCases)
+	runSanitizationTestCases(t, env, TestCases)
 }
 
 // executeSanitizationTestCase は個々のサニタイズテストケースを実行します
@@ -1625,8 +1625,8 @@ func executeSanitizationTestCase(t *testing.T, env *TestEnvironment, tc TestCase
 }
 
 // runSanitizationTestCases はサニタイズテストケースを実行します
-func runSanitizationTestCases(t *testing.T, env *TestEnvironment, testCases []TestCase) {
-	for _, tc := range testCases {
+func runSanitizationTestCases(t *testing.T, env *TestEnvironment, TestCases []TestCase) {
+	for _, tc := range TestCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			executeSanitizationTestCase(t, env, tc)
 		})
@@ -1634,11 +1634,11 @@ func runSanitizationTestCases(t *testing.T, env *TestEnvironment, testCases []Te
 }
 
 // verifySanitization はサニタイズされた値を検証します
-func verifySanitization(t *testing.T, university *models.University, testCaseName string) error {
+func verifySanitization(t *testing.T, university *models.University, TestCaseName string) error {
 	expectedName := "テスト大学"
 	expectedDeptName := "テスト学部"
 
-	switch testCaseName {
+	switch TestCaseName {
 	case "HTMLタグの除去", "XSS攻撃文字の除去", "制御文字の除去", "SQLインジェクション文字の除去":
 		expectedName = "テスト大学"
 		expectedDeptName = "テスト学部"

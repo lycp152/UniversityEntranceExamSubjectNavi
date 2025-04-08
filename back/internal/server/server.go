@@ -9,7 +9,7 @@ import (
 	"time"
 	"university-exam-api/internal/config"
 	applogger "university-exam-api/internal/logger"
-	custommiddleware "university-exam-api/internal/middleware"
+	custom_middleware "university-exam-api/internal/middleware"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -35,16 +35,16 @@ func New(cfg *config.Config) *Server {
 	e := echo.New()
 
 	// セキュリティ設定の初期化
-	securityConfig := custommiddleware.NewSecurityConfig()
+	securityConfig := custom_middleware.NewSecurityConfig()
 
 	// ミドルウェアの設定
 	e.Use(middleware.Logger())                    // リクエストログ
 	e.Use(middleware.Recover())                   // パニックリカバリー
 	e.Use(applogger.AccessLogMiddleware())           // アクセスログ
-	e.Use(custommiddleware.RequestValidationMiddleware()) // リクエストバリデーション
+	e.Use(custom_middleware.RequestValidationMiddleware()) // リクエストバリデーション
 
 	// セキュリティミドルウェアの適用
-	securityMiddlewares := custommiddleware.SecurityMiddleware(securityConfig)
+	securityMiddlewares := custom_middleware.SecurityMiddleware(securityConfig)
 	for _, m := range securityMiddlewares {
 		e.Use(m)
 	}

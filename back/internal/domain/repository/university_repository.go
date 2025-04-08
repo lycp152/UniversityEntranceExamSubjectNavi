@@ -34,11 +34,11 @@ const (
 
 	// エラーメッセージ
 	// IDが0の場合のエラーメッセージ
-	errMsgIDZero = "id cannot be zero"
+	errMsgIDZero = "IDは0にすることはできません"
 	// 名前が空の場合のエラーメッセージ
-	errMsgNameEmpty = "name cannot be empty"
+	errMsgNameEmpty = "名前は空にすることはできません"
 	// 大学が見つからない場合のエラーメッセージ
-	errMsgUniversityNotFound = "university with id %d not found"
+	errMsgUniversityNotFound = "ID %d の大学が見つかりません"
 
 	// データベース設定
 	// アイドル状態のコネクションの最大数

@@ -31,8 +31,44 @@ server:
     allowed_headers:
       - Content-Type
       - Authorization
+      - X-Requested-With
+      - X-CSRF-Token
     # プリフライトリクエストのキャッシュ時間（秒）
     max_age: 86400
+    # クレデンシャルを許可するかどうか
+    allow_credentials: true
+  # リクエストサイズ制限
+  request_size_limit: 10MB
+  # レスポンス圧縮
+  compression:
+    enabled: true
+    level: 6
+  # セッション設定
+  session:
+    # セッションの有効期限（秒）
+    expiration: 3600
+    # セッションの更新間隔（秒）
+    refresh_interval: 300
+  # サーバーのリソース制限
+  resources:
+    # 最大メモリ使用量
+    max_memory: 512MB
+    # 最大CPU使用率
+    max_cpu: 80%
+    # 最大ファイルディスクリプタ数
+    max_fds: 1024
+  # サーバーのセキュリティヘッダー
+  security_headers:
+    # X-Frame-Options
+    x_frame_options: DENY
+    # X-Content-Type-Options
+    x_content_type_options: nosniff
+    # X-XSS-Protection
+    x_xss_protection: 1; mode=block
+    # Strict-Transport-Security
+    strict_transport_security: max-age=31536000; includeSubDomains
+    # Content-Security-Policy
+    content_security_policy: default-src 'self'
 
 # ==========================================
 # データベース設定
@@ -60,6 +96,10 @@ database:
   max_lifetime: 10m
   # 接続タイムアウト時間
   connection_timeout: 5s
+  # クエリタイムアウト時間
+  query_timeout: 30s
+  # トランザクションタイムアウト時間
+  transaction_timeout: 60s
   # ヘルスチェック設定
   health_check:
     # ヘルスチェックの有効/無効
@@ -68,6 +108,122 @@ database:
     interval: 30s
     # ヘルスチェックのタイムアウト時間
     timeout: 5s
+    # ヘルスチェックの再試行回数
+    retry_count: 3
+    # ヘルスチェックの再試行間隔
+    retry_interval: 5s
+  # 接続プール設定
+  pool:
+    # 最小接続数
+    min_connections: 5
+    # 接続プールの最大サイズ
+    max_size: 100
+    # 接続プールのアイドルタイムアウト
+    idle_timeout: 5m
+    # 接続プールの取得タイムアウト
+    acquire_timeout: 30s
+  # バックアップ設定
+  backup:
+    # バックアップの有効/無効
+    enabled: true
+    # バックアップの実行間隔
+    interval: 24h
+    # バックアップの保持期間
+    retention: 7d
+    # バックアップの圧縮
+    compress: true
+    # バックアップの保存先
+    destination: ${BACKUP_DESTINATION:-/var/backups/postgres}
+    # バックアップの形式
+    format: custom
+    # バックアップの圧縮レベル
+    compression_level: 6
+    # バックアップの暗号化
+    encryption:
+      enabled: true
+      algorithm: aes-256-gcm
+      key: ${BACKUP_ENCRYPTION_KEY}
+    # バックアップの検証
+    verify:
+      enabled: true
+      interval: 1h
+    # バックアップの通知
+    notification:
+      enabled: true
+      on_success: true
+      on_failure: true
+      channels:
+        - email
+        - slack
+  # 監査ログ設定
+  audit:
+    # 監査ログの有効/無効
+    enabled: true
+    # 監査ログの保持期間
+    retention: 30d
+    # 監査ログの圧縮
+    compress: true
+    # 監査ログの保存先
+    destination: ${AUDIT_LOG_DESTINATION:-/var/log/postgres/audit}
+    # 監査ログの形式
+    format: json
+    # 監査ログの圧縮レベル
+    compression_level: 6
+    # 監査ログの暗号化
+    encryption:
+      enabled: true
+      algorithm: aes-256-gcm
+      key: ${AUDIT_LOG_ENCRYPTION_KEY}
+    # 監査ログの検証
+    verify:
+      enabled: true
+      interval: 1h
+    # 監査ログの通知
+    notification:
+      enabled: true
+      on_success: true
+      on_failure: true
+      channels:
+        - email
+        - slack
+  # パフォーマンス設定
+  performance:
+    # クエリプランナー設定
+    planner:
+      # 統計情報の自動更新
+      auto_vacuum: true
+      # 統計情報の更新間隔
+      analyze_interval: 1h
+      # 統計情報の閾値
+      analyze_threshold: 50
+    # キャッシュ設定
+    cache:
+      # 共有バッファサイズ
+      shared_buffers: 128MB
+      # 作業メモリ
+      work_mem: 4MB
+      # メンテナンス作業メモリ
+      maintenance_work_mem: 64MB
+    # 並列処理設定
+    parallel:
+      # 並列処理の有効/無効
+      enabled: true
+      # 最大ワーカー数
+      max_workers: 4
+      # 並列処理の閾値
+      min_parallel_table_scan_size: 8MB
+      # 並列処理のコスト
+      parallel_setup_cost: 1000
+    # ログ設定
+    logging:
+      # スロークエリの閾値
+      slow_query_threshold: 1s
+      # スロークエリのログ出力
+      log_slow_queries: true
+      # クエリプランのログ出力
+      log_query_plans: true
+      # 統計情報のログ出力
+      log_stats: true
 
 # ==========================================
 # セキュリティ設定
@@ -81,20 +237,72 @@ security:
     expiration: ${NEXT_PUBLIC_AUTH_TOKEN_EXPIRE:-3600}s
     # JWTの発行者
     issuer: university-exam-api
+    # JWTのアルゴリズム
+    algorithm: HS256
+    # JWTのリフレッシュトークン有効期限
+    refresh_expiration: ${NEXT_PUBLIC_AUTH_REFRESH_TOKEN_EXPIRE:-604800}s
+    # JWTの署名アルゴリズム
+    signing_method: RS256
+    # JWTの公開鍵
+    public_key: ${JWT_PUBLIC_KEY}
+    # JWTの秘密鍵
+    private_key: ${JWT_PRIVATE_KEY}
   # CSRF設定
   csrf:
     # CSRFの有効/無効
     enabled: true
     # CSRFの秘密鍵（環境変数から取得）
     secret: ${CSRF_SECRET}
+    # CSRFトークンの有効期限（秒）
+    token_expiration: 3600
+    # CSRFトークンの長さ
+    token_length: 32
+    # CSRFトークンのヘッダー名
+    header_name: X-CSRF-Token
   # Cookie設定
   cookie:
     # セキュアフラグ（HTTPSのみ）
-    secure: false
+    secure: ${COOKIE_SECURE:-false}
     # HTTPのみフラグ（JavaScriptからのアクセス不可）
     http_only: true
     # SameSite属性
     same_site: lax
+    # Cookieの有効期限（秒）
+    max_age: 3600
+    # Cookieのドメイン
+    domain: ${COOKIE_DOMAIN}
+    # Cookieのパス
+    path: /
+    # Cookieのプレフィックス
+    prefix: __Secure-
+  # レート制限設定
+  rate_limit:
+    # レート制限の有効/無効
+    enabled: true
+    # 1分あたりのリクエスト数
+    requests_per_minute: 100
+    # バーストサイズ
+    burst_size: 20
+    # IPアドレスごとの制限
+    per_ip: true
+    # ユーザーごとの制限
+    per_user: true
+  # パスワードポリシー
+  password_policy:
+    # 最小長
+    min_length: 8
+    # 大文字を含む必要があるか
+    require_uppercase: true
+    # 小文字を含む必要があるか
+    require_lowercase: true
+    # 数字を含む必要があるか
+    require_number: true
+    # 特殊文字を含む必要があるか
+    require_special: true
+    # 最大試行回数
+    max_attempts: 5
+    # ロックアウト時間（分）
+    lockout_duration: 30
 
 # ==========================================
 # ログ設定
@@ -118,12 +326,38 @@ logging:
     max_age: 7d
     # 圧縮の有無
     compress: true
+    # ログファイルのパーミッション
+    permissions: 0644
+    # ログファイルの所有者
+    owner: ${LOG_FILE_OWNER:-root}
+    # ログファイルのグループ
+    group: ${LOG_FILE_GROUP:-root}
   # コンソール出力設定
   console:
     # コンソール出力の有効/無効
     enabled: true
     # カラー出力の有無
     color: true
+    # タイムスタンプのフォーマット
+    timestamp_format: "2006-01-02 15:04:05.000"
+  # ログフィルタリング設定
+  filter:
+    # 機密情報のマスキング
+    mask_sensitive_data: true
+    # マスキング対象のフィールド
+    sensitive_fields:
+      - password
+      - token
+      - secret
+      - key
+  # ログ集約設定
+  aggregation:
+    # ログ集約の有効/無効
+    enabled: true
+    # 集約間隔
+    interval: 1m
+    # 集約バッファサイズ
+    buffer_size: 1000
 
 # ==========================================
 # メトリクス設定
@@ -139,6 +373,40 @@ metrics:
   namespace: university_exam
   # メトリクスのサブシステム
   subsystem: api
+  # メトリクスのラベル
+  labels:
+    environment: ${NODE_ENV:-development}
+    version: ${APP_VERSION:-1.0.0}
+    service: ${SERVICE_NAME:-university-exam-api}
+    instance: ${INSTANCE_ID:-default}
+  # メトリクスの収集間隔
+  collection_interval: 15s
+  # メトリクスの保持期間
+  retention_period: 15d
+  # メトリクスの集約設定
+  aggregation:
+    # 集約の有効/無効
+    enabled: true
+    # 集約間隔
+    interval: 1m
+    # 集約方法
+    method: sum
+  # メトリクスのアラート設定
+  alerting:
+    # アラートの有効/無効
+    enabled: true
+    # アラートの評価間隔
+    evaluation_interval: 1m
+    # アラートの通知先
+    receivers:
+      - email
+      - slack
+    # アラートのグループ化
+    grouping:
+      # グループ化の有効/無効
+      enabled: true
+      # グループ化の間隔
+      interval: 5m
 
 # ==========================================
 # ヘルスチェック設定
@@ -152,3 +420,132 @@ health:
   check_interval: 30s
   # ヘルスチェックのタイムアウト時間
   timeout: 5s
+  # ヘルスチェックの再試行回数
+  retry_count: 3
+  # ヘルスチェックの再試行間隔
+  retry_interval: 5s
+  # ヘルスチェックの閾値
+  thresholds:
+    # CPU使用率の閾値
+    cpu_usage: 80%
+    # メモリ使用率の閾値
+    memory_usage: 80%
+    # ディスク使用率の閾値
+    disk_usage: 80%
+  # ヘルスチェックの依存関係
+  dependencies:
+    # データベースのヘルスチェック
+    database:
+      enabled: true
+      timeout: 5s
+    # キャッシュのヘルスチェック
+    cache:
+      enabled: true
+      timeout: 5s
+    # 外部サービスのヘルスチェック
+    external_services:
+      enabled: true
+      timeout: 10s
+      services:
+        - name: auth_service
+          url: ${AUTH_SERVICE_URL}
+        - name: payment_service
+          url: ${PAYMENT_SERVICE_URL}
+
+# ==========================================
+# キャッシュ設定
+# ==========================================
+cache:
+  # キャッシュの有効/無効
+  enabled: true
+  # キャッシュの種類（redis, memory）
+  type: redis
+  # Redis設定
+  redis:
+    # Redisホスト名
+    host: ${REDIS_HOST:-redis}
+    # Redisポート番号
+    port: ${REDIS_PORT:-6379}
+    # Redisパスワード
+    password: ${REDIS_PASSWORD}
+    # Redisデータベース番号
+    db: ${REDIS_DB:-0}
+    # 接続タイムアウト時間
+    timeout: 5s
+    # 接続プール設定
+    pool:
+      # 最小接続数
+      min_connections: 5
+      # 最大接続数
+      max_connections: 100
+      # アイドルタイムアウト
+      idle_timeout: 5m
+  # キャッシュの有効期限
+  expiration:
+    # デフォルトの有効期限
+    default: 1h
+    # セッションの有効期限
+    session: 24h
+    # ユーザー情報の有効期限
+    user: 1h
+    # メタデータの有効期限
+    metadata: 24h
+
+# ==========================================
+# 外部サービス設定
+# ==========================================
+external_services:
+  # 認証サービス
+  auth:
+    # 認証サービスのURL
+    url: ${AUTH_SERVICE_URL}
+    # タイムアウト時間
+    timeout: 5s
+    # 再試行回数
+    retry_count: 3
+    # 再試行間隔
+    retry_interval: 1s
+    # ヘルスチェック設定
+    health_check:
+      # ヘルスチェックの有効/無効
+      enabled: true
+      # ヘルスチェックの実行間隔
+      interval: 30s
+      # ヘルスチェックのタイムアウト時間
+      timeout: 5s
+  # 支払いサービス
+  payment:
+    # 支払いサービスのURL
+    url: ${PAYMENT_SERVICE_URL}
+    # タイムアウト時間
+    timeout: 10s
+    # 再試行回数
+    retry_count: 3
+    # 再試行間隔
+    retry_interval: 1s
+    # ヘルスチェック設定
+    health_check:
+      # ヘルスチェックの有効/無効
+      enabled: true
+      # ヘルスチェックの実行間隔
+      interval: 30s
+      # ヘルスチェックのタイムアウト時間
+      timeout: 5s
+  # 通知サービス
+  notification:
+    # 通知サービスのURL
+    url: ${NOTIFICATION_SERVICE_URL}
+    # タイムアウト時間
+    timeout: 5s
+    # 再試行回数
+    retry_count: 3
+    # 再試行間隔
+    retry_interval: 1s
+    # ヘルスチェック設定
+    health_check:
+      # ヘルスチェックの有効/無効
+      enabled: true
+      # ヘルスチェックの実行間隔
+      interval: 30s
+      # ヘルスチェックのタイムアウト時間
+      timeout: 5s

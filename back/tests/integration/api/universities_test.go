@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 	"university-exam-api/internal/domain/models"
-	"university-exam-api/internal/handlers"
+	"university-exam-api/internal/handlers/university"
 	"university-exam-api/internal/repositories"
 
 	"github.com/labstack/echo/v4"
@@ -97,7 +98,7 @@ func createTestData(db *gorm.DB) error {
 	return db.Create(university).Error
 }
 
-func setupTestServer() (*echo.Echo, *handlers.UniversityHandler) {
+func setupTestServer() (*echo.Echo, *university.UniversityHandler) {
 	e := echo.New()
 	db := repositories.SetupTestDB()
 
@@ -117,7 +118,7 @@ func setupTestServer() (*echo.Echo, *handlers.UniversityHandler) {
 	}
 
 	repo := repositories.NewUniversityRepository(db)
-	handler := handlers.NewUniversityHandler(repo)
+	handler := university.NewUniversityHandler(repo, 5*time.Second)
 
 	return e, handler
 }

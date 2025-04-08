@@ -522,7 +522,7 @@ func TestRateLimiting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rateConfig := middleware.LoadTestConfig()
+	rateConfig := middleware.DefaultTestConfig()
 
 	TestCases := []TestCase{
 		{
@@ -807,7 +807,7 @@ func TestConcurrentRateLimiting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rateConfig := middleware.LoadTestConfig()
+	rateConfig := middleware.DefaultTestConfig()
 
 	TestCases := []TestCase{
 		{

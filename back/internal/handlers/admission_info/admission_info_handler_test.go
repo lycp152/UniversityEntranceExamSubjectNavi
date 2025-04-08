@@ -215,7 +215,7 @@ func TestCreateAdmissionInfo(t *testing.T) {
 			TestCase: testutils.TestCase{
 				Name:       TestCaseTypeRequestBindingError,
 				WantStatus: http.StatusBadRequest,
-				WantError:  errors.ErrMsgBindRequest,
+				WantError:  errors.MsgBindRequestFailed,
 			},
 			scheduleID: 1,
 			infoID:     0,

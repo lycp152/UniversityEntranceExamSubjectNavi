@@ -39,7 +39,7 @@ func NewSubjectHandler(repo repositories.IUniversityRepository, timeout time.Dur
 // bindRequest はリクエストボディのバインディングを共通化
 func (h *SubjectHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
-		applogger.Error(ctx, errors.ErrMsgBindRequest, err)
+		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
 		return errors.HandleError(c, err)
 	}
 	return nil

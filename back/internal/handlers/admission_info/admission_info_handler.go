@@ -103,8 +103,8 @@ func NewAdmissionHandler(repo repositories.IUniversityRepository, timeout time.D
 // bindRequest はリクエストボディのバインディングを共通化
 func (h *AdmissionInfoHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
-		applogger.Error(ctx, errors.ErrMsgBindRequest, err)
-		return errors.NewValidationError(errors.ErrMsgBindRequest)
+		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
+		return errors.NewValidationError(errors.MsgBindRequestFailed)
 	}
 	return nil
 }

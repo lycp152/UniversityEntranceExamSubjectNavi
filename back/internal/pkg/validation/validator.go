@@ -20,30 +20,30 @@ func ParseID(ctx context.Context, idStr string, errFormat string, errMsg string)
 
 // ValidateUniversityID は大学IDのバリデーション
 func ValidateUniversityID(ctx context.Context, idStr string) (uint, error) {
-	return ParseID(ctx, idStr, errors.ErrInvalidUniversityIDFormat, errors.ErrMsgInvalidUniversityID)
+	return ParseID(ctx, idStr, errors.MsgInvalidUniversityID, errors.MsgInvalidUniversityID)
 }
 
 // ValidateDepartmentID は学部IDのバリデーション
 func ValidateDepartmentID(ctx context.Context, idStr string) (uint, error) {
-	return ParseID(ctx, idStr, errors.ErrInvalidDepartmentIDFormat, errors.ErrMsgInvalidDepartmentID)
+	return ParseID(ctx, idStr, errors.MsgInvalidDepartmentID, errors.MsgInvalidDepartmentID)
 }
 
 // ValidateSubjectID は科目IDのバリデーション
 func ValidateSubjectID(ctx context.Context, idStr string) (uint, error) {
-	return ParseID(ctx, idStr, errors.ErrInvalidSubjectIDFormat, errors.ErrMsgInvalidSubjectID)
+	return ParseID(ctx, idStr, errors.MsgInvalidSubjectID, errors.MsgInvalidSubjectID)
 }
 
 // ValidateScheduleID はスケジュールIDのバリデーション
 func ValidateScheduleID(ctx context.Context, idStr string) (uint, error) {
-	return ParseID(ctx, idStr, errors.ErrInvalidScheduleIDFormat, errors.ErrMsgInvalidScheduleID)
+	return ParseID(ctx, idStr, errors.ErrInvalidScheduleID, errors.ErrInvalidScheduleID)
 }
 
 // ValidateMajorID は学科IDのバリデーション
 func ValidateMajorID(ctx context.Context, idStr string) (uint, error) {
-	return ParseID(ctx, idStr, errors.ErrInvalidMajorIDFormat, errors.ErrMsgInvalidMajorID)
+	return ParseID(ctx, idStr, errors.ErrInvalidMajorID, errors.ErrInvalidMajorID)
 }
 
 // ValidateAdmissionInfoID は募集情報IDのバリデーション
 func ValidateAdmissionInfoID(ctx context.Context, idStr string) (uint, error) {
-	return ParseID(ctx, idStr, errors.ErrInvalidAdmissionInfoIDFormat, errors.ErrMsgInvalidAdmissionInfoID)
+	return ParseID(ctx, idStr, errors.ErrInvalidAdmissionInfoID, errors.ErrInvalidAdmissionInfoID)
 }

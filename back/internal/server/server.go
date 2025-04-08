@@ -41,7 +41,7 @@ func New(cfg *config.Config) *Server {
 	e.Use(middleware.Logger())                    // リクエストログ
 	e.Use(middleware.Recover())                   // パニックリカバリー
 	e.Use(applogger.AccessLogMiddleware())           // アクセスログ
-	e.Use(custom_middleware.RequestValidationMiddleware()) // リクエストバリデーション
+	e.Use(custom_middleware.RequestValidationMiddleware(securityConfig)) // リクエストバリデーション
 
 	// セキュリティミドルウェアの適用
 	securityMiddlewares := custom_middleware.SecurityMiddleware(securityConfig)

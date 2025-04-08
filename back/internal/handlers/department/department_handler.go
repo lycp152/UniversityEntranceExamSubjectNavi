@@ -59,7 +59,7 @@ func NewDepartmentHandler(repo repositories.IUniversityRepository, timeout time.
 // bindRequest はリクエストボディのバインディングを共通化
 func (h *DepartmentHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
-		applogger.Error(ctx, errorHandler.ErrMsgBindRequest, err)
+		applogger.Error(ctx, errorHandler.MsgBindRequestFailed, err)
 		return errorHandler.HandleError(c, err)
 	}
 	return nil

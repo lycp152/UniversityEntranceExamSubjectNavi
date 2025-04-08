@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"university-exam-api/internal/domain/models"
@@ -40,7 +41,7 @@ func cleanupDatabase(db *gorm.DB) error {
 	}
 
 	// スキーマを再作成
-	if err := database.AutoMigrate(db); err != nil {
+	if err := database.AutoMigrate(context.Background(), db); err != nil {
 		return err
 	}
 
@@ -197,7 +198,10 @@ func seedUniversities(tx *gorm.DB, universities []models.University) error {
 
 func main() {
 	setupEnvironment()
-	db := database.NewDB()
+	db, err := database.NewDB()
+	if err != nil {
+		log.Fatalf("データベース接続に失敗しました: %v", err)
+	}
 
 	if err := cleanupDatabase(db); err != nil {
 		log.Fatalf("Failed to cleanup database: %v", err)

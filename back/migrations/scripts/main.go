@@ -22,7 +22,10 @@ func main() {
 	}
 
 	// Connect to database
-	db := database.NewDB()
+	db, err := database.NewDB()
+	if err != nil {
+		log.Fatalf("データベース接続に失敗しました: %v", err)
+	}
 
 	// Drop existing tables in reverse order of dependencies
 	if err := db.Migrator().DropTable(

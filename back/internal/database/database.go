@@ -74,13 +74,16 @@ func setupConnectionPool(sqlDB *sql.DB, cfg *config.Config) error {
 func runMigrations(ctx context.Context, db *gorm.DB) error {
 	migrationCtx, cancel := context.WithTimeout(ctx, defaultMigrationTimeout)
 	defer cancel()
-	return database.AutoMigrate(db.WithContext(migrationCtx))
+	return database.AutoMigrate(migrationCtx, db.WithContext(migrationCtx))
 }
 
 // establishConnection はデータベース接続を確立します
 func establishConnection(ctx context.Context, cfg *config.Config) (*gorm.DB, *sql.DB, error) {
 	for attempt := 1; attempt <= defaultRetryAttempts; attempt++ {
-		db := database.NewDB()
+		db, err := database.NewDB()
+		if err != nil {
+			continue
+		}
 		sqlDB, err := db.DB()
 		if err != nil {
 			continue

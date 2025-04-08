@@ -50,7 +50,7 @@ func CSRFMiddleware() echo.MiddlewareFunc {
 				token := generateCSRFToken()
 				if token == "" {
 					return c.JSON(http.StatusInternalServerError, map[string]string{
-						"error": "Internal server error occurred",
+						"error": "内部サーバーエラーが発生しました",
 					})
 				}
 

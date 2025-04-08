@@ -85,8 +85,8 @@ func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err
 // bindRequest はリクエストボディのバインディング
 func (h *UniversityHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
-		applogger.Error(ctx, errorMessages.ErrMsgBindData, err)
-		return errors.NewInvalidInputError("request", errorMessages.ErrMsgInvalidRequestBody, nil)
+		applogger.Error(ctx, errorMessages.MsgBindDataFailed, err)
+		return errors.NewInvalidInputError("request", errorMessages.MsgInvalidRequestBody, nil)
 	}
 	return nil
 }

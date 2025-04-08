@@ -49,7 +49,7 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
 		value:      value,
 		expiration: expiration,
 	}
-	applogger.Info(context.Background(), "Cache: Set item with key: %s", key)
+	applogger.Info(context.Background(), "キャッシュ: キー %s でアイテムを保存しました", key)
 }
 
 // Get はキャッシュからアイテムを取得します
@@ -66,7 +66,7 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 		return nil, false
 	}
 
-	applogger.Info(context.Background(), "Cache: Hit for key: %s", key)
+	applogger.Info(context.Background(), "キャッシュ: キー %s でヒットしました", key)
 	return item.value, true
 }
 
@@ -76,7 +76,7 @@ func (c *Cache) Delete(key string) {
 	defer c.mu.Unlock()
 
 	delete(c.items, key)
-	applogger.Info(context.Background(), "Cache: Deleted item with key: %s", key)
+	applogger.Info(context.Background(), "キャッシュ: キー %s のアイテムを削除しました", key)
 }
 
 // cleanup は期限切れのアイテムを削除します
@@ -88,7 +88,7 @@ func (c *Cache) cleanup() {
 	for key, item := range c.items {
 		if now.After(item.expiration) {
 			delete(c.items, key)
-			applogger.Info(context.Background(), "Cache: Cleaned up expired item with key: %s", key)
+			applogger.Info(context.Background(), "キャッシュ: キー %s の期限切れアイテムを削除しました", key)
 		}
 	}
 }

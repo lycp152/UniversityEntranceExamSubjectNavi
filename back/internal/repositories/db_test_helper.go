@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -21,9 +22,9 @@ func SetupTestDB() *gorm.DB {
 	os.Setenv("DB_PORT", "5432")
 	os.Setenv("DB_SCHEMA", "test_schema")
 
-	db := database.NewDB()
-	if db == nil {
-		log.Printf("データベース接続の初期化に失敗しました")
+	db, err := database.NewDB()
+	if err != nil {
+		log.Printf("データベース接続の初期化に失敗しました: %v", err)
 		return nil
 	}
 
@@ -39,7 +40,7 @@ func SetupTestDB() *gorm.DB {
 	}
 
 	// マイグレーションを実行
-	if err := database.RunMigrations(db); err != nil {
+	if _, err := database.RunMigrations(context.Background(), db, nil); err != nil {
 		log.Printf("マイグレーションに失敗: %v", err)
 		return nil
 	}

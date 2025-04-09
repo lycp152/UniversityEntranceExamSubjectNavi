@@ -14,7 +14,7 @@ import (
 
 func TestAPIErrorHandling(t *testing.T) {
 	// テスト用のデータベースをセットアップ
-	db := repositories.SetupTestDB()
+	db := repositories.SetupTestDB(t, nil)
 	if db == nil {
 		t.Fatal("データベースの初期化に失敗しました")
 	}

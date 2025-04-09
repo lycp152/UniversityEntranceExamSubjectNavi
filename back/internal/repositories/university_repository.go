@@ -916,7 +916,7 @@ func (r *universityRepository) clearAllRelatedCache(universityID uint) {
 		r.cache.Delete(key)
 	}
 
-	applogger.Info(context.Background(), "Cleared all related cache for university ID: %d", universityID)
+	applogger.Info(context.Background(), "大学ID %d に関連する全てのキャッシュをクリアしました", universityID)
 }
 
 // TransactionOption はトランザクションのオプションを定義します
@@ -955,7 +955,7 @@ func (r *universityRepository) TransactionWithOption(fn func(repo IUniversityRep
 
 			// トランザクション分離レベルの設定
 			if err := tx.Exec(fmt.Sprintf("SET TRANSACTION ISOLATION LEVEL %v", opt.Isolation)).Error; err != nil {
-				return fmt.Errorf("failed to set isolation level: %w", err)
+				return fmt.Errorf("トランザクション分離レベルの設定に失敗しました: %w", err)
 			}
 
 			// デッドロック検出のためのロックタイムアウト設定
@@ -1052,7 +1052,7 @@ func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Ma
 
 	// キャッシュをチェック
 	if cached, found := r.getFromCache(cacheKey); found {
-		applogger.Info(context.Background(), "Cache hit for FindMajor: %d:%d", departmentID, majorID)
+		applogger.Info(context.Background(), "学科のキャッシュヒット: %d:%d", departmentID, majorID)
 		major := cached.(models.Major)
 		return &major, nil
 	}
@@ -1070,7 +1070,7 @@ func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Ma
 
 	// キャッシュに保存
 	r.setCache(cacheKey, major)
-	applogger.Info(context.Background(), "Cached major: %d:%d", departmentID, majorID)
+	applogger.Info(context.Background(), "学科をキャッシュに保存: %d:%d", departmentID, majorID)
 
 	return &major, nil
 }
@@ -1096,7 +1096,7 @@ func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*mode
 
 	// キャッシュをチェック
 	if cached, found := r.getFromCache(cacheKey); found {
-		applogger.Info(context.Background(), "Cache hit for FindAdmissionInfo: %d:%d", scheduleID, infoID)
+		applogger.Info(context.Background(), "入試情報のキャッシュヒット: %d:%d", scheduleID, infoID)
 		info := cached.(models.AdmissionInfo)
 		return &info, nil
 	}
@@ -1114,7 +1114,7 @@ func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*mode
 
 	// キャッシュに保存
 	r.setCache(cacheKey, info)
-	applogger.Info(context.Background(), "Cached admission info: %d:%d", scheduleID, infoID)
+	applogger.Info(context.Background(), "入試情報をキャッシュに保存: %d:%d", scheduleID, infoID)
 
 	return &info, nil
 }

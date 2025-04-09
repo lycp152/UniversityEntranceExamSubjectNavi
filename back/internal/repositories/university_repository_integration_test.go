@@ -8,7 +8,7 @@ import (
 
 func TestDataIntegrity(t *testing.T) {
 	// テスト用のデータベースをセットアップ
-	db := SetupTestDB()
+	db := SetupTestDB(t, nil)
 	if db == nil {
 		t.Fatal("データベースの初期化に失敗しました")
 	}

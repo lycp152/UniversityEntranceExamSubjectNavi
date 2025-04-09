@@ -402,7 +402,7 @@ func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *universi
 	for _, m := range middlewares {
 		e.Use(m)
 	}
-	db := repositories.SetupTestDB()
+	db := repositories.SetupTestDB(nil, nil)
 	repo := repositories.NewUniversityRepository(db)
 	handler := university.NewUniversityHandler(repo, 5*time.Second)
 	return e, handler
@@ -531,7 +531,7 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 	}
 
 	e := echo.New()
-	db := repositories.SetupTestDB()
+	db := repositories.SetupTestDB(t, nil)
 	if db == nil {
 		return nil, nil, nil, &TestError{
 			Code:    "DB_INIT_FAILED",

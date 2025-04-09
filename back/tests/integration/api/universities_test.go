@@ -98,9 +98,9 @@ func createTestData(db *gorm.DB) error {
 	return db.Create(university).Error
 }
 
-func setupTestServer() (*echo.Echo, *university.UniversityHandler) {
+func setupTestServer(t *testing.T) (*echo.Echo, *university.UniversityHandler) {
 	e := echo.New()
-	db := repositories.SetupTestDB()
+	db := repositories.SetupTestDB(t, nil)
 
 	// データベースをクリーンアップ
 	if err := db.Exec("TRUNCATE universities CASCADE").Error; err != nil {
@@ -124,7 +124,7 @@ func setupTestServer() (*echo.Echo, *university.UniversityHandler) {
 }
 
 func TestGetUniversities(t *testing.T) {
-	e, handler := setupTestServer()
+	e, handler := setupTestServer(t)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/universities", nil)
 	rec := httptest.NewRecorder()

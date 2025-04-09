@@ -81,7 +81,7 @@ func SetupTestServer(t *testing.T) (*echo.Echo, *university.UniversityHandler, *
 	t.Helper()
 
 	e := echo.New()
-	db := repositories.SetupTestDB()
+	db := repositories.SetupTestDB(t, nil)
 	if db == nil {
 		return nil, nil, nil, errors.New(ErrInitDB)
 	}

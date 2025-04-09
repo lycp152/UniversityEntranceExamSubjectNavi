@@ -302,7 +302,7 @@ func TestGetUniversities(t *testing.T) {
 			TestCase: testutils.TestCase{
 				Name:       testutils.TestCaseNotFound,
 				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
-					repo := repositories.SetupTestDB()
+					repo := repositories.SetupTestDB(t, nil)
 					h.SetRepo(repositories.NewUniversityRepository(repo))
 				},
 				WantStatus: http.StatusOK,
@@ -313,7 +313,7 @@ func TestGetUniversities(t *testing.T) {
 			TestCase: testutils.TestCase{
 				Name:       testutils.TestCaseDBError,
 				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
-					db := repositories.SetupTestDB()
+					db := repositories.SetupTestDB(t, nil)
 					sqlDB, err := db.DB()
 					if err != nil {
 						t.Fatalf("データベースインスタンスの取得に失敗しました: %v", err)

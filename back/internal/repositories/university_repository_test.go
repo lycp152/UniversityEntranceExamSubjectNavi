@@ -13,22 +13,22 @@ import (
 )
 
 const (
-	errCleanupTestData = "Failed to cleanup test data: %v"
-	errCreateTestData  = "Failed to create test data: %v"
+	errCleanupTestData = "テストデータのクリーンアップに失敗: %v"
+	errCreateTestData  = "テストデータの作成に失敗: %v"
 	testFieldName      = "テストフィールド"
 )
 
 // setupTest はテストの共通セットアップを行います
 func setupTest(t *testing.T) (*universityRepository, *models.University) {
 	t.Helper()
-	db := SetupTestDB()
+	db := SetupTestDB(t, nil)
 	repo := NewUniversityRepository(db)
 
-	if err := cleanupTestData(db); err != nil {
+	if err := CleanupTestData(db); err != nil {
 		t.Fatalf(errCleanupTestData, err)
 	}
 
-	university, err := createTestData(db)
+	university, err := CreateTestUniversity(db, nil)
 	if err != nil {
 		t.Fatalf(errCreateTestData, err)
 	}
@@ -36,24 +36,40 @@ func setupTest(t *testing.T) (*universityRepository, *models.University) {
 	return repo.(*universityRepository), university
 }
 
+// TestFindAll は大学一覧取得のテストを行います
 func TestFindAll(t *testing.T) {
 	repo, university := setupTest(t)
 
-	universities, err := repo.FindAll(context.Background())
-	if err != nil {
-		t.Errorf("FindAll() error = %v", err)
-		return
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "正常系：大学一覧の取得",
+			wantErr: false,
+		},
 	}
 
-	if len(universities) != 1 {
-		t.Errorf("FindAll() got = %v universities, want 1", len(universities))
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			universities, err := repo.FindAll(context.Background())
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FindAll() エラー = %v, 期待するエラー %v", err, tt.wantErr)
+				return
+			}
 
-	if universities[0].Name != university.Name {
-		t.Errorf("FindAll() got university name = %v, want %v", universities[0].Name, university.Name)
+			if len(universities) != 1 {
+				t.Errorf("FindAll() 取得数 = %v 大学, 期待値 1", len(universities))
+			}
+
+			if universities[0].Name != university.Name {
+				t.Errorf("FindAll() 大学名 = %v, 期待値 %v", universities[0].Name, university.Name)
+			}
+		})
 	}
 }
 
+// TestFindByID は大学IDによる検索のテストを行います
 func TestFindByID(t *testing.T) {
 	repo, university := setupTest(t)
 
@@ -64,12 +80,12 @@ func TestFindByID(t *testing.T) {
 		errType error
 	}{
 		{
-			name:    "存在するID",
+			name:    "正常系：存在するIDでの検索",
 			id:      university.ID,
 			wantErr: false,
 		},
 		{
-			name:    "存在しないID",
+			name:    "異常系：存在しないIDでの検索",
 			id:      999,
 			wantErr: true,
 			errType: appErrors.NewNotFoundError("university", 999, nil),
@@ -80,19 +96,64 @@ func TestFindByID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := repo.FindByID(tt.id)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("FindByID() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("FindByID() エラー = %v, 期待するエラー %v", err, tt.wantErr)
 				return
 			}
 			if tt.wantErr {
 				var notFoundErr *appErrors.Error
 				if !stdErrors.As(err, &notFoundErr) || notFoundErr.Code != appErrors.NotFound {
-					t.Errorf("FindByID() got error type = %T, want %T", err, tt.errType)
+					t.Errorf("FindByID() エラータイプ = %T, 期待するエラータイプ %T", err, tt.errType)
 				}
 				return
 			}
 			if got.ID != university.ID {
-				t.Errorf("FindByID() got = %v, want %v", got.ID, university.ID)
+				t.Errorf("FindByID() 取得値 = %v, 期待値 %v", got.ID, university.ID)
 			}
+		})
+	}
+}
+
+// TestSearch は大学検索のテストを行います
+func TestSearch(t *testing.T) {
+	repo, university := setupTest(t)
+
+	tests := []struct {
+		name      string
+		query     string
+		wantCount int
+		wantErr   bool
+		errType   error
+	}{
+		{
+			name:      "正常系：大学名での検索",
+			query:     "テスト大学",
+			wantCount: 1,
+			wantErr:   false,
+		},
+		{
+			name:      "正常系：学部名での検索",
+			query:     "テスト学部",
+			wantCount: 1,
+			wantErr:   false,
+		},
+		{
+			name:      "正常系：存在しない名前での検索",
+			query:     "存在しない大学",
+			wantCount: 0,
+			wantErr:   false,
+		},
+		{
+			name:    "異常系：空のクエリ",
+			query:   "",
+			wantErr: true,
+			errType: appErrors.NewInvalidInputError("query", "クエリは空にできません", nil),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := repo.Search(tt.query)
+			validateSearchResult(t, got, err, tt, university)
 		})
 	}
 }
@@ -108,153 +169,161 @@ func validateSearchResult(t *testing.T, got []models.University, err error, tt s
 	t.Helper()
 
 	if (err != nil) != tt.wantErr {
-		t.Errorf("Search() error = %v, wantErr %v", err, tt.wantErr)
+		t.Errorf("Search() エラー = %v, 期待するエラー %v", err, tt.wantErr)
 		return
 	}
 	if tt.wantErr {
 		var invalidInputErr *appErrors.Error
 		if !stdErrors.As(err, &invalidInputErr) || invalidInputErr.Code != appErrors.InvalidInput {
-			t.Errorf("Search() got error type = %T, want %T", err, tt.errType)
+			t.Errorf("Search() エラータイプ = %T, 期待するエラータイプ %T", err, tt.errType)
 		}
 		return
 	}
 	if len(got) != tt.wantCount {
-		t.Errorf("Search() got = %v results, want %v", len(got), tt.wantCount)
+		t.Errorf("Search() 取得数 = %v 件, 期待値 %v", len(got), tt.wantCount)
 	}
 	if tt.wantCount > 0 && got[0].ID != university.ID {
-		t.Errorf("Search() got university ID = %v, want %v", got[0].ID, university.ID)
+		t.Errorf("Search() 大学ID = %v, 期待値 %v", got[0].ID, university.ID)
 	}
 }
 
-func TestSearch(t *testing.T) {
+// TestTransactionRetry はトランザクションのリトライテストを行います
+func TestTransactionRetry(t *testing.T) {
 	repo, university := setupTest(t)
 
 	tests := []struct {
-		name      string
-		query     string
-		wantCount int
-		wantErr   bool
-		errType   error
+		name       string
+		retryCount int
+		maxRetries int
+		wantErr    bool
 	}{
 		{
-			name:      "存在する大学名で検索",
-			query:     "テスト大学",
-			wantCount: 1,
-			wantErr:   false,
-		},
-		{
-			name:      "存在する学部名で検索",
-			query:     "テスト学部",
-			wantCount: 1,
-			wantErr:   false,
-		},
-		{
-			name:      "存在しない名前で検索",
-			query:     "存在しない大学",
-			wantCount: 0,
-			wantErr:   false,
-		},
-		{
-			name:    "空のクエリ",
-			query:   "",
-			wantErr: true,
-			errType: appErrors.NewInvalidInputError("query", "query cannot be empty", nil),
+			name:       "正常系：リトライ成功",
+			retryCount: 0,
+			maxRetries: 3,
+			wantErr:    false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := repo.Search(tt.query)
-			validateSearchResult(t, got, err, tt, university)
+			retryCount := 0
+			err := repo.Transaction(func(repo IUniversityRepository) error {
+				retryCount++
+				if retryCount < tt.maxRetries {
+					return appErrors.NewDatabaseError("Update", fmt.Errorf("デッドロックが検出されました"), nil)
+				}
+				return repo.Update(university)
+			})
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("トランザクションリトライに失敗: %v", err)
+			}
+
+			if retryCount != tt.maxRetries {
+				t.Errorf("期待するリトライ回数 %d, 実際のリトライ回数 %d", tt.maxRetries, retryCount)
+			}
 		})
 	}
 }
 
-func TestTransactionRetry(t *testing.T) {
-	repo, university := setupTest(t)
-
-	// デッドロックシミュレーション用のカウンター
-	retryCount := 0
-	maxRetries := 3
-
-	// デッドロックを発生させるテスト
-	err := repo.Transaction(func(repo IUniversityRepository) error {
-		retryCount++
-		if retryCount < maxRetries {
-			// デッドロックエラーをシミュレート
-			return appErrors.NewDatabaseError("Update", fmt.Errorf("deadlock detected"), nil)
-		}
-		// 最後の試行では成功
-		return repo.Update(university)
-	})
-
-	if err != nil {
-		t.Errorf("Transaction retry failed: %v", err)
-	}
-
-	if retryCount != maxRetries {
-		t.Errorf("Expected %d retries, got %d", maxRetries, retryCount)
-	}
-}
-
+// TestTransactionTimeout はトランザクションのタイムアウトテストを行います
 func TestTransactionTimeout(t *testing.T) {
 	repo, _ := setupTest(t)
 
-	// タイムアウトをシミュレートするテスト
-	err := repo.Transaction(func(repo IUniversityRepository) error {
-		// タイムアウトより長い時間スリープ
-		time.Sleep(txTimeout + time.Second)
-		return nil
-	})
-
-	if err == nil {
-		t.Error("Expected timeout error, got nil")
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "異常系：タイムアウト発生",
+			wantErr: true,
+		},
 	}
 
-	if !strings.Contains(err.Error(), "context deadline exceeded") {
-		t.Errorf("Expected context deadline exceeded error, got: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.Transaction(func(repo IUniversityRepository) error {
+				time.Sleep(txTimeout + time.Second)
+				return nil
+			})
+
+			if (err != nil) != tt.wantErr {
+				t.Error("タイムアウトエラーを期待しましたが、nilが返されました")
+			}
+
+			if !strings.Contains(err.Error(), "コンテキストの期限切れ") {
+				t.Errorf("コンテキストの期限切れエラーを期待しましたが、実際のエラー: %v", err)
+			}
+		})
 	}
 }
 
+// TestTransactionPermanentError は永続的なエラーのテストを行います
 func TestTransactionPermanentError(t *testing.T) {
 	repo, _ := setupTest(t)
 
-	// 永続的なエラーのテスト
-	permanentErr := errors.New("permanent error")
-	err := repo.Transaction(func(repo IUniversityRepository) error {
-		return permanentErr
-	})
-
-	if err == nil {
-		t.Error("Expected permanent error, got nil")
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "異常系：永続的なエラー",
+			wantErr: true,
+		},
 	}
 
-	if !strings.Contains(err.Error(), permanentErr.Error()) {
-		t.Errorf("Expected error containing %q, got: %v", permanentErr.Error(), err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			permanentErr := errors.New("永続的なエラー")
+			err := repo.Transaction(func(repo IUniversityRepository) error {
+				return permanentErr
+			})
+
+			if (err != nil) != tt.wantErr {
+				t.Error("永続的なエラーを期待しましたが、nilが返されました")
+			}
+
+			if !strings.Contains(err.Error(), permanentErr.Error()) {
+				t.Errorf("エラーに %q が含まれることを期待しましたが、実際のエラー: %v", permanentErr.Error(), err)
+			}
+		})
 	}
 }
 
+// TestCacheConsistency はキャッシュの整合性テストを行います
 func TestCacheConsistency(t *testing.T) {
 	repo, university := setupTest(t)
 
-	// キャッシュの整合性テスト
-	if _, err := repo.FindByID(university.ID); err != nil {
-		t.Errorf("Cache consistency check failed: %v", err)
+	tests := []struct {
+		name    string
+		wantErr bool
+	}{
+		{
+			name:    "正常系：キャッシュの整合性確認",
+			wantErr: false,
+		},
 	}
 
-	// キャッシュの更新テスト
-	university.Name = "更新された大学名"
-	if err := repo.Update(university); err != nil {
-		t.Errorf("Failed to update university: %v", err)
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := repo.FindByID(university.ID); err != nil {
+				t.Errorf("キャッシュの整合性チェックに失敗: %v", err)
+			}
 
-	// キャッシュが更新されていることを確認
-	updated, err := repo.FindByID(university.ID)
-	if err != nil {
-		t.Errorf("Failed to find updated university: %v", err)
-	}
-	if updated.Name != university.Name {
-		t.Errorf("Cache was not updated: got %v, want %v", updated.Name, university.Name)
+			university.Name = "更新された大学名"
+			if err := repo.Update(university); err != nil {
+				t.Errorf("大学の更新に失敗: %v", err)
+			}
+
+			updated, err := repo.FindByID(university.ID)
+			if err != nil {
+				t.Errorf("更新された大学の取得に失敗: %v", err)
+			}
+			if updated.Name != university.Name {
+				t.Errorf("キャッシュが更新されていません: 取得値 %v, 期待値 %v", updated.Name, university.Name)
+			}
+		})
 	}
 }
 
@@ -475,17 +544,17 @@ func TestValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := repo.Create(tt.university)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Validation test failed: got error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("バリデーションテストに失敗: エラー = %v, 期待するエラー %v", err, tt.wantErr)
 				return
 			}
 			if tt.wantErr {
 				var inputErr *appErrors.Error
 				if !stdErrors.As(err, &inputErr) {
-					t.Errorf("Expected Error, got %T", err)
+					t.Errorf("エラーを期待しましたが、%T が返されました", err)
 					return
 				}
 				if inputErr.Code != appErrors.InvalidInput {
-					t.Errorf("Expected error code %q, got %q", appErrors.InvalidInput, inputErr.Code)
+					t.Errorf("エラーコード %q を期待しましたが、%q が返されました", appErrors.InvalidInput, inputErr.Code)
 				}
 			}
 		})
@@ -539,17 +608,17 @@ func TestValidateName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := validateName(tt.input, tt.field)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("validateName() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("validateName() エラー = %v, 期待するエラー %v", err, tt.wantErr)
 				return
 			}
 			if tt.wantErr {
 				var inputErr *appErrors.Error
 				if !stdErrors.As(err, &inputErr) {
-					t.Errorf("Expected Error, got %T", err)
+					t.Errorf("エラーを期待しましたが、%T が返されました", err)
 					return
 				}
 				if inputErr.Code != appErrors.InvalidInput {
-					t.Errorf("Expected error code %q, got %q", appErrors.InvalidInput, inputErr.Code)
+					t.Errorf("エラーコード %q を期待しましたが、%q が返されました", appErrors.InvalidInput, inputErr.Code)
 				}
 			}
 		})

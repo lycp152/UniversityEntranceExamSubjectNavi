@@ -1,31 +1,87 @@
+# Docker Composeテスト環境設定ファイル
+# テスト環境用の設定を定義します
+
 version: "3.8"
 
 services:
-  test-db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: test_user
-      POSTGRES_PASSWORD: test_password
-      POSTGRES_DB: test_db
-    ports:
-      - "5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test_user -d test_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  test-api:
+  # APIテストサービス
+  api-test:
     build:
       context: .
       dockerfile: Dockerfile
+      target: builder
     environment:
-      DB_HOST: test-db
-      DB_PORT: 5432
-      DB_USER: test_user
-      DB_PASSWORD: test_password
-      DB_NAME: test_db
+      - NODE_ENV=test
+      - DB_HOST=db-test
+      - DB_PORT=5432
+      - DB_USER=${TEST_DB_USER:-test_user}
+      - DB_PASSWORD=${TEST_DB_PASSWORD:-test_password}
+      - DB_NAME=${TEST_DB_NAME:-university_exam_test}
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+    volumes:
+      - .:/app
+      - go-modules-test:/go/pkg/mod
     depends_on:
-      test-db:
+      db-test:
         condition: service_healthy
-    command: go test -v ./...
+      redis-test:
+        condition: service_started
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # テスト用データベースサービス
+  db-test:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${TEST_DB_USER:-test_user}
+      - POSTGRES_PASSWORD=${TEST_DB_PASSWORD:-test_password}
+      - POSTGRES_DB=${TEST_DB_NAME:-university_exam_test}
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+    networks:
+      - test-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${TEST_DB_USER:-test_user} -d ${TEST_DB_NAME:-university_exam_test}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # テスト用Redisサービス
+  redis-test:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-test-data:/data
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres-test-data:
+    name: university-exam-postgres-test-data
+  redis-test-data:
+    name: university-exam-redis-test-data
+  go-modules-test:
+    name: university-exam-go-modules-test
+
+networks:
+  test-network:
+    name: university-exam-test-network
+    driver: bridge

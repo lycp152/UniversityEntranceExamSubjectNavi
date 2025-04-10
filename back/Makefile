@@ -1,4 +1,4 @@
-.PHONY: build run test migrate seed lint clean test-coverage test-mock
+.PHONY: build run test migrate seed lint clean test-coverage test-mock test-unit test-integration test-e2e
 
 # Build variables
 BINARY_NAME=university-exam-api
@@ -18,11 +18,23 @@ run:
 
 test:
 	@echo "Running tests..."
-	go test -v ./tests/...
+	go test -v ./...
+
+test-unit:
+	@echo "Running unit tests..."
+	go test -v ./tests/unit/...
+
+test-integration:
+	@echo "Running integration tests..."
+	go test -v ./tests/integration/...
+
+test-e2e:
+	@echo "Running end-to-end tests..."
+	go test -v ./tests/e2e/...
 
 test-coverage:
 	@echo "Running tests with coverage..."
-	go test -v -coverprofile=coverage/coverage.out ./tests/...
+	go test -coverprofile=coverage/coverage.out ./...
 	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
 
 test-mock:

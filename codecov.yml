@@ -1,0 +1,50 @@
+# Codecovの設定ファイル
+# 参考: https://docs.codecov.com/docs/best-practices
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80% # カバレッジの目標値
+        threshold: 1% # 許容される低下率
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
+
+# カバレッジレポートの設定
+codecov:
+  require_ci_to_pass: true # CIが成功した場合のみカバレッジを更新
+  max_report_age: off # レポートの有効期限を無期限に設定
+
+# カバレッジの傾向分析設定
+comment:
+  layout: "reach, diff, flags, files, footer"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+# カバレッジ低下のアラート設定
+notify:
+  slack:
+    default:
+      url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      threshold: 1% # カバレッジが1%以上低下した場合に通知
+      branches: # 通知対象のブランチ
+        - main
+        - develop
+
+# カバレッジの除外設定
+ignore:
+  - "**/*_test.go" # テストファイルを除外
+  - "**/testutils/**" # テストユーティリティを除外
+  - "**/mocks/**" # モックファイルを除外
+
+# カバレッジの集計方法
+flags:
+  unittests:
+    paths:
+      - back/
+      - front/
+    carryforward: true # 前回のカバレッジを引き継ぐ

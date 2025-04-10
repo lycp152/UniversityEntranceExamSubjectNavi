@@ -5,6 +5,8 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  schedule:
+    - cron: "0 0 * * *" # 毎日実行
 
 jobs:
   setup:
@@ -106,6 +108,9 @@ jobs:
         run: |
           cd back
           go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+          go test -v -bench=. -benchmem ./tests/unit/benchmarks_test.go
+          go test -v ./tests/unit/security_test.go
+          go test -v -run=TestEdgeCases ./tests/unit/edge_cases_test.go
 
       - name: Run frontend tests
         env:
@@ -120,9 +125,81 @@ jobs:
           files: ./back/coverage.txt,./front/coverage/lcov.info
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Generate test report
+        run: |
+          cd back
+          go tool cover -html=coverage.txt -o coverage.html
+          go test -json ./... > test-report.json
+          # カバレッジ閾値のチェック
+          go tool cover -func=coverage.txt | grep -E "total:\s+\(statements\)\s+([0-9.]+)%" | awk '{if ($3 < 80) {print "カバレッジが80%未満です: " $3 "%"; exit 1}}'
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: |
+            back/coverage.html
+            back/test-report.json
+            front/coverage/lcov-report/index.html
+
+  performance:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Run performance tests
+        run: |
+          cd back
+          go test -v -run=TestLoad ./tests/unit/load_test.go
+          go test -v -run=TestMemory ./tests/unit/memory_test.go
+          # パフォーマンス閾値のチェック
+          go test -v -run=TestLoad ./tests/unit/load_test.go | grep -E "パフォーマンスが期待値を下回っています" && exit 1 || true
+          go test -v -run=TestMemory ./tests/unit/memory_test.go | grep -E "メモリ使用量が期待値を超えています" && exit 1 || true
+
+      - name: Upload performance reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-reports
+          path: |
+            back/performance.txt
+            back/memory.txt
+
+  security:
+    needs: performance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Run security tests
+        run: |
+          cd back
+          go test -v -run=TestVulnerability ./tests/unit/vulnerability_test.go
+          go test -v -run=TestSecurity ./tests/unit/security_test.go
+          # セキュリティスキャン
+          go run github.com/securego/gosec/v2/cmd/gosec/... ./...
+          # 依存関係の脆弱性チェック
+          go list -json -m all | go run github.com/google/osv-scanner/cmd/osv-scanner@latest
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            back/security.txt
+            back/vulnerability.txt
 
   build:
-    needs: test
+    needs: security
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

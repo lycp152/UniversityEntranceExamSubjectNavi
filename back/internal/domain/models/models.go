@@ -68,6 +68,7 @@ const (
 	ErrRenderError       = "RENDER_ERROR"       // 描画エラー
 	ErrInvalidDimensions = "INVALID_DIMENSIONS" // サイズエラー
 	ErrOverflowError     = "OVERFLOW_ERROR"     // オーバーフローエラー
+	ErrInvalidDisplayOrder = "表示順は0以上の整数である必要があります"
 )
 
 // エラーメッセージの定義
@@ -276,6 +277,45 @@ type Major struct {
 	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty" gorm:"foreignKey:MajorID;constraint:OnDelete:CASCADE"` // 入試日程一覧
 }
 
+// Validate はMajorのバリデーションを行う
+func (m *Major) Validate() error {
+	if err := m.BaseModel.Validate(); err != nil {
+		return err
+	}
+
+	rules := []ValidationRule{
+		{
+			Field: "DepartmentID",
+			Condition: func(v interface{}) bool {
+				id, ok := v.(uint)
+				return ok && id > 0
+			},
+			Message: "学部IDは必須です",
+			Code:    "REQUIRED_DEPARTMENT_ID",
+		},
+		{
+			Field: "Name",
+			Condition: func(v interface{}) bool {
+				name, ok := v.(string)
+				return ok && len(name) > 0 && len(name) <= 50
+			},
+			Message: "学科名は1-50文字である必要があります",
+			Code:    "INVALID_MAJOR_NAME",
+		},
+		{
+			Field: "DisplayOrder",
+			Condition: func(v interface{}) bool {
+				order, ok := v.(int)
+				return ok && order >= 0
+			},
+			Message: ErrInvalidDisplayOrder,
+			Code:    "INVALID_DISPLAY_ORDER",
+		},
+	}
+
+	return validateRules(m, rules)
+}
+
 // AdmissionSchedule は入試日程エンティティを表現する
 type AdmissionSchedule struct {
 	BaseModel
@@ -285,6 +325,45 @@ type AdmissionSchedule struct {
 	Major         Major         `json:"-" gorm:"foreignKey:MajorID"` // 所属学科
 	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"` // 入試情報一覧
 	TestTypes     []TestType    `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"` // 試験種別一覧
+}
+
+// Validate はAdmissionScheduleのバリデーションを行う
+func (a *AdmissionSchedule) Validate() error {
+	if err := a.BaseModel.Validate(); err != nil {
+		return err
+	}
+
+	rules := []ValidationRule{
+		{
+			Field: "MajorID",
+			Condition: func(v interface{}) bool {
+				id, ok := v.(uint)
+				return ok && id > 0
+			},
+			Message: "学科IDは必須です",
+			Code:    "REQUIRED_MAJOR_ID",
+		},
+		{
+			Field: "Name",
+			Condition: func(v interface{}) bool {
+				name, ok := v.(string)
+				return ok && (name == "前期" || name == "中期" || name == "後期")
+			},
+			Message: "日程名は'前期'、'中期'、'後期'のいずれかである必要があります",
+			Code:    "INVALID_SCHEDULE_NAME",
+		},
+		{
+			Field: "DisplayOrder",
+			Condition: func(v interface{}) bool {
+				order, ok := v.(int)
+				return ok && order >= 0
+			},
+			Message: ErrInvalidDisplayOrder,
+			Code:    "INVALID_DISPLAY_ORDER",
+		},
+	}
+
+	return validateRules(a, rules)
 }
 
 // AdmissionInfo は入試情報エンティティを表現する
@@ -298,6 +377,54 @@ type AdmissionInfo struct {
 	TestTypes         []TestType      `json:"test_types,omitempty" gorm:"many2many:admission_info_test_types"` // 試験種別一覧
 }
 
+// Validate はAdmissionInfoのバリデーションを行う
+func (a *AdmissionInfo) Validate() error {
+	if err := a.BaseModel.Validate(); err != nil {
+		return err
+	}
+
+	rules := []ValidationRule{
+		{
+			Field: "AdmissionScheduleID",
+			Condition: func(v interface{}) bool {
+				id, ok := v.(uint)
+				return ok && id > 0
+			},
+			Message: "入試日程IDは必須です",
+			Code:    "REQUIRED_ADMISSION_SCHEDULE_ID",
+		},
+		{
+			Field: "Enrollment",
+			Condition: func(v interface{}) bool {
+				enrollment, ok := v.(int)
+				return ok && enrollment > 0 && enrollment <= 9999
+			},
+			Message: "募集人数は1-9999の範囲である必要があります",
+			Code:    "INVALID_ENROLLMENT",
+		},
+		{
+			Field: "AcademicYear",
+			Condition: func(v interface{}) bool {
+				year, ok := v.(int)
+				return ok && year >= 2000 && year <= 2100
+			},
+			Message: "学年度は2000-2100の範囲である必要があります",
+			Code:    "INVALID_ACADEMIC_YEAR",
+		},
+		{
+			Field: "Status",
+			Condition: func(v interface{}) bool {
+				status, ok := v.(string)
+				return ok && (status == "draft" || status == "published" || status == "archived")
+			},
+			Message: "ステータスは'draft'、'published'、'archived'のいずれかである必要があります",
+			Code:    "INVALID_STATUS",
+		},
+	}
+
+	return validateRules(a, rules)
+}
+
 // TestType は試験種別エンティティを表現する
 type TestType struct {
 	BaseModel
@@ -305,6 +432,36 @@ type TestType struct {
 	Name               string    `json:"name" gorm:"not null;type:varchar(10);check:name in ('共通','二次')"` // 試験種別名
 	AdmissionSchedule  AdmissionSchedule `json:"-" gorm:"foreignKey:AdmissionScheduleID"` // 所属入試日程
 	Subjects          []Subject `json:"subjects,omitempty" gorm:"foreignKey:TestTypeID;constraint:OnDelete:CASCADE"` // 科目一覧
+}
+
+// Validate はTestTypeのバリデーションを行う
+func (t *TestType) Validate() error {
+	if err := t.BaseModel.Validate(); err != nil {
+		return err
+	}
+
+	rules := []ValidationRule{
+		{
+			Field: "AdmissionScheduleID",
+			Condition: func(v interface{}) bool {
+				id, ok := v.(uint)
+				return ok && id > 0
+			},
+			Message: "入試日程IDは必須です",
+			Code:    "REQUIRED_ADMISSION_SCHEDULE_ID",
+		},
+		{
+			Field: "Name",
+			Condition: func(v interface{}) bool {
+				name, ok := v.(string)
+				return ok && (name == "共通" || name == "二次")
+			},
+			Message: "試験種別名は'共通'または'二次'である必要があります",
+			Code:    "INVALID_TEST_TYPE_NAME",
+		},
+	}
+
+	return validateRules(t, rules)
 }
 
 // Subject は科目エンティティを表現する
@@ -316,6 +473,63 @@ type Subject struct {
 	Percentage   float64  `json:"percentage" gorm:"not null;check:percentage >= 0 AND percentage <= 100"` // 配点比率
 	DisplayOrder int      `json:"display_order" gorm:"not null;default:0;check:display_order >= 0"` // 表示順
 	TestType     TestType `json:"-" gorm:"foreignKey:TestTypeID"` // 所属試験種別
+}
+
+// Validate はSubjectのバリデーションを行う
+func (s *Subject) Validate() error {
+	if err := s.BaseModel.Validate(); err != nil {
+		return err
+	}
+
+	rules := []ValidationRule{
+		{
+			Field: "TestTypeID",
+			Condition: func(v interface{}) bool {
+				id, ok := v.(uint)
+				return ok && id > 0
+			},
+			Message: "試験種別IDは必須です",
+			Code:    "REQUIRED_TEST_TYPE_ID",
+		},
+		{
+			Field: "Name",
+			Condition: func(v interface{}) bool {
+				name, ok := v.(string)
+				return ok && len(name) > 0 && len(name) <= 50
+			},
+			Message: "科目名は1-50文字である必要があります",
+			Code:    "INVALID_SUBJECT_NAME",
+		},
+		{
+			Field: "Score",
+			Condition: func(v interface{}) bool {
+				score, ok := v.(int)
+				return ok && score >= 0 && score <= 1000
+			},
+			Message: "配点は0-1000の範囲である必要があります",
+			Code:    "INVALID_SCORE",
+		},
+		{
+			Field: "Percentage",
+			Condition: func(v interface{}) bool {
+				percentage, ok := v.(float64)
+				return ok && percentage >= 0 && percentage <= 100
+			},
+			Message: "配点比率は0-100の範囲である必要があります",
+			Code:    "INVALID_PERCENTAGE",
+		},
+		{
+			Field: "DisplayOrder",
+			Condition: func(v interface{}) bool {
+				order, ok := v.(int)
+				return ok && order >= 0
+			},
+			Message: ErrInvalidDisplayOrder,
+			Code:    "INVALID_DISPLAY_ORDER",
+		},
+	}
+
+	return validateRules(s, rules)
 }
 
 // TestEnv はテスト環境の設定を表現する構造体

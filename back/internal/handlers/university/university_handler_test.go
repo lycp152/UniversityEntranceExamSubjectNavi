@@ -322,7 +322,7 @@ func TestGetUniversities(t *testing.T) {
 					h.SetRepo(repositories.NewUniversityRepository(db))
 				},
 				WantStatus: http.StatusInternalServerError,
-				WantError:  testutils.ErrInternalServer,
+				WantError:  testutils.ErrMsgInternalServer,
 			},
 		},
 	}

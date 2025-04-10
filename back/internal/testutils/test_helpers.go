@@ -1,3 +1,5 @@
+// Package testutils はテストユーティリティを提供します。
+// テストヘルパー関数、テストケースの定義、テストデータの管理などの機能を提供します。
 package testutils
 
 import (
@@ -26,8 +28,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// APIパス定数
 const (
-	// APIパス
 	CSRFTokenPath = "/csrf"
 	APIUniversitiesPath = "/api/universities"
 	TestUniversityPath = "/api/universities/1"
@@ -36,19 +38,25 @@ const (
 	APIDepartmentPath = "/api/universities/%s/departments/%s"
 	APIMajorsPath = "/api/universities/%s/departments/%s/majors"
 	APIMajorPath = "/api/universities/%s/departments/%s/majors/%s"
+)
 
-	// HTTPヘッダー
+// HTTPヘッダー定数
+const (
 	ContentTypeHeader = "Content-Type"
 	ContentTypeJSON = "application/json"
 	CSRFTokenHeader = "X-CSRF-Token"
+)
 
-	// テストデータ
+// テストデータ定数
+const (
 	TestUniversityName = "CSRFテスト大学"
 	TestDepartmentName = "CSRFテスト学部"
 	TestDataDir = "testdata"
 	TestDataFile = "test_data.json"
+)
 
-	// エラーメッセージ
+// エラーメッセージ定数
+const (
 	ErrRequestFailed = "リクエストの実行に失敗しました（メソッド: %s, パス: %s）: %v"
 	ErrMarshalTestData = "テストデータのマーシャルに失敗しました（データ型: %T）: %v"
 	ErrUnmarshalResponse = "レスポンスのアンマーシャルに失敗しました（ステータスコード: %d）: %v"
@@ -69,38 +77,31 @@ const (
 	ErrMsgMajorNotFound = "ID %sの学科が見つかりません"
 	ErrMsgNotFound = "ID %sの%sが見つかりません"
 	ErrMsgInvalidIDFormat = "無効な%s ID形式です"
+	ErrMsgParseResponse = "レスポンスのパースに失敗しました: %v"
+	ErrMsgInternalServer = "サーバー内部エラーが発生しました"
+	ErrMsgEmptyQuery = "検索クエリが空です"
+	ErrMsgStatusMismatch = "%sのステータスコードが期待値と異なります: got = %v, want = %v"
+	ErrMsgCountMismatch = "%sの件数が期待値と異なります: got = %v, want = %v"
+	ErrMsgDataValidation = "%sのデータ検証に失敗しました: %v"
+)
 
-	// テストケース名
+// テストケース名定数
+const (
 	TestCaseNormalRequest = "正常なリクエスト"
 	TestCaseNotFound = "存在しないデータ"
 	TestCaseInvalidID = "不正なID形式"
 	TestCaseInvalidBody = "不正なリクエストボディ"
+	TestCaseDBError = "データベースエラー"
+	TestCaseEmptyQuery = "空の検索クエリ"
+	TestCaseCacheHit = "キャッシュヒット"
+	TestCaseCacheMiss = "キャッシュミス"
+	TestCaseCacheExpired = "キャッシュ有効期限切れ"
+)
 
-	// レスポンス関連のエラーメッセージ
-	ErrMsgParseResponse = "レスポンスのパースに失敗しました: %v"    // レスポンスの解析に失敗した場合のエラーメッセージ
-	errRequestFailed    = "リクエストの実行に失敗しました: %v"    // リクエストの実行に失敗した場合のエラーメッセージ
-	ErrInternalServer   = "サーバー内部エラーが発生しました"      // サーバー内部エラーが発生した場合のエラーメッセージ
-	errInvalidIDFormat  = "無効な%s ID形式です"              // 無効なID形式が指定された場合のエラーメッセージ
-	errEmptyQuery      = "検索クエリが空です"               // 検索クエリが空の場合のエラーメッセージ
-	errStatusMismatch  = "%sのステータスコードが期待値と異なります: got = %v, want = %v" // ステータスコードが期待値と異なる場合のエラーメッセージ
-	errCountMismatch   = "%sの件数が期待値と異なります: got = %v, want = %v" // 件数が期待値と異なる場合のエラーメッセージ
-	errDataValidation  = "%sのデータ検証に失敗しました: %v"    // データの検証に失敗した場合のエラーメッセージ
-
-	// テストケース名の定数定義
-	// これらの定数はテストケースの名前を定義します
-	testCaseNormalRequest = "正常なリクエスト"     // 正常なリクエストをテストするケース
-	testCaseNotFound     = "データが存在しない場合" // データが存在しない場合のテストケース
-	TestCaseDBError      = "データベースエラー"    // データベースエラーが発生した場合のテストケース
-	testCaseInvalidID    = "不正なID形式"       // 不正なID形式が指定された場合のテストケース
-	TestCaseEmptyQuery   = "空の検索クエリ"      // 空の検索クエリが指定された場合のテストケース
-	TestCaseCacheHit     = "キャッシュヒット"    // キャッシュがヒットした場合のテストケース
-	TestCaseCacheMiss    = "キャッシュミス"     // キャッシュがミスした場合のテストケース
-	TestCaseCacheExpired = "キャッシュ有効期限切れ" // キャッシュの有効期限が切れた場合のテストケース
-
-	// APIパスの定数定義
-	// これらの定数はAPIのエンドポイントを定義します
-	apiUniversitiesPath      = "/api/universities"           // 大学一覧を取得するエンドポイント
-	apiUniversitiesSearchPath = "/api/universities/search?q=%s" // 大学を検索するエンドポイント
+// APIパス定数（非公開）
+const (
+	apiUniversitiesPath = "/api/universities"
+	apiUniversitiesSearchPath = "/api/universities/search?q=%s"
 )
 
 // TestData はテストデータの構造を定義します
@@ -603,7 +604,7 @@ func ValidateResponse(t *testing.T, rec *httptest.ResponseRecorder, tc TestCase)
 	}
 
 	if rec.Code != tc.WantStatus {
-		t.Errorf(errStatusMismatch, tc.Name, rec.Code, tc.WantStatus)
+		t.Errorf(ErrMsgStatusMismatch, tc.Name, rec.Code, tc.WantStatus)
 	}
 }
 
@@ -703,7 +704,7 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 				Path:   apiUniversitiesPath,
 			}, handler.GetUniversities)
 			if err != nil {
-				t.Fatalf(errRequestFailed, err)
+				t.Fatalf(ErrMsgRequestFailed, err)
 			}
 
 			validateCacheResponse(t, rec, tt.TestCase)
@@ -750,7 +751,7 @@ func TestSearchUniversitiesWithCacheExpiration(t *testing.T) {
 				Path:   path,
 			}, searchHandler.SearchUniversities)
 			if err != nil {
-				t.Fatalf(errRequestFailed, err)
+				t.Fatalf(ErrMsgRequestFailed, err)
 			}
 			validateCacheResponse(t, rec, tt.TestCase)
 
@@ -762,7 +763,7 @@ func TestSearchUniversitiesWithCacheExpiration(t *testing.T) {
 				Path:   path,
 			}, searchHandler.SearchUniversities)
 			if err != nil {
-				t.Fatalf(errRequestFailed, err)
+				t.Fatalf(ErrMsgRequestFailed, err)
 			}
 			validateCacheResponse(t, rec, tt.TestCase)
 		})

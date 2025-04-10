@@ -59,13 +59,13 @@ func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err
 	case *errors.Error:
 		statusCode := http.StatusInternalServerError
 		switch e.Code {
-		case errors.NotFound:
+		case errors.CodeNotFound:
 			statusCode = http.StatusNotFound
-		case errors.InvalidInput, errors.Validation:
+		case errors.CodeInvalidInput, errors.CodeValidationError:
 			statusCode = http.StatusBadRequest
-		case errors.Authentication:
+		case errors.CodeAuthError:
 			statusCode = http.StatusUnauthorized
-		case errors.Authorization:
+		case errors.CodeAuthzError:
 			statusCode = http.StatusForbidden
 		}
 		applogger.Error(ctx, "エラーが発生しました: %v", e)

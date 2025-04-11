@@ -23,7 +23,6 @@ linters:
     - govet
     - errcheck
     - staticcheck
-    - gosimple
     - ineffassign
     - unused
     # スペルチェック
@@ -35,17 +34,11 @@ linters:
     # コード品質
     - gocritic
     - gocyclo
-    - gomnd
     - goprintffuncname
-    - gostyle
-    - gotype
-    - gotypex
     - lll
     - nakedret
-    - stylecheck
     - unconvert
     - unparam
-    - varcheck
     - whitespace
     - wsl
 
@@ -53,7 +46,6 @@ linters:
     # 無効化するリンター
     - gochecknoinits
     - gochecknoglobals
-    - golint
 
 issues:
   # 各リンターの最大エラー数（0 = 無制限）

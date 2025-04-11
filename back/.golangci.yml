@@ -18,7 +18,7 @@ run:
 linters:
   enable:
     # コードスタイル
-    - golint
+    - revive
     # 静的解析
     - govet
     - errcheck
@@ -35,11 +35,9 @@ linters:
     # コード品質
     - gocritic
     - gocyclo
-    - goimports
     - gomnd
     - goprintffuncname
     - gostyle
-    - gosystemd
     - gotype
     - gotypex
     - lll
@@ -55,6 +53,7 @@ linters:
     # 無効化するリンター
     - gochecknoinits
     - gochecknoglobals
+    - golint
 
 issues:
   # 各リンターの最大エラー数（0 = 無制限）

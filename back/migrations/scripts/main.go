@@ -143,7 +143,8 @@ func main() {
 	// 環境変数の設定
 	if err := setupEnvironment(); err != nil {
 		cancel()
-		log.Fatalf("環境変数の設定に失敗しました: %v", err)
+		log.Printf("環境変数の設定に失敗しました: %v", err)
+		os.Exit(1)
 	}
 
 	db, cleanup := connectToDatabase()

@@ -377,7 +377,8 @@ func main() {
 
 	if err := seedUniversities(tx, universities); err != nil {
 		tx.Rollback()
-		log.Fatalf("シードデータの投入に失敗しました: %v", err)
+		log.Printf("シードデータの投入に失敗しました: %v", err)
+		os.Exit(1)
 	}
 
 	if err := tx.Commit().Error; err != nil {

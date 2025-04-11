@@ -23,7 +23,9 @@ const (
 	ErrMsgCreateUniversityFailed = "大学の作成に失敗しました"
 	ErrMsgUpdateUniversityFailed = "大学の更新に失敗しました"
 	ErrMsgDeleteUniversityFailed = "大学の削除に失敗しました"
+	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrMsgCSRFTokenGeneration = "CSRFトークンの生成に失敗しました"
+	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrMsgCSRFTokenInvalidType = "CSRFトークンの型が不正です"
 	ErrMsgGetUniversitiesFailed = "大学一覧の取得に失敗しました"
 	ErrMsgGetUniversityFailed = "大学の取得に失敗しました"

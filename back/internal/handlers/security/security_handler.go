@@ -14,7 +14,9 @@ import (
 
 const (
 	// エラーメッセージ
+	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrCSRFTokenGeneration = "CSRFトークンの生成に失敗しました"
+	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrCSRFTokenInvalidType = "CSRFトークンの型が不正です"
 
 	// セキュリティヘッダー

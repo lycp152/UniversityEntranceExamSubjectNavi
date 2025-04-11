@@ -60,6 +60,7 @@ func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err
 	switch e := err.(type) {
 	case *errors.Error:
 		statusCode := http.StatusInternalServerError
+
 		switch e.Code {
 		case errors.CodeNotFound:
 			statusCode = http.StatusNotFound
@@ -70,7 +71,9 @@ func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err
 		case errors.CodeAuthzError:
 			statusCode = http.StatusForbidden
 		}
+
 		applogger.Error(ctx, "エラーが発生しました: %v", e)
+
 		return c.JSON(statusCode, map[string]interface{}{
 			"code":    e.Code,
 			"message": e.Message,
@@ -78,6 +81,7 @@ func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err
 		})
 	default:
 		applogger.Error(ctx, "予期せぬエラーが発生しました: %v", err)
+
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "サーバー内部でエラーが発生しました",
 		})
@@ -90,6 +94,7 @@ func (h *UniversityHandler) bindRequest(ctx context.Context, c echo.Context, dat
 		applogger.Error(ctx, errorMessages.MsgBindDataFailed, err)
 		return errors.NewInvalidInputError("request", errorMessages.MsgInvalidRequestBody, nil)
 	}
+
 	return nil
 }
 
@@ -103,7 +108,9 @@ func (h *UniversityHandler) GetUniversities(c echo.Context) error {
 		applogger.Error(ctx, ErrMsgGetUniversitiesFailed+": %v", err)
 		return h.handleError(ctx, c, err)
 	}
+
 	applogger.Info(ctx, logging.LogGetUniversitiesSuccess, len(universities))
+
 	return c.JSON(http.StatusOK, universities)
 }
 
@@ -124,6 +131,7 @@ func (h *UniversityHandler) GetUniversity(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogGetUniversitySuccess, id)
+
 	return c.JSON(http.StatusOK, university)
 }
 
@@ -143,6 +151,7 @@ func (h *UniversityHandler) CreateUniversity(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogCreateUniversitySuccess, university.ID)
+
 	return c.JSON(http.StatusCreated, university)
 }
 
@@ -168,6 +177,7 @@ func (h *UniversityHandler) UpdateUniversity(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogUpdateUniversitySuccess, id)
+
 	return c.JSON(http.StatusOK, university)
 }
 
@@ -187,6 +197,7 @@ func (h *UniversityHandler) DeleteUniversity(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogDeleteUniversitySuccess, id)
+
 	return c.NoContent(http.StatusNoContent)
 }
 
@@ -208,6 +219,7 @@ func (h *UniversityHandler) GetCSRFToken(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogGetCSRFTokenSuccess)
+
 	return c.JSON(http.StatusOK, map[string]string{
 		"token": tokenStr,
 	})

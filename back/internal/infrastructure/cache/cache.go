@@ -112,6 +112,7 @@ func GetInstance() CacheInterface {
 		}
 		go instance.startCleanup()
 	})
+
 	return instance
 }
 
@@ -142,11 +143,13 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) error
 			createdAt:  time.Now(),
 			accessCount: 0,
 		}
+
 		return nil
 	}
 
 	// メモリ使用量のチェック
 	itemSize := calculateItemSize(value)
+
 	if c.currentSize+itemSize > c.maxSize {
 		c.evictItems()
 		if c.currentSize+itemSize > c.maxSize {
@@ -165,6 +168,7 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) error
 	c.stats.ItemCount++
 
 	applogger.Info(context.Background(), "キャッシュ: キー %s でアイテムを保存しました", key)
+
 	return nil
 }
 
@@ -220,6 +224,7 @@ func (c *Cache) Get(key string) (interface{}, bool, error) {
 	item.accessCount++
 	c.items[key] = item
 	applogger.Info(context.Background(), "キャッシュ: キー %s でヒットしました", key)
+
 	return item.value, true, nil
 }
 

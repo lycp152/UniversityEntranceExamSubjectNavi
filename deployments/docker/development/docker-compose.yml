@@ -12,6 +12,8 @@ x-backend-variables: &backend-variables
   GO_ENVIRONMENT: development
   CSRF_SECRET: development_csrf_secret
   JWT_SECRET: development_jwt_secret
+  DB_SSLMODE: disable
+  DB_CONNECTION_TIMEOUT: 10
 
 services:
   postgres:
@@ -47,6 +49,7 @@ services:
     volumes:
       - ../../../back:/app
       - backend_cache:/go/pkg/mod
+      - ../../../deployments/docker/development/.env.development:/app/.env
     ports:
       - "8080:8080"
     networks:

@@ -1,4 +1,4 @@
-# 大学入試科目ナビゲーター (University Entrance Exam Subject Navigator)
+# 大学入試科目ナビ (University Entrance Exam Subject Navigator)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/yourusername/UniversityEntranceExamSubjectNavi)](https://goreportcard.com/report/github.com/yourusername/UniversityEntranceExamSubjectNavi)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/yourusername/UniversityEntranceExamSubjectNavi)](https://pkg.go.dev/github.com/yourusername/UniversityEntranceExamSubjectNavi)

@@ -97,7 +97,7 @@ func isValidToken(token string) bool {
 	// JWTトークンの検証
 	_, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+			return nil, fmt.Errorf("予期しない署名方式: %v", t.Header["alg"])
 		}
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})

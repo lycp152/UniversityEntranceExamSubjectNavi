@@ -1,24 +1,47 @@
-# Build stage
-FROM golang:1.21-alpine AS builder
-WORKDIR /build
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
+# マルチステージビルドを使用してイメージサイズを最適化
+# ビルドステージ
+FROM golang:1.24.1-alpine AS builder
 
-# Development stage
-FROM golang:1.21-alpine AS development
+# 必要なビルドツールをインストール
+RUN apk add --no-cache gcc git musl-dev
+
+# 作業ディレクトリを設定
 WORKDIR /app
-RUN apk add --no-cache git
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-CMD ["go", "run", "./cmd/api/main.go"]
 
-# Production stage
-FROM alpine:3.19 AS production
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=builder /build/main .
-COPY configs ./configs
+# 依存関係をコピー
+COPY go.mod go.sum ./
+
+# 依存関係をダウンロード
+RUN go mod download
+
+# ソースコードをコピー
+COPY . .
+
+# ビルド
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main ./cmd/api
+
+# 実行ステージ
+FROM alpine:3.21.3
+
+# セキュリティ強化のための非rootユーザーを作成
+RUN adduser -D -g '' appuser && \
+    mkdir -p /app && \
+    chown appuser:appuser /app
+
+# 作業ディレクトリを設定
+WORKDIR /app
+
+# ビルドステージからバイナリをコピー
+COPY --from=builder --chown=appuser:appuser /app/main .
+
+# 必要な証明書をコピー
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# ユーザーを切り替え
+USER appuser
+
+# ポートを公開
+EXPOSE 8080
+
+# アプリケーションを実行
 CMD ["./main"]

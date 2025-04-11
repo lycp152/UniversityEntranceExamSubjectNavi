@@ -1,9 +1,29 @@
 package middleware
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
+)
+
+// デフォルト設定値の定数
+const (
+	DefaultTestNumRequests  = 100
+	DefaultTestTimeWindow   = 1
+	DefaultTestMaxRequests  = 50
+	DefaultTestCooldownTime = time.Second
+	DefaultTestNumGoroutines = 10
+)
+
+// エラー定義
+var (
+	ErrInvalidNumRequests  = errors.New("テスト時の総リクエスト数は正の値である必要があります")
+	ErrInvalidTimeWindow   = errors.New("テスト時の時間枠は正の値である必要があります")
+	ErrInvalidMaxRequests  = errors.New("テスト時の最大リクエスト数は正の値である必要があります")
+	ErrInvalidCooldownTime = errors.New("テスト時のクールダウン時間は正の値である必要があります")
+	ErrInvalidNumGoroutines = errors.New("テスト時の並行リクエスト数は正の値である必要があります")
 )
 
 // RateLimitConfig はレート制限の設定値を保持します
@@ -16,51 +36,112 @@ type RateLimitConfig struct {
 	TestNumGoroutines int         // テスト時の並行リクエスト数
 }
 
+// validateConfig は設定値の妥当性を検証します
+func (c *RateLimitConfig) validateConfig() error {
+	if c.TestNumRequests <= 0 {
+		return ErrInvalidNumRequests
+	}
+	if c.TestTimeWindow <= 0 {
+		return ErrInvalidTimeWindow
+	}
+	if c.TestMaxRequests <= 0 {
+		return ErrInvalidMaxRequests
+	}
+	if c.TestCooldownTime <= 0 {
+		return ErrInvalidCooldownTime
+	}
+	if c.TestNumGoroutines <= 0 {
+		return ErrInvalidNumGoroutines
+	}
+	return nil
+}
+
 // DefaultTestConfig はテスト用のデフォルト設定を返します
 func DefaultTestConfig() *RateLimitConfig {
 	return &RateLimitConfig{
-		TestNumRequests:  100,  // 短時間での総リクエスト数
-		TestTimeWindow:   1,    // 時間枠（秒）
-		TestMaxRequests:  50,   // 時間枠内での最大リクエスト数
-		TestCooldownTime: time.Second,
-		TestNumGoroutines: 10,  // 並行リクエスト数
+		TestNumRequests:   DefaultTestNumRequests,
+		TestTimeWindow:    DefaultTestTimeWindow,
+		TestMaxRequests:   DefaultTestMaxRequests,
+		TestCooldownTime:  DefaultTestCooldownTime,
+		TestNumGoroutines: DefaultTestNumGoroutines,
 	}
 }
 
+// loadEnvInt は環境変数から整数値を読み込みます
+func loadEnvInt(envName string) (int, error) {
+	value := os.Getenv(envName)
+	if value == "" {
+		return 0, nil
+	}
+
+	n, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, fmt.Errorf("%sの値が不正です: %w", envName, err)
+	}
+
+	if n < 0 {
+		return 0, fmt.Errorf("%sは負の値を設定できません", envName)
+	}
+
+	return n, nil
+}
+
+// loadEnvDuration は環境変数から時間値を読み込みます
+func loadEnvDuration(envName string) (time.Duration, error) {
+	value := os.Getenv(envName)
+	if value == "" {
+		return 0, nil
+	}
+
+	d, err := time.ParseDuration(value)
+	if err != nil {
+		return 0, fmt.Errorf("%sの値が不正です: %w", envName, err)
+	}
+
+	if d < 0 {
+		return 0, fmt.Errorf("%sは負の値を設定できません", envName)
+	}
+
+	return d, nil
+}
+
 // LoadTestConfig は環境変数からテスト設定を読み込みます
-func LoadTestConfig() *RateLimitConfig {
+func LoadTestConfig() (*RateLimitConfig, error) {
 	config := DefaultTestConfig()
 
-	// 環境変数から設定を読み込む
-	if numRequests := os.Getenv("TEST_RATE_LIMIT_NUM_REQUESTS"); numRequests != "" {
-		if n, err := strconv.Atoi(numRequests); err == nil {
-			config.TestNumRequests = n
-		}
+	if n, err := loadEnvInt("TEST_RATE_LIMIT_NUM_REQUESTS"); err != nil {
+		return nil, fmt.Errorf("総リクエスト数の読み込みに失敗: %w", err)
+	} else if n != 0 {
+		config.TestNumRequests = n
 	}
 
-	if timeWindow := os.Getenv("TEST_RATE_LIMIT_TIME_WINDOW"); timeWindow != "" {
-		if t, err := strconv.Atoi(timeWindow); err == nil {
-			config.TestTimeWindow = t
-		}
+	if t, err := loadEnvInt("TEST_RATE_LIMIT_TIME_WINDOW"); err != nil {
+		return nil, fmt.Errorf("時間枠の読み込みに失敗: %w", err)
+	} else if t != 0 {
+		config.TestTimeWindow = t
 	}
 
-	if maxRequests := os.Getenv("TEST_RATE_LIMIT_MAX_REQUESTS"); maxRequests != "" {
-		if m, err := strconv.Atoi(maxRequests); err == nil {
-			config.TestMaxRequests = m
-		}
+	if m, err := loadEnvInt("TEST_RATE_LIMIT_MAX_REQUESTS"); err != nil {
+		return nil, fmt.Errorf("最大リクエスト数の読み込みに失敗: %w", err)
+	} else if m != 0 {
+		config.TestMaxRequests = m
 	}
 
-	if cooldownTime := os.Getenv("TEST_RATE_LIMIT_COOLDOWN_TIME"); cooldownTime != "" {
-		if d, err := time.ParseDuration(cooldownTime); err == nil {
-			config.TestCooldownTime = d
-		}
+	if d, err := loadEnvDuration("TEST_RATE_LIMIT_COOLDOWN_TIME"); err != nil {
+		return nil, fmt.Errorf("クールダウン時間の読み込みに失敗: %w", err)
+	} else if d != 0 {
+		config.TestCooldownTime = d
 	}
 
-	if numGoroutines := os.Getenv("TEST_RATE_LIMIT_NUM_GOROUTINES"); numGoroutines != "" {
-		if n, err := strconv.Atoi(numGoroutines); err == nil {
-			config.TestNumGoroutines = n
-		}
+	if n, err := loadEnvInt("TEST_RATE_LIMIT_NUM_GOROUTINES"); err != nil {
+		return nil, fmt.Errorf("並行リクエスト数の読み込みに失敗: %w", err)
+	} else if n != 0 {
+		config.TestNumGoroutines = n
 	}
 
-	return config
+	if err := config.validateConfig(); err != nil {
+		return nil, fmt.Errorf("設定値の検証に失敗: %w", err)
+	}
+
+	return config, nil
 }

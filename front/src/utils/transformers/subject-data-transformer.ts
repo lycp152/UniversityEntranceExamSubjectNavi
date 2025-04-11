@@ -1,3 +1,14 @@
+/**
+ * 科目データ変換
+ * APIの科目データをUI表示用に変換
+ *
+ * @module subject-data-transformer
+ * @description
+ * - 科目スコアの集計
+ * - テストタイプ別のスコア管理
+ * - UI表示用データの生成
+ */
+
 import type {
   APISubject,
   APIUniversity,
@@ -7,9 +18,15 @@ import type {
   APIAdmissionSchedule,
   APITestType,
 } from '@/types/api/api-response-types';
-import type { UISubject } from '@/types/universities/university-subjects';
+import type { UISubject } from '@/types/university-subjects';
 import type { BaseSubjectScore } from '@/types/score';
 
+/**
+ * 科目スコアを更新
+ * @param subject - 科目データ
+ * @param testType - テストタイプ
+ * @param subjects - 科目スコアの記録
+ */
 const updateSubjectScores = (
   subject: APISubject,
   testType: { id: number; name: string },
@@ -29,6 +46,12 @@ const updateSubjectScores = (
   }
 };
 
+/**
+ * 全科目のスコアを計算
+ * @param allSubjects - 全科目データ
+ * @param schedule - 入試日程
+ * @returns 科目ごとのスコア記録
+ */
 const calculateSubjectScores = (
   allSubjects: APISubject[],
   schedule: APIAdmissionSchedule
@@ -52,6 +75,17 @@ const calculateSubjectScores = (
   return subjects;
 };
 
+/**
+ * 科目データをUI表示用に変換
+ * @param targetSubject - 対象科目
+ * @param allSubjects - 全科目データ
+ * @param university - 大学データ
+ * @param department - 学部データ
+ * @param major - 専攻データ
+ * @param admissionInfo - 入試情報
+ * @param schedule - 入試日程
+ * @returns UI表示用の科目データ
+ */
 export const transformSubjectData = (
   targetSubject: APISubject,
   allSubjects: APISubject[],
@@ -105,5 +139,10 @@ export const transformSubjectData = (
       displayOrder: schedule.display_order,
     },
     subjects,
+    version: targetSubject.version,
+    createdAt: targetSubject.created_at,
+    updatedAt: targetSubject.updated_at,
+    createdBy: targetSubject.created_by,
+    updatedBy: targetSubject.updated_by,
   };
 };

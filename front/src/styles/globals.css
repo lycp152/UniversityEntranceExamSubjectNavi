@@ -1,3 +1,17 @@
+/**
+ * グローバルスタイルの定義
+ * Tailwind CSSの基本設定とカスタムユーティリティクラスを提供
+ *
+ * @module globals
+ * @description
+ * - Tailwind CSSの基本レイヤー設定
+ * - カスタムユーティリティクラスの定義
+ * - テキストバランス調整のユーティリティ
+ *
+ * @see {@link ./tailwind-utils.ts} Tailwind CSSユーティリティ
+ * @see {@link ./error.ts} エラー関連スタイル
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

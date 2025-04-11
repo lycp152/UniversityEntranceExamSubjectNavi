@@ -1,119 +1,49 @@
-import type {
-  ExamTypeName,
-  SubjectCategory,
-  SubjectName,
-} from "@/constants/subjects";
-import type { PieData } from "@/types/charts/pie-chart";
+/**
+ * スコア関連の型定義
+ * スコアの計算、検証、表示に関する型定義を管理
+ *
+ * @module score
+ * @description
+ * - 基本スコアの型定義
+ * - 科目スコアの型定義
+ * - スコアメトリクスの型定義
+ * - スコア検証の型定義
+ * - スコア表示の型定義
+ */
 
-export interface BaseScore {
-  value: number;
-  maxValue: number;
-  weight: number;
-}
+import type { PieData } from '@/types/pie-chart';
 
-export interface SubjectScore extends BaseScore {
-  type: ExamTypeName;
-  subjectName: SubjectName;
-  category: SubjectCategory;
-}
-
-export interface SubjectMetrics {
-  score: number;
-  percentage: number;
-  category: SubjectCategory;
-}
-
-export interface SubjectValidationError {
-  code: string;
-  message: string;
-  field: string;
-  severity: "error" | "warning" | "info";
-}
-export interface Score {
-  value: number;
-  maxValue: number;
-  weight: number;
-  type: ExamTypeName;
-  subjectName: SubjectName;
-  percentage: number;
-}
-
-export interface ScoreValidationError {
-  code: string;
-  message: string;
-  field?: string;
-}
-
+/** テスト種別の型 */
 export type TestType = (typeof TEST_TYPES)[keyof typeof TEST_TYPES];
 
-export const SCORE_CONSTRAINTS = {
-  MIN_VALUE: 0,
-  MAX_VALUE: 100,
-  MIN_WEIGHT: 0,
-  MAX_WEIGHT: 1,
-} as const;
-
-/**
- * テストスコアの基本型
- */
-export interface TestScore {
-  readonly value: number;
-  readonly maxValue: number;
-}
-
-/**
- * スコアメトリクスの基本型
- */
-export interface ScoreMetrics {
-  score: number;
-  percentage: number;
-}
-
-/**
- * 基本科目スコアの型
- */
+/** 基本科目スコアの型 */
 export interface BaseSubjectScore {
+  /** 共通テストスコア */
   commonTest: number;
+  /** 二次テストスコア */
   secondTest: number;
 }
 
-/**
- * 科目スコアの型
- */
+/** 科目スコアの型 */
 export interface SubjectScores {
+  /** 科目名をキーとした科目スコア */
   [subject: string]: BaseSubjectScore;
 }
 
-/**
- * 科目スコアの詳細型
- */
-export interface SubjectScoreDetail {
-  subject: string;
-  commonTest: ScoreMetrics;
-  secondaryTest: ScoreMetrics;
-  total: ScoreMetrics;
-}
-
-/**
- * 科目スコアの表示用型
- */
+/** 科目スコアの表示用型 */
 export interface DisplaySubjectScore extends PieData {
+  /** パーセンテージ */
   percentage: number;
+  /** カテゴリ */
   category: string;
+  /** 表示用の名前 */
   displayName?: string;
 }
 
-/**
- * 科目スコアのエラー型
- */
-export interface SubjectScoreError {
-  type: ExamTypeName;
-  code: string;
-  message: string;
-  subjectName: SubjectName;
-}
-
+/** テスト種別の定数 */
 export const TEST_TYPES = {
-  COMMON: "common",
-  SECONDARY: "secondary",
+  /** 共通テスト */
+  COMMON: 'common',
+  /** 二次テスト */
+  SECONDARY: 'secondary',
 } as const;

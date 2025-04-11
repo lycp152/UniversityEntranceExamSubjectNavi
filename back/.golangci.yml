@@ -1,17 +1,39 @@
-version: 1.0.0
+# golangci-lint設定ファイル
+# コード品質チェックの設定を定義します
+
+# 設定ファイルのバージョン
+version: 1.55.2
+
+run:
+  # タイムアウト設定（5分）
+  timeout: 5m
+  # テストの実行
+  tests: true
+  # モジュールの使用
+  modules-download-mode: readonly
+  # 並列実行の設定
+  concurrency: 4
+  # ビルドタグ
+  build-tags: ["test"]
 
 linters:
   enable:
+    # コードフォーマット
     - gofmt
+    # 静的解析
     - govet
     - errcheck
     - staticcheck
     - gosimple
     - ineffassign
     - unused
+    # スペルチェック
     - misspell
+    # セキュリティチェック
     - gosec
+    # リソース管理
     - bodyclose
+    # コード品質
     - gocritic
     - gocyclo
     - goimports
@@ -30,10 +52,15 @@ linters:
     - whitespace
     - wsl
 
-run:
-  timeout: 5m
-  tests: true
+  disable:
+    # 無効化するリンター
+    - gochecknoinits
+    - gochecknoglobals
 
 issues:
+  # 各リンターの最大エラー数（0 = 無制限）
   max-issues-per-linter: 0
+  # 同一エラーの最大数（0 = 無制限）
   max-same-issues: 0
+  # 新規コードのみチェック
+  new: false

@@ -1,19 +1,42 @@
-FROM golang:1.24.1-alpine
+# 開発環境用のDockerfile
+# マルチステージビルドを使用してイメージサイズを最適化
 
+# ビルドステージ
+FROM golang:1.24.1-alpine AS builder
+
+# 作業ディレクトリを設定
 WORKDIR /app
 
-RUN apk add --no-cache git make tzdata && \
-    go install github.com/cosmtrek/air@v1.49.0 && \
+# 環境変数を設定
+ENV TZ=Asia/Tokyo \
+    GO111MODULE=on \
+    GOPROXY=direct \
+    GOSUMDB=off
+
+# 必要なビルドツールをインストール
+RUN apk add --no-cache curl git make tzdata && \
     cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
-ENV TZ=Asia/Tokyo
-ENV GO111MODULE=on
-ENV GOPROXY=direct
-ENV GOSUMDB=off
-
+# 依存関係をコピー
 COPY go.mod go.sum ./
-RUN go mod download
 
+
+# 依存関係をダウンロードし、Airをインストール
+RUN go mod download && \
+    go install github.com/cosmtrek/air@v1.49.0
+
+# ソースコードをコピー
+COPY . .
+
+# セキュリティ強化のための非rootユーザーを作成
+RUN adduser -D -g '' devuser && \
+    chown -R devuser:devuser /app
+
+# ユーザーを切り替え
+USER devuser
+
+# ポートを公開
 EXPOSE 8080
 
+# アプリケーションを実行
 CMD ["air", "-c", ".air.toml"]

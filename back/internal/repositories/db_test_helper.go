@@ -1,136 +1,147 @@
 package repositories
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"os"
-	"time"
+	"testing"
 	"university-exam-api/internal/domain/models"
 	"university-exam-api/internal/infrastructure/database"
-	"university-exam-api/pkg/logger"
 
 	"gorm.io/gorm"
 )
 
+// TestDBConfig はテスト用データベースの設定を保持します
+type TestDBConfig struct {
+	Host     string
+	User     string
+	Password string
+	Name     string
+	Port     string
+	Schema   string
+}
+
+// DefaultTestDBConfig はデフォルトのテスト用データベース設定を返します
+func DefaultTestDBConfig() *TestDBConfig {
+	return &TestDBConfig{
+		Host:     getEnvOrDefault("TEST_DB_HOST", "localhost"),
+		User:     getEnvOrDefault("TEST_DB_USER", "user"),
+		Password: getEnvOrDefault("TEST_DB_PASSWORD", "password"),
+		Name:     getEnvOrDefault("TEST_DB_NAME", "university_exam_test_db"),
+		Port:     getEnvOrDefault("TEST_DB_PORT", "5432"),
+		Schema:   getEnvOrDefault("TEST_DB_SCHEMA", "test_schema"),
+	}
+}
+
+// getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
 // SetupTestDB はテスト用のデータベース接続を作成します
-func SetupTestDB() *gorm.DB {
-	// ロガーを初期化
-	logger.InitLoggers()
+func SetupTestDB(t *testing.T, config *TestDBConfig) *gorm.DB {
+	t.Helper()
 
-	// テスト用の環境変数を設定
-	os.Setenv("DB_HOST", "localhost")
-	os.Setenv("DB_USER", "user")
-	os.Setenv("DB_PASSWORD", "password")
-	os.Setenv("DB_NAME", "university_exam_test_db")
-	os.Setenv("DB_PORT", "5432")
-	os.Setenv("DB_SCHEMA", "test_schema")
+	if config == nil {
+		config = DefaultTestDBConfig()
+	}
 
-	db := database.NewDB()
-	if db == nil {
-		log.Printf("データベース接続の初期化に失敗しました")
-		return nil
+	// 環境変数を設定
+	t.Setenv("DB_HOST", config.Host)
+	t.Setenv("DB_USER", config.User)
+	t.Setenv("DB_PASSWORD", config.Password)
+	t.Setenv("DB_NAME", config.Name)
+	t.Setenv("DB_PORT", config.Port)
+	t.Setenv("DB_SCHEMA", config.Schema)
+
+	db, err := database.NewDB()
+	if err != nil {
+		t.Fatalf("データベース接続の初期化に失敗しました: %v", err)
 	}
 
 	// スキーマの設定
-	if err := db.Exec("DROP SCHEMA IF EXISTS test_schema CASCADE").Error; err != nil {
-		log.Printf("スキーマの削除に失敗: %v", err)
-		return nil
+	if err := db.Exec("DROP SCHEMA IF EXISTS ? CASCADE", config.Schema).Error; err != nil {
+		t.Fatalf("スキーマの削除に失敗: %v", err)
 	}
 
-	if err := db.Exec("CREATE SCHEMA test_schema").Error; err != nil {
-		log.Printf("スキーマの作成に失敗: %v", err)
-		return nil
+	if err := db.Exec("CREATE SCHEMA ?", config.Schema).Error; err != nil {
+		t.Fatalf("スキーマの作成に失敗: %v", err)
 	}
 
 	// マイグレーションを実行
-	if err := database.RunMigrations(db); err != nil {
-		log.Printf("マイグレーションに失敗: %v", err)
-		return nil
+	if _, err := database.RunMigrations(context.Background(), db, nil); err != nil {
+		t.Fatalf("マイグレーションに失敗: %v", err)
 	}
 
 	// 検索パスを設定
-	if err := db.Exec("SET search_path TO test_schema").Error; err != nil {
-		log.Printf("検索パスの設定に失敗: %v", err)
-		return nil
+	if err := db.Exec("SET search_path TO ?", config.Schema).Error; err != nil {
+		t.Fatalf("検索パスの設定に失敗: %v", err)
 	}
 
 	// データベースのエンコーディングを設定
 	if err := db.Exec("SET client_encoding TO 'UTF8'").Error; err != nil {
-		log.Printf("クライアントエンコーディングの設定に失敗: %v", err)
-		return nil
+		t.Fatalf("クライアントエンコーディングの設定に失敗: %v", err)
 	}
+
+	// テスト終了時のクリーンアップを登録
+	t.Cleanup(func() {
+		if err := CleanupTestData(db); err != nil {
+			t.Logf("テストデータのクリーンアップに失敗: %v", err)
+		}
+	})
 
 	return db
 }
 
-// createTestData はテストデータを作成します
-func createTestData(db *gorm.DB) (*models.University, error) {
-	currentYear := time.Now().Year()
-	if time.Now().Month() < 4 {
-		currentYear--
-	}
+// TestUniversityBuilder はテスト用の大学データを構築するビルダーです
+type TestUniversityBuilder struct {
+	university *models.University
+}
 
-	university := &models.University{
-		BaseModel: models.BaseModel{
-			Version: 1,
-		},
-		Name: "テスト大学",
-		Departments: []models.Department{
-			{
-				BaseModel: models.BaseModel{
-					Version: 1,
-				},
-				Name: "テスト学部",
-				Majors: []models.Major{
-					{
-						BaseModel: models.BaseModel{
-							Version: 1,
-						},
-						Name: "テスト学科",
-						AdmissionSchedules: []models.AdmissionSchedule{
-							{
-								BaseModel: models.BaseModel{
-									Version: 1,
-								},
-								Name:         "前期",
-								DisplayOrder: 1,
-								AdmissionInfos: []models.AdmissionInfo{
-									{
-										BaseModel: models.BaseModel{
-											Version: 1,
-										},
-										Enrollment:   100,
-										AcademicYear: currentYear,
-										Status:       "draft",
-									},
-								},
-								TestTypes: []models.TestType{
-									{
-										BaseModel: models.BaseModel{
-											Version: 1,
-										},
-										Name: "共通",
-										Subjects: []models.Subject{
-											{
-												BaseModel: models.BaseModel{
-													Version: 1,
-												},
-												Name:         "数学",
-												Score:        200,
-												Percentage:   20.0,
-												DisplayOrder: 1,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
+// NewTestUniversityBuilder は新しいTestUniversityBuilderを作成します
+func NewTestUniversityBuilder() *TestUniversityBuilder {
+	return &TestUniversityBuilder{
+		university: &models.University{
+			BaseModel: models.BaseModel{
+				Version: 1,
 			},
 		},
 	}
+}
 
+// WithName は大学名を設定します
+func (b *TestUniversityBuilder) WithName(name string) *TestUniversityBuilder {
+	b.university.Name = name
+	return b
+}
+
+// WithDepartment は学部を追加します
+func (b *TestUniversityBuilder) WithDepartment(name string) *TestUniversityBuilder {
+	department := models.Department{
+		BaseModel: models.BaseModel{
+			Version: 1,
+		},
+		Name: name,
+	}
+	b.university.Departments = append(b.university.Departments, department)
+	return b
+}
+
+// Build は構築した大学データを返します
+func (b *TestUniversityBuilder) Build() *models.University {
+	return b.university
+}
+
+// CreateTestUniversity はテスト用の大学データを作成します
+func CreateTestUniversity(db *gorm.DB, builder *TestUniversityBuilder) (*models.University, error) {
+	if builder == nil {
+		builder = NewTestUniversityBuilder()
+	}
+
+	university := builder.Build()
 	if err := db.Create(university).Error; err != nil {
 		return nil, fmt.Errorf("テストデータの作成に失敗: %w", err)
 	}
@@ -138,7 +149,7 @@ func createTestData(db *gorm.DB) (*models.University, error) {
 	return university, nil
 }
 
-// cleanupTestData はテストデータをクリーンアップします
-func cleanupTestData(db *gorm.DB) error {
+// CleanupTestData はテストデータをクリーンアップします
+func CleanupTestData(db *gorm.DB) error {
 	return db.Exec("TRUNCATE TABLE universities CASCADE").Error
 }

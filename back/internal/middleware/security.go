@@ -1,31 +1,56 @@
 package middleware
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
-	"university-exam-api/pkg/logger"
+	applogger "university-exam-api/internal/logger"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/time/rate"
 )
 
+// デフォルト設定値の定数
+const (
+	DefaultRateLimit  = 100
+	DefaultBurstLimit = 50
+	DefaultMaxBodySize = 1 << 20 // 1MB
+	DefaultHSTSMaxAge = 31536000 // 1年
+)
+
+// エラー定義
+var (
+	ErrRateLimitExceeded = errors.New("レート制限を超えました")
+	ErrInvalidContentType = errors.New("Content-Typeはapplication/jsonである必要があります")
+	ErrRequestTooLarge = errors.New("リクエストボディが大きすぎます")
+)
+
 // SecurityConfig はセキュリティ設定を保持する構造体です
 type SecurityConfig struct {
 	RateLimit  int
 	BurstLimit int
+	AllowedOrigins []string
+	MaxBodySize int64
 }
 
 // NewSecurityConfig はデフォルトのセキュリティ設定を返します
 func NewSecurityConfig() *SecurityConfig {
 	return &SecurityConfig{
-		RateLimit:  100, // 1秒あたりのリクエスト数
-		BurstLimit: 50,  // バーストリクエストの上限
+		RateLimit:  DefaultRateLimit,
+		BurstLimit: DefaultBurstLimit,
+		AllowedOrigins: []string{"http://localhost:3000"}, // デフォルトではローカル開発環境のみ許可
+		MaxBodySize: DefaultMaxBodySize,
 	}
 }
 
 // SecurityMiddleware はセキュリティ関連のミドルウェアを設定します
 func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
+	if config == nil {
+		config = NewSecurityConfig()
+	}
+
 	// レートリミッターの作成
 	limiter := rate.NewLimiter(rate.Limit(config.RateLimit), config.BurstLimit)
 
@@ -34,9 +59,9 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 		func(next echo.HandlerFunc) echo.HandlerFunc {
 			return func(c echo.Context) error {
 				if !limiter.Allow() {
-					logger.Error("Rate limit exceeded for IP: %s", c.RealIP())
+					applogger.Error(c.Request().Context(), "IPアドレス %s のレート制限を超えました", c.RealIP())
 					return c.JSON(http.StatusTooManyRequests, map[string]string{
-						"error":   "Rate Limit Error",
+						"error":   ErrRateLimitExceeded.Error(),
 						"message": "リクエスト制限を超えました",
 					})
 				}
@@ -51,14 +76,14 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 			XSSProtection:         "1; mode=block",
 			ContentTypeNosniff:    "nosniff",
 			XFrameOptions:         "SAMEORIGIN",
-			HSTSMaxAge:           31536000,
+			HSTSMaxAge:           DefaultHSTSMaxAge,
 			HSTSExcludeSubdomains: false,
 			ContentSecurityPolicy: "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data:;",
 		}),
 
 		// CORS設定
 		middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins: []string{"*"},
+			AllowOrigins: config.AllowedOrigins,
 			AllowMethods: []string{
 				http.MethodGet,
 				http.MethodPost,
@@ -72,7 +97,7 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 				echo.HeaderAccept,
 				echo.HeaderAuthorization,
 				echo.HeaderXRequestedWith,
-				"X-CSRF-Token", // CSRFトークン用のヘッダーを追加
+				"X-CSRF-Token",
 				"Cache-Control",
 				"Pragma",
 			},
@@ -88,21 +113,27 @@ func SecurityMiddleware(config *SecurityConfig) []echo.MiddlewareFunc {
 }
 
 // RequestValidationMiddleware はリクエストの検証を行います
-func RequestValidationMiddleware() echo.MiddlewareFunc {
+func RequestValidationMiddleware(config *SecurityConfig) echo.MiddlewareFunc {
+	if config == nil {
+		config = NewSecurityConfig()
+	}
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Content-Typeのチェック（OPTIONS以外）
 			if c.Request().Method != http.MethodOptions && c.Request().Header.Get(echo.HeaderContentType) != "" &&
 				c.Request().Header.Get(echo.HeaderContentType) != echo.MIMEApplicationJSON {
 				return c.JSON(http.StatusUnsupportedMediaType, map[string]string{
-					"error": "Content-Type must be application/json",
+					"error":   ErrInvalidContentType.Error(),
+					"message": "Content-Typeはapplication/jsonである必要があります",
 				})
 			}
 
-			// リクエストサイズの制限（1MB）
-			if c.Request().ContentLength > 1<<20 {
+			// リクエストサイズの制限
+			if c.Request().ContentLength > config.MaxBodySize {
 				return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{
-					"error": "Request body too large",
+					"error":   ErrRequestTooLarge.Error(),
+					"message": fmt.Sprintf("リクエストボディは%dバイト以下である必要があります", config.MaxBodySize),
 				})
 			}
 

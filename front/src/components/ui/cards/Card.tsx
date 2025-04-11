@@ -1,56 +1,24 @@
+/**
+ * カードコンポーネント
+ *
+ * @module card
+ * @description
+ * コンテンツをカード形式で表示するための基本コンポーネントです。
+ * 白背景と影を持つ共通のカードレイアウトを提供します。
+ */
 import { HTMLAttributes, forwardRef } from 'react';
-import { cn } from '@/utils/styles/style-utils';
+import { cn } from '@/styles/tailwind-utils';
 
-const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
+/**
+ * カードコンポーネント
+ *
+ * @param className - 追加のスタイルクラス
+ * @param children - カード内に表示する子要素
+ * @returns カードコンテナのJSX
+ */
+export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('rounded-lg border bg-card text-card-foreground shadow-sm', className)}
-      {...props}
-    />
+    <div ref={ref} className={cn('bg-white shadow rounded-lg', className)} {...props} />
   )
 );
 Card.displayName = 'Card';
-
-const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
-  )
-);
-CardHeader.displayName = 'CardHeader';
-
-const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, children, ...props }, ref) => (
-    <h2
-      ref={ref}
-      className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
-      {...props}
-    >
-      {children}
-    </h2>
-  )
-);
-CardTitle.displayName = 'CardTitle';
-
-const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
-  )
-);
-CardDescription.displayName = 'CardDescription';
-
-const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
-  )
-);
-CardContent.displayName = 'CardContent';
-
-const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...props} />
-  )
-);
-CardFooter.displayName = 'CardFooter';
-
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };

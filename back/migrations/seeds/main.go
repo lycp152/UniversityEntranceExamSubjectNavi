@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"university-exam-api/internal/domain/models"
@@ -40,7 +41,7 @@ func cleanupDatabase(db *gorm.DB) error {
 	}
 
 	// スキーマを再作成
-	if err := database.AutoMigrate(db); err != nil {
+	if err := database.AutoMigrate(context.Background(), db); err != nil {
 		return err
 	}
 
@@ -92,7 +93,7 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 
 func setupEnvironment() {
 	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: .env file not found")
+		log.Printf("警告: .envファイルが見つかりません")
 		os.Setenv("DB_HOST", "localhost")
 		os.Setenv("DB_USER", "user")
 		os.Setenv("DB_PASSWORD", "password")
@@ -197,21 +198,24 @@ func seedUniversities(tx *gorm.DB, universities []models.University) error {
 
 func main() {
 	setupEnvironment()
-	db := database.NewDB()
+	db, err := database.NewDB()
+	if err != nil {
+		log.Fatalf("データベース接続に失敗しました: %v", err)
+	}
 
 	if err := cleanupDatabase(db); err != nil {
-		log.Fatalf("Failed to cleanup database: %v", err)
+		log.Fatalf("データベースのクリーンアップに失敗しました: %v", err)
 	}
 
 	tx := db.Begin()
 	if tx.Error != nil {
-		log.Fatalf("Failed to begin transaction: %v", tx.Error)
+		log.Fatalf("トランザクションの開始に失敗しました: %v", tx.Error)
 	}
 
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			log.Fatalf("Panic occurred: %v", r)
+			log.Fatalf("パニックが発生しました: %v", r)
 		}
 	}()
 
@@ -359,12 +363,12 @@ func main() {
 
 	if err := seedUniversities(tx, universities); err != nil {
 		tx.Rollback()
-		log.Fatalf("Failed to seed universities: %v", err)
+		log.Fatalf("シードデータの投入に失敗しました: %v", err)
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		log.Fatalf("Failed to commit transaction: %v", err)
+		log.Fatalf("トランザクションのコミットに失敗しました: %v", err)
 	}
 
-	log.Println("Successfully seeded database")
+	log.Println("シードデータの投入が正常に完了しました")
 }

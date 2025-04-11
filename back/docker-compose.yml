@@ -1,6 +1,10 @@
+# Docker Compose設定ファイル
+# 開発環境用の設定を定義します
+
 version: "3.8"
 
 services:
+  # APIサービス
   api:
     build:
       context: .
@@ -8,54 +12,76 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=postgres
-      - DB_USER=user
-      - DB_PASSWORD=password
-      - DB_NAME=university_exam_db
+      - NODE_ENV=development
+      - DB_HOST=db
       - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-university_exam}
+    volumes:
+      - .:/app
+      - go-modules:/go/pkg/mod
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
 
-  postgres:
+  # データベースサービス
+  db:
     image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=university_exam_db
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d university_exam_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  postgres_test:
-    image: postgres:16-alpine
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=university_exam_test_db
-    ports:
-      - "5433:5432"
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-university_exam}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d university_exam_test_db"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-university_exam}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  # Redisサービス
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
+  postgres-data:
+    name: university-exam-postgres-data
+  redis-data:
+    name: university-exam-redis-data
+  go-modules:
+    name: university-exam-go-modules
 
 networks:
   app-network:
+    name: university-exam-app-network
     driver: bridge

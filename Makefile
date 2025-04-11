@@ -4,6 +4,10 @@ DOCKER_COMPOSE_DIR = deployments/docker/$(ENV)
 DOCKER_COMPOSE = docker compose -f $(DOCKER_COMPOSE_DIR)/docker-compose.yml
 CURRENT_TIME := $(shell date "+%Y%m%d_%H%M%S")
 
+# 環境変数ファイルのパス
+ENV_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV)
+ENV_EXAMPLE_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV).example
+
 # 基本コマンド
 .PHONY: help
 help: ## ヘルプを表示
@@ -11,7 +15,7 @@ help: ## ヘルプを表示
 
 # 開発環境セットアップ
 .PHONY: setup
-setup: check-deps init build start-db migrate seed ## 開発環境の完全セットアップ
+setup: check-deps init front-install back-install build start-db ## 開発環境の完全セットアップ
 	@echo "🎉 セットアップが完了しました！"
 	@echo "👉 開発を開始するには 'make dev' を実行してください"
 
@@ -29,9 +33,19 @@ verify: ## 開発環境の状態を検証
 	@test -d front/node_modules || (echo "❌ フロントエンドの依存関係がインストールされていません" && exit 1)
 	@echo "✅ 検証が完了しました"
 
+# 開発環境の起動
 .PHONY: dev
 dev: verify ## 開発環境を起動
-	$(DOCKER_COMPOSE) up --build
+	@echo "🚀 開発環境を起動しています..."
+	$(DOCKER_COMPOSE) up -d --build
+	@echo "⏳ コンテナの起動を待機しています..."
+	sleep 10
+	@echo "🐘 マイグレーションを実行しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
+	@echo "🌱 シードデータを投入しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
+	@echo "✅ 開発環境の準備が完了しました"
+	@echo "👉 ログを確認するには 'make logs' を実行してください"
 
 .PHONY: dev-reset
 dev-reset: ## 開発環境を完全にリセット
@@ -39,6 +53,7 @@ dev-reset: ## 開発環境を完全にリセット
 	make down
 	make clean
 	make clean-volumes
+	make init
 	make setup
 
 .PHONY: dev-update
@@ -46,7 +61,7 @@ dev-update: ## 依存関係を更新
 	@echo "🔄 依存関係を更新しています..."
 	make front-install
 	make back-install
-	make migrate
+	make back-migrate
 
 .PHONY: down
 down: ## 環境を停止
@@ -75,49 +90,73 @@ front-lint: ## フロントエンドのリントを実行
 
 # バックエンド関連
 .PHONY: back-install
-back-install: ## バックエンドの依存関係をインストール
+back-install: check-deps ## バックエンドの依存関係をインストール
 	cd back && go mod download && go mod tidy
 
 .PHONY: back-build
-back-build: ## バックエンドをビルド
+back-build: check-deps ## バックエンドをビルド
 	cd back && go build -o dist/app ./cmd/api
 
 .PHONY: back-test
-back-test: ## バックエンドのテストを実行
+back-test: check-deps ## バックエンドのテストを実行
 	cd back && go test ./... -v
 
 .PHONY: back-lint
-back-lint: ## バックエンドのリントを実行
+back-lint: check-deps ## バックエンドのリントを実行
 	cd back && golangci-lint run
 
+.PHONY: back-test-unit
+back-test-unit: check-deps ## バックエンドのユニットテストを実行
+	cd back && go test -v ./tests/unit/...
+
+.PHONY: back-test-integration
+back-test-integration: check-deps ## バックエンドの統合テストを実行
+	cd back && go test -v ./tests/integration/...
+
+.PHONY: back-test-e2e
+back-test-e2e: check-deps ## バックエンドのE2Eテストを実行
+	cd back && go test -v ./tests/e2e/...
+
+.PHONY: back-test-coverage
+back-test-coverage: check-deps ## バックエンドのテストカバレッジを生成
+	cd back && go test -coverprofile=coverage/coverage.out ./...
+	cd back && go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+
+.PHONY: back-test-mock
+back-test-mock: check-deps ## バックエンドのモックを生成
+	cd back && go generate ./...
+
 # データベース関連
-.PHONY: migrate
-migrate: ## マイグレーションを実行
-	cd back && go run migrations/scripts/main.go up
+.PHONY: back-migrate
+back-migrate: check-deps ## マイグレーションを実行
+	@echo "🐘 マイグレーションを実行しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
 
-.PHONY: migrate-down
-migrate-down: ## マイグレーションをロールバック
-	cd back && go run migrations/scripts/main.go down
+.PHONY: back-migrate-down
+back-migrate-down: check-deps ## マイグレーションをロールバック
+	@echo "🐘 マイグレーションをロールバックしています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go down
 
-.PHONY: migrate-create
-migrate-create: ## 新しいマイグレーションファイルを作成
+.PHONY: back-migrate-create
+back-migrate-create: check-deps ## 新しいマイグレーションファイルを作成
 	cd back && go run migrations/scripts/main.go create $(name)
 
-.PHONY: seed
-seed: ## データベースにシードデータを投入
-	cd back && go run migrations/seeds/main.go
+.PHONY: back-seed
+back-seed: check-deps ## シードデータを投入
+	@echo "🌱 シードデータを投入しています..."
+	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
 
-.PHONY: db-backup
-db-backup: ## データベースのバックアップを作成
+.PHONY: back-db-backup
+back-db-backup: ## データベースのバックアップを作成
 	@echo "💾 データベースをバックアップしています..."
 	@mkdir -p ./backups
 	$(DOCKER_COMPOSE) exec db pg_dump -U postgres university_exam_db > ./backups/backup_$(CURRENT_TIME).sql
 	@echo "✅ バックアップが完了しました: ./backups/backup_$(CURRENT_TIME).sql"
 
-.PHONY: db-restore
-db-restore: ## データベースのバックアップを復元
+.PHONY: back-db-restore
+back-db-restore: ## データベースのバックアップを復元
 	@if [ -z "$(file)" ]; then \
-		echo "❌ 復元するファイルを指定してください: make db-restore file=<path>"; \
+		echo "❌ 復元するファイルを指定してください: make back-db-restore file=<path>"; \
 		exit 1; \
 	fi
 	@echo "🔄 データベースを復元しています..."
@@ -164,7 +203,7 @@ build: front-build back-build ## すべてのビルドを実行
 .PHONY: clean
 clean: ## ビルドファイルとキャッシュを削除
 	rm -rf front/dist front/.next front/node_modules
-	rm -rf back/dist back/tmp
+	rm -rf back/dist back/tmp back/coverage
 	docker system prune -f
 
 .PHONY: clean-volumes
@@ -173,11 +212,13 @@ clean-volumes: ## Dockerボリュームを削除
 
 # その他
 .PHONY: init
-init: ## プロジェクトの初期化
-	cp front/.env.example front/.env.local
-	cp back/.env.example back/.env
-	make front-install
-	make back-install
+init: ## 環境変数ファイルを初期化
+	@if [ ! -f $(ENV_FILE) ]; then \
+		cp $(ENV_EXAMPLE_FILE) $(ENV_FILE); \
+		echo "✅ 環境変数ファイルを作成しました: $(ENV_FILE)"; \
+	else \
+		echo "✅ 環境変数ファイルは既に存在します: $(ENV_FILE)"; \
+	fi
 
 .PHONY: release
 release: ## 新しいバージョンをリリース

@@ -63,7 +63,7 @@ jobs:
           yarn install --frozen-lockfile
 
       - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v5
+        uses: golangci/golangci-lint-action@v7.0.0
         with:
           version: v2.0.2
           working-directory: back
@@ -73,7 +73,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           only-new-issues: false
           skip-save-cache: false
-          annotations: true
           cache-invalidation-interval: 7
 
       - name: Run linters
@@ -239,7 +238,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build images
-        uses: docker/bake-action@v5
+        uses: docker/bake-action@v6
         with:
           files: |
             ./back/docker-bake.hcl

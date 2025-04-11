@@ -67,6 +67,7 @@ jobs:
         with:
           version: v2.0.2
           working-directory: back
+          args: --format=github
 
       - name: Run linters
         run: |

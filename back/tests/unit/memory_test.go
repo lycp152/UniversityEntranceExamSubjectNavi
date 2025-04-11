@@ -12,7 +12,11 @@ import (
 // TestMemory はメモリ使用量のテストケースです
 func TestMemory(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 1000)
@@ -49,7 +53,11 @@ func TestMemory(t *testing.T) {
 // TestMemoryLeak はメモリリークのテストケースです
 func TestMemoryLeak(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 100)
@@ -67,7 +75,9 @@ func TestMemoryLeak(t *testing.T) {
 				t.Errorf("ユーザーの作成に失敗しました: %v", err)
 			}
 		}
-		db.ClearUsers()
+		if err := db.ClearUsers(); err != nil {
+			t.Errorf("ユーザーデータのクリアに失敗しました: %v", err)
+		}
 		runtime.GC()
 		time.Sleep(10 * time.Millisecond)
 	}

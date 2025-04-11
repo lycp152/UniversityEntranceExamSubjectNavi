@@ -110,7 +110,11 @@ func TestUserValidation(t *testing.T) {
 // TestUserRepository はユーザーリポジトリのテストケースです
 func TestUserRepository(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 
@@ -166,7 +170,11 @@ func TestUserRepositoryConcurrent(t *testing.T) {
 	t.Parallel()
 
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 100)

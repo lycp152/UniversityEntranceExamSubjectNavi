@@ -82,7 +82,11 @@ func TestEdgeCases(t *testing.T) {
 // TestConcurrentAccess は並行アクセスのテストケースです
 func TestConcurrentAccess(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 100)
@@ -106,7 +110,11 @@ func TestConcurrentAccess(t *testing.T) {
 // TestDatabaseErrorHandling はデータベースエラーハンドリングのテストケースです
 func TestDatabaseErrorHandling(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 

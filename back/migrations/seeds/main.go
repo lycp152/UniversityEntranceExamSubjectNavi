@@ -91,7 +91,7 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 	return calculatePercentages(subjects)
 }
 
-func setupEnvironment() {
+func setupEnvironment() error {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("警告: .envファイルが見つかりません")
 		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
@@ -110,6 +110,7 @@ func setupEnvironment() {
 			log.Printf("警告: DB_PORTの設定に失敗しました: %v", err)
 		}
 	}
+	return nil
 }
 
 func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypes []models.TestType) error {
@@ -207,7 +208,10 @@ func seedUniversities(tx *gorm.DB, universities []models.University) error {
 }
 
 func main() {
-	setupEnvironment()
+	// 環境変数の設定
+	if err := setupEnvironment(); err != nil {
+		log.Fatalf("環境変数の設定に失敗しました: %v", err)
+	}
 	db, err := database.NewDB()
 	if err != nil {
 		log.Fatalf("データベース接続に失敗しました: %v", err)

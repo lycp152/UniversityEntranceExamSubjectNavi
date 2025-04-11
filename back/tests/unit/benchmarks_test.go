@@ -10,6 +10,10 @@ import (
 	"university-exam-api/tests/unit/repositories"
 )
 
+const (
+	errDBClose = "データベースのクローズに失敗しました: %v"
+)
+
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{
@@ -29,7 +33,7 @@ func BenchmarkUserRepository(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
 		if err := db.Close(); err != nil {
-			b.Errorf("データベースのクローズに失敗しました: %v", err)
+			b.Errorf(errDBClose, err)
 		}
 	}()
 
@@ -51,7 +55,7 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
 		if err := db.Close(); err != nil {
-			b.Errorf("データベースのクローズに失敗しました: %v", err)
+			b.Errorf(errDBClose, err)
 		}
 	}()
 
@@ -79,7 +83,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
 		if err := db.Close(); err != nil {
-			b.Errorf("データベースのクローズに失敗しました: %v", err)
+			b.Errorf(errDBClose, err)
 		}
 	}()
 
@@ -99,7 +103,7 @@ func BenchmarkResponseTime(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
 		if err := db.Close(); err != nil {
-			b.Errorf("データベースのクローズに失敗しました: %v", err)
+			b.Errorf(errDBClose, err)
 		}
 	}()
 
@@ -126,7 +130,7 @@ func BenchmarkDatabaseConnection(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
 		if err := db.Close(); err != nil {
-			b.Errorf("データベースのクローズに失敗しました: %v", err)
+			b.Errorf(errDBClose, err)
 		}
 	}()
 
@@ -144,7 +148,7 @@ func BenchmarkCachePerformance(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
 		if err := db.Close(); err != nil {
-			b.Errorf("データベースのクローズに失敗しました: %v", err)
+			b.Errorf(errDBClose, err)
 		}
 	}()
 

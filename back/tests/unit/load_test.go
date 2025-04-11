@@ -13,7 +13,11 @@ import (
 // TestLoad は負荷テストのテストケースです
 func TestLoad(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 1000)
@@ -46,7 +50,11 @@ func TestLoad(t *testing.T) {
 // TestConcurrentLoad は並行アクセスのテストケースです
 func TestConcurrentLoad(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 100)

@@ -169,12 +169,13 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 	}
 
 	// ログディレクトリの作成
-	if err := os.MkdirAll(config.LogDir, 0755); err != nil {
+	logDir := filepath.Join("logs", "tests")
+	if err := os.MkdirAll(logDir, 0755); err != nil {
 		t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
 	}
 
 	// ログファイルの作成
-	logFile, err := os.Create(filepath.Join(config.LogDir, fmt.Sprintf("test_%s.log", time.Now().Format("20060102_150405"))))
+	logFile, err := os.Create(filepath.Join(logDir, fmt.Sprintf("test_%s.log", time.Now().Format("20060102_150405"))))
 	if err != nil {
 		t.Fatalf("ログファイルの作成に失敗しました: %v", err)
 	}
@@ -370,7 +371,7 @@ func (h *TestHelper) AssertSpecialCharsSanitized(s string) {
 // テスト実行前にロガーを初期化し、テスト環境の設定を行います。
 func TestMain(m *testing.M) {
 	// ログディレクトリの作成
-	logDir := filepath.Join("../../logs/tests")
+	logDir := filepath.Join("logs", "tests")
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		fmt.Printf("ログディレクトリの作成に失敗しました: %v\n", err)
 		os.Exit(1)

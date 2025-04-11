@@ -117,10 +117,10 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:8080
         run: |
           cd front
-          yarn test --coverage
+          yarn vitest run --coverage
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: ./back/coverage.txt,./front/coverage/lcov.info
           fail_ci_if_error: true

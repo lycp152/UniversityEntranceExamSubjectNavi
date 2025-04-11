@@ -203,7 +203,9 @@ func (c *Cache) Get(key string) (interface{}, bool, error) {
 	if c.transaction != nil {
 		c.transaction.mu.RLock()
 		defer c.transaction.mu.RUnlock()
-		if item, exists := c.transaction.items[key]; exists {
+
+		item, exists := c.transaction.items[key]
+		if exists {
 			c.stats.Hits++
 			return item.value, true, nil
 		}
@@ -223,6 +225,7 @@ func (c *Cache) Get(key string) (interface{}, bool, error) {
 	c.stats.Hits++
 	item.accessCount++
 	c.items[key] = item
+
 	applogger.Info(context.Background(), "キャッシュ: キー %s でヒットしました", key)
 
 	return item.value, true, nil
@@ -239,6 +242,7 @@ func (c *Cache) Delete(key string) error {
 
 	delete(c.items, key)
 	applogger.Info(context.Background(), "キャッシュ: キー %s のアイテムを削除しました", key)
+
 	return nil
 }
 
@@ -268,6 +272,7 @@ func (c *Cache) startCleanup() {
 func (c *Cache) GetStats() (hits, misses int64, err error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	return c.stats.Hits, c.stats.Misses, nil
 }
 
@@ -275,10 +280,13 @@ func (c *Cache) GetStats() (hits, misses int64, err error) {
 func (c *Cache) GetHitRate() (float64, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	total := c.stats.Hits + c.stats.Misses
+
 	if total == 0 {
 		return 0, nil
 	}
+
 	return float64(c.stats.Hits) / float64(total) * 100, nil
 }
 
@@ -291,7 +299,6 @@ func (c *Cache) ClearAll() error {
 	c.stats.Hits = 0
 	c.stats.Misses = 0
 
-	applogger.Info(context.Background(), "キャッシュ: 全アイテムを削除しました")
 	return nil
 }
 
@@ -339,6 +346,7 @@ func (cm *CacheManager) GetFromCache(key string) (interface{}, bool) {
 	} else {
 		cm.stats.Misses++
 	}
+
 	return value, found
 }
 
@@ -390,6 +398,7 @@ func (cm *CacheManager) ClearSubjectsCache(testTypeID uint) {
 func (cm *CacheManager) GetStats() (hits, misses int64) {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
+
 	return cm.stats.Hits, cm.stats.Misses
 }
 
@@ -397,10 +406,13 @@ func (cm *CacheManager) GetStats() (hits, misses int64) {
 func (cm *CacheManager) GetHitRate() float64 {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
+
 	total := cm.stats.Hits + cm.stats.Misses
+
 	if total == 0 {
 		return 0
 	}
+
 	return float64(cm.stats.Hits) / float64(total) * 100
 }
 
@@ -415,6 +427,7 @@ func (c *Cache) StartTransaction() error {
 
 	c.transaction = NewTransaction()
 	c.metrics.transactions++
+
 	return nil
 }
 
@@ -435,6 +448,7 @@ func (c *Cache) CommitTransaction() error {
 	}
 
 	c.transaction = nil
+
 	return nil
 }
 
@@ -448,6 +462,7 @@ func (c *Cache) RollbackTransaction() error {
 	}
 
 	c.transaction = nil
+
 	return nil
 }
 
@@ -458,6 +473,7 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 
 	total := c.stats.Hits + c.stats.Misses
 	hitRate := 0.0
+
 	if total > 0 {
 		hitRate = float64(c.stats.Hits) / float64(total) * 100
 	}

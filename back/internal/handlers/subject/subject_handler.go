@@ -42,6 +42,7 @@ func (h *SubjectHandler) bindRequest(ctx context.Context, c echo.Context, data i
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
 		return errors.HandleError(c, err)
 	}
+
 	return nil
 }
 
@@ -50,12 +51,15 @@ func (h *SubjectHandler) validateSubjectRequest(subject *models.Subject) error {
 	if subject.Name == "" {
 		return errors.NewValidationError(ErrMsgSubjectNameRequired)
 	}
+
 	if len(subject.Name) > 100 {
 		return errors.NewValidationError(ErrMsgSubjectNameLength)
 	}
+
 	if subject.TestTypeID == 0 {
 		return errors.NewValidationError(ErrMsgTestTypeIDRequired)
 	}
+
 	return nil
 }
 
@@ -79,7 +83,9 @@ func (h *SubjectHandler) GetSubject(c echo.Context) error {
 		applogger.Error(ctx, "科目の取得に失敗しました (学部ID: %d, 科目ID: %d): %v", departmentID, subjectID, err)
 		return errors.HandleError(c, err)
 	}
+
 	applogger.Info(ctx, logging.LogGetSubjectSuccess, departmentID, subjectID)
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": subject,
 	})
@@ -111,6 +117,7 @@ func (h *SubjectHandler) CreateSubject(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogCreateSubjectSuccess, subject.ID)
+
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"data": subject,
 	})
@@ -142,6 +149,7 @@ func (h *SubjectHandler) UpdateSubject(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogUpdateSubjectSuccess, subjectID)
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": subject,
 	})
@@ -163,6 +171,7 @@ func (h *SubjectHandler) DeleteSubject(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogDeleteSubjectSuccess, subjectID)
+
 	return c.NoContent(http.StatusNoContent)
 }
 
@@ -194,6 +203,7 @@ func (h *SubjectHandler) UpdateSubjectsBatch(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogBatchUpdateSubjectSuccess)
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": subjects,
 		"meta": map[string]interface{}{

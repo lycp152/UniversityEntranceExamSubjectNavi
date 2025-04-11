@@ -18,7 +18,7 @@ run:
 linters:
   enable:
     # コードフォーマット
-    - gofmt
+    - gofumpt
     # 静的解析
     - govet
     - errcheck

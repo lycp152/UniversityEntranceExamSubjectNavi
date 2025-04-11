@@ -51,16 +51,19 @@ var (
 // validateWithRules は指定されたルールでバリデーションを行います
 func validateWithRules(value interface{}, rules []ValidationRule) error {
 	var validationErrors []error
+
 	for _, rule := range rules {
 		if err := rule.Validator(value); err != nil {
 			validationErrors = append(validationErrors, appErrors.NewInvalidInputError(rule.Field, rule.Message, nil))
 		}
 	}
+
 	if len(validationErrors) > 0 {
 		return appErrors.NewValidationError("validation", "バリデーションエラーが発生しました", map[string]string{
 			"errors": fmt.Sprintf("%v", validationErrors),
 		})
 	}
+
 	return nil
 }
 
@@ -102,6 +105,7 @@ func getValidationRules() ValidationRules {
 				},
 			}
 		}
+
 		rules = validationCacheInstance.rules
 	}
 
@@ -114,9 +118,11 @@ func validateName(name string, field string) error {
 	if len(name) < minNameLength {
 		return appErrors.NewInvalidInputError(field, fmt.Sprintf("%sは1文字以上である必要があります", field), nil)
 	}
+
 	if len(name) > maxNameLength {
 		return appErrors.NewInvalidInputError(field, fmt.Sprintf("%sは%d文字以下である必要があります", field, maxNameLength), nil)
 	}
+
 	return nil
 }
 
@@ -150,6 +156,7 @@ func (r *universityRepository) validateUniversityRelations(university *models.Un
 		if departmentNames[dept.Name] {
 			return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].name", i), fmt.Sprintf(errDuplicateName, "学部名", dept.Name), nil)
 		}
+
 		departmentNames[dept.Name] = true
 
 		// 学部のバリデーション
@@ -157,6 +164,7 @@ func (r *universityRepository) validateUniversityRelations(university *models.Un
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -182,6 +190,7 @@ func (r *universityRepository) validateDepartment(dept models.Department, index 
 		if majorNames[major.Name] {
 			return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].name", index, j), fmt.Sprintf(errDuplicateName, "学科名", major.Name), nil)
 		}
+
 		majorNames[major.Name] = true
 
 		// 学科のバリデーション
@@ -189,6 +198,7 @@ func (r *universityRepository) validateDepartment(dept models.Department, index 
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -209,6 +219,7 @@ func (r *universityRepository) validateMajor(major models.Major, deptIndex, majo
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -234,6 +245,7 @@ func (r *universityRepository) validateAdmissionSchedule(schedule models.Admissi
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -259,6 +271,7 @@ func (r *universityRepository) validateTestType(testType models.TestType, deptIn
 		if subjectNames[subject.Name] {
 			return appErrors.NewInvalidInputError(fmt.Sprintf("departments[%d].majors[%d].admissionSchedules[%d].testTypes[%d].subjects[%d].name", deptIndex, majorIndex, scheduleIndex, testTypeIndex, m), fmt.Sprintf(errDuplicateName, "科目名", subject.Name), nil)
 		}
+
 		subjectNames[subject.Name] = true
 
 		// 科目のバリデーション
@@ -266,6 +279,7 @@ func (r *universityRepository) validateTestType(testType models.TestType, deptIn
 			return err
 		}
 	}
+
 	return nil
 }
 

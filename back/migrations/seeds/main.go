@@ -36,6 +36,7 @@ func cleanupDatabase(db *gorm.DB) error {
 	if err := db.Exec("DROP SCHEMA public CASCADE").Error; err != nil {
 		return err
 	}
+
 	if err := db.Exec("CREATE SCHEMA public").Error; err != nil {
 		return err
 	}
@@ -88,28 +89,35 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 	}
 
 	subjects = subjects[:idx]
+
 	return calculatePercentages(subjects)
 }
 
 func setupEnvironment() error {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("警告: .envファイルが見つかりません")
+
 		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
 			log.Printf("警告: DB_HOSTの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_USER", "user"); err != nil {
 			log.Printf("警告: DB_USERの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_PASSWORD", "password"); err != nil {
 			log.Printf("警告: DB_PASSWORDの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_NAME", "university_exam_db"); err != nil {
 			log.Printf("警告: DB_NAMEの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_PORT", "5432"); err != nil {
 			log.Printf("警告: DB_PORTの設定に失敗しました: %v", err)
 		}
 	}
+
 	return nil
 }
 
@@ -212,6 +220,7 @@ func main() {
 	if err := setupEnvironment(); err != nil {
 		log.Fatalf("環境変数の設定に失敗しました: %v", err)
 	}
+
 	db, err := database.NewDB()
 	if err != nil {
 		log.Fatalf("データベース接続に失敗しました: %v", err)

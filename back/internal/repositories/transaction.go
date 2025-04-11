@@ -55,6 +55,7 @@ func getEnvOrDefaultDuration(key string, defaultValue time.Duration) time.Durati
 	if v, err := time.ParseDuration(value); err == nil {
 		return v
 	}
+
 	return defaultValue
 }
 
@@ -68,6 +69,7 @@ func getEnvOrDefaultFloat(key string, defaultValue float64) float64 {
 	if v, err := strconv.ParseFloat(value, 64); err == nil {
 		return v
 	}
+
 	return defaultValue
 }
 
@@ -81,6 +83,7 @@ func getEnvOrDefaultBool(key string, defaultValue bool) bool {
 	if v, err := strconv.ParseBool(value); err == nil {
 		return v
 	}
+
 	return defaultValue
 }
 
@@ -131,6 +134,7 @@ func (r *universityRepository) TransactionWithOption(fn func(repo IUniversityRep
 			}
 
 			opt.Monitor(startTime, nil)
+
 			return nil
 		}, &sql.TxOptions{
 			Isolation: opt.Isolation,
@@ -156,6 +160,7 @@ func (r *universityRepository) handleTransactionError(err error, startTime time.
 	if errors.As(err, &dbErr) {
 		return backoff.Permanent(err)
 	}
+
 	return backoff.Permanent(fmt.Errorf("トランザクションが失敗しました: %w", err))
 }
 
@@ -189,6 +194,7 @@ func (r *universityRepository) Savepoint(tx *gorm.DB, name string) error {
 	if err := tx.Exec(fmt.Sprintf("SAVEPOINT %s", name)).Error; err != nil {
 		return fmt.Errorf(errSavepoint, err)
 	}
+
 	return nil
 }
 
@@ -197,6 +203,7 @@ func (r *universityRepository) RollbackTo(tx *gorm.DB, name string) error {
 	if err := tx.Exec(fmt.Sprintf("ROLLBACK TO SAVEPOINT %s", name)).Error; err != nil {
 		return fmt.Errorf("セーブポイントへのロールバックに失敗しました: %w", err)
 	}
+
 	return nil
 }
 

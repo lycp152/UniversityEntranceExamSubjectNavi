@@ -125,8 +125,10 @@ func (e *TestError) Error() string {
 		for i, attr := range e.Attrs {
 			attrs[i] = fmt.Sprintf("%s=%v", attr.Key, attr.Value)
 		}
+
 		return fmt.Sprintf("%s: %s [%s]", e.Code, e.Message, strings.Join(attrs, ", "))
 	}
+
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
@@ -179,6 +181,7 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 	if err != nil {
 		t.Fatalf("ログファイルの作成に失敗しました: %v", err)
 	}
+
 	defer func() {
 		if err := logFile.Close(); err != nil {
 			t.Errorf("ログファイルのクローズに失敗しました: %v", err)
@@ -209,6 +212,7 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 func (h *TestHelper) Cleanup() {
 	h.t.Helper()
 	h.logger.Info("テストのクリーンアップを開始します")
+
 	if err := cleanupDatabase(h.db); err != nil {
 		h.logger.Error("データベースのクリーンアップに失敗しました",
 			"error", err,
@@ -216,6 +220,7 @@ func (h *TestHelper) Cleanup() {
 		)
 		h.t.Errorf(ErrTestCleanup, "database", err)
 	}
+
 	h.logger.Info("テストのクリーンアップが完了しました")
 }
 
@@ -257,6 +262,7 @@ func (h *TestHelper) LoadTestData() TestData {
 // CreateTestContext はテストコンテキストを作成します
 func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*httptest.ResponseRecorder, echo.Context) {
 	h.t.Helper()
+
 	var req *http.Request
 
 	if body != nil {
@@ -264,6 +270,7 @@ func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*
 		if err != nil {
 			h.t.Fatalf(ErrMarshalTestData, body, err)
 		}
+
 		req = httptest.NewRequest(method, path, bytes.NewReader(jsonBody))
 		req.Header.Set(ContentTypeHeader, ContentTypeJSON)
 	} else {
@@ -283,6 +290,7 @@ func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*
 // AssertStatusCode はステータスコードを検証します
 func (h *TestHelper) AssertStatusCode(got, want int) {
 	h.t.Helper()
+
 	if got != want {
 		h.t.Errorf(ErrInvalidStatusCode, h.e.URL(h.handler.GetUniversity), got, want)
 	}
@@ -381,6 +389,7 @@ func TestMain(m *testing.M) {
 	config := applogger.DefaultConfig()
 	config.LogLevel = applogger.LevelDebug
 	config.LogDir = logDir
+
 	if err := applogger.InitLoggers(config); err != nil {
 		fmt.Printf("ロガーの初期化に失敗しました: %v\n", err)
 		os.Exit(1)
@@ -411,9 +420,11 @@ func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *universi
 	for _, m := range middlewares {
 		e.Use(m)
 	}
+
 	db := repositories.SetupTestDB(nil, nil)
 	repo := repositories.NewUniversityRepository(db)
 	handler := university.NewUniversityHandler(repo, 5*time.Second)
+
 	return e, handler
 }
 
@@ -440,6 +451,7 @@ type RequestConfig struct {
 //   - error: リクエストの実行中に発生したエラー
 func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc) (*httptest.ResponseRecorder, error) {
 	var reqBody []byte
+
 	if config.Body != nil {
 		var err error
 		reqBody, err = json.Marshal(config.Body)
@@ -454,6 +466,7 @@ func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc
 		for key, value := range config.QueryParams {
 			values.Add(key, value)
 		}
+
 		config.Path = config.Path + "?" + values.Encode()
 	}
 
@@ -467,14 +480,17 @@ func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc
 	if config.Timeout > 0 {
 		ctx, cancel := context.WithTimeout(req.Context(), config.Timeout)
 		defer cancel()
+
 		req = req.WithContext(ctx)
 	}
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+
 	if err := handler(c); err != nil {
 		return nil, fmt.Errorf("ハンドラーの実行に失敗しました: %w", err)
 	}
+
 	return rec, nil
 }
 
@@ -509,6 +525,7 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 	var resp struct {
 		Error string `json:"error"`
 	}
+
 	if err := ParseResponse(rec, &resp); err != nil {
 		t.Fatalf("エラーレスポンスのパースに失敗しました: %v", err)
 	}
@@ -532,6 +549,7 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 	loggerConfig := applogger.DefaultConfig()
 	loggerConfig.LogLevel = config.LogLevel
 	loggerConfig.LogDir = config.LogDir
+
 	if err := applogger.InitLoggers(loggerConfig); err != nil {
 		return nil, nil, nil, &TestError{
 			Code:    "LOGGER_INIT_FAILED",
@@ -541,6 +559,7 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 
 	e := echo.New()
 	db := repositories.SetupTestDB(t, nil)
+
 	if db == nil {
 		return nil, nil, nil, &TestError{
 			Code:    "DB_INIT_FAILED",
@@ -655,6 +674,7 @@ func validateCacheResponse(t *testing.T, rec *httptest.ResponseRecorder, tt Test
 	var response struct {
 		Data []models.University `json:"data"`
 	}
+
 	if err := json.NewDecoder(rec.Body).Decode(&response); err != nil {
 		t.Errorf("レスポンスのパースに失敗しました: %v", err)
 		return
@@ -770,6 +790,7 @@ func TestSearchUniversitiesWithCacheExpiration(t *testing.T) {
 			if err != nil {
 				t.Fatalf(ErrMsgRequestFailed, err)
 			}
+
 			validateCacheResponse(t, rec, tt.TestCase)
 
 			time.Sleep(tt.sleep)
@@ -782,6 +803,7 @@ func TestSearchUniversitiesWithCacheExpiration(t *testing.T) {
 			if err != nil {
 				t.Fatalf(ErrMsgRequestFailed, err)
 			}
+
 			validateCacheResponse(t, rec, tt.TestCase)
 		})
 	}

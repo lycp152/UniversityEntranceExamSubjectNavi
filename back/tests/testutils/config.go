@@ -33,9 +33,12 @@ func LoadTestConfig(t *testing.T) *TestConfig {
 // getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します
 func getEnvOrDefault(t *testing.T, key, defaultValue string) string {
 	t.Helper()
+
 	value := os.Getenv(key)
+
 	if value == "" {
 		return defaultValue
 	}
+
 	return value
 }

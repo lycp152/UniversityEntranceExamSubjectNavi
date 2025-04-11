@@ -94,9 +94,9 @@ func TestUserValidation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
 			err := tt.user.Validate()
 
 			if tt.wantErr {
@@ -181,11 +181,13 @@ func TestUserRepositoryConcurrent(t *testing.T) {
 	users := createTestUsers(t, 100)
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(users))
 
 	for _, user := range users {
 		go func(u *models.User) {
 			defer wg.Done()
+
 			err := repo.Create(u)
 
 			assert.NoError(t, err, "ユーザーの作成に失敗しました")

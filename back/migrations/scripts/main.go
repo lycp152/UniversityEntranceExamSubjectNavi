@@ -30,6 +30,7 @@ func validateEnv() error {
 			return fmt.Errorf("環境変数 %s が設定されていません", envVar)
 		}
 	}
+
 	return nil
 }
 
@@ -38,6 +39,7 @@ func handleMigrationError(ctx context.Context, tx *gorm.DB, err error, message s
 	if err := tx.Rollback().Error; err != nil {
 		log.Printf("警告: ロールバックに失敗しました: %v", err)
 	}
+
 	log.Fatalf("エラー: %s: %v", message, err)
 }
 
@@ -46,18 +48,23 @@ func setupEnvironment() error {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("警告: .envファイルが見つかりません")
 		// デフォルトの環境変数を設定
+
 		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
 			log.Printf("警告: DB_HOSTの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_USER", "user"); err != nil {
 			log.Printf("警告: DB_USERの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_PASSWORD", "password"); err != nil {
 			log.Printf("警告: DB_PASSWORDの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_NAME", "university_exam_db"); err != nil {
 			log.Printf("警告: DB_NAMEの設定に失敗しました: %v", err)
 		}
+
 		if err := os.Setenv("DB_PORT", "5432"); err != nil {
 			log.Printf("警告: DB_PORTの設定に失敗しました: %v", err)
 		}
@@ -66,6 +73,7 @@ func setupEnvironment() error {
 	if err := validateEnv(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -82,6 +90,7 @@ func connectToDatabase() (*gorm.DB, func()) {
 			log.Printf("警告: データベース接続の取得に失敗しました: %v", err)
 			return
 		}
+
 		if err := sqlDB.Close(); err != nil {
 			log.Printf("警告: データベース接続のクローズに失敗しました: %v", err)
 		}
@@ -91,6 +100,7 @@ func connectToDatabase() (*gorm.DB, func()) {
 	if err != nil {
 		log.Fatalf("エラー: データベース接続の取得に失敗しました: %v", err)
 	}
+
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)

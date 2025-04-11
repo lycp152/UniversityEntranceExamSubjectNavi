@@ -28,7 +28,7 @@ jobs:
           go-version: "1.24.1"
           cache: true
           cache-dependency-path: back/go.sum
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
@@ -99,7 +99,7 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: "1.24.1"
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
@@ -156,7 +156,7 @@ jobs:
           go tool cover -func=coverage.txt | grep -E "total:\s+\(statements\)\s+([0-9.]+)%" | awk '{if ($3 < 80) {print "カバレッジが80%未満です: " $3 "%"; exit 1}}'
 
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |
@@ -221,7 +221,7 @@ jobs:
     needs: security
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
@@ -231,7 +231,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build images
-        uses: docker/bake-action@v3
+        uses: docker/bake-action@v5
         with:
           files: |
             ./back/docker-bake.hcl

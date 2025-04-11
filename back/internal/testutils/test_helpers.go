@@ -456,6 +456,7 @@ func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc
 		var err error
 		reqBody, err = json.Marshal(config.Body)
 		if err != nil {
+
 			return nil, fmt.Errorf("リクエストボディのマーシャリングに失敗しました: %w", err)
 		}
 	}

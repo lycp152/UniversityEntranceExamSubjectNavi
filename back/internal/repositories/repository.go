@@ -642,6 +642,7 @@ func (r *universityRepository) getExistingSubjects(tx *gorm.DB, testTypeID uint)
 		Find(&subjects).Error; err != nil {
 		return nil, err
 	}
+
 	return subjects, nil
 }
 
@@ -650,9 +651,11 @@ func (r *universityRepository) updateSubjectInList(allSubjects []models.Subject,
 		if s.ID == subject.ID {
 			subject.DisplayOrder = s.DisplayOrder
 			allSubjects[i] = *subject
+
 			break
 		}
 	}
+
 	return allSubjects
 }
 
@@ -749,7 +752,6 @@ func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) e
 	})
 
 	if err != nil {
-
 		return err
 	}
 
@@ -852,5 +854,6 @@ func (r *universityRepository) DeleteAdmissionInfo(id uint) error {
 	if err := r.db.Delete(&models.AdmissionInfo{}, id).Error; err != nil {
 		return appErrors.NewDatabaseError("DeleteAdmissionInfo", err, nil)
 	}
+
 	return nil
 }

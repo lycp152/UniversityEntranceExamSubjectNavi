@@ -136,6 +136,7 @@ func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypes 
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -146,6 +147,7 @@ func createSubjects(tx *gorm.DB, testType *models.TestType, subjects []models.Su
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -163,6 +165,7 @@ func createAdmissionSchedules(tx *gorm.DB, major *models.Major, schedules []mode
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -180,6 +183,7 @@ func createMajors(tx *gorm.DB, department *models.Department, majors []models.Ma
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -197,6 +201,7 @@ func createDepartments(tx *gorm.DB, university *models.University, departments [
 			return err
 		}
 	}
+
 	return nil
 }
 

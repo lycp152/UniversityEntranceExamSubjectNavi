@@ -38,15 +38,19 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('back/go.mod') }}
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v3
+      - name: Cache Yarn
+        uses: actions/cache@v3
         with:
-          version: v1.55.2
-          working-directory: back
+          path: |
+            front/node_modules
+            ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('front/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: |
@@ -54,6 +58,12 @@ jobs:
           go mod download
           cd ../front
           yarn install --frozen-lockfile
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.55.2
+          working-directory: back
 
       - name: Run linters
         run: |

@@ -69,6 +69,12 @@ jobs:
           working-directory: back
           args: --format=github-actions
           skip-cache: false
+          install-mode: binary
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          only-new-issues: false
+          skip-save-cache: false
+          annotations: true
+          cache-invalidation-interval: 7
 
       - name: Run linters
         run: |

@@ -67,7 +67,6 @@ jobs:
         with:
           version: v2.0.2
           working-directory: back
-          args: --out-format=github-actions
           skip-cache: false
           install-mode: binary
           github-token: ${{ secrets.GITHUB_TOKEN }}

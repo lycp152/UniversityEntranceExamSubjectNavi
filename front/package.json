@@ -26,6 +26,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@next/env": "^15.3.0",
     "@tanstack/react-query-devtools": "^5.69.0",
     "@testing-library/cypress": "^10.0.3",
     "@testing-library/dom": "^10.4.0",
@@ -49,7 +50,7 @@
     "textlint-rule-preset-ja-technical-writing": "^12.0.2",
     "textlint-rule-preset-japanese": "^10.0.4",
     "typescript": "^5",
-    "vite": "^6.2.1",
-    "vitest": "^3.0.7"
+    "vite": "^6.2.6",
+    "vitest": "^3.1.1"
   }
 }

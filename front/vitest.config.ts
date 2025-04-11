@@ -35,7 +35,6 @@ export default defineConfig({
     },
     // テスト環境の環境変数は.env.testから読み込む
     env: {
-      NODE_ENV: 'test',
       // テスト環境固有の設定は.env.testで管理
       ...process.env,
     },

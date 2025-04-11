@@ -15,6 +15,7 @@ func ParseID(ctx context.Context, idStr string, errFormat string, errMsg string)
 		applogger.Error(ctx, errFormat, err)
 		return 0, appErrors.NewInvalidInputError("id", errMsg, nil)
 	}
+
 	return uint(id), nil
 }
 

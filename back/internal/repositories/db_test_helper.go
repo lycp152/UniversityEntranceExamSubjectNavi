@@ -38,6 +38,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -115,6 +116,7 @@ func NewTestUniversityBuilder() *TestUniversityBuilder {
 // WithName は大学名を設定します
 func (b *TestUniversityBuilder) WithName(name string) *TestUniversityBuilder {
 	b.university.Name = name
+
 	return b
 }
 

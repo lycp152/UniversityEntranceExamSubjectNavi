@@ -86,6 +86,7 @@ func setupHealthCheck(db *gorm.DB) {
 		if !checkDBHealth(db) {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			_, err := w.Write([]byte("データベース接続に失敗しました"))
+
 			if err != nil {
 				log.Printf(writeErrorMsg, err)
 			}
@@ -96,6 +97,7 @@ func setupHealthCheck(db *gorm.DB) {
 		if !checkMemoryHealth() {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			_, err := w.Write([]byte("メモリ使用量が高すぎます"))
+
 			if err != nil {
 				log.Printf(writeErrorMsg, err)
 			}
@@ -105,6 +107,7 @@ func setupHealthCheck(db *gorm.DB) {
 
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("正常"))
+
 		if err != nil {
 			log.Printf(writeErrorMsg, err)
 		}

@@ -479,8 +479,9 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 	}
 
 	var avgLatency time.Duration
+	var totalLatency time.Duration
+
 	if len(c.metrics.latencies) > 0 {
-		var totalLatency time.Duration
 		for _, latency := range c.metrics.latencies {
 			totalLatency += latency
 		}
@@ -508,5 +509,6 @@ func (c *Cache) RecordLatency(operation string, duration time.Duration) error {
 	if len(c.metrics.latencies) > maxLatencyHistory {
 		c.metrics.latencies = c.metrics.latencies[1:]
 	}
+
 	return nil
 }

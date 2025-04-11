@@ -59,6 +59,7 @@ func CSRFMiddleware() echo.MiddlewareFunc {
 				tokenStore.Unlock()
 
 				c.Response().Header().Set(CSRFTokenHeader, token)
+
 				return next(c)
 			}
 
@@ -87,6 +88,7 @@ func generateCSRFToken() string {
 	if _, err := rand.Read(b); err != nil {
 		return ""
 	}
+
 	return base64.StdEncoding.EncodeToString(b)
 }
 
@@ -99,6 +101,7 @@ func validateCSRFToken(token string) bool {
 
 	tokenStore.RLock()
 	defer tokenStore.RUnlock()
+
 	return tokenStore.tokens[token]
 }
 
@@ -116,6 +119,7 @@ func RefreshCSRFToken(c echo.Context) error {
 	tokenStore.Unlock()
 
 	c.Response().Header().Set(CSRFTokenHeader, token)
+
 	return c.JSON(http.StatusOK, map[string]string{
 		"token": token,
 	})
@@ -135,6 +139,7 @@ func ConfigureCSRF() echo.MiddlewareFunc {
 // CSRFTokenHandler はCSRFトークンを生成して返すハンドラーです
 func CSRFTokenHandler(c echo.Context) error {
 	token := c.Get("csrf").(string)
+
 	return c.JSON(http.StatusOK, map[string]string{
 		"token": token,
 	})

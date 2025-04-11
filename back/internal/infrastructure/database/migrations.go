@@ -193,10 +193,12 @@ func migrateTable(ctx context.Context, tx *gorm.DB, m struct{ Model interface{};
 	duration := time.Since(start)
 	if duration > slowQueryThreshold {
 		progress.Metrics.SlowQueries++
+
 		log.Printf("スロークエリ検出: テーブル %s のマイグレーションに %v かかりました", m.Name, duration)
 	}
 
 	progress.CompletedTables++
+
 	log.Printf("テーブル %s のマイグレーションが完了（所要時間: %v）", m.Name, duration)
 
 	return nil
@@ -291,6 +293,7 @@ func createSavePoint(tx *gorm.DB, index int, progress *MigrationProgress) error 
 		}
 
 		progress.Metrics.SavePoints++
+
 		log.Printf("セーブポイント %s を作成しました", savePoint)
 	}
 
@@ -317,6 +320,7 @@ func handleMigrationError(tx *gorm.DB, index int, m struct{ Model interface{}; N
 		}
 
 		progress.Metrics.RollbackPoints++
+
 		log.Printf("セーブポイント %s までロールバックしました", savePoint)
 	}
 

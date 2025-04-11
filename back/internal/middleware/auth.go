@@ -46,6 +46,7 @@ func AuthMiddleware() echo.MiddlewareFunc {
 
 			// ユーザー情報をコンテキストに設定
 			c.Set("user", getUserFromToken(token))
+
 			return next(c)
 		}
 	}
@@ -85,6 +86,7 @@ func isPublicPath(path string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -99,6 +101,7 @@ func isValidToken(token string) bool {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("予期しない署名方式: %v", t.Header["alg"])
 		}
+
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
@@ -151,5 +154,6 @@ func hasRole(userRole string, allowedRoles []string) bool {
 			return true
 		}
 	}
+
 	return false
 }

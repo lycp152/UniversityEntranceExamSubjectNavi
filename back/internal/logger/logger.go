@@ -143,6 +143,7 @@ func initErrorLogger() error {
 			return a
 		},
 	}))
+
 	return nil
 }
 
@@ -169,6 +170,7 @@ func initAccessLogger() error {
 			return a
 		},
 	}))
+
 	return nil
 }
 

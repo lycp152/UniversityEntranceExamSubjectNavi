@@ -660,7 +660,6 @@ type cacheTestCase struct {
 	sleep      time.Duration                            // キャッシュの有効期限を待機する時間
 	wantCount  int                                      // 期待される結果の件数
 	isInitial  bool                                     // 初期キャッシュ状態かどうか
-	validate   func(*testing.T, []models.University) // キャッシュ結果の検証関数
 }
 
 // validateCacheResponse はキャッシュテストのレスポンスを検証します

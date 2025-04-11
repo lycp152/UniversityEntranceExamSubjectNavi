@@ -38,7 +38,7 @@ func createTestUsers(t testing.TB, count int) []*models.User {
 }
 
 // assertUserEqual は2つのユーザーが等しいことを確認するヘルパー関数です
-func assertUserEqual(t *testing.T, got, want *models.User) {
+var _ = func(t *testing.T, got, want *models.User) {
 	t.Helper()
 
 	if got.Name != want.Name {
@@ -55,7 +55,7 @@ func assertUserEqual(t *testing.T, got, want *models.User) {
 }
 
 // waitForCondition は条件が満たされるまで待機するヘルパー関数です
-func waitForCondition(t *testing.T, condition func() bool, timeout time.Duration) bool {
+var _ = func(t *testing.T, condition func() bool, timeout time.Duration) bool {
 	t.Helper()
 
 	deadline := time.Now().Add(timeout)

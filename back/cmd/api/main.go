@@ -194,6 +194,7 @@ func main() {
 		log.Printf("ロガーの初期化に失敗しました: %v", err)
 		os.Exit(1)
 	}
+
 	applogger.Info(ctx, "アプリケーションを起動しています...")
 
 	// 設定の読み込み
@@ -234,11 +235,13 @@ func main() {
 
 	// シャットダウン用のWaitGroup
 	var wg sync.WaitGroup
+
 	wg.Add(1)
 
 	// サーバーの起動
 	go func() {
 		defer wg.Done()
+
 		if err := srv.Start(ctx); err != nil {
 			applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
 			sigChan <- syscall.SIGTERM

@@ -107,6 +107,10 @@ func initInfoLogger() error {
 		Compress:   config.Compress,
 	}
 
+	if err := infoFile.Rotate(); err != nil {
+		return fmt.Errorf("情報ログファイルのローテーションに失敗しました: %w", err)
+	}
+
 	infoLogger = slog.New(slog.NewJSONHandler(infoFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -134,6 +138,10 @@ func initErrorLogger() error {
 		Compress:   config.Compress,
 	}
 
+	if err := errorFile.Rotate(); err != nil {
+		return fmt.Errorf("エラーログファイルのローテーションに失敗しました: %w", err)
+	}
+
 	errorLogger = slog.New(slog.NewJSONHandler(errorFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -159,6 +167,10 @@ func initAccessLogger() error {
 		MaxBackups: config.MaxBackups,
 		MaxAge:     config.MaxAge,
 		Compress:   config.Compress,
+	}
+
+	if err := accessFile.Rotate(); err != nil {
+		return fmt.Errorf("アクセスログファイルのローテーションに失敗しました: %w", err)
 	}
 
 	accessLogger = slog.New(slog.NewJSONHandler(accessFile, &slog.HandlerOptions{

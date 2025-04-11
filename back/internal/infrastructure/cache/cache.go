@@ -89,7 +89,6 @@ type Transaction struct {
 }
 
 var (
-	defaultExpiration = 5 * time.Minute
 	cleanupInterval  = 10 * time.Minute
 	instance         *Cache
 	once            sync.Once

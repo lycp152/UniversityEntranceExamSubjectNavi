@@ -66,13 +66,17 @@ func setupHealthCheck(db *gorm.DB) {
 		sqlDB, err := db.DB()
 		if err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Database connection failed"))
+			if _, err := w.Write([]byte("データベース接続に失敗しました")); err != nil {
+				log.Printf("レスポンスの書き込みに失敗しました: %v", err)
+			}
 			return
 		}
 
 		if err := sqlDB.Ping(); err != nil {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Database connection failed"))
+			if _, err := w.Write([]byte("データベース接続に失敗しました")); err != nil {
+				log.Printf("レスポンスの書き込みに失敗しました: %v", err)
+			}
 			return
 		}
 
@@ -81,12 +85,16 @@ func setupHealthCheck(db *gorm.DB) {
 		runtime.ReadMemStats(&m)
 		if m.Alloc > 1000000000 { // 1GB以上使用している場合
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Memory usage too high"))
+			if _, err := w.Write([]byte("メモリ使用量が高すぎます")); err != nil {
+				log.Printf("レスポンスの書き込みに失敗しました: %v", err)
+			}
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("正常")); err != nil {
+			log.Printf("レスポンスの書き込みに失敗しました: %v", err)
+		}
 	})
 }
 

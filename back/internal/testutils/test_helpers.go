@@ -178,7 +178,11 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 	if err != nil {
 		t.Fatalf("ログファイルの作成に失敗しました: %v", err)
 	}
-	defer logFile.Close()
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			t.Errorf("ログファイルのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	// ロガーの初期化
 	fileHandler := slog.NewTextHandler(logFile, &slog.HandlerOptions{Level: config.LogLevel})
@@ -382,7 +386,10 @@ func TestMain(m *testing.M) {
 	}
 
 	// テスト用のキャッシュ設定（有効期限を5秒に設定）
-	cache.GetInstance().Set("test:config", struct{}{}, 5*time.Second)
+	if err := cache.GetInstance().Set("test:config", struct{}{}, 5*time.Second); err != nil {
+		fmt.Printf("キャッシュの設定に失敗しました: %v\n", err)
+		os.Exit(1)
+	}
 
 	// テストの実行
 	code := m.Run()
@@ -552,7 +559,12 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 		Fields: []string{"name"},
 	}))
 
-	cache.GetInstance().Set("test:config", struct{}{}, config.CacheTimeout)
+	if err := cache.GetInstance().Set("test:config", struct{}{}, config.CacheTimeout); err != nil {
+		return nil, nil, nil, &TestError{
+			Code:    "CACHE_SET_FAILED",
+			Message: fmt.Sprintf("キャッシュの設定に失敗しました: %v", err),
+		}
+	}
 
 	repo := repositories.NewUniversityRepository(db)
 	handler := university.NewUniversityHandler(repo, config.CacheTimeout)
@@ -665,7 +677,9 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 			TestCase: TestCase{
 				Name:       TestCaseCacheMiss,
 				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
-					cache.GetInstance().Delete("universities:all")
+					if err := cache.GetInstance().Delete("universities:all"); err != nil {
+						t.Errorf("キャッシュの削除に失敗しました: %v", err)
+					}
 				},
 				WantStatus: http.StatusOK,
 			},
@@ -684,7 +698,9 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 			TestCase: TestCase{
 				Name:       TestCaseCacheExpired,
 				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
-					cache.GetInstance().Delete("universities:all")
+					if err := cache.GetInstance().Delete("universities:all"); err != nil {
+						t.Errorf("キャッシュの削除に失敗しました: %v", err)
+					}
 				},
 				WantStatus: http.StatusOK,
 			},

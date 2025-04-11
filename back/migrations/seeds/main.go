@@ -94,11 +94,21 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 func setupEnvironment() {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("警告: .envファイルが見つかりません")
-		os.Setenv("DB_HOST", "localhost")
-		os.Setenv("DB_USER", "user")
-		os.Setenv("DB_PASSWORD", "password")
-		os.Setenv("DB_NAME", "university_exam_db")
-		os.Setenv("DB_PORT", "5432")
+		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
+			log.Printf("警告: DB_HOSTの設定に失敗しました: %v", err)
+		}
+		if err := os.Setenv("DB_USER", "user"); err != nil {
+			log.Printf("警告: DB_USERの設定に失敗しました: %v", err)
+		}
+		if err := os.Setenv("DB_PASSWORD", "password"); err != nil {
+			log.Printf("警告: DB_PASSWORDの設定に失敗しました: %v", err)
+		}
+		if err := os.Setenv("DB_NAME", "university_exam_db"); err != nil {
+			log.Printf("警告: DB_NAMEの設定に失敗しました: %v", err)
+		}
+		if err := os.Setenv("DB_PORT", "5432"); err != nil {
+			log.Printf("警告: DB_PORTの設定に失敗しました: %v", err)
+		}
 	}
 }
 

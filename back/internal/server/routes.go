@@ -231,11 +231,13 @@ func (r *Routes) Setup() error {
 			message = "リクエストの形式が不正です"
 		}
 
-		c.JSON(code, ErrorResponse{
+		if err := c.JSON(code, ErrorResponse{
 			Error:   http.StatusText(code),
 			Message: message,
 			Code:    code,
-		})
+		}); err != nil {
+			c.Logger().Errorf("レスポンスの書き込みに失敗しました: %v", err)
+		}
 	}
 
 	// APIルーティングの設定

@@ -27,7 +27,11 @@ func BenchmarkUserValidation(b *testing.B) {
 // BenchmarkUserRepository はユーザーリポジトリのパフォーマンスを測定します
 func BenchmarkUserRepository(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
@@ -45,7 +49,11 @@ func BenchmarkUserRepository(b *testing.B) {
 // BenchmarkConcurrentUserCreation は並行処理でのユーザー作成のパフォーマンスを測定します
 func BenchmarkConcurrentUserCreation(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(b, 100)
@@ -69,7 +77,11 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 // BenchmarkMemoryUsage はメモリ使用量を測定します
 func BenchmarkMemoryUsage(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(b, 1000)
@@ -85,7 +97,11 @@ func BenchmarkMemoryUsage(b *testing.B) {
 // BenchmarkResponseTime はAPIレスポンス時間を測定します
 func BenchmarkResponseTime(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
@@ -108,7 +124,11 @@ func BenchmarkResponseTime(b *testing.B) {
 // BenchmarkDatabaseConnection はデータベース接続のパフォーマンスを測定します
 func BenchmarkDatabaseConnection(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -122,7 +142,11 @@ func BenchmarkDatabaseConnection(b *testing.B) {
 // BenchmarkCachePerformance はキャッシュのパフォーマンスを測定します
 func BenchmarkCachePerformance(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{

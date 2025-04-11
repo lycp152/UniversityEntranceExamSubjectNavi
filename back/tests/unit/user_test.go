@@ -98,6 +98,7 @@ func TestUserValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			err := tt.user.Validate()
+
 			if tt.wantErr {
 				assert.Error(t, err, "エラーが期待されましたが、発生しませんでした")
 			} else {
@@ -186,6 +187,7 @@ func TestUserRepositoryConcurrent(t *testing.T) {
 		go func(u *models.User) {
 			defer wg.Done()
 			err := repo.Create(u)
+
 			assert.NoError(t, err, "ユーザーの作成に失敗しました")
 		}(user)
 	}

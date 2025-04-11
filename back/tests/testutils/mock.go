@@ -40,6 +40,7 @@ func (m *MockDB) Query(query string, args ...interface{}) (interface{}, error) {
 	if m.shouldError {
 		return nil, errors.New(m.errorMsg)
 	}
+
 	return nil, nil
 }
 
@@ -48,6 +49,7 @@ func (m *MockDB) QueryRow(query string, args ...interface{}) *Row {
 	if m.shouldError {
 		return &Row{err: errors.New(m.errorMsg)}
 	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -55,9 +57,11 @@ func (m *MockDB) QueryRow(query string, args ...interface{}) *Row {
 	if query == "SELECT id, name, email, password FROM users WHERE id = ?" {
 		id := args[0].(int)
 		user, ok := m.users[id]
+
 		if !ok {
 			return &Row{err: errors.New("ユーザーが見つかりません")}
 		}
+
 		return &Row{db: m, user: user}
 	}
 
@@ -107,16 +111,19 @@ func (m *MockDB) checkDuplicateEmail(email string) error {
 			return errors.New("メールアドレスが重複しています")
 		}
 	}
+
 	for _, user := range m.pendingUsers {
 		if user.Email == email {
 			return errors.New("メールアドレスが重複しています")
 		}
 	}
+
 	return nil
 }
 
 func (m *MockDB) createUser(args []interface{}) *User {
 	m.nextID++
+
 	return &User{
 		ID:       m.nextID,
 		Name:     args[0].(string),
@@ -129,8 +136,10 @@ func (m *MockDB) createUser(args []interface{}) *User {
 func (m *MockDB) Close() error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	m.users = make(map[int]*User)
 	m.pendingUsers = make(map[int]*User)
+
 	return nil
 }
 
@@ -139,12 +148,14 @@ func (m *MockDB) Begin() (*MockDB, error) {
 	if m.shouldError {
 		return nil, errors.New(m.errorMsg)
 	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	// 既存のインスタンスを再利用し、トランザクションフラグを設定
 	m.inTransaction = true
 	m.pendingUsers = make(map[int]*User)
+
 	return m, nil
 }
 
@@ -153,6 +164,7 @@ func (m *MockDB) Commit() error {
 	if m.shouldError {
 		return errors.New(m.errorMsg)
 	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -160,8 +172,10 @@ func (m *MockDB) Commit() error {
 	for id, user := range m.pendingUsers {
 		m.users[id] = user
 	}
+
 	m.pendingUsers = make(map[int]*User)
 	m.inTransaction = false
+
 	return nil
 }
 
@@ -170,12 +184,14 @@ func (m *MockDB) Rollback() error {
 	if m.shouldError {
 		return errors.New(m.errorMsg)
 	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	// トランザクション中のユーザーを破棄
 	m.pendingUsers = make(map[int]*User)
 	m.inTransaction = false
+
 	return nil
 }
 
@@ -189,6 +205,7 @@ func (r *Result) LastInsertId() (int64, error) {
 	if r.db.shouldError {
 		return 0, errors.New(r.db.errorMsg)
 	}
+
 	return int64(r.db.nextID), nil
 }
 
@@ -197,6 +214,7 @@ func (r *Result) RowsAffected() (int64, error) {
 	if r.db.shouldError {
 		return 0, errors.New(r.db.errorMsg)
 	}
+
 	return 1, nil
 }
 
@@ -212,15 +230,18 @@ func (r *Row) Scan(dest ...interface{}) error {
 	if r.err != nil {
 		return r.err
 	}
+
 	if r.db.shouldError {
 		return errors.New(r.db.errorMsg)
 	}
+
 	if r.user != nil {
 		*dest[0].(*int) = r.user.ID
 		*dest[1].(*string) = r.user.Name
 		*dest[2].(*string) = r.user.Email
 		*dest[3].(*string) = r.user.Password
 	}
+
 	return nil
 }
 
@@ -253,9 +274,11 @@ func (m *MockDB) VerifyUser(id int, expected *User) error {
 	if user.Name != expected.Name {
 		return errors.New("名前が一致しません")
 	}
+
 	if user.Email != expected.Email {
 		return errors.New("メールアドレスが一致しません")
 	}
+
 	if user.Password != expected.Password {
 		return errors.New("パスワードが一致しません")
 	}
@@ -267,6 +290,7 @@ func (m *MockDB) VerifyUser(id int, expected *User) error {
 func (m *MockDB) GetUserCount() int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
 	return len(m.users)
 }
 
@@ -280,5 +304,6 @@ func (m *MockDB) ClearUsers() error {
 	m.pendingUsers = make(map[int]*User)
 	m.nextID = 0
 	m.inTransaction = false
+
 	return nil
 }

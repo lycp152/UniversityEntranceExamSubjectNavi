@@ -40,6 +40,7 @@ func (r *UserRepository) Create(user *models.User) error {
 	if err != nil {
 		return err
 	}
+
 	user.ID = int(id)
 
 	return nil
@@ -52,6 +53,7 @@ func (r *UserRepository) FindByID(id int) (*models.User, error) {
 
 	user := &models.User{}
 	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+
 	if err != nil {
 		return nil, err
 	}

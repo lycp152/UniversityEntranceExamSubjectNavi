@@ -23,15 +23,19 @@ func (u *User) Validate() error {
 	if u.Name == "" {
 		return errors.New("名前は必須です")
 	}
+
 	if len([]rune(u.Name)) > 255 { // UTF-8文字列の長さを正しく計算
 		return errors.New("名前が長すぎます")
 	}
+
 	if u.Email == "" {
 		return errors.New("メールアドレスは必須です")
 	}
+
 	if !isValidEmail(u.Email) {
 		return errors.New("無効なメールアドレスです")
 	}
+
 	if len(u.Password) < 8 {
 		return errors.New("パスワードは8文字以上必要です")
 	}
@@ -40,9 +44,11 @@ func (u *User) Validate() error {
 	if containsXSS(u.Name) {
 		return errors.New(errInvalidChars)
 	}
+
 	if containsSQLInjection(u.Name) {
 		return errors.New(errInvalidChars)
 	}
+
 	if containsSpecialChars(u.Name) {
 		return errors.New(errInvalidChars)
 	}
@@ -61,11 +67,13 @@ func containsXSS(s string) bool {
 	dangerousPatterns := []string{
 		"<script>", "</script>", "javascript:", "onerror=", "onclick=", "onload=", "onmouseover=",
 	}
+
 	for _, pattern := range dangerousPatterns {
 		if strings.Contains(strings.ToLower(s), strings.ToLower(pattern)) {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -74,11 +82,13 @@ func containsSQLInjection(s string) bool {
 	dangerousPatterns := []string{
 		"'", "\"", ";", "--", "/*", "*/", "UNION", "SELECT", "INSERT", "UPDATE", "DELETE", "DROP",
 	}
+
 	for _, pattern := range dangerousPatterns {
 		if strings.Contains(strings.ToUpper(s), strings.ToUpper(pattern)) {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -89,5 +99,6 @@ func containsSpecialChars(s string) bool {
 			return true
 		}
 	}
+
 	return false
 }

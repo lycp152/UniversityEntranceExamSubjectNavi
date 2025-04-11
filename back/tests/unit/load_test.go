@@ -25,12 +25,15 @@ func TestLoad(t *testing.T) {
 	start := time.Now()
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(users))
 
 	for _, user := range users {
 		go func(u *models.User) {
 			defer wg.Done()
+
 			err := repo.Create(u)
+
 			if err != nil {
 				t.Errorf("ユーザーの作成に失敗しました: %v", err)
 			}
@@ -60,6 +63,7 @@ func TestConcurrentLoad(t *testing.T) {
 	users := createTestUsers(t, 100)
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(users))
 
 	start := time.Now()
@@ -67,7 +71,9 @@ func TestConcurrentLoad(t *testing.T) {
 	for _, user := range users {
 		go func(u *models.User) {
 			defer wg.Done()
+
 			err := repo.Create(u)
+
 			if err != nil {
 				t.Errorf("ユーザーの作成に失敗しました: %v", err)
 			}

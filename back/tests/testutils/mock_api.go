@@ -51,7 +51,10 @@ func (m *MockAPI) StartServer() *httptest.Server {
 func MockJSONResponse(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
+
+	err := json.NewEncoder(w).Encode(data)
+
+	if err != nil {
 		http.Error(w, "JSONエンコードに失敗しました", http.StatusInternalServerError)
 	}
 }

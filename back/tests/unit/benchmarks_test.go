@@ -23,6 +23,7 @@ func BenchmarkUserValidation(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_ = user.Validate()
 	}
@@ -45,6 +46,7 @@ func BenchmarkUserRepository(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_ = repo.Create(user)
 	}
@@ -63,13 +65,16 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 	users := createTestUsers(b, 100)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		var wg sync.WaitGroup
+
 		wg.Add(len(users))
 
 		for _, user := range users {
 			go func(u *models.User) {
 				defer wg.Done()
+
 				_ = repo.Create(u)
 			}(user)
 		}
@@ -91,6 +96,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 	users := createTestUsers(b, 1000)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		for _, user := range users {
 			_ = repo.Create(user)
@@ -115,10 +121,13 @@ func BenchmarkResponseTime(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		start := time.Now()
+
 		_ = repo.Create(user)
 		elapsed := time.Since(start)
+
 		if elapsed > 100*time.Millisecond {
 			b.Errorf("レスポンス時間が100msを超えています: %v", elapsed)
 		}
@@ -135,6 +144,7 @@ func BenchmarkDatabaseConnection(b *testing.B) {
 	}()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_, err := db.Begin()
 		if err != nil {
@@ -163,6 +173,7 @@ func BenchmarkCachePerformance(b *testing.B) {
 	_ = repo.Create(user)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_, err := repo.FindByID(1)
 		if err != nil {

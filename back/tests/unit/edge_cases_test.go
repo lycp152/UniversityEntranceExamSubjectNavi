@@ -92,12 +92,15 @@ func TestConcurrentAccess(t *testing.T) {
 	users := createTestUsers(t, 100)
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(users))
 
 	for _, user := range users {
 		go func(u *models.User) {
 			defer wg.Done()
+
 			err := repo.Create(u)
+
 			if err != nil {
 				t.Errorf("ユーザーの作成に失敗しました: %v", err)
 			}
@@ -128,6 +131,7 @@ func TestDatabaseErrorHandling(t *testing.T) {
 	}
 
 	err := repo.Create(user)
+
 	if err == nil {
 		t.Errorf("データベースエラーが期待されましたが、発生しませんでした")
 	}
@@ -138,6 +142,7 @@ func TestDatabaseErrorHandling(t *testing.T) {
 	// 新しいユーザーで再試行
 	user.Email = "new@example.com"
 	err = repo.Create(user)
+
 	if err != nil {
 		t.Errorf("ユーザーの作成に失敗しました: %v", err)
 	}

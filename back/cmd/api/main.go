@@ -25,6 +25,10 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	writeErrorMsg = "レスポンスの書き込みに失敗しました: %v"
+)
+
 // DB はデータベース接続を表す構造体です
 type DB struct {
 	*gorm.DB
@@ -59,41 +63,42 @@ func setupEnvironment(cfg *config.Config) error {
 	return nil
 }
 
+func checkDBHealth(db *gorm.DB) bool {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return false
+	}
+	return sqlDB.Ping() == nil
+}
+
+func checkMemoryHealth() bool {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	return m.Alloc <= 1000000000 // 1GB以下
+}
+
 // setupHealthCheck はヘルスチェックエンドポイントを設定します
 func setupHealthCheck(db *gorm.DB) {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		// データベース接続の確認
-		sqlDB, err := db.DB()
-		if err != nil {
+		if !checkDBHealth(db) {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			if _, err := w.Write([]byte("データベース接続に失敗しました")); err != nil {
-				log.Printf("レスポンスの書き込みに失敗しました: %v", err)
+				log.Printf(writeErrorMsg, err)
 			}
 			return
 		}
 
-		if err := sqlDB.Ping(); err != nil {
-			w.WriteHeader(http.StatusServiceUnavailable)
-			if _, err := w.Write([]byte("データベース接続に失敗しました")); err != nil {
-				log.Printf("レスポンスの書き込みに失敗しました: %v", err)
-			}
-			return
-		}
-
-		// メモリ使用量の確認
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
-		if m.Alloc > 1000000000 { // 1GB以上使用している場合
+		if !checkMemoryHealth() {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			if _, err := w.Write([]byte("メモリ使用量が高すぎます")); err != nil {
-				log.Printf("レスポンスの書き込みに失敗しました: %v", err)
+				log.Printf(writeErrorMsg, err)
 			}
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte("正常")); err != nil {
-			log.Printf("レスポンスの書き込みに失敗しました: %v", err)
+			log.Printf(writeErrorMsg, err)
 		}
 	})
 }
@@ -173,7 +178,9 @@ func main() {
 	defer cancel()
 
 	// ロガーの初期化
-	applogger.InitLoggers(applogger.DefaultConfig())
+	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
+		log.Fatalf("ロガーの初期化に失敗しました: %v", err)
+	}
 	applogger.Info(ctx, "アプリケーションを起動しています...")
 
 	// 設定の読み込み

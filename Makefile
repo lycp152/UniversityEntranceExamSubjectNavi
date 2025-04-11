@@ -61,7 +61,7 @@ dev-update: ## 依存関係を更新
 	@echo "🔄 依存関係を更新しています..."
 	make front-install
 	make back-install
-	make migrate
+	make back-migrate
 
 .PHONY: down
 down: ## 環境を停止
@@ -90,52 +90,73 @@ front-lint: ## フロントエンドのリントを実行
 
 # バックエンド関連
 .PHONY: back-install
-back-install: ## バックエンドの依存関係をインストール
+back-install: check-deps ## バックエンドの依存関係をインストール
 	cd back && go mod download && go mod tidy
 
 .PHONY: back-build
-back-build: ## バックエンドをビルド
+back-build: check-deps ## バックエンドをビルド
 	cd back && go build -o dist/app ./cmd/api
 
 .PHONY: back-test
-back-test: ## バックエンドのテストを実行
+back-test: check-deps ## バックエンドのテストを実行
 	cd back && go test ./... -v
 
 .PHONY: back-lint
-back-lint: ## バックエンドのリントを実行
+back-lint: check-deps ## バックエンドのリントを実行
 	cd back && golangci-lint run
 
+.PHONY: back-test-unit
+back-test-unit: check-deps ## バックエンドのユニットテストを実行
+	cd back && go test -v ./tests/unit/...
+
+.PHONY: back-test-integration
+back-test-integration: check-deps ## バックエンドの統合テストを実行
+	cd back && go test -v ./tests/integration/...
+
+.PHONY: back-test-e2e
+back-test-e2e: check-deps ## バックエンドのE2Eテストを実行
+	cd back && go test -v ./tests/e2e/...
+
+.PHONY: back-test-coverage
+back-test-coverage: check-deps ## バックエンドのテストカバレッジを生成
+	cd back && go test -coverprofile=coverage/coverage.out ./...
+	cd back && go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+
+.PHONY: back-test-mock
+back-test-mock: check-deps ## バックエンドのモックを生成
+	cd back && go generate ./...
+
 # データベース関連
-.PHONY: migrate
-migrate: ## マイグレーションを実行
+.PHONY: back-migrate
+back-migrate: check-deps ## マイグレーションを実行
 	@echo "🐘 マイグレーションを実行しています..."
 	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
 
-.PHONY: migrate-down
-migrate-down: ## マイグレーションをロールバック
+.PHONY: back-migrate-down
+back-migrate-down: check-deps ## マイグレーションをロールバック
 	@echo "🐘 マイグレーションをロールバックしています..."
 	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go down
 
-.PHONY: migrate-create
-migrate-create: ## 新しいマイグレーションファイルを作成
+.PHONY: back-migrate-create
+back-migrate-create: check-deps ## 新しいマイグレーションファイルを作成
 	cd back && go run migrations/scripts/main.go create $(name)
 
-.PHONY: seed
-seed: ## シードデータを投入
+.PHONY: back-seed
+back-seed: check-deps ## シードデータを投入
 	@echo "🌱 シードデータを投入しています..."
 	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
 
-.PHONY: db-backup
-db-backup: ## データベースのバックアップを作成
+.PHONY: back-db-backup
+back-db-backup: ## データベースのバックアップを作成
 	@echo "💾 データベースをバックアップしています..."
 	@mkdir -p ./backups
 	$(DOCKER_COMPOSE) exec db pg_dump -U postgres university_exam_db > ./backups/backup_$(CURRENT_TIME).sql
 	@echo "✅ バックアップが完了しました: ./backups/backup_$(CURRENT_TIME).sql"
 
-.PHONY: db-restore
-db-restore: ## データベースのバックアップを復元
+.PHONY: back-db-restore
+back-db-restore: ## データベースのバックアップを復元
 	@if [ -z "$(file)" ]; then \
-		echo "❌ 復元するファイルを指定してください: make db-restore file=<path>"; \
+		echo "❌ 復元するファイルを指定してください: make back-db-restore file=<path>"; \
 		exit 1; \
 	fi
 	@echo "🔄 データベースを復元しています..."
@@ -182,7 +203,7 @@ build: front-build back-build ## すべてのビルドを実行
 .PHONY: clean
 clean: ## ビルドファイルとキャッシュを削除
 	rm -rf front/dist front/.next front/node_modules
-	rm -rf back/dist back/tmp
+	rm -rf back/dist back/tmp back/coverage
 	docker system prune -f
 
 .PHONY: clean-volumes

@@ -55,6 +55,7 @@ func getEnvInt(key string, defaultValue int) int {
 			return n
 		}
 	}
+
 	return defaultValue
 }
 
@@ -65,6 +66,7 @@ func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 			return d
 		}
 	}
+
 	return defaultValue
 }
 
@@ -179,6 +181,7 @@ func CloseDB(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf(errMsgSQLDBClose, err)
 	}
+
 	return sqlDB.Close()
 }
 

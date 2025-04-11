@@ -88,6 +88,7 @@ func (h *SecurityHandler) GetCSRFToken(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogGetCSRFTokenSuccess)
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"token": tokenStr,
 		"meta": map[string]interface{}{

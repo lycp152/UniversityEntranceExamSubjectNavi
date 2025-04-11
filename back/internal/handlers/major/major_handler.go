@@ -48,12 +48,15 @@ func (h *MajorHandler) validateMajorRequest(major *models.Major) error {
 	if major.Name == "" {
 		return errors.NewValidationError("学科名は必須です")
 	}
+
 	if len(major.Name) > 100 {
 		return errors.NewValidationError("学科名は100文字以内で入力してください")
 	}
+
 	if major.DepartmentID == 0 {
 		return errors.NewValidationError("学部IDは必須です")
 	}
+
 	return nil
 }
 
@@ -87,7 +90,9 @@ func (h *MajorHandler) GetMajor(c echo.Context) error {
 		applogger.Error(ctx, "学科の取得に失敗しました (学部ID: %d, 学科ID: %d): %v", departmentID, majorID, err)
 		return errors.HandleError(c, err)
 	}
+
 	applogger.Info(ctx, logGetMajorSuccess, departmentID, majorID)
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": major,
 	})
@@ -119,6 +124,7 @@ func (h *MajorHandler) CreateMajor(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logCreateMajorSuccess, major.ID)
+
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"data": major,
 	})
@@ -150,6 +156,7 @@ func (h *MajorHandler) UpdateMajor(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logUpdateMajorSuccess, majorID)
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": major,
 	})
@@ -171,5 +178,6 @@ func (h *MajorHandler) DeleteMajor(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logDeleteMajorSuccess, majorID)
+
 	return c.NoContent(http.StatusNoContent)
 }

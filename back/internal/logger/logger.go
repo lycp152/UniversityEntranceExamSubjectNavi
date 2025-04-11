@@ -81,9 +81,11 @@ func InitLoggers(cfg Config) error {
 	if err := initInfoLogger(); err != nil {
 		return fmt.Errorf("情報ロガーの初期化に失敗しました: %w", err)
 	}
+
 	if err := initErrorLogger(); err != nil {
 		return fmt.Errorf("エラーロガーの初期化に失敗しました: %w", err)
 	}
+
 	if err := initAccessLogger(); err != nil {
 		return fmt.Errorf("アクセスロガーの初期化に失敗しました: %w", err)
 	}
@@ -114,6 +116,7 @@ func initInfoLogger() error {
 			return a
 		},
 	}))
+
 	return nil
 }
 

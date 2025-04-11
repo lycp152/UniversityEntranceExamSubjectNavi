@@ -484,6 +484,7 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 		for _, latency := range c.metrics.latencies {
 			totalLatency += latency
 		}
+
 		avgLatency = totalLatency / time.Duration(len(c.metrics.latencies))
 	}
 

@@ -65,7 +65,7 @@ jobs:
       - name: Install golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: latest
+          version: v2.0.2
           working-directory: back
           args: --format=github
           skip-cache: false

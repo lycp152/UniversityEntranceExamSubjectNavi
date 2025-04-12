@@ -13,13 +13,13 @@ const nextConfig: NextConfig = {
     // ビルド時の型チェックを有効化
     ignoreBuildErrors: false,
   },
-  // Turbopackの設定
-  experimental: {
-    turbo: {
-      resolveAlias: {
-        '@': './src',
-      },
-    },
+  // パスエイリアスの設定
+  webpack: config => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': './src',
+    };
+    return config;
   },
 };
 

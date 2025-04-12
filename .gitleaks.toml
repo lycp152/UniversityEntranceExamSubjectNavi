@@ -1,0 +1,31 @@
+title = "UniversityEntranceExamSubjectNavi Gitleaks Configuration"
+
+[[rules]]
+description = "AWS Access Key"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["key", "AWS"]
+
+[[rules]]
+description = "AWS Secret Key"
+regex = '''(?i)aws(.{0,20})?['\"][0-9a-zA-Z\/+]{40}['\"]'''
+tags = ["key", "AWS"]
+
+[[rules]]
+description = "GitHub Personal Access Token"
+regex = '''ghp_[a-zA-Z0-9]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+description = "GitHub OAuth Token"
+regex = '''gho_[a-zA-Z0-9]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+description = "SSH RSA Private Key"
+regex = '''-----BEGIN RSA PRIVATE KEY-----'''
+tags = ["key", "SSH"]
+
+[[rules]]
+description = "Database Connection String"
+regex = '''(postgres|mysql|mongodb)://[a-zA-Z0-9_]+:[a-zA-Z0-9_]+@[a-zA-Z0-9_.-]+:[0-9]+/[a-zA-Z0-9_]+'''
+tags = ["database", "credentials"]

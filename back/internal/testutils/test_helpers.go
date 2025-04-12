@@ -5,11 +5,11 @@ package testutils
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -493,7 +493,6 @@ func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc
 		var err error
 		reqBody, err = json.Marshal(config.Body)
 		if err != nil {
-
 			return nil, fmt.Errorf("リクエストボディのマーシャリングに失敗しました: %w", err)
 		}
 	}

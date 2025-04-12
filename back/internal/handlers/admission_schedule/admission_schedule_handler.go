@@ -1,3 +1,5 @@
+// Package admission_schedule は入試日程関連のHTTPリクエストを処理するハンドラーを提供します。
+// 入試日程の取得、作成、更新、削除のエンドポイントを実装しています。
 package admission_schedule
 
 import (

@@ -1,3 +1,5 @@
+// Package admission_info は募集情報関連のHTTPリクエストを処理するハンドラーを提供します。
+// 募集情報の取得、作成、更新、削除のエンドポイントを実装しています。
 package admission_info
 
 import (
@@ -17,10 +19,15 @@ import (
 )
 
 const (
+	// ErrMsgGetAdmissionInfo は募集情報取得失敗時のエラーメッセージフォーマットです
 	ErrMsgGetAdmissionInfo    = "募集情報の取得に失敗しました (入試日程ID: %d, 募集情報ID: %d): %v"
+	// ErrMsgCreateAdmissionInfo は募集情報作成失敗時のエラーメッセージフォーマットです
 	ErrMsgCreateAdmissionInfo = "募集情報の作成に失敗しました: %v"
+	// ErrMsgUpdateAdmissionInfo は募集情報更新失敗時のエラーメッセージフォーマットです
 	ErrMsgUpdateAdmissionInfo = "募集情報ID %dの更新に失敗しました: %v"
+	// ErrMsgDeleteAdmissionInfo は募集情報削除失敗時のエラーメッセージフォーマットです
 	ErrMsgDeleteAdmissionInfo = "募集情報ID %dの削除に失敗しました: %v"
+	// AdmissionInfoPath は募集情報のエンドポイントパスです
 	AdmissionInfoPath         = "/admission-info"
 )
 

@@ -10,6 +10,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// Package errors はアプリケーション全体で使用されるエラー型とエラー処理機能を提供します。
+// カスタムエラー型、エラーコード、エラーメッセージ、エラー変換機能を含みます。
+
 // Code はエラーコードを表します
 type Code string
 
@@ -271,12 +274,17 @@ func NewRateLimitError(message string, extra map[string]string) *Error {
 type DBErrorType int
 
 const (
-	// エラーの種類
+	// ErrorTypeNotFound はリソースが見つからないエラーを表します
 	ErrorTypeNotFound DBErrorType = iota
+	// ErrorTypeDuplicateKey は重複キーエラーを表します
 	ErrorTypeDuplicateKey
+	// ErrorTypeDeadlock はデッドロックエラーを表します
 	ErrorTypeDeadlock
+	// ErrorTypeUnexpected は予期せぬエラーを表します
 	ErrorTypeUnexpected
+	// ErrorTypeConnection は接続エラーを表します
 	ErrorTypeConnection
+	// ErrorTypeTimeout はタイムアウトエラーを表します
 	ErrorTypeTimeout
 )
 

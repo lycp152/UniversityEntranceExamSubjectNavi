@@ -336,7 +336,8 @@ type AdmissionSchedule struct {
 	Major         Major         `json:"-" gorm:"foreignKey:MajorID"` // 所属学科
 	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty"` // 入試情報一覧
 	_ struct{} `gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
-	TestTypes     []TestType    `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"` // 試験種別一覧
+	TestTypes     []TestType    `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID"`
+	_ struct{} `gorm:"constraint:OnDelete:CASCADE"` // 試験種別一覧
 }
 
 // Validate はAdmissionScheduleのバリデーションを行う
@@ -383,8 +384,10 @@ type AdmissionInfo struct {
 	BaseModel
 	AdmissionScheduleID uint `json:"admission_schedule_id" gorm:"not null;index:idx_info_schedule_year"` // 入試日程ID
 	Enrollment int `json:"enrollment" gorm:"not null;check:enrollment > 0 AND enrollment <= 9999"` // 募集人数
-	AcademicYear int `json:"academic_year" gorm:"not null;index:idx_info_schedule_year;check:academic_year >= 2000 AND academic_year <= 2100"` // 学年度
-	Status string `json:"status" gorm:"type:varchar(20);default:'draft';check:status in ('draft','published','archived')"` // ステータス
+	AcademicYear int `json:"academic_year" gorm:"not null;index:idx_info_schedule_year"`
+	_ struct{} `gorm:"check:academic_year >= 2000 AND academic_year <= 2100"` // 学年度
+	Status string `json:"status" gorm:"type:varchar(20);default:'draft'"`
+	_ struct{} `gorm:"check:status in ('draft','published','archived')"` // ステータス
 	AdmissionSchedule  AdmissionSchedule `json:"-" gorm:"foreignKey:AdmissionScheduleID"` // 所属入試日程
 	TestTypes []TestType `json:"test_types,omitempty" gorm:"many2many:admission_info_test_types"` // 試験種別一覧
 }
@@ -443,7 +446,8 @@ type TestType struct {
 	AdmissionScheduleID uint      `json:"admission_schedule_id" gorm:"not null;index:idx_test_schedule"` // 入試日程ID
 	Name               string    `json:"name" gorm:"not null;type:varchar(10);check:name in ('共通','二次')"` // 試験種別名
 	AdmissionSchedule  AdmissionSchedule `json:"-" gorm:"foreignKey:AdmissionScheduleID"` // 所属入試日程
-	Subjects           []Subject `json:"subjects,omitempty" gorm:"foreignKey:TestTypeID;constraint:OnDelete:CASCADE"` // 科目一覧
+	Subjects           []Subject `json:"subjects,omitempty" gorm:"foreignKey:TestTypeID"`
+	_ struct{} `gorm:"constraint:OnDelete:CASCADE"` // 科目一覧
 }
 
 // Validate はTestTypeのバリデーションを行う

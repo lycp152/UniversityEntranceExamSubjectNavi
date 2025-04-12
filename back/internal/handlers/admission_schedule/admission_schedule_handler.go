@@ -87,6 +87,7 @@ func (h *AdmissionScheduleHandler) validateMajorAndScheduleID(ctx context.Contex
 func (h *AdmissionScheduleHandler) UpdateAdmissionSchedule(c echo.Context) error {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
+
 	defer cancel()
 
 	majorID, scheduleID, err := h.validateMajorAndScheduleID(ctx, c)
@@ -105,14 +106,19 @@ func (h *AdmissionScheduleHandler) UpdateAdmissionSchedule(c echo.Context) error
 	schedule.MajorID = majorID
 
 	dbStart := time.Now()
-	if err := h.repo.UpdateAdmissionSchedule(&schedule); err != nil {
+	err = h.repo.UpdateAdmissionSchedule(&schedule)
+
+	if err != nil {
 		h.errorCounter.WithLabelValues(c.Request().Method, c.Path(), "database").Inc()
 		applogger.Error(ctx, "入試日程ID %dの更新に失敗しました: %v", scheduleID, err)
+
 		return errors.HandleError(c, err)
 	}
+
 	h.dbDuration.WithLabelValues("update").Observe(time.Since(dbStart).Seconds())
 
 	applogger.Info(ctx, "入試日程ID %dを更新しました", scheduleID)
 	h.requestDuration.WithLabelValues(c.Request().Method, c.Path(), "200").Observe(time.Since(start).Seconds())
+
 	return c.JSON(http.StatusOK, schedule)
 }

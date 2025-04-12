@@ -109,6 +109,7 @@ func NewConfig() (*Config, error) {
 // connectWithRetry はリトライ付きでデータベース接続を試みます
 func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 	var db *gorm.DB
+
 	var err error
 
 	for i := 0; i < config.RetryAttempts; i++ {

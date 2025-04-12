@@ -560,6 +560,7 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 	}
 
 	err := ParseResponse(rec, &resp)
+
 	if err != nil {
 		t.Fatalf("エラーレスポンスのパースに失敗しました: %v", err)
 	}

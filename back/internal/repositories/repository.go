@@ -366,6 +366,7 @@ func sanitizeName(name string) string {
 		if r < 32 || r == 127 {
 			return -1
 		}
+
 		return r
 	}, name)
 
@@ -692,6 +693,7 @@ func (r *universityRepository) UpdateMajor(major *models.Major) error {
 		if err := tx.Save(major).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -711,6 +713,7 @@ func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.Admissio
 		if err := tx.Save(schedule).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -829,6 +832,7 @@ func (r *universityRepository) CreateAdmissionInfo(info *models.AdmissionInfo) e
 	if err := r.db.Create(info).Error; err != nil {
 		return appErrors.NewDatabaseError("CreateAdmissionInfo", err, nil)
 	}
+
 	return nil
 }
 

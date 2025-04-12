@@ -64,6 +64,7 @@ func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interfac
 		applogger.Error(ctx, errorHandler.MsgBindRequestFailed, err)
 		return errorHandler.HandleError(c, err)
 	}
+
 	return nil
 }
 
@@ -72,12 +73,15 @@ func (h *Handler) validateDepartmentRequest(department *models.Department) error
 	if department.Name == "" {
 		return errors.NewValidationError("学部名は必須です")
 	}
+
 	if len(department.Name) > 100 {
 		return errors.NewValidationError("学部名は100文字以内で入力してください")
 	}
+
 	if department.UniversityID == 0 {
 		return errors.NewValidationError("大学IDは必須です")
 	}
+
 	return nil
 }
 
@@ -100,25 +104,32 @@ func (h *Handler) validateUniversityAndDepartmentID(ctx context.Context, c echo.
 func (h *Handler) GetDepartment(c echo.Context) error {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
+
 	defer cancel()
 
 	universityID, departmentID, err := h.validateUniversityAndDepartmentID(ctx, c)
+
 	if err != nil {
 		h.errorCounter.WithLabelValues(c.Request().Method, c.Path(), "validation").Inc()
+
 		return errors.HandleError(c, err)
 	}
 
 	dbStart := time.Now()
 	department, err := h.repo.FindDepartment(universityID, departmentID)
+
 	if err != nil {
 		h.errorCounter.WithLabelValues(c.Request().Method, c.Path(), "database").Inc()
 		applogger.Error(ctx, "学部の取得に失敗しました (大学ID: %d, 学部ID: %d): %v", universityID, departmentID, err)
+
 		return errors.HandleError(c, err)
 	}
+
 	h.dbDuration.WithLabelValues("find").Observe(time.Since(dbStart).Seconds())
 
 	applogger.Info(ctx, logging.LogGetDepartmentSuccess, universityID, departmentID)
 	h.requestDuration.WithLabelValues(c.Request().Method, c.Path(), "200").Observe(time.Since(start).Seconds())
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": department,
 	})
@@ -150,6 +161,7 @@ func (h *Handler) CreateDepartment(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogCreateDepartmentSuccess, department.ID)
+
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"data": department,
 	})
@@ -181,6 +193,7 @@ func (h *Handler) UpdateDepartment(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogUpdateDepartmentSuccess, departmentID)
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": department,
 	})
@@ -202,5 +215,6 @@ func (h *Handler) DeleteDepartment(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogDeleteDepartmentSuccess, departmentID)
+
 	return c.NoContent(http.StatusNoContent)
 }

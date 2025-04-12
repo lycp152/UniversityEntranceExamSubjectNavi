@@ -395,6 +395,7 @@ func main() {
 		if err := tx.Rollback().Error; err != nil {
 			log.Printf("ロールバックに失敗しました: %v", err)
 		}
+
 		log.Printf("シードデータの投入に失敗しました: %v", err)
 		os.Exit(1)
 	}
@@ -403,6 +404,7 @@ func main() {
 		if err := tx.Rollback().Error; err != nil {
 			log.Printf("ロールバックに失敗しました: %v", err)
 		}
+
 		log.Printf("トランザクションのコミットに失敗しました: %v", err)
 		os.Exit(1)
 	}

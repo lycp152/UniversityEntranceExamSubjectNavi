@@ -92,7 +92,7 @@ type IUniversityRepository interface {
 // UniversityRepository 実装
 type universityRepository struct {
 	db    *gorm.DB
-	cache *cache.CacheManager
+	cache *cache.Manager
 }
 
 // NewUniversityRepository はリポジトリのインスタンスを生成します

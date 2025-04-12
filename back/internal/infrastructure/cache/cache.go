@@ -1,3 +1,5 @@
+// Package cache はキャッシュ機能を提供するパッケージです。
+// このパッケージは、アプリケーション全体で使用されるキャッシュの実装を提供します。
 package cache
 
 import (
@@ -12,8 +14,8 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 )
 
-// CacheInterface はキャッシュのインターフェースを定義します
-type CacheInterface interface {
+// Interface はキャッシュのインターフェースを定義します
+type Interface interface {
 	Set(key string, value interface{}, duration time.Duration) error
 	Get(key string) (interface{}, bool, error)
 	Delete(key string) error
@@ -46,6 +48,15 @@ type PerformanceMetrics struct {
 	FailedOperations  int64
 }
 
+// Stats はキャッシュの統計情報を保持します
+type Stats struct {
+	Hits        int64
+	Misses      int64
+	Evictions   int64
+	MemoryUsage int64
+	ItemCount   int
+}
+
 // エラーコードの定義
 const (
 	ErrEmptyKey = "キャッシュキーは空にできません"
@@ -57,20 +68,11 @@ const (
 	ErrNoTransaction = "アクティブなトランザクションがありません"
 )
 
-// CacheStats はキャッシュの統計情報を保持します
-type CacheStats struct {
-	Hits        int64
-	Misses      int64
-	Evictions   int64
-	MemoryUsage int64
-	ItemCount   int
-}
-
 // Cache はキャッシュの実装を提供します
 type Cache struct {
 	items       map[string]cacheItem
 	mu          sync.RWMutex
-	stats       CacheStats
+	stats       Stats
 	metrics     struct {
 		latencies     []time.Duration
 		evictions     int64
@@ -102,12 +104,12 @@ func NewTransaction() *Transaction {
 }
 
 // GetInstance はキャッシュのシングルトンインスタンスを返します
-func GetInstance() CacheInterface {
+func GetInstance() Interface {
 	once.Do(func() {
 		instance = &Cache{
 			items:      make(map[string]cacheItem),
 			maxSize:    defaultMaxSize,
-			stats:      CacheStats{},
+			stats:      Stats{},
 		}
 		go instance.startCleanup()
 	})
@@ -303,35 +305,37 @@ func (c *Cache) ClearAll() error {
 	return nil
 }
 
+// キャッシュキーの定義
 const (
-	cacheDuration = 5 * time.Minute
-	cacheCleanupInterval = 10 * time.Minute
+	// CacheKeyAllUniversities は全ての大学データのキャッシュキーを表します
 	CacheKeyAllUniversities = "universities:all"
 	CacheKeyUniversityFormat = "universities:%d"
 	CacheKeyDepartmentFormat = "departments:%d:%d"
 	maxCacheSize = 1000 // 最大キャッシュエントリ数
 	maxLatencyHistory = 1000
 	defaultMaxSize = 1000
+	cacheDuration = 5 * time.Minute
+	cacheCleanupInterval = 10 * time.Minute
 )
 
-// CacheManager はキャッシュ管理を担当します
-type CacheManager struct {
+// Manager はキャッシュ管理を担当します
+type Manager struct {
 	cache *gocache.Cache
 	mutex *sync.RWMutex
-	stats *CacheStats
+	stats *Stats
 }
 
-// newCacheManager は新しいキャッシュマネージャーを作成します
-func NewCacheManager() *CacheManager {
-	return &CacheManager{
+// NewCacheManager は新しいキャッシュマネージャーを作成します
+func NewCacheManager() *Manager {
+	return &Manager{
 		cache: gocache.New(cacheDuration, cacheCleanupInterval),
 		mutex: &sync.RWMutex{},
-		stats: &CacheStats{},
+		stats: &Stats{},
 	}
 }
 
 // GetFromCache はキャッシュから値を取得します
-func (cm *CacheManager) GetFromCache(key string) (interface{}, bool) {
+func (cm *Manager) GetFromCache(key string) (interface{}, bool) {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 
@@ -352,7 +356,7 @@ func (cm *CacheManager) GetFromCache(key string) (interface{}, bool) {
 }
 
 // SetCache はキャッシュに値を設定します
-func (cm *CacheManager) SetCache(key string, value interface{}) {
+func (cm *Manager) SetCache(key string, value interface{}) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 
@@ -366,7 +370,7 @@ func (cm *CacheManager) SetCache(key string, value interface{}) {
 }
 
 // ClearAllRelatedCache は大学に関連する全てのキャッシュをクリアします
-func (cm *CacheManager) ClearAllRelatedCache(universityID uint) {
+func (cm *Manager) ClearAllRelatedCache(universityID uint) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 
@@ -387,7 +391,7 @@ func (cm *CacheManager) ClearAllRelatedCache(universityID uint) {
 }
 
 // ClearSubjectsCache は科目のキャッシュをクリアします
-func (cm *CacheManager) ClearSubjectsCache(testTypeID uint) {
+func (cm *Manager) ClearSubjectsCache(testTypeID uint) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 
@@ -396,7 +400,7 @@ func (cm *CacheManager) ClearSubjectsCache(testTypeID uint) {
 }
 
 // GetStats はキャッシュの統計情報を返します
-func (cm *CacheManager) GetStats() (hits, misses int64) {
+func (cm *Manager) GetStats() (hits, misses int64) {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 
@@ -404,7 +408,7 @@ func (cm *CacheManager) GetStats() (hits, misses int64) {
 }
 
 // GetHitRate はキャッシュのヒット率を返します
-func (cm *CacheManager) GetHitRate() float64 {
+func (cm *Manager) GetHitRate() float64 {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 

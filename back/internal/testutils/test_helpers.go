@@ -186,7 +186,7 @@ func DefaultTestConfig() *TestConfig {
 type TestHelper struct {
 	t       *testing.T
 	e       *echo.Echo
-	handler *university.UniversityHandler
+	handler *university.Handler
 	db      *gorm.DB
 	config  *TestConfig
 	logger  *slog.Logger
@@ -456,7 +456,7 @@ func TestMain(m *testing.M) {
 // 戻り値:
 //   - *echo.Echo: テスト用のEchoインスタンス
 //   - *UniversityHandler: テスト対象のハンドラー
-func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *university.UniversityHandler) {
+func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *university.Handler) {
 	e := echo.New()
 	for _, m := range middlewares {
 		e.Use(m)
@@ -574,7 +574,7 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 }
 
 // SetupTestServer はテストサーバーをセットアップします
-func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.UniversityHandler, *gorm.DB, error) {
+func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.Handler, *gorm.DB, error) {
 	t.Helper()
 
 	if err := os.MkdirAll(config.LogDir, DefaultLogDirPerm); err != nil {
@@ -682,7 +682,7 @@ func ValidateResponse(t *testing.T, rec *httptest.ResponseRecorder, tc TestCase)
 // この構造体はすべてのテストケースで共通して使用される基本情報を保持します
 type TestCase struct {
 	Name       string                                    // テストケースの名前
-	Setup      func(*testing.T, *echo.Echo, *university.UniversityHandler) // テストケースのセットアップ関数
+	Setup      func(*testing.T, *echo.Echo, *university.Handler) // テストケースのセットアップ関数
 	WantStatus int                                      // 期待されるステータスコード
 	WantError  string                                   // 期待されるエラーメッセージ
 	Query      string                                   // 検索クエリ
@@ -734,7 +734,7 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheMiss,
-				Setup: func(t *testing.T, _ *echo.Echo, _ *university.UniversityHandler) {
+				Setup: func(t *testing.T, _ *echo.Echo, _ *university.Handler) {
 					if err := cache.GetInstance().Delete("universities:all"); err != nil {
 						t.Errorf("キャッシュの削除に失敗しました: %v", err)
 					}
@@ -755,7 +755,7 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheExpired,
-				Setup: func(t *testing.T, _ *echo.Echo, _ *university.UniversityHandler) {
+				Setup: func(t *testing.T, _ *echo.Echo, _ *university.Handler) {
 					if err := cache.GetInstance().Delete("universities:all"); err != nil {
 						t.Errorf("キャッシュの削除に失敗しました: %v", err)
 					}

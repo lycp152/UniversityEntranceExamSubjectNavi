@@ -1,3 +1,5 @@
+// Package subject は科目関連のHTTPリクエストを処理するパッケージです。
+// このパッケージは、科目の作成、取得、更新、削除などの操作を提供します。
 package subject
 
 import (
@@ -15,29 +17,32 @@ import (
 )
 
 const (
-	// エラーメッセージ
+	// ErrMsgSubjectNameRequired は科目名が未入力の場合のエラーメッセージです
 	ErrMsgSubjectNameRequired   = "科目名は必須です"
+	// ErrMsgSubjectNameLength は科目名の長さが制限を超えた場合のエラーメッセージです
 	ErrMsgSubjectNameLength    = "科目名は100文字以内で入力してください"
+	// ErrMsgTestTypeIDRequired は試験種別IDが未入力の場合のエラーメッセージです
 	ErrMsgTestTypeIDRequired   = "試験種別IDは必須です"
+	// ErrMsgBatchUpdateFailed は科目の一括更新に失敗した場合のエラーメッセージです
 	ErrMsgBatchUpdateFailed    = "科目の一括更新に失敗しました"
 )
 
-// SubjectHandler は科目関連のHTTPリクエストを処理
-type SubjectHandler struct {
+// Handler は科目関連のHTTPリクエストを処理
+type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
 }
 
-// NewSubjectHandler は新しいSubjectHandlerインスタンスを生成
-func NewSubjectHandler(repo repositories.IUniversityRepository, timeout time.Duration) *SubjectHandler {
-	return &SubjectHandler{
+// NewSubjectHandler は新しいHandlerインスタンスを生成
+func NewSubjectHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
+	return &Handler{
 		repo:    repo,
 		timeout: timeout,
 	}
 }
 
 // bindRequest はリクエストボディのバインディングを共通化
-func (h *SubjectHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
+func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
 		return errors.HandleError(c, err)
@@ -47,7 +52,7 @@ func (h *SubjectHandler) bindRequest(ctx context.Context, c echo.Context, data i
 }
 
 // validateSubjectRequest は科目リクエストのバリデーションを共通化
-func (h *SubjectHandler) validateSubjectRequest(subject *models.Subject) error {
+func (h *Handler) validateSubjectRequest(subject *models.Subject) error {
 	if subject.Name == "" {
 		return errors.NewValidationError(ErrMsgSubjectNameRequired)
 	}
@@ -64,7 +69,7 @@ func (h *SubjectHandler) validateSubjectRequest(subject *models.Subject) error {
 }
 
 // GetSubject は指定された科目の情報を取得
-func (h *SubjectHandler) GetSubject(c echo.Context) error {
+func (h *Handler) GetSubject(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -92,7 +97,7 @@ func (h *SubjectHandler) GetSubject(c echo.Context) error {
 }
 
 // CreateSubject は新しい科目を作成
-func (h *SubjectHandler) CreateSubject(c echo.Context) error {
+func (h *Handler) CreateSubject(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -124,7 +129,7 @@ func (h *SubjectHandler) CreateSubject(c echo.Context) error {
 }
 
 // UpdateSubject は既存の科目を更新
-func (h *SubjectHandler) UpdateSubject(c echo.Context) error {
+func (h *Handler) UpdateSubject(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -156,7 +161,7 @@ func (h *SubjectHandler) UpdateSubject(c echo.Context) error {
 }
 
 // DeleteSubject は科目を削除
-func (h *SubjectHandler) DeleteSubject(c echo.Context) error {
+func (h *Handler) DeleteSubject(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -176,7 +181,7 @@ func (h *SubjectHandler) DeleteSubject(c echo.Context) error {
 }
 
 // UpdateSubjectsBatch は複数の科目を一括で更新
-func (h *SubjectHandler) UpdateSubjectsBatch(c echo.Context) error {
+func (h *Handler) UpdateSubjectsBatch(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 

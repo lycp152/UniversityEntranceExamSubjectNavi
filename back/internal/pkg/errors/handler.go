@@ -1,3 +1,5 @@
+// Package errors はアプリケーションのエラー処理を管理するパッケージです
+// エラーの生成、ラップ、HTTPレスポンスへの変換などの機能を提供します
 package errors
 
 import (

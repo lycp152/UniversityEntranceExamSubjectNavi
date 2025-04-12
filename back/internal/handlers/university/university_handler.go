@@ -18,44 +18,47 @@ import (
 const (
 	// エラーメッセージ
 	ErrMsgUniversityNotFound = "大学が見つかりません: %s"
+	// ErrMsgInvalidUniversityID は大学IDの形式が不正な場合のエラーメッセージです
 	ErrMsgInvalidUniversityID = "大学IDの形式が不正です"
 	ErrMsgCreateUniversityFailed = "大学の作成に失敗しました"
 	ErrMsgUpdateUniversityFailed = "大学の更新に失敗しました"
 	ErrMsgDeleteUniversityFailed = "大学の削除に失敗しました"
+	// ErrMsgCSRFTokenGeneration はCSRFトークンの生成に失敗した場合のエラーメッセージです
 	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrMsgCSRFTokenGeneration = "CSRFトークンの生成に失敗しました"
+	// ErrMsgCSRFTokenInvalidType はCSRFトークンの型が不正な場合のエラーメッセージです
 	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrMsgCSRFTokenInvalidType = "CSRFトークンの型が不正です"
 	ErrMsgGetUniversitiesFailed = "大学一覧の取得に失敗しました"
 	ErrMsgGetUniversityFailed = "大学の取得に失敗しました"
 )
 
-// UniversityHandler は大学関連のHTTPリクエストを処理するハンドラー
-type UniversityHandler struct {
+// Handler は大学関連のHTTPリクエストを処理するハンドラー
+type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
 }
 
-// NewUniversityHandler は新しいUniversityHandlerインスタンスを生成
-func NewUniversityHandler(repo repositories.IUniversityRepository, timeout time.Duration) *UniversityHandler {
-	return &UniversityHandler{
+// NewUniversityHandler は新しいHandlerインスタンスを生成
+func NewUniversityHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
+	return &Handler{
 		repo:    repo,
 		timeout: timeout,
 	}
 }
 
 // SetRepo はリポジトリを設定します（テスト用）
-func (h *UniversityHandler) SetRepo(repo repositories.IUniversityRepository) {
+func (h *Handler) SetRepo(repo repositories.IUniversityRepository) {
 	h.repo = repo
 }
 
 // GetRepo はリポジトリを取得します（テスト用）
-func (h *UniversityHandler) GetRepo() repositories.IUniversityRepository {
+func (h *Handler) GetRepo() repositories.IUniversityRepository {
 	return h.repo
 }
 
 // handleError はエラーをHTTPレスポンスに変換
-func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err error) error {
+func (h *Handler) handleError(ctx context.Context, c echo.Context, err error) error {
 	switch e := err.(type) {
 	case *customErrors.Error:
 		statusCode := http.StatusInternalServerError
@@ -88,7 +91,7 @@ func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err
 }
 
 // bindRequest はリクエストボディのバインディング
-func (h *UniversityHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
+func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errorMessages.MsgBindDataFailed, err)
 		return customErrors.NewInvalidInputError("request", errorMessages.MsgInvalidRequestBody, nil)
@@ -98,7 +101,7 @@ func (h *UniversityHandler) bindRequest(ctx context.Context, c echo.Context, dat
 }
 
 // GetUniversities は大学一覧を取得
-func (h *UniversityHandler) GetUniversities(c echo.Context) error {
+func (h *Handler) GetUniversities(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -114,7 +117,7 @@ func (h *UniversityHandler) GetUniversities(c echo.Context) error {
 }
 
 // GetUniversity は指定された大学の情報を取得
-func (h *UniversityHandler) GetUniversity(c echo.Context) error {
+func (h *Handler) GetUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -135,7 +138,7 @@ func (h *UniversityHandler) GetUniversity(c echo.Context) error {
 }
 
 // CreateUniversity は新しい大学を作成します
-func (h *UniversityHandler) CreateUniversity(c echo.Context) error {
+func (h *Handler) CreateUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -155,7 +158,7 @@ func (h *UniversityHandler) CreateUniversity(c echo.Context) error {
 }
 
 // UpdateUniversity は既存の大学を更新します
-func (h *UniversityHandler) UpdateUniversity(c echo.Context) error {
+func (h *Handler) UpdateUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -181,7 +184,7 @@ func (h *UniversityHandler) UpdateUniversity(c echo.Context) error {
 }
 
 // DeleteUniversity は大学を削除します
-func (h *UniversityHandler) DeleteUniversity(c echo.Context) error {
+func (h *Handler) DeleteUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -201,7 +204,7 @@ func (h *UniversityHandler) DeleteUniversity(c echo.Context) error {
 }
 
 // GetCSRFToken はCSRFトークンを返します
-func (h *UniversityHandler) GetCSRFToken(c echo.Context) error {
+func (h *Handler) GetCSRFToken(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 

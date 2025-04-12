@@ -378,7 +378,7 @@ func (a *AdmissionSchedule) Validate() error {
 // AdmissionInfo は入試情報エンティティを表現する
 type AdmissionInfo struct {
 	BaseModel
-	AdmissionScheduleID uint            `json:"admission_schedule_id" gorm:"not null;index:idx_info_schedule_year"` // 入試日程ID
+	AdmissionScheduleID uint `json:"admission_schedule_id" gorm:"not null;index:idx_info_schedule_year"` // 入試日程ID
 	Enrollment int `json:"enrollment" gorm:"not null;check:enrollment > 0 AND enrollment <= 9999"` // 募集人数
 	AcademicYear int `json:"academic_year" gorm:"not null;index:idx_info_schedule_year;check:academic_year >= 2000 AND academic_year <= 2100"` // 学年度
 	Status string `json:"status" gorm:"type:varchar(20);default:'draft';check:status in ('draft','published','archived')"` // ステータス

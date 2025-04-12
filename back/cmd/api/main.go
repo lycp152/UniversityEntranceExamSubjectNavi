@@ -202,7 +202,7 @@ func main() {
 	cfg, err := config.New()
 	if err != nil {
 		applogger.Error(ctx, "設定の読み込みに失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("設定の読み込みに失敗しました: %v", err)
 	}
 
 	// 環境変数の読み込みと検証

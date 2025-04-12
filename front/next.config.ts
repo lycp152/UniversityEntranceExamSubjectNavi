@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
     // ビルド時の型チェックを有効化
     ignoreBuildErrors: false,
   },
+  // Turbopackの設定
+  turbopack: {
+    resolveAlias: {
+      '@': './src',
+    },
+  },
 };
 
 export default nextConfig;

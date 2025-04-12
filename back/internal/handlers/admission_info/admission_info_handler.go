@@ -113,6 +113,7 @@ func (h *AdmissionInfoHandler) bindRequest(ctx context.Context, c echo.Context, 
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
 		return errors.NewValidationError(errors.MsgBindRequestFailed)
 	}
+
 	return nil
 }
 
@@ -160,6 +161,7 @@ func (h *AdmissionInfoHandler) GetAdmissionInfo(c echo.Context) error {
 	if err != nil {
 		h.errorCounter.WithLabelValues("GET", AdmissionInfoPath, "database").Inc()
 		applogger.Error(ctx, ErrMsgGetAdmissionInfo, scheduleID, infoID, err)
+
 		return errors.HandleError(c, err)
 	}
 
@@ -169,6 +171,7 @@ func (h *AdmissionInfoHandler) GetAdmissionInfo(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogGetAdmissionInfoSuccess, scheduleID, infoID)
+
 	return c.JSON(http.StatusOK, info)
 }
 
@@ -190,10 +193,12 @@ func (h *AdmissionInfoHandler) CreateAdmissionInfo(c echo.Context) error {
 	info.AdmissionScheduleID = scheduleID
 	if err := h.repo.CreateAdmissionInfo(&info); err != nil {
 		applogger.Error(ctx, ErrMsgCreateAdmissionInfo, err)
+
 		return errors.HandleError(c, err)
 	}
 
 	applogger.Info(ctx, logging.LogCreateAdmissionInfoSuccess, info.ID)
+
 	return c.JSON(http.StatusCreated, info)
 }
 
@@ -214,6 +219,7 @@ func (h *AdmissionInfoHandler) UpdateAdmissionInfo(c echo.Context) error {
 
 	info.ID = infoID
 	info.AdmissionScheduleID = scheduleID
+
 	if err := h.repo.UpdateAdmissionInfo(&info); err != nil {
 		applogger.Error(ctx, ErrMsgUpdateAdmissionInfo, infoID, err)
 		return errors.HandleError(c, err)

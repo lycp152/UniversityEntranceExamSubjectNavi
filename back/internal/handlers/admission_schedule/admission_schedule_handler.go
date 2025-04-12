@@ -65,6 +65,7 @@ func (h *AdmissionScheduleHandler) bindRequest(ctx context.Context, c echo.Conte
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
 		return errors.HandleError(c, err)
 	}
+
 	return nil
 }
 

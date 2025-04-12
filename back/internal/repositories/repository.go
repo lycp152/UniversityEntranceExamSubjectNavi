@@ -163,6 +163,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 	}
 
 	var universities []models.University
+
 	var totalCount int64
 
 	// 総件数を取得
@@ -175,6 +176,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 
 	// バッチサイズを設定
 	const batchSize = 100
+
 	var processedCount int64
 
 	// バッチ処理でデータを取得

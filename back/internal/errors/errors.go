@@ -116,6 +116,7 @@ func NewNotFoundError(resource string, id uint, extra map[string]string) *Error 
 		Line:      line,
 		Timestamp: time.Now(),
 	}
+
 	return err.WithStack()
 }
 
@@ -133,6 +134,7 @@ func NewInvalidInputError(field, message string, extra map[string]string) *Error
 		Line:      line,
 		Timestamp: time.Now(),
 	}
+
 	return err.WithStack()
 }
 
@@ -150,12 +152,14 @@ func NewDatabaseError(operation string, err error, extra map[string]string) *Err
 		Line:      line,
 		Timestamp: time.Now(),
 	}
+
 	return dbErr.WithStack()
 }
 
 // NewValidationError は新しいバリデーションエラーを生成します
 func NewValidationError(field, message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeValidationError,
 		Message: fmt.Sprintf("フィールド %s のバリデーションに失敗しました: %s", field, message),
@@ -173,6 +177,7 @@ func NewValidationError(field, message string, extra map[string]string) *Error {
 // NewSystemError は新しいシステムエラーを生成します
 func NewSystemError(message string, err error, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeSystemError,
 		Message: message,
@@ -190,6 +195,7 @@ func NewSystemError(message string, err error, extra map[string]string) *Error {
 // NewAuthenticationError は新しい認証エラーを生成します
 func NewAuthenticationError(message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeAuthError,
 		Message: message,
@@ -322,16 +328,20 @@ func (e *DBError) Is(target error) bool {
 	if target == nil {
 		return e == nil
 	}
+
 	if t, ok := target.(*DBError); ok {
 		return e.Type == t.Type
 	}
+
 	return false
 }
 
 // NewDBError は新しいDBErrorを作成します
 func NewDBError(errorType DBErrorType, err error) *DBError {
 	_, file, line, _ := runtime.Caller(1)
+
 	var message string
+
 	switch errorType {
 	case ErrorTypeNotFound:
 		message = errMsgNotFound

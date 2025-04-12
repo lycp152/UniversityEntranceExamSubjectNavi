@@ -129,6 +129,7 @@ func (b *TestUniversityBuilder) WithDepartment(name string) *TestUniversityBuild
 		Name: name,
 	}
 	b.university.Departments = append(b.university.Departments, department)
+
 	return b
 }
 

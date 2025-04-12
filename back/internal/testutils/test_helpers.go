@@ -63,6 +63,7 @@ func generateRandomToken() string {
 	if _, err := rand.Read(b); err != nil {
 		return "test-csrf-token" // フォールバック値
 	}
+
 	return base64.URLEncoding.EncodeToString(b)
 }
 
@@ -71,6 +72,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -546,12 +548,6 @@ func ParseResponse(rec *httptest.ResponseRecorder, v interface{}) error {
 
 // validateErrorResponse はエラーレスポンスを検証します。
 // 期待されるステータスコードとエラーメッセージと実際のレスポンスを比較します。
-//
-// 引数:
-//   - t: テストヘルパー
-//   - rec: レスポンスレコーダー
-//   - wantStatus: 期待されるHTTPステータスコード
-//   - wantError: 期待されるエラーメッセージ
 func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantStatus int, wantError string) {
 	t.Helper()
 
@@ -563,7 +559,8 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 		Error string `json:"error"`
 	}
 
-	if err := ParseResponse(rec, &resp); err != nil {
+	err := ParseResponse(rec, &resp)
+	if err != nil {
 		t.Fatalf("エラーレスポンスのパースに失敗しました: %v", err)
 	}
 

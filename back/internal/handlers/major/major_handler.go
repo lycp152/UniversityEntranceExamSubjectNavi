@@ -42,6 +42,7 @@ func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interfac
 		applogger.Error(ctx, "リクエストのバインドに失敗しました: %v", err)
 		return errors.HandleError(c, err)
 	}
+
 	return nil
 }
 

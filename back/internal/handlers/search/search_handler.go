@@ -34,15 +34,19 @@ func NewSearchHandler(repo repositories.IUniversityRepository, timeout time.Dura
 // validateSearchQuery は検索クエリのバリデーションを共通化
 func (h *SearchHandler) validateSearchQuery(query string) error {
 	query = strings.TrimSpace(query)
+
 	if query == "" {
 		return errorHandler.NewValidationError("検索クエリは必須です")
 	}
+
 	if len(query) > maxQueryLength {
 		return errorHandler.NewValidationError("検索クエリは100文字以内で入力してください")
 	}
+
 	if strings.ContainsAny(query, ";%") {
 		return errorHandler.NewValidationError("検索クエリに不正な文字が含まれています")
 	}
+
 	return nil
 }
 
@@ -52,6 +56,7 @@ func (h *SearchHandler) SearchUniversities(c echo.Context) error {
 	defer cancel()
 
 	query := strings.TrimSpace(c.QueryParam("q"))
+
 	if err := h.validateSearchQuery(query); err != nil {
 		applogger.Error(ctx, "検索クエリのバリデーションに失敗しました: %v", err)
 		return errorHandler.HandleError(c, err)
@@ -59,12 +64,14 @@ func (h *SearchHandler) SearchUniversities(c echo.Context) error {
 
 	applogger.Info(ctx, "大学の検索を開始します: query=%s", query)
 	universities, err := h.repo.Search(query)
+
 	if err != nil {
 		applogger.Error(ctx, "検索クエリ '%s' での大学検索に失敗しました: %v", query, err)
 		return errorHandler.HandleError(c, err)
 	}
 
 	applogger.Info(ctx, logging.LogSearchUniversitiesSuccess, query, len(universities))
+
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": universities,
 		"meta": map[string]interface{}{

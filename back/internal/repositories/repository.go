@@ -205,6 +205,7 @@ func (r *universityRepository) getUniversityFromCache(id uint) (*models.Universi
 	cacheKey := fmt.Sprintf(cache.CacheKeyUniversityFormat, id)
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "Cache hit for FindByID: %d", id)
+
 		if university, ok := cached.(models.University); ok {
 			return &university, true
 		}
@@ -296,7 +297,9 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "Cache hit for FindDepartment: %d:%d", universityID, departmentID)
+
 		department := cached.(models.Department)
+
 		return &department, nil
 	}
 
@@ -308,6 +311,7 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 		if err == gorm.ErrRecordNotFound {
 			return nil, appErrors.NewNotFoundError("Department", departmentID, nil)
 		}
+
 		return nil, appErrors.NewDatabaseError("FindDepartment", err, nil)
 	}
 
@@ -318,13 +322,16 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 	return &department, nil
 }
 
+// FindSubject は科目を検索します
 func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*models.Subject, error) {
 	cacheKey := fmt.Sprintf("subjects:%d:%d", departmentID, subjectID)
 
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "Cache hit for FindSubject: %d:%d", departmentID, subjectID)
+
 		subject := cached.(models.Subject)
+
 		return &subject, nil
 	}
 
@@ -337,6 +344,7 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 		if err == gorm.ErrRecordNotFound {
 			return nil, appErrors.NewNotFoundError("Subject", subjectID, nil)
 		}
+
 		return nil, appErrors.NewDatabaseError("FindSubject", err, nil)
 	}
 
@@ -674,6 +682,7 @@ func (r *universityRepository) DeleteSubject(id uint) error {
 	if err := r.db.Delete(&models.Subject{}, id).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 

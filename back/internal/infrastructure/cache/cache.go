@@ -148,8 +148,9 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) error
 
 	// メモリ使用量のチェック
 	itemSize := calculateItemSize(value)
+	currentSize := c.currentSize + itemSize
 
-	if c.currentSize+itemSize > c.maxSize {
+	if currentSize > c.maxSize {
 		c.evictItems()
 		if c.currentSize+itemSize > c.maxSize {
 			return appErrors.NewSystemError(ErrCacheFull, nil, nil)
@@ -478,6 +479,7 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 	}
 
 	var avgLatency time.Duration
+
 	var totalLatency time.Duration
 
 	if len(c.metrics.latencies) > 0 {

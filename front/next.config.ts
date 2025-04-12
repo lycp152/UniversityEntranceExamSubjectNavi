@@ -18,11 +18,10 @@ const nextConfig: NextConfig = {
     turbo: {
       resolveAlias: {
         '@': './src',
+        '@/components': './src/components',
       },
     },
   },
-  // パスエイリアスの設定
-  transpilePackages: ['@/components'],
 };
 
 export default nextConfig;

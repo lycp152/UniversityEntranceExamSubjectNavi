@@ -21,7 +21,8 @@
       "@/*": ["./src/*"]
     },
     "target": "ES2017",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": "."
   },
   "include": ["next-env.d.ts", "src/**/*.ts", "src/**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

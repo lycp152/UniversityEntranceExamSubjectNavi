@@ -283,7 +283,8 @@ type Major struct {
 	DepartmentID      uint              `json:"department_id" gorm:"not null;index:idx_major_dept"` // 学部ID
 	Name             string            `json:"name" gorm:"not null;index:idx_major_name;size:100;check:name <> ''"` // 学科名
 	Department       Department        `json:"-" gorm:"foreignKey:DepartmentID"` // 所属学部
-	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty" gorm:"foreignKey:MajorID;constraint:OnDelete:CASCADE"` // 入試日程一覧
+	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty"` // 入試日程一覧
+	_ struct{} `gorm:"foreignkey:MajorID;constraint:OnDelete:CASCADE"`
 }
 
 // Validate はMajorのバリデーションを行う
@@ -330,9 +331,11 @@ type AdmissionSchedule struct {
 	BaseModel
 	MajorID       uint           `json:"major_id" gorm:"not null;index:idx_schedule_major_year"` // 学科ID
 	Name          string         `json:"name" gorm:"not null;size:6;check:name in ('前期','中期','後期')"` // 日程名
-	DisplayOrder  int `json:"display_order" gorm:"not null;default:0;check:display_order >= 0 AND display_order <= 3"` // 表示順
+	DisplayOrder  int `json:"display_order" gorm:"not null;default:0"` // 表示順
+	_ struct{} `gorm:"check:display_order >= 0 AND display_order <= 3"`
 	Major         Major         `json:"-" gorm:"foreignKey:MajorID"` // 所属学科
-	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"` // 入試情報一覧
+	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty"` // 入試情報一覧
+	_ struct{} `gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
 	TestTypes     []TestType    `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"` // 試験種別一覧
 }
 

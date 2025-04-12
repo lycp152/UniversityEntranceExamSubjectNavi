@@ -1,3 +1,5 @@
+// Package models はテストで使用するモデルを提供します。
+// ユーザー情報の構造体とそのバリデーション機能を含みます。
 package models
 
 import (

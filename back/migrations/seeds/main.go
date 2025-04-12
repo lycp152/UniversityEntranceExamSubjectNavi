@@ -1,3 +1,5 @@
+// Package main はデータベースのシードデータを提供します。
+// 大学、学部、学科、入試情報などの初期データを生成します。
 package main
 
 import (
@@ -50,6 +52,8 @@ func cleanupDatabase(db *gorm.DB) error {
 	return nil
 }
 
+// SubjectData は科目のデータ構造を定義します。
+// 科目名、表示順序、共通テストの得点、二次試験の得点を含みます。
 type SubjectData struct {
 	Name string
 	Order int

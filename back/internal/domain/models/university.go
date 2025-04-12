@@ -196,7 +196,6 @@ func GetUniversitiesWithRelations(ctx context.Context, db *gorm.DB) ([]Universit
 		Find(&universities).Error
 
 	if err != nil {
-
 		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %w", err)
 	}
 

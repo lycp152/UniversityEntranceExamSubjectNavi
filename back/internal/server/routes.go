@@ -21,10 +21,10 @@ import (
 
 // パス定数
 const (
-	departmentPath = "/:universityId/departments/:departmentId" // 学部関連のパス
-	subjectPath   = "/:universityId/departments/:departmentId/subjects/:subjectId" // 科目関連のパス
-	departmentIdParam = "/:departmentId" // 学部IDパラメータ
-	subjectIdParam = "/:subjectId" // 科目IDパラメータ
+	departmentPath = "/:universityID/departments/:departmentID" // 学部関連のパス
+	subjectPath   = "/:universityID/departments/:departmentID/subjects/:subjectID" // 科目関連のパス
+	departmentIDParam = "/:departmentID" // 学部IDパラメータ
+	subjectIDParam = "/:subjectID" // 科目IDパラメータ
 )
 
 // タイムアウト定数
@@ -34,12 +34,12 @@ const (
 
 // バリデーション定数
 var (
-	universityIdRegex = regexp.MustCompile(`^[0-9]+$`)
-	departmentIdRegex = regexp.MustCompile(`^[0-9]+$`)
-	subjectIdRegex   = regexp.MustCompile(`^[0-9]+$`)
+	universityIDRegex = regexp.MustCompile(`^[0-9]+$`)
+	departmentIDRegex = regexp.MustCompile(`^[0-9]+$`)
+	subjectIDRegex   = regexp.MustCompile(`^[0-9]+$`)
 )
 
-// エラーレスポンスの構造体
+// ErrorResponse はエラーレスポンスの構造体を定義します
 type ErrorResponse struct {
 	Error   string `json:"error"`
 	Message string `json:"message"`
@@ -70,11 +70,11 @@ func NewRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) *Routes {
 // validatePathParams はパスパラメータのバリデーションを行います。
 func validatePathParams(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		universityId := c.Param("universityId")
-		departmentId := c.Param("departmentId")
-		subjectId := c.Param("subjectId")
+		universityID := c.Param("universityID")
+		departmentID := c.Param("departmentID")
+		subjectID := c.Param("subjectID")
 
-		if universityId != "" && !universityIdRegex.MatchString(universityId) {
+		if universityID != "" && !universityIDRegex.MatchString(universityID) {
 			return c.JSON(http.StatusBadRequest, ErrorResponse{
 				Error:   "Invalid University ID",
 				Message: "大学IDは数値である必要があります",
@@ -82,7 +82,7 @@ func validatePathParams(next echo.HandlerFunc) echo.HandlerFunc {
 			})
 		}
 
-		if departmentId != "" && !departmentIdRegex.MatchString(departmentId) {
+		if departmentID != "" && !departmentIDRegex.MatchString(departmentID) {
 			return c.JSON(http.StatusBadRequest, ErrorResponse{
 				Error:   "Invalid Department ID",
 				Message: "学部IDは数値である必要があります",
@@ -90,7 +90,7 @@ func validatePathParams(next echo.HandlerFunc) echo.HandlerFunc {
 			})
 		}
 
-		if subjectId != "" && !subjectIdRegex.MatchString(subjectId) {
+		if subjectID != "" && !subjectIDRegex.MatchString(subjectID) {
 			return c.JSON(http.StatusBadRequest, ErrorResponse{
 				Error:   "Invalid Subject ID",
 				Message: "科目IDは数値である必要があります",
@@ -265,20 +265,20 @@ func (r *Routes) Setup() error {
 			universities.DELETE("/:id", validatePathParams(universityHandler.DeleteUniversity))
 
 			// 学部関連エンドポイント
-			departments := universities.Group("/:universityId/departments")
+			departments := universities.Group("/:universityID/departments")
 			{
-				departments.GET(departmentIdParam, validatePathParams(departmentHandler.GetDepartment))
+				departments.GET(departmentIDParam, validatePathParams(departmentHandler.GetDepartment))
 				departments.POST("", validateRequestBody(departmentHandler.CreateDepartment))
-				departments.PUT(departmentIdParam, validatePathParams(validateRequestBody(departmentHandler.UpdateDepartment)))
-				departments.DELETE(departmentIdParam, validatePathParams(departmentHandler.DeleteDepartment))
+				departments.PUT(departmentIDParam, validatePathParams(validateRequestBody(departmentHandler.UpdateDepartment)))
+				departments.DELETE(departmentIDParam, validatePathParams(departmentHandler.DeleteDepartment))
 
 				// 科目関連エンドポイント
-				subjects := departments.Group("/:departmentId/subjects")
+				subjects := departments.Group("/:departmentID/subjects")
 				{
-					subjects.GET(subjectIdParam, validatePathParams(subjectHandler.GetSubject))
+					subjects.GET(subjectIDParam, validatePathParams(subjectHandler.GetSubject))
 					subjects.POST("", validateRequestBody(subjectHandler.CreateSubject))
-					subjects.PUT(subjectIdParam, validatePathParams(validateRequestBody(subjectHandler.UpdateSubject)))
-					subjects.DELETE(subjectIdParam, validatePathParams(subjectHandler.DeleteSubject))
+					subjects.PUT(subjectIDParam, validatePathParams(validateRequestBody(subjectHandler.UpdateSubject)))
+					subjects.DELETE(subjectIDParam, validatePathParams(subjectHandler.DeleteSubject))
 					subjects.PUT("/batch", validateRequestBody(subjectHandler.UpdateSubjectsBatch))
 				}
 			}

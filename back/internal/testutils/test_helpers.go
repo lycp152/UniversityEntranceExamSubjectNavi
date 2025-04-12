@@ -48,10 +48,12 @@ const (
 	ContentTypeJSON = "application/json"
 )
 
+// DefaultLogDirPerm はログディレクトリのデフォルトのパーミッションを定義します
 const (
 	DefaultLogDirPerm = 0750
 )
 
+// CSRFTokenHeader はCSRFトークンのHTTPヘッダー名を定義します
 var (
 	CSRFTokenHeader = getEnvOrDefault("CSRF_TOKEN_HEADER", "X-CSRF-Token")
 	TestCSRFToken   = getEnvOrDefault("TEST_CSRF_TOKEN", generateRandomToken())
@@ -366,7 +368,7 @@ func (h *TestHelper) AssertErrorResponse(rec *httptest.ResponseRecorder, wantSta
 }
 
 // AssertValidationError はバリデーションエラーを検証
-func (h *TestHelper) AssertValidationError(rec *httptest.ResponseRecorder, field, expectedError string) {
+func (h *TestHelper) AssertValidationError(rec *httptest.ResponseRecorder, _ string, expectedError string) {
 	h.t.Helper()
 
 	var response map[string]string
@@ -732,7 +734,7 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheMiss,
-				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
+				Setup: func(t *testing.T, _ *echo.Echo, h *university.UniversityHandler) {
 					if err := cache.GetInstance().Delete("universities:all"); err != nil {
 						t.Errorf("キャッシュの削除に失敗しました: %v", err)
 					}
@@ -753,7 +755,7 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheExpired,
-				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
+				Setup: func(t *testing.T, _ *echo.Echo, h *university.UniversityHandler) {
 					if err := cache.GetInstance().Delete("universities:all"); err != nil {
 						t.Errorf("キャッシュの削除に失敗しました: %v", err)
 					}

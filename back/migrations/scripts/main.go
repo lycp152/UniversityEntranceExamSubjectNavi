@@ -35,7 +35,7 @@ func validateEnv() error {
 }
 
 // handleMigrationError はマイグレーションエラーを処理します
-func handleMigrationError(ctx context.Context, tx *gorm.DB, err error, message string) {
+func handleMigrationError(_ context.Context, tx *gorm.DB, err error, message string) {
 	if err := tx.Rollback().Error; err != nil {
 		log.Printf("警告: ロールバックに失敗しました: %v", err)
 	}

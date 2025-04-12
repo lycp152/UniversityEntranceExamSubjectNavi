@@ -401,7 +401,7 @@ func main() {
 		}
 
 		log.Printf("シードデータの投入に失敗しました: %v", err)
-		os.Exit(1)
+		return
 	}
 
 	if err := tx.Commit().Error; err != nil {
@@ -410,7 +410,7 @@ func main() {
 		}
 
 		log.Printf("トランザクションのコミットに失敗しました: %v", err)
-		os.Exit(1)
+		return
 	}
 
 	log.Println("シードデータの投入が正常に完了しました")

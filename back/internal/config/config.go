@@ -34,8 +34,7 @@ func (e *Error) Unwrap() error {
 	return e.Err
 }
 
-// Isはエラーが指定されたエラーと等しいかどうかを判定します。
-// エラーコードが一致する場合にtrueを返します。
+// Is はエラーが指定されたエラーと等しいかどうかを判定します。
 func (e *Error) Is(target error) bool {
 	t, ok := target.(*Error)
 	if !ok {
@@ -45,8 +44,7 @@ func (e *Error) Is(target error) bool {
 	return e.Code == t.Code
 }
 
-// Asはエラーを指定された型に変換します。
-// 変換に成功した場合はtrueを返します。
+// As はエラーを指定された型に変換します。
 func (e *Error) As(target interface{}) bool {
 	if t, ok := target.(*Error); ok {
 		*t = *e

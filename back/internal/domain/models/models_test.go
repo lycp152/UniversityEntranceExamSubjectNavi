@@ -84,7 +84,12 @@ func (h *testHelper) createTestAdmissionSchedule(name string, majorID uint, disp
 }
 
 // createTestAdmissionInfo はテスト用の入試情報データを作成する
-func (h *testHelper) createTestAdmissionInfo(scheduleID uint, enrollment int, academicYear int, status string) AdmissionInfo {
+func (h *testHelper) createTestAdmissionInfo(
+	scheduleID uint,
+	enrollment int,
+	academicYear int,
+	status string,
+) AdmissionInfo {
 	return AdmissionInfo{
 		BaseModel: BaseModel{
 			CreatedAt: time.Now(),
@@ -112,7 +117,13 @@ func (h *testHelper) createTestTestType(name string, scheduleID uint) TestType {
 }
 
 // createTestSubject はテスト用の科目データを作成する
-func (h *testHelper) createTestSubject(name string, testTypeID uint, score int, percentage float64, displayOrder int) Subject {
+func (h *testHelper) createTestSubject(
+	name string,
+	testTypeID uint,
+	score int,
+	percentage float64,
+	displayOrder int,
+) Subject {
 	return Subject{
 		BaseModel: BaseModel{
 			CreatedAt: time.Now(),

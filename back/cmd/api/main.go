@@ -193,7 +193,7 @@ func main() {
 	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
 		log.Printf("ロガーの初期化に失敗しました: %v", err)
 		cancel()
-		os.Exit(1)
+		return
 	}
 
 	applogger.Info(ctx, "アプリケーションを起動しています...")

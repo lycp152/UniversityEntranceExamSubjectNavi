@@ -24,7 +24,7 @@ import { fetchUniversities } from './universities';
  * @returns {Promise<SearchFormState>} 検索結果または検証エラーを含む状態
  */
 export async function searchUniversities(
-  prevState: SearchFormState,
+  _prevState: SearchFormState,
   formData: FormData
 ): Promise<SearchFormState> {
   const validatedFields = SearchFormSchema.safeParse({

@@ -12,12 +12,12 @@
  */
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, ReactElement } from 'react';
 import { useUniversityEditor } from '@/features/admin/hooks/use-university-editor';
 import { AdminPageContent } from './content';
 import { ErrorBoundary } from '@/features/admin/components/errors/error-boundary';
 
-export function AdminPage(): JSX.Element {
+export function AdminPage(): ReactElement {
   // 大学データの編集に関する状態と関数を取得
   const {
     universities,

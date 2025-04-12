@@ -7,7 +7,7 @@
  * - 非インデックス設定
  */
 import { Metadata } from 'next';
-import { Suspense } from 'react';
+import { Suspense, ReactElement } from 'react';
 import { AdminPage } from '@/features/admin/components/page';
 import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page(): JSX.Element {
+export default function Page(): ReactElement {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <AdminPage />

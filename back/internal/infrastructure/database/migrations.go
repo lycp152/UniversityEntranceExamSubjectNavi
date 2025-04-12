@@ -142,7 +142,13 @@ func RunMigrations(ctx context.Context, db *gorm.DB, config *MigrationConfig) (*
 }
 
 // runMigrationsWithRetry はリトライ機能付きでマイグレーションを実行します
-func runMigrationsWithRetry(ctx context.Context, db *gorm.DB, metricsDB *gorm.DB, progress *MigrationProgress, config *MigrationConfig) error {
+func runMigrationsWithRetry(
+	ctx context.Context,
+	db *gorm.DB,
+	metricsDB *gorm.DB,
+	progress *MigrationProgress,
+	config *MigrationConfig,
+) error {
 	var lastErr error
 
 	for attempt := 1; attempt <= config.RetryAttempts; attempt++ {
@@ -180,27 +186,43 @@ func runMigrationsWithRetry(ctx context.Context, db *gorm.DB, metricsDB *gorm.DB
 }
 
 // migrateTable は単一のテーブルのマイグレーションを実行します
-func migrateTable(ctx context.Context, tx *gorm.DB, m struct{ Model interface{}; Name string }, progress *MigrationProgress) error {
+func migrateTable(
+	ctx context.Context,
+	tx *gorm.DB,
+	m struct{ Model interface{}; Name string },
+	progress *MigrationProgress,
+) error {
 	start := time.Now()
+
 	if err := tx.WithContext(ctx).AutoMigrate(m.Model); err != nil {
 		progress.Errors = append(progress.Errors, fmt.Errorf(errFmt, m.Name, err))
 		log.Printf("テーブル %s のマイグレーションに失敗: %v", m.Name, err)
+
 		return err
 	}
 
 	duration := time.Since(start)
 	if duration > slowQueryThreshold {
 		progress.Metrics.SlowQueries++
+
 		log.Printf("スロークエリ検出: テーブル %s のマイグレーションに %v かかりました", m.Name, duration)
 	}
 
 	progress.CompletedTables++
+
 	log.Printf("テーブル %s のマイグレーションが完了（所要時間: %v）", m.Name, duration)
+
 	return nil
 }
 
 // executeMigration は実際のマイグレーション処理を実行します
-func executeMigration(ctx context.Context, db *gorm.DB, metricsDB *gorm.DB, progress *MigrationProgress, config *MigrationConfig) error {
+func executeMigration(
+	ctx context.Context,
+	db *gorm.DB,
+	metricsDB *gorm.DB,
+	progress *MigrationProgress,
+	config *MigrationConfig,
+) error {
 	models := []struct {
 		Model interface{}
 		Name  string
@@ -232,16 +254,30 @@ func setupSchema(tx *gorm.DB, schema string) error {
 	return tx.Exec(fmt.Sprintf("SET search_path TO %s", schema)).Error
 }
 
-func processModels(ctx context.Context, tx *gorm.DB, metricsDB *gorm.DB, models []struct{ Model interface{}; Name string }, progress *MigrationProgress) error {
+func processModels(
+	ctx context.Context,
+	tx *gorm.DB,
+	metricsDB *gorm.DB,
+	models []struct{ Model interface{}; Name string },
+	progress *MigrationProgress,
+) error {
 	for i, m := range models {
 		if err := processModel(ctx, tx, metricsDB, m, i, progress); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
-func processModel(ctx context.Context, tx *gorm.DB, metricsDB *gorm.DB, m struct{ Model interface{}; Name string }, index int, progress *MigrationProgress) error {
+func processModel(
+	ctx context.Context,
+	tx *gorm.DB,
+	metricsDB *gorm.DB,
+	m struct{ Model interface{}; Name string },
+	index int,
+	progress *MigrationProgress,
+) error {
 	select {
 	case <-ctx.Done():
 		progress.Metrics.RolledBackTables++
@@ -274,6 +310,7 @@ func processModel(ctx context.Context, tx *gorm.DB, metricsDB *gorm.DB, m struct
 
 		metricsDB.Exec(insertMigrationMetricsSQL, m.Name, "success", time.Since(startTime))
 	}
+
 	return nil
 }
 
@@ -284,9 +321,12 @@ func createSavePoint(tx *gorm.DB, index int, progress *MigrationProgress) error 
 			log.Printf("セーブポイント %s の作成に失敗: %v", savePoint, err)
 			return fmt.Errorf(errMsgSavePoint, err)
 		}
+
 		progress.Metrics.SavePoints++
+
 		log.Printf("セーブポイント %s を作成しました", savePoint)
 	}
+
 	return nil
 }
 
@@ -295,20 +335,32 @@ func releaseSavePoint(tx *gorm.DB, savePoint string) error {
 		log.Printf("セーブポイント %s の解放に失敗: %v", savePoint, err)
 		return fmt.Errorf("セーブポイントの解放に失敗: %w", err)
 	}
+
 	log.Printf("セーブポイント %s を解放しました", savePoint)
+
 	return nil
 }
 
-func handleMigrationError(tx *gorm.DB, index int, m struct{ Model interface{}; Name string }, progress *MigrationProgress, err error) error {
+func handleMigrationError(
+	tx *gorm.DB,
+	index int,
+	m struct{ Model interface{}; Name string },
+	progress *MigrationProgress,
+	err error,
+) error {
 	if index > 0 && index%savePointInterval == 0 {
 		savePoint := fmt.Sprintf("sp_%d", index-savePointInterval)
 		if err := tx.RollbackTo(savePoint).Error; err != nil {
 			log.Printf("セーブポイント %s へのロールバックに失敗: %v", savePoint, err)
 			return fmt.Errorf("セーブポイントへのロールバックに失敗: %w", err)
 		}
+
 		progress.Metrics.RollbackPoints++
+
 		log.Printf("セーブポイント %s までロールバックしました", savePoint)
 	}
+
 	progress.Metrics.RolledBackTables++
+
 	return fmt.Errorf("テーブル %s のマイグレーション失敗: %w", m.Name, err)
 }

@@ -27,6 +27,7 @@ func newTestHelper(t testing.TB) *testHelper {
 	t.Cleanup(func() {
 		// テスト終了時のクリーンアップ処理
 	})
+
 	return helper
 }
 
@@ -83,7 +84,12 @@ func (h *testHelper) createTestAdmissionSchedule(name string, majorID uint, disp
 }
 
 // createTestAdmissionInfo はテスト用の入試情報データを作成する
-func (h *testHelper) createTestAdmissionInfo(scheduleID uint, enrollment int, academicYear int, status string) AdmissionInfo {
+func (h *testHelper) createTestAdmissionInfo(
+	scheduleID uint,
+	enrollment int,
+	academicYear int,
+	status string,
+) AdmissionInfo {
 	return AdmissionInfo{
 		BaseModel: BaseModel{
 			CreatedAt: time.Now(),
@@ -111,18 +117,22 @@ func (h *testHelper) createTestTestType(name string, scheduleID uint) TestType {
 }
 
 // createTestSubject はテスト用の科目データを作成する
-func (h *testHelper) createTestSubject(name string, testTypeID uint, score int, percentage float64, displayOrder int) Subject {
+func (h *testHelper) createTestSubject(
+	testTypeID uint,
+	score int,
+	percentage float64,
+) Subject {
 	return Subject{
 		BaseModel: BaseModel{
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 			Version:   1,
 		},
-		Name:         name,
+		Name:         "数学",
 		TestTypeID:   testTypeID,
 		Score:        score,
 		Percentage:   percentage,
-		DisplayOrder: displayOrder,
+		DisplayOrder: 1,
 	}
 }
 
@@ -131,6 +141,7 @@ func validateAcademicYear(info *AdmissionInfo) error {
 	if info.AcademicYear < 2000 || info.AcademicYear > 2100 {
 		return ErrInvalidAcademicYear
 	}
+
 	return nil
 }
 
@@ -169,6 +180,7 @@ func TestAcademicYear(t *testing.T) {
 
 			info := h.createTestAdmissionInfo(1, 100, tt.academicYear, "draft")
 			err := validateAcademicYear(&info)
+
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
 				assert.ErrorIs(t, err, ErrInvalidAcademicYear, "期待されたエラー型ではありません")
@@ -475,22 +487,22 @@ func TestSubjectValidation(t *testing.T) {
 	}{
 		{
 			name:    "正常な科目",
-			subject: h.createTestSubject("数学", 1, 100, 50.0, 1),
+			subject: h.createTestSubject(1, 100, 50.0),
 			wantErr: false,
 		},
 		{
 			name:    "無効な配点",
-			subject: h.createTestSubject("数学", 1, -1, 50.0, 1),
+			subject: h.createTestSubject(1, -1, 50.0),
 			wantErr: true,
 		},
 		{
 			name:    "無効な配点比率",
-			subject: h.createTestSubject("数学", 1, 100, -1.0, 1),
+			subject: h.createTestSubject(1, 100, -1.0),
 			wantErr: true,
 		},
 		{
 			name:    "無効な試験種別ID",
-			subject: h.createTestSubject("数学", 0, 100, 50.0, 1),
+			subject: h.createTestSubject(0, 100, 50.0),
 			wantErr: true,
 		},
 	}

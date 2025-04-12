@@ -1,8 +1,7 @@
 # golangci-lint設定ファイル
 # コード品質チェックの設定を定義します
 
-# 設定ファイルのバージョン
-version: 1.55.2
+version: "2"
 
 run:
   # タイムアウト設定（5分）
@@ -18,13 +17,12 @@ run:
 
 linters:
   enable:
-    # コードフォーマット
-    - gofmt
+    # コードスタイル
+    - revive
     # 静的解析
     - govet
     - errcheck
     - staticcheck
-    - gosimple
     - ineffassign
     - unused
     # スペルチェック
@@ -36,19 +34,11 @@ linters:
     # コード品質
     - gocritic
     - gocyclo
-    - goimports
-    - gomnd
     - goprintffuncname
-    - gostyle
-    - gosystemd
-    - gotype
-    - gotypex
     - lll
     - nakedret
-    - stylecheck
     - unconvert
     - unparam
-    - varcheck
     - whitespace
     - wsl
 

@@ -25,6 +25,15 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	writeErrorMsg = "レスポンスの書き込みに失敗しました: %v"
+	shutdownTimeout = 10 * time.Second
+	maxIdleConns = 10
+	maxOpenConns = 100
+	connMaxLifetime = time.Hour
+	connMaxIdleTime = 30 * time.Minute
+)
+
 // DB はデータベース接続を表す構造体です
 type DB struct {
 	*gorm.DB
@@ -34,10 +43,10 @@ type DB struct {
 // 開発環境の場合は.envファイルから環境変数を読み込みます。
 // cfg: アプリケーション設定
 // 戻り値: エラー情報
-func setupEnvironment(cfg *config.Config) error {
+func setupEnvironment(ctx context.Context, cfg *config.Config) error {
 	if cfg.Env == "development" {
 		if err := godotenv.Load(); err != nil {
-			applogger.Error(context.Background(), "警告: .envファイルが見つかりません: %v", err)
+			applogger.Warn(ctx, "警告: .envファイルが見つかりません: %v", err)
 		}
 	}
 
@@ -59,39 +68,77 @@ func setupEnvironment(cfg *config.Config) error {
 	return nil
 }
 
+// checkDBHealth はデータベースの健全性をチェックします
+func checkDBHealth(ctx context.Context, db *gorm.DB) bool {
+	// 新しいセッションを作成して安全性を確保
+	session := db.Session(&gorm.Session{})
+
+	sqlDB, err := session.DB()
+	if err != nil {
+		applogger.Error(ctx, "データベース接続の取得に失敗しました: %v", err)
+		return false
+	}
+
+	if err := sqlDB.Ping(); err != nil {
+		applogger.Error(ctx, "データベースの接続確認に失敗しました: %v", err)
+		return false
+	}
+
+	return true
+}
+
+func checkMemoryHealth(ctx context.Context) bool {
+	var m runtime.MemStats
+
+	runtime.ReadMemStats(&m)
+
+	// メモリ使用量が1GBを超えた場合に警告をログに記録
+	if m.Alloc > 1000000000 {
+		applogger.Warn(ctx, "メモリ使用量が高くなっています: %d bytes", m.Alloc)
+	}
+
+	return m.Alloc <= 1000000000 // 1GB以下
+}
+
 // setupHealthCheck はヘルスチェックエンドポイントを設定します
-func setupHealthCheck(db *gorm.DB) {
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		// データベース接続の確認
-		sqlDB, err := db.DB()
-		if err != nil {
+func setupHealthCheck(ctx context.Context, db *gorm.DB) {
+	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
+		if !checkDBHealth(ctx, db) {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Database connection failed"))
+			_, err := w.Write([]byte("データベース接続に失敗しました"))
+
+			if err != nil {
+				applogger.Error(ctx, writeErrorMsg, err)
+			}
+
 			return
 		}
 
-		if err := sqlDB.Ping(); err != nil {
+		if !checkMemoryHealth(ctx) {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Database connection failed"))
-			return
-		}
+			_, err := w.Write([]byte("メモリ使用量が高すぎます"))
 
-		// メモリ使用量の確認
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
-		if m.Alloc > 1000000000 { // 1GB以上使用している場合
-			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte("Memory usage too high"))
+			if err != nil {
+				applogger.Error(ctx, writeErrorMsg, err)
+			}
+
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("正常"))
+
+		if err != nil {
+			applogger.Error(ctx, writeErrorMsg, err)
+		}
 	})
 }
 
 // setupMetrics はメトリクス収集のエンドポイントを設定します
 func setupMetrics() {
+	// メトリクスレジストリの作成
+	registry := prometheus.NewRegistry()
+
 	// HTTPリクエストの総数を計測するカウンター
 	httpRequestsTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -129,21 +176,24 @@ func setupMetrics() {
 	)
 
 	// メトリクスの登録
-	prometheus.MustRegister(httpRequestsTotal)
-	prometheus.MustRegister(httpRequestDuration)
-	prometheus.MustRegister(httpErrorResponses)
-	prometheus.MustRegister(memoryUsage)
+	registry.MustRegister(httpRequestsTotal)
+	registry.MustRegister(httpRequestDuration)
+	registry.MustRegister(httpErrorResponses)
+	registry.MustRegister(memoryUsage)
 
 	// メトリクスエンドポイントの設定
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 
 	// メモリ使用量の定期的な更新
 	go func() {
-		for {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		for range ticker.C {
 			var m runtime.MemStats
+
 			runtime.ReadMemStats(&m)
 			memoryUsage.Set(float64(m.Alloc))
-			time.Sleep(10 * time.Second)
 		}
 	}()
 }
@@ -165,39 +215,76 @@ func main() {
 	defer cancel()
 
 	// ロガーの初期化
-	applogger.InitLoggers(applogger.DefaultConfig())
+	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
+		applogger.Error(ctx, "ロガーの初期化に失敗しました: %v", err)
+		log.Printf("ロガーの初期化に失敗しました: %v", err)
+		cancel()
+
+		return
+	}
+
 	applogger.Info(ctx, "アプリケーションを起動しています...")
 
 	// 設定の読み込み
 	cfg, err := config.New()
 	if err != nil {
 		applogger.Error(ctx, "設定の読み込みに失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("設定の読み込みに失敗しました: %v", err)
+		cancel()
+
+		return
 	}
 
 	// 環境変数の読み込みと検証
-	if err := setupEnvironment(cfg); err != nil {
+	if err := setupEnvironment(ctx, cfg); err != nil {
 		applogger.Error(ctx, "環境変数の読み込みに失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("環境変数の読み込みに失敗しました: %v", err)
+		cancel()
+
+		return
 	}
 
 	// データベース接続の確立
 	db, cleanup, err := database.Setup(ctx, cfg)
 	if err != nil {
 		applogger.Error(ctx, "データベース接続の確立に失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("データベース接続の確立に失敗しました: %v", err)
+		cancel()
+
+		return
 	}
 	defer cleanup()
 
+	// データベース接続プールの設定
+	sqlDB, err := db.DB()
+	if err != nil {
+		applogger.Error(ctx, "データベース接続プールの設定に失敗しました: %v", err)
+		cancel()
+
+		return
+	}
+
+	// データベース接続プールのパラメータを設定
+	sqlDB.SetMaxIdleConns(maxIdleConns)
+	sqlDB.SetMaxOpenConns(maxOpenConns)
+	sqlDB.SetConnMaxLifetime(connMaxLifetime)
+	sqlDB.SetConnMaxIdleTime(connMaxIdleTime)
+
+	// 新しいセッションを作成して安全性を確保
+	db = db.Session(&gorm.Session{})
+
 	// ヘルスチェックとメトリクスの設定
-	setupHealthCheck(db)
+	setupHealthCheck(ctx, db)
 	setupMetrics()
 
 	// サーバーの初期化
 	srv := server.New(cfg)
 	if err := srv.SetupRoutes(db); err != nil {
 		applogger.Error(ctx, "ルーティングの設定に失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("ルーティングの設定に失敗しました: %v", err)
+		cancel()
+
+		return
 	}
 
 	// シグナルハンドリングの設定
@@ -206,14 +293,18 @@ func main() {
 
 	// シャットダウン用のWaitGroup
 	var wg sync.WaitGroup
+
 	wg.Add(1)
 
 	// サーバーの起動
 	go func() {
 		defer wg.Done()
+
 		if err := srv.Start(ctx); err != nil {
 			applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
 			sigChan <- syscall.SIGTERM
+
+			return
 		}
 	}()
 
@@ -222,7 +313,7 @@ func main() {
 	applogger.Info(ctx, "シグナルを受信しました: %v", sig)
 
 	// シャットダウンのタイムアウト設定
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
 
 	// コンテキストのキャンセル

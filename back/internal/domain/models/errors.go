@@ -1,3 +1,4 @@
+// Package models は、データベース操作に関連するエラーを定義するパッケージです。
 package models
 
 import (
@@ -65,6 +66,7 @@ func NewDBError(err error, code ErrorCode, operation, table string, details ...s
 	if len(details) > 0 {
 		detail = details[0]
 	}
+
 	return &DBError{
 		Err:       err,
 		Code:      code,
@@ -81,6 +83,7 @@ func IsNotFound(err error) bool {
 	if errors.As(err, &dbErr) {
 		return dbErr.Code == CodeNotFound
 	}
+
 	return errors.Is(err, ErrRecordNotFound)
 }
 
@@ -90,6 +93,7 @@ func IsDuplicateKey(err error) bool {
 	if errors.As(err, &dbErr) {
 		return dbErr.Code == CodeDuplicateKey
 	}
+
 	return errors.Is(err, ErrDuplicateKey)
 }
 
@@ -99,6 +103,7 @@ func IsValidationError(err error) bool {
 	if errors.As(err, &dbErr) {
 		return dbErr.Code == CodeValidationError
 	}
+
 	return errors.Is(err, ErrValidationFailed)
 }
 
@@ -108,6 +113,7 @@ func IsTimeout(err error) bool {
 	if errors.As(err, &dbErr) {
 		return dbErr.Code == CodeTimeout
 	}
+
 	return errors.Is(err, ErrTimeout)
 }
 
@@ -117,5 +123,6 @@ func IsDeadlock(err error) bool {
 	if errors.As(err, &dbErr) {
 		return dbErr.Code == CodeDeadlock
 	}
+
 	return errors.Is(err, ErrDeadlock)
 }

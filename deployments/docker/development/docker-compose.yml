@@ -40,7 +40,7 @@ services:
       context: ../../../back
       dockerfile: Dockerfile.dev
       args:
-        GO_VERSION: 1.24.1
+        GO_VERSION: 1.24.2
     depends_on:
       postgres:
         condition: service_healthy

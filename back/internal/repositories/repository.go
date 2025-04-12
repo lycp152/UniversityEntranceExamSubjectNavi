@@ -31,44 +31,49 @@ const (
 	errSearchFailed = "検索中にエラーが発生しました: %w"
 )
 
-// インターフェースの分割
+// IUniversityFinder は大学の検索に関するインターフェースを定義します
 type IUniversityFinder interface {
 	FindAll(ctx context.Context) ([]models.University, error)
 	FindByID(id uint) (*models.University, error)
 	Search(query string) ([]models.University, error)
 }
 
+// IUniversityManager は大学の管理に関するインターフェースを定義します
 type IUniversityManager interface {
 	Create(university *models.University) error
 	Update(university *models.University) error
 	Delete(id uint) error
 }
 
+// IDepartmentManager は学部の管理に関するインターフェースを定義します
 type IDepartmentManager interface {
 	CreateDepartment(department *models.Department) error
 	UpdateDepartment(department *models.Department) error
 	DeleteDepartment(id uint) error
 }
 
+// ISubjectManager は科目の管理に関するインターフェースを定義します
 type ISubjectManager interface {
 	CreateSubject(subject *models.Subject) error
 	UpdateSubject(subject *models.Subject) error
 	DeleteSubject(id uint) error
 }
 
+// IMajorManager は学科の管理に関するインターフェースを定義します
 type IMajorManager interface {
 	CreateMajor(major *models.Major) error
 	UpdateMajor(major *models.Major) error
 	DeleteMajor(id uint) error
 }
 
+// IAdmissionInfoManager は入試情報の管理に関するインターフェースを定義します
 type IAdmissionInfoManager interface {
 	CreateAdmissionInfo(info *models.AdmissionInfo) error
 	DeleteAdmissionInfo(id uint) error
 	UpdateAdmissionInfo(info *models.AdmissionInfo) error
 }
 
-// メインのインターフェース
+// IUniversityRepository は大学リポジトリのメインインターフェースを定義します
 type IUniversityRepository interface {
 	IUniversityFinder
 	IUniversityManager
@@ -87,7 +92,7 @@ type IUniversityRepository interface {
 // UniversityRepository 実装
 type universityRepository struct {
 	db    *gorm.DB
-	cache *cache.CacheManager
+	cache *cache.Manager
 }
 
 // NewUniversityRepository はリポジトリのインスタンスを生成します
@@ -163,6 +168,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 	}
 
 	var universities []models.University
+
 	var totalCount int64
 
 	// 総件数を取得
@@ -175,6 +181,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 
 	// バッチサイズを設定
 	const batchSize = 100
+
 	var processedCount int64
 
 	// バッチ処理でデータを取得
@@ -183,7 +190,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 		Scopes(func(db *gorm.DB) *gorm.DB {
 			return r.applyPreloads(db)
 		}).
-		FindInBatches(&universities, batchSize, func(tx *gorm.DB, batch int) error {
+		FindInBatches(&universities, batchSize, func(tx *gorm.DB, _ int) error {
 			processedCount += tx.RowsAffected
 			applogger.Info(context.Background(), "バッチ処理進捗: %d/%d レコードを処理", processedCount, totalCount)
 			return nil
@@ -197,6 +204,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 	r.cache.SetCache(cache.CacheKeyAllUniversities, universities)
 
 	applogger.Info(context.Background(), "全大学データを取得しました（%d件）", len(universities))
+
 	return universities, nil
 }
 
@@ -204,10 +212,12 @@ func (r *universityRepository) getUniversityFromCache(id uint) (*models.Universi
 	cacheKey := fmt.Sprintf(cache.CacheKeyUniversityFormat, id)
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "Cache hit for FindByID: %d", id)
+
 		if university, ok := cached.(models.University); ok {
 			return &university, true
 		}
 	}
+
 	return nil, false
 }
 
@@ -216,6 +226,7 @@ func (r *universityRepository) getUniversityFromDB(id uint) (*models.University,
 	if err := r.applyPreloads(r.db).First(&university, id).Error; err != nil {
 		return nil, appErrors.TranslateDBError(err)
 	}
+
 	return &university, nil
 }
 
@@ -267,7 +278,11 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 
 	err := r.db.
 		Where("id IN (?)", subQuery).
-		Select("DISTINCT universities.id, universities.name, universities.version, universities.created_at, universities.updated_at").
+		Select(
+			"DISTINCT universities.id, universities.name, "+
+			"universities.version, universities.created_at, "+
+			"universities.updated_at",
+		).
 		Scopes(func(db *gorm.DB) *gorm.DB {
 			return r.applyPreloads(db)
 		}).
@@ -279,6 +294,7 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 
 	r.cache.SetCache(cacheKey, universities)
 	applogger.Info(context.Background(), "検索結果をキャッシュしました: %d件", len(universities))
+
 	return universities, nil
 }
 
@@ -288,7 +304,9 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "Cache hit for FindDepartment: %d:%d", universityID, departmentID)
+
 		department := cached.(models.Department)
+
 		return &department, nil
 	}
 
@@ -300,6 +318,7 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 		if err == gorm.ErrRecordNotFound {
 			return nil, appErrors.NewNotFoundError("Department", departmentID, nil)
 		}
+
 		return nil, appErrors.NewDatabaseError("FindDepartment", err, nil)
 	}
 
@@ -310,13 +329,16 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 	return &department, nil
 }
 
+// FindSubject は科目を検索します
 func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*models.Subject, error) {
 	cacheKey := fmt.Sprintf("subjects:%d:%d", departmentID, subjectID)
 
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "Cache hit for FindSubject: %d:%d", departmentID, subjectID)
+
 		subject := cached.(models.Subject)
+
 		return &subject, nil
 	}
 
@@ -329,6 +351,7 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 		if err == gorm.ErrRecordNotFound {
 			return nil, appErrors.NewNotFoundError("Subject", subjectID, nil)
 		}
+
 		return nil, appErrors.NewDatabaseError("FindSubject", err, nil)
 	}
 
@@ -350,6 +373,7 @@ func sanitizeName(name string) string {
 		if r < 32 || r == 127 {
 			return -1
 		}
+
 		return r
 	}, name)
 
@@ -383,6 +407,7 @@ func (r *universityRepository) Create(university *models.University) error {
 		if err := tx.Create(university).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -392,6 +417,7 @@ func (r *universityRepository) Create(university *models.University) error {
 
 	// キャッシュをクリア
 	r.cache.ClearAllRelatedCache(university.ID)
+
 	return nil
 }
 
@@ -413,6 +439,7 @@ func (r *universityRepository) Update(university *models.University) error {
 		if err := tx.Save(university).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -422,6 +449,7 @@ func (r *universityRepository) Update(university *models.University) error {
 
 	// 全てのキャッシュをクリア
 	r.cache.ClearAllRelatedCache(university.ID)
+
 	return nil
 }
 
@@ -431,6 +459,7 @@ func (r *universityRepository) Delete(id uint) error {
 		if err := tx.Unscoped().Delete(&models.University{}, id).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -440,6 +469,7 @@ func (r *universityRepository) Delete(id uint) error {
 
 	// キャッシュをクリア
 	r.cache.ClearAllRelatedCache(id)
+
 	return nil
 }
 
@@ -448,6 +478,7 @@ func (r *universityRepository) CreateDepartment(department *models.Department) e
 	if err := r.db.Create(department).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -457,6 +488,7 @@ func (r *universityRepository) UpdateDepartment(department *models.Department) e
 		if err := tx.Save(department).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -466,6 +498,7 @@ func (r *universityRepository) UpdateDepartment(department *models.Department) e
 
 	// 全てのキャッシュをクリア
 	r.cache.ClearAllRelatedCache(department.UniversityID)
+
 	return nil
 }
 
@@ -474,6 +507,7 @@ func (r *universityRepository) DeleteDepartment(id uint) error {
 	if err := r.db.Delete(&models.Department{}, id).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -482,6 +516,7 @@ func (r *universityRepository) CreateSubject(subject *models.Subject) error {
 	if err := r.db.Create(subject).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -491,6 +526,7 @@ func (r *universityRepository) calculateTotalScore(subjects []models.Subject) fl
 	for _, s := range subjects {
 		total += float64(s.Score)
 	}
+
 	return total
 }
 
@@ -514,6 +550,7 @@ func (r *universityRepository) saveSubjectWithScores(tx *gorm.DB, subject models
 	}).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -527,6 +564,7 @@ func (r *universityRepository) updateSubjectScores(tx *gorm.DB, subjects []model
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -538,6 +576,7 @@ func (r *universityRepository) processBatch(tx *gorm.DB, batch []models.Subject,
 			return fmt.Errorf("科目の更新に失敗: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -546,6 +585,7 @@ func (r *universityRepository) UpdateSubjectsBatch(testTypeID uint, subjects []m
 	applogger.Info(context.Background(), "バッチ更新開始: testTypeID=%d, 科目数=%d", testTypeID, len(subjects))
 
 	const batchSize = 1000
+
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		// バッチ処理を実行
 		for i := 0; i < len(subjects); i += batchSize {
@@ -553,10 +593,12 @@ func (r *universityRepository) UpdateSubjectsBatch(testTypeID uint, subjects []m
 			if end > len(subjects) {
 				end = len(subjects)
 			}
+
 			if err := r.processBatch(tx, subjects[i:end], testTypeID); err != nil {
 				return err
 			}
 		}
+
 		return r.recalculateScores(tx, testTypeID)
 	})
 }
@@ -596,17 +638,23 @@ func (r *universityRepository) getExistingSubjects(tx *gorm.DB, testTypeID uint)
 		Find(&subjects).Error; err != nil {
 		return nil, err
 	}
+
 	return subjects, nil
 }
 
-func (r *universityRepository) updateSubjectInList(allSubjects []models.Subject, subject *models.Subject) []models.Subject {
+func (r *universityRepository) updateSubjectInList(
+	allSubjects []models.Subject,
+	subject *models.Subject,
+) []models.Subject {
 	for i, s := range allSubjects {
 		if s.ID == subject.ID {
 			subject.DisplayOrder = s.DisplayOrder
 			allSubjects[i] = *subject
+
 			break
 		}
 	}
+
 	return allSubjects
 }
 
@@ -623,6 +671,7 @@ func (r *universityRepository) UpdateSubject(subject *models.Subject) error {
 		if err := r.updateSubjectScores(tx, allSubjects); err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -632,6 +681,7 @@ func (r *universityRepository) UpdateSubject(subject *models.Subject) error {
 
 	r.cache.ClearSubjectsCache(subject.TestTypeID)
 	r.cache.ClearAllRelatedCache(0)
+
 	return nil
 }
 
@@ -640,6 +690,7 @@ func (r *universityRepository) DeleteSubject(id uint) error {
 	if err := r.db.Delete(&models.Subject{}, id).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -649,6 +700,7 @@ func (r *universityRepository) UpdateMajor(major *models.Major) error {
 		if err := tx.Save(major).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -658,6 +710,7 @@ func (r *universityRepository) UpdateMajor(major *models.Major) error {
 
 	// 全てのキャッシュをクリア
 	r.cache.ClearAllRelatedCache(major.DepartmentID)
+
 	return nil
 }
 
@@ -667,6 +720,7 @@ func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.Admissio
 		if err := tx.Save(schedule).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -676,6 +730,7 @@ func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.Admissio
 
 	// 全てのキャッシュをクリア
 	r.cache.ClearAllRelatedCache(schedule.MajorID)
+
 	return nil
 }
 
@@ -685,6 +740,7 @@ func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) e
 		if err := tx.Save(info).Error; err != nil {
 			return appErrors.NewDatabaseError("UpdateAdmissionInfo", err, nil)
 		}
+
 		return nil
 	})
 
@@ -694,6 +750,7 @@ func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) e
 
 	// 全てのキャッシュをクリア
 	r.cache.ClearAllRelatedCache(info.AdmissionScheduleID)
+
 	return nil
 }
 
@@ -703,7 +760,9 @@ func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Ma
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "学科のキャッシュヒット: %d:%d", departmentID, majorID)
+
 		major := cached.(models.Major)
+
 		return &major, nil
 	}
 
@@ -715,6 +774,7 @@ func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Ma
 		if err == gorm.ErrRecordNotFound {
 			return nil, appErrors.NewNotFoundError("Major", majorID, nil)
 		}
+
 		return nil, appErrors.NewDatabaseError("FindMajor", err, nil)
 	}
 
@@ -730,6 +790,7 @@ func (r *universityRepository) CreateMajor(major *models.Major) error {
 	if err := r.db.Create(major).Error; err != nil {
 		return appErrors.NewDatabaseError("CreateMajor", err, nil)
 	}
+
 	return nil
 }
 
@@ -738,6 +799,7 @@ func (r *universityRepository) DeleteMajor(id uint) error {
 	if err := r.db.Delete(&models.Major{}, id).Error; err != nil {
 		return appErrors.NewDatabaseError("DeleteMajor", err, nil)
 	}
+
 	return nil
 }
 
@@ -747,7 +809,9 @@ func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*mode
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
 		applogger.Info(context.Background(), "入試情報のキャッシュヒット: %d:%d", scheduleID, infoID)
+
 		info := cached.(models.AdmissionInfo)
+
 		return &info, nil
 	}
 
@@ -759,6 +823,7 @@ func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*mode
 		if err == gorm.ErrRecordNotFound {
 			return nil, appErrors.NewNotFoundError("AdmissionInfo", infoID, nil)
 		}
+
 		return nil, appErrors.NewDatabaseError("FindAdmissionInfo", err, nil)
 	}
 
@@ -774,6 +839,7 @@ func (r *universityRepository) CreateAdmissionInfo(info *models.AdmissionInfo) e
 	if err := r.db.Create(info).Error; err != nil {
 		return appErrors.NewDatabaseError("CreateAdmissionInfo", err, nil)
 	}
+
 	return nil
 }
 
@@ -782,5 +848,6 @@ func (r *universityRepository) DeleteAdmissionInfo(id uint) error {
 	if err := r.db.Delete(&models.AdmissionInfo{}, id).Error; err != nil {
 		return appErrors.NewDatabaseError("DeleteAdmissionInfo", err, nil)
 	}
+
 	return nil
 }

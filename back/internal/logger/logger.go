@@ -73,7 +73,7 @@ func InitLoggers(cfg Config) error {
 	config = cfg
 
 	// ログディレクトリの作成
-	if err := os.MkdirAll(config.LogDir, 0755); err != nil {
+	if err := os.MkdirAll(config.LogDir, 0750); err != nil {
 		return fmt.Errorf("ログディレクトリの作成に失敗しました: %w", err)
 	}
 
@@ -81,9 +81,11 @@ func InitLoggers(cfg Config) error {
 	if err := initInfoLogger(); err != nil {
 		return fmt.Errorf("情報ロガーの初期化に失敗しました: %w", err)
 	}
+
 	if err := initErrorLogger(); err != nil {
 		return fmt.Errorf("エラーロガーの初期化に失敗しました: %w", err)
 	}
+
 	if err := initAccessLogger(); err != nil {
 		return fmt.Errorf("アクセスロガーの初期化に失敗しました: %w", err)
 	}
@@ -105,15 +107,20 @@ func initInfoLogger() error {
 		Compress:   config.Compress,
 	}
 
+	if err := infoFile.Rotate(); err != nil {
+		return fmt.Errorf("情報ログファイルのローテーションに失敗しました: %w", err)
+	}
+
 	infoLogger = slog.New(slog.NewJSONHandler(infoFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				a.Value = slog.StringValue(a.Value.Time().Format(time.RFC3339))
 			}
 			return a
 		},
 	}))
+
 	return nil
 }
 
@@ -131,15 +138,20 @@ func initErrorLogger() error {
 		Compress:   config.Compress,
 	}
 
+	if err := errorFile.Rotate(); err != nil {
+		return fmt.Errorf("エラーログファイルのローテーションに失敗しました: %w", err)
+	}
+
 	errorLogger = slog.New(slog.NewJSONHandler(errorFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				a.Value = slog.StringValue(a.Value.Time().Format(time.RFC3339))
 			}
 			return a
 		},
 	}))
+
 	return nil
 }
 
@@ -157,15 +169,20 @@ func initAccessLogger() error {
 		Compress:   config.Compress,
 	}
 
+	if err := accessFile.Rotate(); err != nil {
+		return fmt.Errorf("アクセスログファイルのローテーションに失敗しました: %w", err)
+	}
+
 	accessLogger = slog.New(slog.NewJSONHandler(accessFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				a.Value = slog.StringValue(a.Value.Time().Format(time.RFC3339))
 			}
 			return a
 		},
 	}))
+
 	return nil
 }
 

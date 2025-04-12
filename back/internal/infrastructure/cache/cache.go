@@ -1,3 +1,5 @@
+// Package cache はキャッシュ機能を提供するパッケージです。
+// このパッケージは、アプリケーション全体で使用されるキャッシュの実装を提供します。
 package cache
 
 import (
@@ -12,8 +14,8 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 )
 
-// CacheInterface はキャッシュのインターフェースを定義します
-type CacheInterface interface {
+// Interface はキャッシュのインターフェースを定義します
+type Interface interface {
 	Set(key string, value interface{}, duration time.Duration) error
 	Get(key string) (interface{}, bool, error)
 	Delete(key string) error
@@ -46,6 +48,15 @@ type PerformanceMetrics struct {
 	FailedOperations  int64
 }
 
+// Stats はキャッシュの統計情報を保持します
+type Stats struct {
+	Hits        int64
+	Misses      int64
+	Evictions   int64
+	MemoryUsage int64
+	ItemCount   int
+}
+
 // エラーコードの定義
 const (
 	ErrEmptyKey = "キャッシュキーは空にできません"
@@ -57,20 +68,11 @@ const (
 	ErrNoTransaction = "アクティブなトランザクションがありません"
 )
 
-// CacheStats はキャッシュの統計情報を保持します
-type CacheStats struct {
-	Hits        int64
-	Misses      int64
-	Evictions   int64
-	MemoryUsage int64
-	ItemCount   int
-}
-
 // Cache はキャッシュの実装を提供します
 type Cache struct {
 	items       map[string]cacheItem
 	mu          sync.RWMutex
-	stats       CacheStats
+	stats       Stats
 	metrics     struct {
 		latencies     []time.Duration
 		evictions     int64
@@ -89,7 +91,6 @@ type Transaction struct {
 }
 
 var (
-	defaultExpiration = 5 * time.Minute
 	cleanupInterval  = 10 * time.Minute
 	instance         *Cache
 	once            sync.Once
@@ -103,15 +104,16 @@ func NewTransaction() *Transaction {
 }
 
 // GetInstance はキャッシュのシングルトンインスタンスを返します
-func GetInstance() CacheInterface {
+func GetInstance() Interface {
 	once.Do(func() {
 		instance = &Cache{
 			items:      make(map[string]cacheItem),
 			maxSize:    defaultMaxSize,
-			stats:      CacheStats{},
+			stats:      Stats{},
 		}
 		go instance.startCleanup()
 	})
+
 	return instance
 }
 
@@ -142,13 +144,17 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) error
 			createdAt:  time.Now(),
 			accessCount: 0,
 		}
+
 		return nil
 	}
 
 	// メモリ使用量のチェック
 	itemSize := calculateItemSize(value)
-	if c.currentSize+itemSize > c.maxSize {
+	currentSize := c.currentSize + itemSize
+
+	if currentSize > c.maxSize {
 		c.evictItems()
+
 		if c.currentSize+itemSize > c.maxSize {
 			return appErrors.NewSystemError(ErrCacheFull, nil, nil)
 		}
@@ -165,6 +171,7 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) error
 	c.stats.ItemCount++
 
 	applogger.Info(context.Background(), "キャッシュ: キー %s でアイテムを保存しました", key)
+
 	return nil
 }
 
@@ -199,7 +206,9 @@ func (c *Cache) Get(key string) (interface{}, bool, error) {
 	if c.transaction != nil {
 		c.transaction.mu.RLock()
 		defer c.transaction.mu.RUnlock()
-		if item, exists := c.transaction.items[key]; exists {
+
+		item, exists := c.transaction.items[key]
+		if exists {
 			c.stats.Hits++
 			return item.value, true, nil
 		}
@@ -219,7 +228,9 @@ func (c *Cache) Get(key string) (interface{}, bool, error) {
 	c.stats.Hits++
 	item.accessCount++
 	c.items[key] = item
+
 	applogger.Info(context.Background(), "キャッシュ: キー %s でヒットしました", key)
+
 	return item.value, true, nil
 }
 
@@ -234,6 +245,7 @@ func (c *Cache) Delete(key string) error {
 
 	delete(c.items, key)
 	applogger.Info(context.Background(), "キャッシュ: キー %s のアイテムを削除しました", key)
+
 	return nil
 }
 
@@ -263,6 +275,7 @@ func (c *Cache) startCleanup() {
 func (c *Cache) GetStats() (hits, misses int64, err error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	return c.stats.Hits, c.stats.Misses, nil
 }
 
@@ -270,10 +283,13 @@ func (c *Cache) GetStats() (hits, misses int64, err error) {
 func (c *Cache) GetHitRate() (float64, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	total := c.stats.Hits + c.stats.Misses
+
 	if total == 0 {
 		return 0, nil
 	}
+
 	return float64(c.stats.Hits) / float64(total) * 100, nil
 }
 
@@ -286,39 +302,40 @@ func (c *Cache) ClearAll() error {
 	c.stats.Hits = 0
 	c.stats.Misses = 0
 
-	applogger.Info(context.Background(), "キャッシュ: 全アイテムを削除しました")
 	return nil
 }
 
+// キャッシュキーの定義
 const (
-	cacheDuration = 5 * time.Minute
-	cacheCleanupInterval = 10 * time.Minute
+	// CacheKeyAllUniversities は全ての大学データのキャッシュキーを表します
 	CacheKeyAllUniversities = "universities:all"
 	CacheKeyUniversityFormat = "universities:%d"
 	CacheKeyDepartmentFormat = "departments:%d:%d"
 	maxCacheSize = 1000 // 最大キャッシュエントリ数
 	maxLatencyHistory = 1000
 	defaultMaxSize = 1000
+	cacheDuration = 5 * time.Minute
+	cacheCleanupInterval = 10 * time.Minute
 )
 
-// CacheManager はキャッシュ管理を担当します
-type CacheManager struct {
+// Manager はキャッシュ管理を担当します
+type Manager struct {
 	cache *gocache.Cache
 	mutex *sync.RWMutex
-	stats *CacheStats
+	stats *Stats
 }
 
-// newCacheManager は新しいキャッシュマネージャーを作成します
-func NewCacheManager() *CacheManager {
-	return &CacheManager{
+// NewCacheManager は新しいキャッシュマネージャーを作成します
+func NewCacheManager() *Manager {
+	return &Manager{
 		cache: gocache.New(cacheDuration, cacheCleanupInterval),
 		mutex: &sync.RWMutex{},
-		stats: &CacheStats{},
+		stats: &Stats{},
 	}
 }
 
 // GetFromCache はキャッシュから値を取得します
-func (cm *CacheManager) GetFromCache(key string) (interface{}, bool) {
+func (cm *Manager) GetFromCache(key string) (interface{}, bool) {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
 
@@ -334,11 +351,12 @@ func (cm *CacheManager) GetFromCache(key string) (interface{}, bool) {
 	} else {
 		cm.stats.Misses++
 	}
+
 	return value, found
 }
 
 // SetCache はキャッシュに値を設定します
-func (cm *CacheManager) SetCache(key string, value interface{}) {
+func (cm *Manager) SetCache(key string, value interface{}) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 
@@ -352,7 +370,7 @@ func (cm *CacheManager) SetCache(key string, value interface{}) {
 }
 
 // ClearAllRelatedCache は大学に関連する全てのキャッシュをクリアします
-func (cm *CacheManager) ClearAllRelatedCache(universityID uint) {
+func (cm *Manager) ClearAllRelatedCache(universityID uint) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 
@@ -373,7 +391,7 @@ func (cm *CacheManager) ClearAllRelatedCache(universityID uint) {
 }
 
 // ClearSubjectsCache は科目のキャッシュをクリアします
-func (cm *CacheManager) ClearSubjectsCache(testTypeID uint) {
+func (cm *Manager) ClearSubjectsCache(testTypeID uint) {
 	cm.mutex.Lock()
 	defer cm.mutex.Unlock()
 
@@ -382,20 +400,24 @@ func (cm *CacheManager) ClearSubjectsCache(testTypeID uint) {
 }
 
 // GetStats はキャッシュの統計情報を返します
-func (cm *CacheManager) GetStats() (hits, misses int64) {
+func (cm *Manager) GetStats() (hits, misses int64) {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
+
 	return cm.stats.Hits, cm.stats.Misses
 }
 
 // GetHitRate はキャッシュのヒット率を返します
-func (cm *CacheManager) GetHitRate() float64 {
+func (cm *Manager) GetHitRate() float64 {
 	cm.mutex.RLock()
 	defer cm.mutex.RUnlock()
+
 	total := cm.stats.Hits + cm.stats.Misses
+
 	if total == 0 {
 		return 0
 	}
+
 	return float64(cm.stats.Hits) / float64(total) * 100
 }
 
@@ -410,6 +432,7 @@ func (c *Cache) StartTransaction() error {
 
 	c.transaction = NewTransaction()
 	c.metrics.transactions++
+
 	return nil
 }
 
@@ -430,6 +453,7 @@ func (c *Cache) CommitTransaction() error {
 	}
 
 	c.transaction = nil
+
 	return nil
 }
 
@@ -443,6 +467,7 @@ func (c *Cache) RollbackTransaction() error {
 	}
 
 	c.transaction = nil
+
 	return nil
 }
 
@@ -453,16 +478,20 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 
 	total := c.stats.Hits + c.stats.Misses
 	hitRate := 0.0
+
 	if total > 0 {
 		hitRate = float64(c.stats.Hits) / float64(total) * 100
 	}
 
 	var avgLatency time.Duration
+
+	var totalLatency time.Duration
+
 	if len(c.metrics.latencies) > 0 {
-		var totalLatency time.Duration
 		for _, latency := range c.metrics.latencies {
 			totalLatency += latency
 		}
+
 		avgLatency = totalLatency / time.Duration(len(c.metrics.latencies))
 	}
 
@@ -478,7 +507,7 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 }
 
 // RecordLatency は操作のレイテンシを記録します
-func (c *Cache) RecordLatency(operation string, duration time.Duration) error {
+func (c *Cache) RecordLatency(_ string, duration time.Duration) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -486,5 +515,6 @@ func (c *Cache) RecordLatency(operation string, duration time.Duration) error {
 	if len(c.metrics.latencies) > maxLatencyHistory {
 		c.metrics.latencies = c.metrics.latencies[1:]
 	}
+
 	return nil
 }

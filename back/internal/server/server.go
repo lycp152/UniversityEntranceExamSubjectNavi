@@ -62,6 +62,7 @@ func (s *Server) Start(ctx context.Context) error {
 	// サーバーの起動
 	go func() {
 		applogger.Info(context.Background(), "サーバーを起動しています。ポート: %s", s.cfg.Port)
+
 		if err := s.echo.Start(":" + s.cfg.Port); err != nil && err != http.ErrServerClosed {
 			applogger.Error(context.Background(), "サーバーの起動に失敗しました: %v", err)
 		}
@@ -73,6 +74,7 @@ func (s *Server) Start(ctx context.Context) error {
 	// グレースフルシャットダウン
 	applogger.Info(context.Background(), "サーバーを停止しています...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+
 	defer cancel()
 
 	if err := s.echo.Shutdown(shutdownCtx); err != nil {
@@ -80,6 +82,7 @@ func (s *Server) Start(ctx context.Context) error {
 	}
 
 	applogger.Info(context.Background(), "サーバーが正常に停止しました")
+
 	return nil
 }
 

@@ -18,9 +18,11 @@ func (e *HTTPError) Error() string {
 	if e.Err != nil {
 		msg = fmt.Sprintf("%s (原因: %v)", msg, e.Err)
 	}
+
 	if len(e.Details) > 0 {
 		msg = fmt.Sprintf("%s [詳細: %v]", msg, e.Details)
 	}
+
 	return msg
 }
 

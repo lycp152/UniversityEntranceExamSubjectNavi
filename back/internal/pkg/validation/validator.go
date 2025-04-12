@@ -1,3 +1,5 @@
+// Package validation は入力値のバリデーション機能を提供します。
+// IDの検証や文字列から数値への変換などの基本的なバリデーション機能を含みます。
 package validation
 
 import (
@@ -15,6 +17,7 @@ func ParseID(ctx context.Context, idStr string, errFormat string, errMsg string)
 		applogger.Error(ctx, errFormat, err)
 		return 0, appErrors.NewInvalidInputError("id", errMsg, nil)
 	}
+
 	return uint(id), nil
 }
 

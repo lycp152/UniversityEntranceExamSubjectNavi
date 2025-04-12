@@ -8,6 +8,17 @@
  */
 import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  typescript: {
+    // ビルド時の型チェックを有効化
+    ignoreBuildErrors: false,
+  },
+  // Turbopackの設定
+  turbopack: {
+    resolveAlias: {
+      '@': './src',
+    },
+  },
+};
 
 export default nextConfig;

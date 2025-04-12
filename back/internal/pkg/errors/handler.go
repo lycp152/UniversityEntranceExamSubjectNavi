@@ -1,3 +1,5 @@
+// Package errors はアプリケーションのエラー処理を管理するパッケージです
+// エラーの生成、ラップ、HTTPレスポンスへの変換などの機能を提供します
 package errors
 
 import (
@@ -80,6 +82,7 @@ func HandleError(c echo.Context, err error) error {
 	case *errors.Error:
 		statusCode := getStatusCode(string(e.Code))
 		applogger.Error(ctx, "エラーが発生しました: %v", e)
+
 		return c.JSON(statusCode, map[string]interface{}{
 			"code":    e.Code,
 			"message": e.Message,
@@ -87,6 +90,7 @@ func HandleError(c echo.Context, err error) error {
 		})
 	default:
 		applogger.Error(ctx, "予期せぬエラーが発生しました: %v", err)
+
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"code":    InternalServerError,
 			"message": "サーバー内部でエラーが発生しました",

@@ -1,3 +1,5 @@
+// Package repositories はデータベースのテストヘルパーを提供します。
+// テスト用のデータベース設定、セットアップ、クリーンアップなどの機能を含みます。
 package repositories
 
 import (
@@ -38,6 +40,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -115,6 +118,7 @@ func NewTestUniversityBuilder() *TestUniversityBuilder {
 // WithName は大学名を設定します
 func (b *TestUniversityBuilder) WithName(name string) *TestUniversityBuilder {
 	b.university.Name = name
+
 	return b
 }
 
@@ -127,6 +131,7 @@ func (b *TestUniversityBuilder) WithDepartment(name string) *TestUniversityBuild
 		Name: name,
 	}
 	b.university.Departments = append(b.university.Departments, department)
+
 	return b
 }
 

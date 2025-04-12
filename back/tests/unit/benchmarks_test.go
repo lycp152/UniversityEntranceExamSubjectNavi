@@ -1,3 +1,6 @@
+// Package unit はユニットテストとベンチマークテストを提供します。
+// パフォーマンス測定、並行処理、メモリ使用量、データベース接続などの
+// ベンチマークテストを含みます。
 package unit
 
 import (
@@ -10,6 +13,10 @@ import (
 	"university-exam-api/tests/unit/repositories"
 )
 
+const (
+	errDBClose = "データベースのクローズに失敗しました: %v"
+)
+
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{
@@ -19,6 +26,7 @@ func BenchmarkUserValidation(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_ = user.Validate()
 	}
@@ -27,7 +35,11 @@ func BenchmarkUserValidation(b *testing.B) {
 // BenchmarkUserRepository はユーザーリポジトリのパフォーマンスを測定します
 func BenchmarkUserRepository(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf(errDBClose, err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
@@ -37,6 +49,7 @@ func BenchmarkUserRepository(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_ = repo.Create(user)
 	}
@@ -45,19 +58,26 @@ func BenchmarkUserRepository(b *testing.B) {
 // BenchmarkConcurrentUserCreation は並行処理でのユーザー作成のパフォーマンスを測定します
 func BenchmarkConcurrentUserCreation(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf(errDBClose, err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(b, 100)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		var wg sync.WaitGroup
+
 		wg.Add(len(users))
 
 		for _, user := range users {
 			go func(u *models.User) {
 				defer wg.Done()
+
 				_ = repo.Create(u)
 			}(user)
 		}
@@ -69,12 +89,17 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 // BenchmarkMemoryUsage はメモリ使用量を測定します
 func BenchmarkMemoryUsage(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf(errDBClose, err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(b, 1000)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		for _, user := range users {
 			_ = repo.Create(user)
@@ -85,7 +110,11 @@ func BenchmarkMemoryUsage(b *testing.B) {
 // BenchmarkResponseTime はAPIレスポンス時間を測定します
 func BenchmarkResponseTime(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf(errDBClose, err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
@@ -95,10 +124,13 @@ func BenchmarkResponseTime(b *testing.B) {
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		start := time.Now()
+
 		_ = repo.Create(user)
 		elapsed := time.Since(start)
+
 		if elapsed > 100*time.Millisecond {
 			b.Errorf("レスポンス時間が100msを超えています: %v", elapsed)
 		}
@@ -108,9 +140,14 @@ func BenchmarkResponseTime(b *testing.B) {
 // BenchmarkDatabaseConnection はデータベース接続のパフォーマンスを測定します
 func BenchmarkDatabaseConnection(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf(errDBClose, err)
+		}
+	}()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_, err := db.Begin()
 		if err != nil {
@@ -122,7 +159,11 @@ func BenchmarkDatabaseConnection(b *testing.B) {
 // BenchmarkCachePerformance はキャッシュのパフォーマンスを測定します
 func BenchmarkCachePerformance(b *testing.B) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			b.Errorf(errDBClose, err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
@@ -135,6 +176,7 @@ func BenchmarkCachePerformance(b *testing.B) {
 	_ = repo.Create(user)
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		_, err := repo.FindByID(1)
 		if err != nil {

@@ -65,7 +65,7 @@ dev-update: ## 依存関係を更新
 
 .PHONY: down
 down: ## 環境を停止
-	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) down --remove-orphans
 
 .PHONY: logs
 logs: ## コンテナのログを表示

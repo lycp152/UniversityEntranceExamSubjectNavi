@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo } from 'react';
+import { Component, ErrorInfo } from 'react';
 import type { ErrorBoundaryProps, ErrorBoundaryState } from '@/types/error/types';
 import { DefaultErrorFallback } from './error-fallback';
 

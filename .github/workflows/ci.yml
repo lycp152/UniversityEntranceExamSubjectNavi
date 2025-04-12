@@ -14,7 +14,7 @@ jobs:
     outputs:
       cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: cache-key
         run: echo "value=$(date +%s)" >> $GITHUB_OUTPUT
 
@@ -22,32 +22,57 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
-      - uses: actions/setup-node@v3
+          go-version: "1.24.2"
+          cache: true
+          cache-dependency-path: back/go.sum
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
           cache-dependency-path: front/yarn.lock
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('back/go.mod') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
+      - name: Cache Yarn
+        uses: actions/cache@v4
+        with:
+          path: |
+            front/node_modules
+            ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('front/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Install dependencies
         run: |
           cd back
           go mod download
+          go mod verify
           cd ../front
           yarn install --frozen-lockfile
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v7.0.0
+        with:
+          version: v2.0.2
+          working-directory: back
+          skip-cache: false
+          install-mode: binary
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          only-new-issues: false
+          skip-save-cache: false
+          cache-invalidation-interval: 7
 
       - name: Run linters
         run: |
@@ -76,18 +101,18 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
-      - uses: actions/setup-node@v3
+          go-version: "1.24.2"
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
           cache-dependency-path: front/yarn.lock
 
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -137,7 +162,7 @@ jobs:
           go tool cover -func=coverage.txt | grep -E "total:\s+\(statements\)\s+([0-9.]+)%" | awk '{if ($3 < 80) {print "カバレッジが80%未満です: " $3 "%"; exit 1}}'
 
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: |
@@ -149,10 +174,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
+          go-version: "1.24.2"
 
       - name: Run performance tests
         run: |
@@ -175,10 +200,10 @@ jobs:
     needs: performance
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
+          go-version: "1.24.2"
 
       - name: Run security tests
         run: |
@@ -191,7 +216,7 @@ jobs:
           go list -json -m all | go run github.com/google/osv-scanner/cmd/osv-scanner@latest
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: security-reports
           path: |
@@ -202,7 +227,7 @@ jobs:
     needs: security
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
@@ -212,7 +237,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build images
-        uses: docker/bake-action@v3
+        uses: docker/bake-action@v6
         with:
           files: |
             ./back/docker-bake.hcl

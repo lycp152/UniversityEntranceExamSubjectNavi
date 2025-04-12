@@ -5,6 +5,8 @@ package testutils
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -44,8 +46,37 @@ const (
 const (
 	ContentTypeHeader = "Content-Type"
 	ContentTypeJSON = "application/json"
-	CSRFTokenHeader = "X-CSRF-Token"
 )
+
+// DefaultLogDirPerm はログディレクトリのデフォルトのパーミッションを定義します
+const (
+	DefaultLogDirPerm = 0750
+)
+
+// CSRFTokenHeader はCSRFトークンのHTTPヘッダー名を定義します
+var (
+	CSRFTokenHeader = getEnvOrDefault("CSRF_TOKEN_HEADER", "X-CSRF-Token")
+	TestCSRFToken   = getEnvOrDefault("TEST_CSRF_TOKEN", generateRandomToken())
+)
+
+// generateRandomToken はランダムなCSRFトークンを生成します
+func generateRandomToken() string {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "test-csrf-token" // フォールバック値
+	}
+
+	return base64.URLEncoding.EncodeToString(b)
+}
+
+// getEnvOrDefault は環境変数の値を取得し、設定されていない場合はデフォルト値を返します
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+
+	return defaultValue
+}
 
 // テストデータ定数
 const (
@@ -125,8 +156,10 @@ func (e *TestError) Error() string {
 		for i, attr := range e.Attrs {
 			attrs[i] = fmt.Sprintf("%s=%v", attr.Key, attr.Value)
 		}
+
 		return fmt.Sprintf("%s: %s [%s]", e.Code, e.Message, strings.Join(attrs, ", "))
 	}
+
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
@@ -153,7 +186,7 @@ func DefaultTestConfig() *TestConfig {
 type TestHelper struct {
 	t       *testing.T
 	e       *echo.Echo
-	handler *university.UniversityHandler
+	handler *university.Handler
 	db      *gorm.DB
 	config  *TestConfig
 	logger  *slog.Logger
@@ -169,16 +202,30 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 	}
 
 	// ログディレクトリの作成
-	if err := os.MkdirAll(config.LogDir, 0755); err != nil {
+	logDir := filepath.Join("logs", "tests")
+	if err := os.MkdirAll(logDir, DefaultLogDirPerm); err != nil {
 		t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
 	}
 
 	// ログファイルの作成
-	logFile, err := os.Create(filepath.Join(config.LogDir, fmt.Sprintf("test_%s.log", time.Now().Format("20060102_150405"))))
+	logFileName := fmt.Sprintf("test_%s.log", time.Now().Format("20060102_150405"))
+	logFilePath := filepath.Join(logDir, logFileName)
+	logFilePath = filepath.Clean(logFilePath) // パスの正規化
+
+	if !strings.HasPrefix(logFilePath, logDir) {
+		t.Fatalf("無効なログファイルパスです: %s", logFilePath)
+	}
+
+	logFile, err := os.Create(logFilePath)
 	if err != nil {
 		t.Fatalf("ログファイルの作成に失敗しました: %v", err)
 	}
-	defer logFile.Close()
+
+	defer func() {
+		if err := logFile.Close(); err != nil {
+			t.Errorf("ログファイルのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	// ロガーの初期化
 	fileHandler := slog.NewTextHandler(logFile, &slog.HandlerOptions{Level: config.LogLevel})
@@ -204,6 +251,7 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 func (h *TestHelper) Cleanup() {
 	h.t.Helper()
 	h.logger.Info("テストのクリーンアップを開始します")
+
 	if err := cleanupDatabase(h.db); err != nil {
 		h.logger.Error("データベースのクリーンアップに失敗しました",
 			"error", err,
@@ -211,6 +259,7 @@ func (h *TestHelper) Cleanup() {
 		)
 		h.t.Errorf(ErrTestCleanup, "database", err)
 	}
+
 	h.logger.Info("テストのクリーンアップが完了しました")
 }
 
@@ -250,8 +299,12 @@ func (h *TestHelper) LoadTestData() TestData {
 }
 
 // CreateTestContext はテストコンテキストを作成します
-func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*httptest.ResponseRecorder, echo.Context) {
+func (h *TestHelper) CreateTestContext(
+	method, path string,
+	body interface{},
+) (*httptest.ResponseRecorder, echo.Context) {
 	h.t.Helper()
+
 	var req *http.Request
 
 	if body != nil {
@@ -259,18 +312,18 @@ func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*
 		if err != nil {
 			h.t.Fatalf(ErrMarshalTestData, body, err)
 		}
+
 		req = httptest.NewRequest(method, path, bytes.NewReader(jsonBody))
 		req.Header.Set(ContentTypeHeader, ContentTypeJSON)
 	} else {
 		req = httptest.NewRequest(method, path, nil)
 	}
 
-	token := "test-csrf-token"
-	req.Header.Set(CSRFTokenHeader, token)
+	req.Header.Set(CSRFTokenHeader, TestCSRFToken)
 
 	rec := httptest.NewRecorder()
 	c := h.e.NewContext(req, rec)
-	c.Set("csrf", token)
+	c.Set("csrf", TestCSRFToken)
 
 	return rec, c
 }
@@ -278,6 +331,7 @@ func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*
 // AssertStatusCode はステータスコードを検証します
 func (h *TestHelper) AssertStatusCode(got, want int) {
 	h.t.Helper()
+
 	if got != want {
 		h.t.Errorf(ErrInvalidStatusCode, h.e.URL(h.handler.GetUniversity), got, want)
 	}
@@ -314,7 +368,7 @@ func (h *TestHelper) AssertErrorResponse(rec *httptest.ResponseRecorder, wantSta
 }
 
 // AssertValidationError はバリデーションエラーを検証
-func (h *TestHelper) AssertValidationError(rec *httptest.ResponseRecorder, field, expectedError string) {
+func (h *TestHelper) AssertValidationError(rec *httptest.ResponseRecorder, _ string, expectedError string) {
 	h.t.Helper()
 
 	var response map[string]string
@@ -366,8 +420,8 @@ func (h *TestHelper) AssertSpecialCharsSanitized(s string) {
 // テスト実行前にロガーを初期化し、テスト環境の設定を行います。
 func TestMain(m *testing.M) {
 	// ログディレクトリの作成
-	logDir := filepath.Join("../../logs/tests")
-	if err := os.MkdirAll(logDir, 0755); err != nil {
+	logDir := filepath.Join("logs", "tests")
+	if err := os.MkdirAll(logDir, DefaultLogDirPerm); err != nil {
 		fmt.Printf("ログディレクトリの作成に失敗しました: %v\n", err)
 		os.Exit(1)
 	}
@@ -376,13 +430,17 @@ func TestMain(m *testing.M) {
 	config := applogger.DefaultConfig()
 	config.LogLevel = applogger.LevelDebug
 	config.LogDir = logDir
+
 	if err := applogger.InitLoggers(config); err != nil {
 		fmt.Printf("ロガーの初期化に失敗しました: %v\n", err)
 		os.Exit(1)
 	}
 
 	// テスト用のキャッシュ設定（有効期限を5秒に設定）
-	cache.GetInstance().Set("test:config", struct{}{}, 5*time.Second)
+	if err := cache.GetInstance().Set("test:config", struct{}{}, 5*time.Second); err != nil {
+		fmt.Printf("キャッシュの設定に失敗しました: %v\n", err)
+		os.Exit(1)
+	}
 
 	// テストの実行
 	code := m.Run()
@@ -398,14 +456,16 @@ func TestMain(m *testing.M) {
 // 戻り値:
 //   - *echo.Echo: テスト用のEchoインスタンス
 //   - *UniversityHandler: テスト対象のハンドラー
-func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *university.UniversityHandler) {
+func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *university.Handler) {
 	e := echo.New()
 	for _, m := range middlewares {
 		e.Use(m)
 	}
+
 	db := repositories.SetupTestDB(nil, nil)
 	repo := repositories.NewUniversityRepository(db)
 	handler := university.NewUniversityHandler(repo, 5*time.Second)
+
 	return e, handler
 }
 
@@ -432,9 +492,11 @@ type RequestConfig struct {
 //   - error: リクエストの実行中に発生したエラー
 func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc) (*httptest.ResponseRecorder, error) {
 	var reqBody []byte
+
 	if config.Body != nil {
 		var err error
 		reqBody, err = json.Marshal(config.Body)
+
 		if err != nil {
 			return nil, fmt.Errorf("リクエストボディのマーシャリングに失敗しました: %w", err)
 		}
@@ -446,6 +508,7 @@ func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc
 		for key, value := range config.QueryParams {
 			values.Add(key, value)
 		}
+
 		config.Path = config.Path + "?" + values.Encode()
 	}
 
@@ -459,14 +522,17 @@ func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc
 	if config.Timeout > 0 {
 		ctx, cancel := context.WithTimeout(req.Context(), config.Timeout)
 		defer cancel()
+
 		req = req.WithContext(ctx)
 	}
 
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
+
 	if err := handler(c); err != nil {
 		return nil, fmt.Errorf("ハンドラーの実行に失敗しました: %w", err)
 	}
+
 	return rec, nil
 }
 
@@ -485,12 +551,6 @@ func ParseResponse(rec *httptest.ResponseRecorder, v interface{}) error {
 
 // validateErrorResponse はエラーレスポンスを検証します。
 // 期待されるステータスコードとエラーメッセージと実際のレスポンスを比較します。
-//
-// 引数:
-//   - t: テストヘルパー
-//   - rec: レスポンスレコーダー
-//   - wantStatus: 期待されるHTTPステータスコード
-//   - wantError: 期待されるエラーメッセージ
 func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantStatus int, wantError string) {
 	t.Helper()
 
@@ -501,7 +561,10 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 	var resp struct {
 		Error string `json:"error"`
 	}
-	if err := ParseResponse(rec, &resp); err != nil {
+
+	err := ParseResponse(rec, &resp)
+
+	if err != nil {
 		t.Fatalf("エラーレスポンスのパースに失敗しました: %v", err)
 	}
 
@@ -511,10 +574,10 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 }
 
 // SetupTestServer はテストサーバーをセットアップします
-func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.UniversityHandler, *gorm.DB, error) {
+func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.Handler, *gorm.DB, error) {
 	t.Helper()
 
-	if err := os.MkdirAll(config.LogDir, 0755); err != nil {
+	if err := os.MkdirAll(config.LogDir, DefaultLogDirPerm); err != nil {
 		return nil, nil, nil, &TestError{
 			Code:    "LOG_DIR_CREATE_FAILED",
 			Message: fmt.Sprintf("ログディレクトリの作成に失敗しました: %v", err),
@@ -524,6 +587,7 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 	loggerConfig := applogger.DefaultConfig()
 	loggerConfig.LogLevel = config.LogLevel
 	loggerConfig.LogDir = config.LogDir
+
 	if err := applogger.InitLoggers(loggerConfig); err != nil {
 		return nil, nil, nil, &TestError{
 			Code:    "LOGGER_INIT_FAILED",
@@ -533,6 +597,7 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 
 	e := echo.New()
 	db := repositories.SetupTestDB(t, nil)
+
 	if db == nil {
 		return nil, nil, nil, &TestError{
 			Code:    "DB_INIT_FAILED",
@@ -552,7 +617,12 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 		Fields: []string{"name"},
 	}))
 
-	cache.GetInstance().Set("test:config", struct{}{}, config.CacheTimeout)
+	if err := cache.GetInstance().Set("test:config", struct{}{}, config.CacheTimeout); err != nil {
+		return nil, nil, nil, &TestError{
+			Code:    "CACHE_SET_FAILED",
+			Message: fmt.Sprintf("キャッシュの設定に失敗しました: %v", err),
+		}
+	}
 
 	repo := repositories.NewUniversityRepository(db)
 	handler := university.NewUniversityHandler(repo, config.CacheTimeout)
@@ -612,7 +682,7 @@ func ValidateResponse(t *testing.T, rec *httptest.ResponseRecorder, tc TestCase)
 // この構造体はすべてのテストケースで共通して使用される基本情報を保持します
 type TestCase struct {
 	Name       string                                    // テストケースの名前
-	Setup      func(*testing.T, *echo.Echo, *university.UniversityHandler) // テストケースのセットアップ関数
+	Setup      func(*testing.T, *echo.Echo, *university.Handler) // テストケースのセットアップ関数
 	WantStatus int                                      // 期待されるステータスコード
 	WantError  string                                   // 期待されるエラーメッセージ
 	Query      string                                   // 検索クエリ
@@ -628,7 +698,6 @@ type cacheTestCase struct {
 	sleep      time.Duration                            // キャッシュの有効期限を待機する時間
 	wantCount  int                                      // 期待される結果の件数
 	isInitial  bool                                     // 初期キャッシュ状態かどうか
-	validate   func(*testing.T, []models.University) // キャッシュ結果の検証関数
 }
 
 // validateCacheResponse はキャッシュテストのレスポンスを検証します
@@ -642,6 +711,7 @@ func validateCacheResponse(t *testing.T, rec *httptest.ResponseRecorder, tt Test
 	var response struct {
 		Data []models.University `json:"data"`
 	}
+
 	if err := json.NewDecoder(rec.Body).Decode(&response); err != nil {
 		t.Errorf("レスポンスのパースに失敗しました: %v", err)
 		return
@@ -664,8 +734,10 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheMiss,
-				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
-					cache.GetInstance().Delete("universities:all")
+				Setup: func(t *testing.T, _ *echo.Echo, _ *university.Handler) {
+					if err := cache.GetInstance().Delete("universities:all"); err != nil {
+						t.Errorf("キャッシュの削除に失敗しました: %v", err)
+					}
 				},
 				WantStatus: http.StatusOK,
 			},
@@ -683,8 +755,10 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheExpired,
-				Setup: func(t *testing.T, e *echo.Echo, h *university.UniversityHandler) {
-					cache.GetInstance().Delete("universities:all")
+				Setup: func(t *testing.T, _ *echo.Echo, _ *university.Handler) {
+					if err := cache.GetInstance().Delete("universities:all"); err != nil {
+						t.Errorf("キャッシュの削除に失敗しました: %v", err)
+					}
 				},
 				WantStatus: http.StatusOK,
 			},
@@ -753,6 +827,7 @@ func TestSearchUniversitiesWithCacheExpiration(t *testing.T) {
 			if err != nil {
 				t.Fatalf(ErrMsgRequestFailed, err)
 			}
+
 			validateCacheResponse(t, rec, tt.TestCase)
 
 			time.Sleep(tt.sleep)
@@ -765,6 +840,7 @@ func TestSearchUniversitiesWithCacheExpiration(t *testing.T) {
 			if err != nil {
 				t.Fatalf(ErrMsgRequestFailed, err)
 			}
+
 			validateCacheResponse(t, rec, tt.TestCase)
 		})
 	}

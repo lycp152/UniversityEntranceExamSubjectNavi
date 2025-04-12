@@ -13,7 +13,11 @@ import (
 // TestLoad は負荷テストのテストケースです
 func TestLoad(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 1000)
@@ -21,12 +25,15 @@ func TestLoad(t *testing.T) {
 	start := time.Now()
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(users))
 
 	for _, user := range users {
 		go func(u *models.User) {
 			defer wg.Done()
+
 			err := repo.Create(u)
+
 			if err != nil {
 				t.Errorf("ユーザーの作成に失敗しました: %v", err)
 			}
@@ -46,12 +53,17 @@ func TestLoad(t *testing.T) {
 // TestConcurrentLoad は並行アクセスのテストケースです
 func TestConcurrentLoad(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 100)
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(users))
 
 	start := time.Now()
@@ -59,7 +71,9 @@ func TestConcurrentLoad(t *testing.T) {
 	for _, user := range users {
 		go func(u *models.User) {
 			defer wg.Done()
+
 			err := repo.Create(u)
+
 			if err != nil {
 				t.Errorf("ユーザーの作成に失敗しました: %v", err)
 			}

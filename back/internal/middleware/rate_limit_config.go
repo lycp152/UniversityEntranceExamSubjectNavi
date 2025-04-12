@@ -41,18 +41,23 @@ func (c *RateLimitConfig) validateConfig() error {
 	if c.TestNumRequests <= 0 {
 		return ErrInvalidNumRequests
 	}
+
 	if c.TestTimeWindow <= 0 {
 		return ErrInvalidTimeWindow
 	}
+
 	if c.TestMaxRequests <= 0 {
 		return ErrInvalidMaxRequests
 	}
+
 	if c.TestCooldownTime <= 0 {
 		return ErrInvalidCooldownTime
 	}
+
 	if c.TestNumGoroutines <= 0 {
 		return ErrInvalidNumGoroutines
 	}
+
 	return nil
 }
 

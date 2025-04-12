@@ -1,53 +1,73 @@
+// Package security はセキュリティ関連の機能を提供するパッケージです。
+// このパッケージは、CSRFトークンの生成と検証、セキュリティヘッダーの設定などの機能を提供します。
 package security
 
 import (
 	"context"
-	"fmt"
+	stdErrors "errors"
 	"net/http"
 	"time"
-	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 
 	"github.com/labstack/echo/v4"
 )
 
 const (
-	// エラーメッセージ
+	// ErrCSRFTokenGeneration はCSRFトークンの生成に失敗した場合のエラーメッセージです
+	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrCSRFTokenGeneration = "CSRFトークンの生成に失敗しました"
+	// ErrCSRFTokenInvalidType はCSRFトークンの型が不正な場合のエラーメッセージです
+	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrCSRFTokenInvalidType = "CSRFトークンの型が不正です"
 
-	// セキュリティヘッダー
+	// HeaderXContentTypeOptions はX-Content-Type-Optionsヘッダーの名前です
 	HeaderXContentTypeOptions = "X-Content-Type-Options"
+	// HeaderXFrameOptions はX-Frame-Optionsヘッダーの名前です
 	HeaderXFrameOptions = "X-Frame-Options"
+	// HeaderXXSSProtection はX-XSS-Protectionヘッダーの名前です
 	HeaderXXSSProtection = "X-XSS-Protection"
+	// HeaderStrictTransportSecurity はStrict-Transport-Securityヘッダーの名前です
 	HeaderStrictTransportSecurity = "Strict-Transport-Security"
+	// HeaderContentSecurityPolicy はContent-Security-Policyヘッダーの名前です
 	HeaderContentSecurityPolicy = "Content-Security-Policy"
+	// HeaderReferrerPolicy はReferrer-Policyヘッダーの名前です
 	HeaderReferrerPolicy = "Referrer-Policy"
 
-	// セキュリティヘッダーの値
+	// ValueNoSniff はX-Content-Type-Optionsヘッダーの値です
 	ValueNoSniff = "nosniff"
+	// ValueDeny はX-Frame-Optionsヘッダーの値です
 	ValueDeny = "DENY"
+	// ValueXSSProtection はX-XSS-Protectionヘッダーの値です
 	ValueXSSProtection = "1; mode=block"
+	// ValueHSTS はStrict-Transport-Securityヘッダーの値です
 	ValueHSTS = "max-age=31536000; includeSubDomains"
+	// ValueCSP はContent-Security-Policyヘッダーの値です
 	ValueCSP = "default-src 'self'"
+	// ValueReferrerPolicy はReferrer-Policyヘッダーの値です
 	ValueReferrerPolicy = "strict-origin-when-cross-origin"
 )
 
-// SecurityHandler はセキュリティ関連のHTTPリクエストを処理
-type SecurityHandler struct {
+// Handler はセキュリティ関連のハンドラーを管理します
+type Handler struct {
+	securityService Service
 	timeout time.Duration
 }
 
-// NewSecurityHandler は新しいSecurityHandlerインスタンスを生成
-func NewSecurityHandler(timeout time.Duration) *SecurityHandler {
-	return &SecurityHandler{
+// Service はセキュリティ関連のサービスを定義します
+type Service interface {
+	GenerateCSRFToken(ctx context.Context) (interface{}, error)
+}
+
+// NewHandler は新しいHandlerを生成します
+func NewHandler(securityService Service, timeout time.Duration) *Handler {
+	return &Handler{
+		securityService: securityService,
 		timeout: timeout,
 	}
 }
 
-// SecurityMiddleware はセキュリティヘッダーを設定するミドルウェア
-func SecurityMiddleware() echo.MiddlewareFunc {
+// Middleware はセキュリティヘッダーを設定するミドルウェア
+func Middleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			headers := map[string]string{
@@ -69,28 +89,21 @@ func SecurityMiddleware() echo.MiddlewareFunc {
 }
 
 // GetCSRFToken はCSRFトークンを返します
-func (h *SecurityHandler) GetCSRFToken(c echo.Context) error {
+func (h *Handler) GetCSRFToken(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
-	token := c.Get("csrf")
-	if token == nil {
-		applogger.Error(ctx, ErrCSRFTokenGeneration)
-		return errors.HandleError(c, fmt.Errorf(ErrCSRFTokenGeneration))
+	token, err := h.securityService.GenerateCSRFToken(ctx)
+	if err != nil {
+		return errors.HandleError(c, err)
 	}
 
-	tokenStr, ok := token.(string)
+	csrfToken, ok := token.(string)
 	if !ok {
-		applogger.Error(ctx, ErrCSRFTokenInvalidType)
-		return errors.HandleError(c, fmt.Errorf(ErrCSRFTokenInvalidType))
+		return errors.HandleError(c, stdErrors.New(ErrCSRFTokenInvalidType))
 	}
 
-	applogger.Info(ctx, logging.LogGetCSRFTokenSuccess)
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"token": tokenStr,
-		"meta": map[string]interface{}{
-			"expires_in": 3600, // 1時間
-			"timestamp":  time.Now().Unix(),
-		},
+	return c.JSON(http.StatusOK, map[string]string{
+		"csrf_token": csrfToken,
 	})
 }

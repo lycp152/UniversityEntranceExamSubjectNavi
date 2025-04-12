@@ -1,7 +1,10 @@
+// Package main はデータベースのシードデータを提供します。
+// 大学、学部、学科、入試情報などの初期データを生成します。
 package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"university-exam-api/internal/domain/models"
@@ -36,6 +39,7 @@ func cleanupDatabase(db *gorm.DB) error {
 	if err := db.Exec("DROP SCHEMA public CASCADE").Error; err != nil {
 		return err
 	}
+
 	if err := db.Exec("CREATE SCHEMA public").Error; err != nil {
 		return err
 	}
@@ -48,6 +52,8 @@ func cleanupDatabase(db *gorm.DB) error {
 	return nil
 }
 
+// SubjectData は科目のデータ構造を定義します。
+// 科目名、表示順序、共通テストの得点、二次試験の得点を含みます。
 type SubjectData struct {
 	Name string
 	Order int
@@ -88,18 +94,36 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 	}
 
 	subjects = subjects[:idx]
+
 	return calculatePercentages(subjects)
 }
 
-func setupEnvironment() {
+func setupEnvironment() error {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("警告: .envファイルが見つかりません")
-		os.Setenv("DB_HOST", "localhost")
-		os.Setenv("DB_USER", "user")
-		os.Setenv("DB_PASSWORD", "password")
-		os.Setenv("DB_NAME", "university_exam_db")
-		os.Setenv("DB_PORT", "5432")
+
+		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
+			return fmt.Errorf("DB_HOSTの設定に失敗しました: %v", err)
+		}
+
+		if err := os.Setenv("DB_USER", "user"); err != nil {
+			return fmt.Errorf("DB_USERの設定に失敗しました: %v", err)
+		}
+
+		if err := os.Setenv("DB_PASSWORD", "password"); err != nil {
+			return fmt.Errorf("DB_PASSWORDの設定に失敗しました: %v", err)
+		}
+
+		if err := os.Setenv("DB_NAME", "university_exam_db"); err != nil {
+			return fmt.Errorf("DB_NAMEの設定に失敗しました: %v", err)
+		}
+
+		if err := os.Setenv("DB_PORT", "5432"); err != nil {
+			return fmt.Errorf("DB_PORTの設定に失敗しました: %v", err)
+		}
 	}
+
+	return nil
 }
 
 func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypes []models.TestType) error {
@@ -116,6 +140,7 @@ func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypes 
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -126,6 +151,7 @@ func createSubjects(tx *gorm.DB, testType *models.TestType, subjects []models.Su
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -143,6 +169,7 @@ func createAdmissionSchedules(tx *gorm.DB, major *models.Major, schedules []mode
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -160,6 +187,7 @@ func createMajors(tx *gorm.DB, department *models.Department, majors []models.Ma
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -177,6 +205,7 @@ func createDepartments(tx *gorm.DB, university *models.University, departments [
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -193,11 +222,16 @@ func seedUniversities(tx *gorm.DB, universities []models.University) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
 func main() {
-	setupEnvironment()
+	// 環境変数の設定
+	if err := setupEnvironment(); err != nil {
+		log.Fatalf("環境変数の設定に失敗しました: %v", err)
+	}
+
 	db, err := database.NewDB()
 	if err != nil {
 		log.Fatalf("データベース接続に失敗しました: %v", err)
@@ -362,12 +396,23 @@ func main() {
 	}
 
 	if err := seedUniversities(tx, universities); err != nil {
-		tx.Rollback()
-		log.Fatalf("シードデータの投入に失敗しました: %v", err)
+		if err := tx.Rollback().Error; err != nil {
+			log.Printf("ロールバックに失敗しました: %v", err)
+		}
+
+		log.Printf("シードデータの投入に失敗しました: %v", err)
+
+		return
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		log.Fatalf("トランザクションのコミットに失敗しました: %v", err)
+		if err := tx.Rollback().Error; err != nil {
+			log.Printf("ロールバックに失敗しました: %v", err)
+		}
+
+		log.Printf("トランザクションのコミットに失敗しました: %v", err)
+
+		return
 	}
 
 	log.Println("シードデータの投入が正常に完了しました")

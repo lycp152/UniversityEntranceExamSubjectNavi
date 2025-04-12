@@ -12,13 +12,18 @@ import (
 // TestMemory はメモリ使用量のテストケースです
 func TestMemory(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 1000)
 
 	// メモリ使用量の初期値を取得
 	var m1, m2 runtime.MemStats
+
 	runtime.GC()
 	runtime.ReadMemStats(&m1)
 
@@ -33,10 +38,12 @@ func TestMemory(t *testing.T) {
 	// GCを実行してメモリを解放
 	runtime.GC()
 	time.Sleep(100 * time.Millisecond) // GCの完了を待機
+
 	runtime.ReadMemStats(&m2)
 
 	// メモリ使用量の増加を計算（ヒープメモリのみ）
 	allocated := m2.HeapAlloc - m1.HeapAlloc
+
 	t.Logf("ヒープメモリ使用量の増加: %v bytes", allocated)
 
 	// 1ユーザーあたり約1KBとして、1000ユーザーで約1MB + バッファ
@@ -49,13 +56,18 @@ func TestMemory(t *testing.T) {
 // TestMemoryLeak はメモリリークのテストケースです
 func TestMemoryLeak(t *testing.T) {
 	db := testutils.NewMockDB()
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("データベースのクローズに失敗しました: %v", err)
+		}
+	}()
 
 	repo := repositories.NewUserRepository(db)
 	users := createTestUsers(t, 100)
 
 	// メモリ使用量の初期値を取得
 	var m1, m2 runtime.MemStats
+
 	runtime.GC()
 	runtime.ReadMemStats(&m1)
 
@@ -67,7 +79,12 @@ func TestMemoryLeak(t *testing.T) {
 				t.Errorf("ユーザーの作成に失敗しました: %v", err)
 			}
 		}
-		db.ClearUsers()
+
+		err := db.ClearUsers()
+		if err != nil {
+			t.Errorf("ユーザーデータのクリアに失敗しました: %v", err)
+		}
+
 		runtime.GC()
 		time.Sleep(10 * time.Millisecond)
 	}
@@ -75,17 +92,22 @@ func TestMemoryLeak(t *testing.T) {
 	// GCを実行してメモリを解放
 	runtime.GC()
 	time.Sleep(100 * time.Millisecond)
+
 	runtime.ReadMemStats(&m2)
 
 	// メモリ使用量の増加を計算（ヒープメモリのみ）
-	allocated := int64(m2.HeapAlloc) - int64(m1.HeapAlloc)
-	if allocated < 0 {
-		allocated = 0 // 負の値は0として扱う
+	// uint64の差分を計算し、オーバーフローを防ぐ
+	var allocated uint64
+	if m2.HeapAlloc > m1.HeapAlloc {
+		allocated = m2.HeapAlloc - m1.HeapAlloc
+	} else {
+		allocated = 0
 	}
+
 	t.Logf("ヒープメモリ使用量の増加: %v bytes", allocated)
 
 	// メモリリークのチェック（1MBを超える場合はリークと判断）
-	maxAllowed := int64(1 * 1024 * 1024) // 1MB
+	maxAllowed := uint64(1 * 1024 * 1024) // 1MB
 	if allocated > maxAllowed {
 		t.Errorf("メモリリークの可能性があります: got = %v bytes, want <= %v bytes", allocated, maxAllowed)
 	}

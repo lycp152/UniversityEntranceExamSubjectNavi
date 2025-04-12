@@ -1,3 +1,5 @@
+// Package errors はアプリケーション全体で使用されるエラー型とエラー処理機能を提供します。
+// カスタムエラー型、エラーコード、エラーメッセージ、エラー変換機能を含みます。
 package errors
 
 import (
@@ -9,6 +11,9 @@ import (
 
 	"gorm.io/gorm"
 )
+
+// Package errors はアプリケーション全体で使用されるエラー型とエラー処理機能を提供します。
+// カスタムエラー型、エラーコード、エラーメッセージ、エラー変換機能を含みます。
 
 // Code はエラーコードを表します
 type Code string
@@ -55,6 +60,7 @@ func (e *Error) Error() string {
 	if e.Err != nil {
 		return fmt.Sprintf("%s: %s (%v)", e.Code, e.Message, e.Err)
 	}
+
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
@@ -68,9 +74,11 @@ func (e *Error) Is(target error) bool {
 	if target == nil {
 		return e == nil
 	}
+
 	if t, ok := target.(*Error); ok {
 		return e.Code == t.Code
 	}
+
 	return false
 }
 
@@ -85,16 +93,20 @@ func (e *Error) WithStack() *Error {
 	const maxStackDepth = 32
 	pc := make([]uintptr, maxStackDepth)
 	n := runtime.Callers(2, pc)
+
 	if n > 0 {
 		frames := runtime.CallersFrames(pc[:n])
+
 		for {
 			frame, more := frames.Next()
 			e.Details.Stack = append(e.Details.Stack, fmt.Sprintf("%s:%d %s", frame.File, frame.Line, frame.Function))
+
 			if !more {
 				break
 			}
 		}
 	}
+
 	return e
 }
 
@@ -113,6 +125,7 @@ func NewNotFoundError(resource string, id uint, extra map[string]string) *Error 
 		Line:      line,
 		Timestamp: time.Now(),
 	}
+
 	return err.WithStack()
 }
 
@@ -130,6 +143,7 @@ func NewInvalidInputError(field, message string, extra map[string]string) *Error
 		Line:      line,
 		Timestamp: time.Now(),
 	}
+
 	return err.WithStack()
 }
 
@@ -147,12 +161,14 @@ func NewDatabaseError(operation string, err error, extra map[string]string) *Err
 		Line:      line,
 		Timestamp: time.Now(),
 	}
+
 	return dbErr.WithStack()
 }
 
 // NewValidationError は新しいバリデーションエラーを生成します
 func NewValidationError(field, message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeValidationError,
 		Message: fmt.Sprintf("フィールド %s のバリデーションに失敗しました: %s", field, message),
@@ -170,6 +186,7 @@ func NewValidationError(field, message string, extra map[string]string) *Error {
 // NewSystemError は新しいシステムエラーを生成します
 func NewSystemError(message string, err error, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeSystemError,
 		Message: message,
@@ -187,6 +204,7 @@ func NewSystemError(message string, err error, extra map[string]string) *Error {
 // NewAuthenticationError は新しい認証エラーを生成します
 func NewAuthenticationError(message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeAuthError,
 		Message: message,
@@ -203,6 +221,7 @@ func NewAuthenticationError(message string, extra map[string]string) *Error {
 // NewAuthorizationError は新しい認可エラーを生成します
 func NewAuthorizationError(message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeAuthzError,
 		Message: message,
@@ -219,6 +238,7 @@ func NewAuthorizationError(message string, extra map[string]string) *Error {
 // NewExternalAPIError は新しい外部APIエラーを生成します
 func NewExternalAPIError(service, message string, err error, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeExternalAPIError,
 		Message: fmt.Sprintf("外部API '%s' でエラーが発生しました: %s", service, message),
@@ -237,6 +257,7 @@ func NewExternalAPIError(service, message string, err error, extra map[string]st
 // NewTimeoutError は新しいタイムアウトエラーを生成します
 func NewTimeoutError(operation string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeTimeoutError,
 		Message: fmt.Sprintf("操作 '%s' がタイムアウトしました", operation),
@@ -254,6 +275,7 @@ func NewTimeoutError(operation string, extra map[string]string) *Error {
 // NewRateLimitError は新しいレート制限エラーを生成します
 func NewRateLimitError(message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeRateLimitError,
 		Message: message,
@@ -271,12 +293,17 @@ func NewRateLimitError(message string, extra map[string]string) *Error {
 type DBErrorType int
 
 const (
-	// エラーの種類
+	// ErrorTypeNotFound はリソースが見つからないエラーを表します
 	ErrorTypeNotFound DBErrorType = iota
+	// ErrorTypeDuplicateKey は重複キーエラーを表します
 	ErrorTypeDuplicateKey
+	// ErrorTypeDeadlock はデッドロックエラーを表します
 	ErrorTypeDeadlock
+	// ErrorTypeUnexpected は予期せぬエラーを表します
 	ErrorTypeUnexpected
+	// ErrorTypeConnection は接続エラーを表します
 	ErrorTypeConnection
+	// ErrorTypeTimeout はタイムアウトエラーを表します
 	ErrorTypeTimeout
 )
 
@@ -314,16 +341,20 @@ func (e *DBError) Is(target error) bool {
 	if target == nil {
 		return e == nil
 	}
+
 	if t, ok := target.(*DBError); ok {
 		return e.Type == t.Type
 	}
+
 	return false
 }
 
 // NewDBError は新しいDBErrorを作成します
 func NewDBError(errorType DBErrorType, err error) *DBError {
 	_, file, line, _ := runtime.Caller(1)
+
 	var message string
+
 	switch errorType {
 	case ErrorTypeNotFound:
 		message = errMsgNotFound

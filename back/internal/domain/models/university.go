@@ -35,6 +35,7 @@ func BatchInsertUniversities(ctx context.Context, db *gorm.DB, universities []Un
 			if err := tx.CreateInBatches(universities, batchSize).Error; err != nil {
 				return fmt.Errorf("大学データの一括挿入に失敗しました: %w", err)
 			}
+
 			return nil
 		})
 }
@@ -55,12 +56,15 @@ func GetUniversityByID(ctx context.Context, db *gorm.DB, id uint) (*University, 
 		Joins("LEFT JOIN test_types ON test_types.admission_schedule_id = admission_schedules.id").
 		Joins("LEFT JOIN subjects ON subjects.test_type_id = test_types.id").
 		First(&university, id).Error
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("ID %d の大学が見つかりません: %w", id, err)
 		}
+
 		return nil, fmt.Errorf("大学の取得に失敗しました: %w", err)
 	}
+
 	return &university, nil
 }
 
@@ -75,6 +79,7 @@ func GetUniversities(ctx context.Context, db *gorm.DB) ([]University, error) {
 		Find(&universities).Error; err != nil {
 		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %w", err)
 	}
+
 	return universities, nil
 }
 
@@ -87,10 +92,12 @@ func CreateUniversity(ctx context.Context, db *gorm.DB, university *University) 
 		WithContext(ctx).
 		Transaction(func(tx *gorm.DB) error {
 			tx.SavePoint("sp1")
+
 			if err := tx.Create(university).Error; err != nil {
 				tx.RollbackTo("sp1")
 				return fmt.Errorf("大学の作成に失敗しました: %w", err)
 			}
+
 			return nil
 		})
 }
@@ -104,10 +111,12 @@ func UpdateUniversity(ctx context.Context, db *gorm.DB, university *University) 
 		WithContext(ctx).
 		Transaction(func(tx *gorm.DB) error {
 			tx.SavePoint("sp1")
+
 			if err := tx.Save(university).Error; err != nil {
 				tx.RollbackTo("sp1")
 				return fmt.Errorf("大学の更新に失敗しました: %w", err)
 			}
+
 			return nil
 		})
 }
@@ -121,10 +130,12 @@ func DeleteUniversity(ctx context.Context, db *gorm.DB, id uint) error {
 		WithContext(ctx).
 		Transaction(func(tx *gorm.DB) error {
 			tx.SavePoint("sp1")
+
 			if err := tx.Delete(&University{}, id).Error; err != nil {
 				tx.RollbackTo("sp1")
 				return fmt.Errorf("大学の削除に失敗しました: %w", err)
 			}
+
 			return nil
 		})
 }
@@ -138,10 +149,12 @@ func UpdateUniversities(ctx context.Context, db *gorm.DB, universities []*Univer
 		WithContext(ctx).
 		Transaction(func(tx *gorm.DB) error {
 			tx.SavePoint("sp1")
+
 			if err := tx.Save(universities).Error; err != nil {
 				tx.RollbackTo("sp1")
 				return fmt.Errorf("大学の一括更新に失敗しました: %w", err)
 			}
+
 			return nil
 		})
 }
@@ -155,10 +168,12 @@ func DeleteUniversities(ctx context.Context, db *gorm.DB, universityIDs []uint) 
 		WithContext(ctx).
 		Transaction(func(tx *gorm.DB) error {
 			tx.SavePoint("sp1")
+
 			if err := tx.Delete(&University{}, universityIDs).Error; err != nil {
 				tx.RollbackTo("sp1")
 				return fmt.Errorf("大学の一括削除に失敗しました: %w", err)
 			}
+
 			return nil
 		})
 }
@@ -179,8 +194,10 @@ func GetUniversitiesWithRelations(ctx context.Context, db *gorm.DB) ([]Universit
 		Joins("LEFT JOIN test_types ON test_types.admission_schedule_id = admission_schedules.id").
 		Joins("LEFT JOIN subjects ON subjects.test_type_id = test_types.id").
 		Find(&universities).Error
+
 	if err != nil {
 		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %w", err)
 	}
+
 	return universities, nil
 }

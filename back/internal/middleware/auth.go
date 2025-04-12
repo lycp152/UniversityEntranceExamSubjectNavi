@@ -1,3 +1,5 @@
+// Package middleware はアプリケーションのミドルウェアを提供します
+// 認証、CSRF保護、ログ記録などの共通機能を実装しています
 package middleware
 
 import (
@@ -46,6 +48,7 @@ func AuthMiddleware() echo.MiddlewareFunc {
 
 			// ユーザー情報をコンテキストに設定
 			c.Set("user", getUserFromToken(token))
+
 			return next(c)
 		}
 	}
@@ -85,6 +88,7 @@ func isPublicPath(path string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -99,6 +103,7 @@ func isValidToken(token string) bool {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("予期しない署名方式: %v", t.Header["alg"])
 		}
+
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
@@ -107,7 +112,7 @@ func isValidToken(token string) bool {
 
 // getUserFromToken はトークンからユーザー情報を取得します
 func getUserFromToken(token string) interface{} {
-	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
@@ -151,5 +156,6 @@ func hasRole(userRole string, allowedRoles []string) bool {
 			return true
 		}
 	}
+
 	return false
 }

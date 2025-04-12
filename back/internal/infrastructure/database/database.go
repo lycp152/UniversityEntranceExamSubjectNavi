@@ -1,3 +1,5 @@
+// Package database はデータベース接続と操作を管理するパッケージです
+// PostgreSQLデータベースとの接続、設定、トランザクション管理などの機能を提供します
 package database
 
 import (
@@ -55,6 +57,7 @@ func getEnvInt(key string, defaultValue int) int {
 			return n
 		}
 	}
+
 	return defaultValue
 }
 
@@ -65,6 +68,7 @@ func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 			return d
 		}
 	}
+
 	return defaultValue
 }
 
@@ -107,6 +111,7 @@ func NewConfig() (*Config, error) {
 // connectWithRetry はリトライ付きでデータベース接続を試みます
 func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 	var db *gorm.DB
+
 	var err error
 
 	for i := 0; i < config.RetryAttempts; i++ {
@@ -143,7 +148,9 @@ func NewDB() (*gorm.DB, error) {
 	}
 
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s search_path=%s sslmode=disable TimeZone=Asia/Tokyo client_encoding=UTF8",
+		"host=%s user=%s password=%s dbname=%s port=%s "+
+			"search_path=%s sslmode=disable TimeZone=Asia/Tokyo "+
+			"client_encoding=UTF8",
 		config.Host,
 		config.User,
 		config.Password,
@@ -179,6 +186,7 @@ func CloseDB(db *gorm.DB) error {
 	if err != nil {
 		return fmt.Errorf(errMsgSQLDBClose, err)
 	}
+
 	return sqlDB.Close()
 }
 

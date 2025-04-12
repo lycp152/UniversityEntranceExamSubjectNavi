@@ -84,6 +84,7 @@ func (p *requestProcessor) ReadBody(c echo.Context) (map[string]interface{}, err
 	}
 
 	p.buf.Reset()
+
 	if _, err := p.buf.ReadFrom(c.Request().Body); err != nil {
 		return nil, fmt.Errorf(errorFormat, ErrReadBodyFailed, err)
 	}
@@ -98,15 +99,19 @@ func (p *requestProcessor) ReadBody(c echo.Context) (map[string]interface{}, err
 	if err := json.Unmarshal(p.buf.Bytes(), &data); err != nil {
 		return nil, fmt.Errorf(errorFormat, ErrInvalidJSON, err)
 	}
+
 	return data, nil
 }
 
 func (p *requestProcessor) WriteBody(c echo.Context, data map[string]interface{}) error {
 	p.buf.Reset()
+
 	if err := json.NewEncoder(p.buf).Encode(data); err != nil {
 		return fmt.Errorf(errorFormat, ErrWriteBodyFailed, err)
 	}
+
 	c.Request().Body = io.NopCloser(bytes.NewReader(p.buf.Bytes()))
+
 	return nil
 }
 
@@ -115,6 +120,7 @@ func Sanitizer(config SanitizerConfig) echo.MiddlewareFunc {
 	if config.Policy == nil {
 		config.Policy = bluemonday.UGCPolicy()
 	}
+
 	processor := newRequestProcessor(config.Policy, config.Fields)
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -123,6 +129,7 @@ func Sanitizer(config SanitizerConfig) echo.MiddlewareFunc {
 			if err != nil {
 				return err
 			}
+
 			if data == nil {
 				return next(c)
 			}
@@ -143,6 +150,7 @@ func removeControlChars(s string) string {
 		if unicode.IsControl(r) || unicode.Is(unicode.C, r) {
 			return -1
 		}
+
 		return r
 	}, s)
 }
@@ -164,6 +172,7 @@ func sanitizeString(policy *bluemonday.Policy, input string) string {
 	sanitized := policy.Sanitize(input)
 	sanitized = removeControlChars(sanitized)
 	sanitized = normalizeSpaces(sanitized)
+
 	return strings.TrimSpace(sanitized)
 }
 
@@ -183,5 +192,6 @@ func sanitizeData(policy *bluemonday.Policy, data map[string]interface{}, fields
 			}
 		}
 	}
+
 	return data
 }

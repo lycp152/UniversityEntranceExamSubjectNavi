@@ -1,3 +1,6 @@
+// Package testutils はテストユーティリティを提供します。
+// テストデータの生成、モックオブジェクトの作成、テスト環境の設定などの
+// テスト支援機能を含みます。
 package testutils
 
 import (
@@ -33,9 +36,12 @@ func LoadTestConfig(t *testing.T) *TestConfig {
 // getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します
 func getEnvOrDefault(t *testing.T, key, defaultValue string) string {
 	t.Helper()
+
 	value := os.Getenv(key)
+
 	if value == "" {
 		return defaultValue
 	}
+
 	return value
 }

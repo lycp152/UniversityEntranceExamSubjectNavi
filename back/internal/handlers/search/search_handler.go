@@ -1,3 +1,5 @@
+// Package search は検索関連のHTTPリクエストを処理するパッケージです。
+// このパッケージは、大学の検索機能を提供します。
 package search
 
 import (
@@ -17,22 +19,22 @@ const (
 	maxQueryLength = 100
 )
 
-// SearchHandler は検索関連のHTTPリクエストを処理
-type SearchHandler struct {
+// Handler は検索関連のHTTPリクエストを処理
+type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
 }
 
-// NewSearchHandler は新しいSearchHandlerインスタンスを生成
-func NewSearchHandler(repo repositories.IUniversityRepository, timeout time.Duration) *SearchHandler {
-	return &SearchHandler{
+// NewSearchHandler は新しいHandlerインスタンスを生成
+func NewSearchHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
+	return &Handler{
 		repo:    repo,
 		timeout: timeout,
 	}
 }
 
 // validateSearchQuery は検索クエリのバリデーションを共通化
-func (h *SearchHandler) validateSearchQuery(query string) error {
+func (h *Handler) validateSearchQuery(query string) error {
 	query = strings.TrimSpace(query)
 
 	if query == "" {
@@ -51,7 +53,7 @@ func (h *SearchHandler) validateSearchQuery(query string) error {
 }
 
 // SearchUniversities は大学を検索
-func (h *SearchHandler) SearchUniversities(c echo.Context) error {
+func (h *Handler) SearchUniversities(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 

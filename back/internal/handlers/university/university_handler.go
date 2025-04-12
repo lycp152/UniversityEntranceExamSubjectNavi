@@ -1,3 +1,5 @@
+// Package university は大学関連のHTTPリクエストを処理するパッケージです。
+// このパッケージは、大学の作成、取得、更新、削除などの機能を提供します。
 package university
 
 import (
@@ -16,12 +18,15 @@ import (
 )
 
 const (
-	// エラーメッセージ
+	// ErrMsgUniversityNotFound は大学が見つからない場合のエラーメッセージです
 	ErrMsgUniversityNotFound = "大学が見つかりません: %s"
 	// ErrMsgInvalidUniversityID は大学IDの形式が不正な場合のエラーメッセージです
 	ErrMsgInvalidUniversityID = "大学IDの形式が不正です"
+	// ErrMsgCreateUniversityFailed は大学の作成に失敗した場合のエラーメッセージです
 	ErrMsgCreateUniversityFailed = "大学の作成に失敗しました"
+	// ErrMsgUpdateUniversityFailed は大学の更新に失敗した場合のエラーメッセージです
 	ErrMsgUpdateUniversityFailed = "大学の更新に失敗しました"
+	// ErrMsgDeleteUniversityFailed は大学の削除に失敗した場合のエラーメッセージです
 	ErrMsgDeleteUniversityFailed = "大学の削除に失敗しました"
 	// ErrMsgCSRFTokenGeneration はCSRFトークンの生成に失敗した場合のエラーメッセージです
 	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
@@ -29,7 +34,9 @@ const (
 	// ErrMsgCSRFTokenInvalidType はCSRFトークンの型が不正な場合のエラーメッセージです
 	// #nosec G101 - これは認証情報ではなく、エラーメッセージです
 	ErrMsgCSRFTokenInvalidType = "CSRFトークンの型が不正です"
+	// ErrMsgGetUniversitiesFailed は大学一覧の取得に失敗した場合のエラーメッセージです
 	ErrMsgGetUniversitiesFailed = "大学一覧の取得に失敗しました"
+	// ErrMsgGetUniversityFailed は大学の取得に失敗した場合のエラーメッセージです
 	ErrMsgGetUniversityFailed = "大学の取得に失敗しました"
 )
 

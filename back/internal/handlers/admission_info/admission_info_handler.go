@@ -1,6 +1,6 @@
-// Package admission_info は募集情報関連のHTTPリクエストを処理するハンドラーを提供します。
+// Package admissionInfo は募集情報関連のHTTPリクエストを処理するハンドラーを提供します。
 // 募集情報の取得、作成、更新、削除のエンドポイントを実装しています。
-package admission_info
+package admissionInfo
 
 import (
 	"context"

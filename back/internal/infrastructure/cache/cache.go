@@ -507,7 +507,7 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 }
 
 // RecordLatency は操作のレイテンシを記録します
-func (c *Cache) RecordLatency(operation string, duration time.Duration) error {
+func (c *Cache) RecordLatency(_ string, duration time.Duration) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

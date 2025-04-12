@@ -1,3 +1,5 @@
+// Package middleware はアプリケーションのミドルウェアを提供します
+// 認証、CSRF保護、ログ記録などの共通機能を実装しています
 package middleware
 
 import (
@@ -110,7 +112,7 @@ func isValidToken(token string) bool {
 
 // getUserFromToken はトークンからユーザー情報を取得します
 func getUserFromToken(token string) interface{} {
-	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {

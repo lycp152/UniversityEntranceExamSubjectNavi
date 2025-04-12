@@ -2,11 +2,10 @@ package university
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 	"university-exam-api/internal/domain/models"
-	"university-exam-api/internal/errors"
+	customErrors "university-exam-api/internal/errors"
 	applogger "university-exam-api/internal/logger"
 	errorMessages "university-exam-api/internal/pkg/errors"
 	"university-exam-api/internal/pkg/logging"
@@ -58,17 +57,17 @@ func (h *UniversityHandler) GetRepo() repositories.IUniversityRepository {
 // handleError はエラーをHTTPレスポンスに変換
 func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err error) error {
 	switch e := err.(type) {
-	case *errors.Error:
+	case *customErrors.Error:
 		statusCode := http.StatusInternalServerError
 
 		switch e.Code {
-		case errors.CodeNotFound:
+		case customErrors.CodeNotFound:
 			statusCode = http.StatusNotFound
-		case errors.CodeInvalidInput, errors.CodeValidationError:
+		case customErrors.CodeInvalidInput, customErrors.CodeValidationError:
 			statusCode = http.StatusBadRequest
-		case errors.CodeAuthError:
+		case customErrors.CodeAuthError:
 			statusCode = http.StatusUnauthorized
-		case errors.CodeAuthzError:
+		case customErrors.CodeAuthzError:
 			statusCode = http.StatusForbidden
 		}
 
@@ -92,7 +91,7 @@ func (h *UniversityHandler) handleError(ctx context.Context, c echo.Context, err
 func (h *UniversityHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errorMessages.MsgBindDataFailed, err)
-		return errors.NewInvalidInputError("request", errorMessages.MsgInvalidRequestBody, nil)
+		return customErrors.NewInvalidInputError("request", errorMessages.MsgInvalidRequestBody, nil)
 	}
 
 	return nil
@@ -210,14 +209,14 @@ func (h *UniversityHandler) GetCSRFToken(c echo.Context) error {
 	if token == nil {
 		applogger.Error(ctx, ErrMsgCSRFTokenGeneration)
 
-		return h.handleError(ctx, c, fmt.Errorf(ErrMsgCSRFTokenGeneration))
+		return h.handleError(ctx, c, customErrors.NewSystemError(ErrMsgCSRFTokenGeneration, nil, nil))
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok {
 		applogger.Error(ctx, ErrMsgCSRFTokenInvalidType)
 
-		return h.handleError(ctx, c, fmt.Errorf(ErrMsgCSRFTokenInvalidType))
+		return h.handleError(ctx, c, customErrors.NewSystemError(ErrMsgCSRFTokenInvalidType, nil, nil))
 	}
 
 	applogger.Info(ctx, logging.LogGetCSRFTokenSuccess)

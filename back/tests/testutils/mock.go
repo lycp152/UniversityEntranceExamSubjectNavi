@@ -36,7 +36,7 @@ func NewMockDB() *MockDB {
 }
 
 // Query はモックのクエリメソッドです
-func (m *MockDB) Query(_ string, args ...interface{}) (interface{}, error) {
+func (m *MockDB) Query(_ string, _ ...interface{}) (interface{}, error) {
 	if m.shouldError {
 		return nil, errors.New(m.errorMsg)
 	}

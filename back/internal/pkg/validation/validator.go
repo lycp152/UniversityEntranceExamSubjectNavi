@@ -1,3 +1,5 @@
+// Package validation は入力値のバリデーション機能を提供します。
+// IDの検証や文字列から数値への変換などの基本的なバリデーション機能を含みます。
 package validation
 
 import (

@@ -2,12 +2,10 @@ package security
 
 import (
 	"context"
-	"fmt"
+	stdErrors "errors"
 	"net/http"
 	"time"
-	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 
 	"github.com/labstack/echo/v4"
 )
@@ -36,14 +34,21 @@ const (
 	ValueReferrerPolicy = "strict-origin-when-cross-origin"
 )
 
-// SecurityHandler はセキュリティ関連のHTTPリクエストを処理
+// SecurityHandler はセキュリティ関連のハンドラーを管理します
 type SecurityHandler struct {
+	securityService SecurityService
 	timeout time.Duration
 }
 
-// NewSecurityHandler は新しいSecurityHandlerインスタンスを生成
-func NewSecurityHandler(timeout time.Duration) *SecurityHandler {
+// SecurityService はセキュリティ関連のサービスを定義します
+type SecurityService interface {
+	GenerateCSRFToken(ctx context.Context) (interface{}, error)
+}
+
+// NewSecurityHandler は新しいSecurityHandlerを生成します
+func NewSecurityHandler(securityService SecurityService, timeout time.Duration) *SecurityHandler {
 	return &SecurityHandler{
+		securityService: securityService,
 		timeout: timeout,
 	}
 }
@@ -75,27 +80,17 @@ func (h *SecurityHandler) GetCSRFToken(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
-	token := c.Get("csrf")
-	if token == nil {
-		applogger.Error(ctx, ErrCSRFTokenGeneration)
-
-		return errors.HandleError(c, fmt.Errorf(ErrCSRFTokenGeneration))
+	token, err := h.securityService.GenerateCSRFToken(ctx)
+	if err != nil {
+		return errors.HandleError(c, err)
 	}
 
-	tokenStr, ok := token.(string)
+	csrfToken, ok := token.(string)
 	if !ok {
-		applogger.Error(ctx, ErrCSRFTokenInvalidType)
-
-		return errors.HandleError(c, fmt.Errorf(ErrCSRFTokenInvalidType))
+		return errors.HandleError(c, stdErrors.New(ErrCSRFTokenInvalidType))
 	}
 
-	applogger.Info(ctx, logging.LogGetCSRFTokenSuccess)
-
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"token": tokenStr,
-		"meta": map[string]interface{}{
-			"expires_in": 3600, // 1時間
-			"timestamp":  time.Now().Unix(),
-		},
+	return c.JSON(http.StatusOK, map[string]string{
+		"csrf_token": csrfToken,
 	})
 }

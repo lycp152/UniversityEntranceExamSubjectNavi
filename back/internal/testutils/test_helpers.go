@@ -734,7 +734,7 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheMiss,
-				Setup: func(t *testing.T, _ *echo.Echo, h *university.UniversityHandler) {
+				Setup: func(t *testing.T, _ *echo.Echo, _ *university.UniversityHandler) {
 					if err := cache.GetInstance().Delete("universities:all"); err != nil {
 						t.Errorf("キャッシュの削除に失敗しました: %v", err)
 					}
@@ -755,7 +755,7 @@ func TestGetUniversitiesWithCache(t *testing.T) {
 		{
 			TestCase: TestCase{
 				Name:       TestCaseCacheExpired,
-				Setup: func(t *testing.T, _ *echo.Echo, h *university.UniversityHandler) {
+				Setup: func(t *testing.T, _ *echo.Echo, _ *university.UniversityHandler) {
 					if err := cache.GetInstance().Delete("universities:all"); err != nil {
 						t.Errorf("キャッシュの削除に失敗しました: %v", err)
 					}

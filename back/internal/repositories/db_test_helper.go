@@ -1,3 +1,5 @@
+// Package repositories はデータベースのテストヘルパーを提供します。
+// テスト用のデータベース設定、セットアップ、クリーンアップなどの機能を含みます。
 package repositories
 
 import (

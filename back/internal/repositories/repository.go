@@ -31,44 +31,49 @@ const (
 	errSearchFailed = "検索中にエラーが発生しました: %w"
 )
 
-// インターフェースの分割
+// IUniversityFinder は大学の検索に関するインターフェースを定義します
 type IUniversityFinder interface {
 	FindAll(ctx context.Context) ([]models.University, error)
 	FindByID(id uint) (*models.University, error)
 	Search(query string) ([]models.University, error)
 }
 
+// IUniversityManager は大学の管理に関するインターフェースを定義します
 type IUniversityManager interface {
 	Create(university *models.University) error
 	Update(university *models.University) error
 	Delete(id uint) error
 }
 
+// IDepartmentManager は学部の管理に関するインターフェースを定義します
 type IDepartmentManager interface {
 	CreateDepartment(department *models.Department) error
 	UpdateDepartment(department *models.Department) error
 	DeleteDepartment(id uint) error
 }
 
+// ISubjectManager は科目の管理に関するインターフェースを定義します
 type ISubjectManager interface {
 	CreateSubject(subject *models.Subject) error
 	UpdateSubject(subject *models.Subject) error
 	DeleteSubject(id uint) error
 }
 
+// IMajorManager は学科の管理に関するインターフェースを定義します
 type IMajorManager interface {
 	CreateMajor(major *models.Major) error
 	UpdateMajor(major *models.Major) error
 	DeleteMajor(id uint) error
 }
 
+// IAdmissionInfoManager は入試情報の管理に関するインターフェースを定義します
 type IAdmissionInfoManager interface {
 	CreateAdmissionInfo(info *models.AdmissionInfo) error
 	DeleteAdmissionInfo(id uint) error
 	UpdateAdmissionInfo(info *models.AdmissionInfo) error
 }
 
-// メインのインターフェース
+// IUniversityRepository は大学リポジトリのメインインターフェースを定義します
 type IUniversityRepository interface {
 	IUniversityFinder
 	IUniversityManager
@@ -185,7 +190,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 		Scopes(func(db *gorm.DB) *gorm.DB {
 			return r.applyPreloads(db)
 		}).
-		FindInBatches(&universities, batchSize, func(tx *gorm.DB, batch int) error {
+		FindInBatches(&universities, batchSize, func(tx *gorm.DB, _ int) error {
 			processedCount += tx.RowsAffected
 			applogger.Info(context.Background(), "バッチ処理進捗: %d/%d レコードを処理", processedCount, totalCount)
 			return nil

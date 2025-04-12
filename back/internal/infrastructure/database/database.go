@@ -1,3 +1,5 @@
+// Package database はデータベース接続と操作を管理するパッケージです
+// PostgreSQLデータベースとの接続、設定、トランザクション管理などの機能を提供します
 package database
 
 import (

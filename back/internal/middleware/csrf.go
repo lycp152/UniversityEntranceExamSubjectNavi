@@ -12,8 +12,11 @@ import (
 )
 
 var (
+	// CSRFTokenHeader はCSRFトークンのヘッダー名を定義します
 	CSRFTokenHeader = os.Getenv("CSRF_TOKEN_HEADER")
+	// CSRFTokenLength はCSRFトークンの長さを定義します
 	CSRFTokenLength = 32
+	// TestCSRFToken はテスト用のCSRFトークンを定義します
 	TestCSRFToken   = os.Getenv("TEST_CSRF_TOKEN")
 )
 

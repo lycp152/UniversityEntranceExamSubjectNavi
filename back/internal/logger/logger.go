@@ -113,7 +113,7 @@ func initInfoLogger() error {
 
 	infoLogger = slog.New(slog.NewJSONHandler(infoFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				a.Value = slog.StringValue(a.Value.Time().Format(time.RFC3339))
 			}
@@ -144,7 +144,7 @@ func initErrorLogger() error {
 
 	errorLogger = slog.New(slog.NewJSONHandler(errorFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				a.Value = slog.StringValue(a.Value.Time().Format(time.RFC3339))
 			}
@@ -175,7 +175,7 @@ func initAccessLogger() error {
 
 	accessLogger = slog.New(slog.NewJSONHandler(accessFile, &slog.HandlerOptions{
 		Level: config.LogLevel,
-		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.TimeKey {
 				a.Value = slog.StringValue(a.Value.Time().Format(time.RFC3339))
 			}

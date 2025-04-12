@@ -78,12 +78,14 @@ func (h *SecurityHandler) GetCSRFToken(c echo.Context) error {
 	token := c.Get("csrf")
 	if token == nil {
 		applogger.Error(ctx, ErrCSRFTokenGeneration)
+
 		return errors.HandleError(c, fmt.Errorf(ErrCSRFTokenGeneration))
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok {
 		applogger.Error(ctx, ErrCSRFTokenInvalidType)
+
 		return errors.HandleError(c, fmt.Errorf(ErrCSRFTokenInvalidType))
 	}
 

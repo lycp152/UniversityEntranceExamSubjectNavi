@@ -209,12 +209,14 @@ func (h *UniversityHandler) GetCSRFToken(c echo.Context) error {
 	token := c.Get("csrf")
 	if token == nil {
 		applogger.Error(ctx, ErrMsgCSRFTokenGeneration)
+
 		return h.handleError(ctx, c, fmt.Errorf(ErrMsgCSRFTokenGeneration))
 	}
 
 	tokenStr, ok := token.(string)
 	if !ok {
 		applogger.Error(ctx, ErrMsgCSRFTokenInvalidType)
+
 		return h.handleError(ctx, c, fmt.Errorf(ErrMsgCSRFTokenInvalidType))
 	}
 

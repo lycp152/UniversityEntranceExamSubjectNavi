@@ -1,3 +1,6 @@
+// Package testutils はテストユーティリティを提供します。
+// テストデータの生成、モックオブジェクトの作成、テスト環境の設定などの
+// テスト支援機能を含みます。
 package testutils
 
 import (

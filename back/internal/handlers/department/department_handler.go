@@ -9,7 +9,6 @@ import (
 	"university-exam-api/internal/domain/models"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/pkg/errors"
-	errorHandler "university-exam-api/internal/pkg/errors"
 	"university-exam-api/internal/pkg/logging"
 	"university-exam-api/internal/pkg/validation"
 	"university-exam-api/internal/repositories"
@@ -61,8 +60,8 @@ func NewDepartmentHandler(repo repositories.IUniversityRepository, timeout time.
 // bindRequest はリクエストボディのバインディングを共通化
 func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
-		applogger.Error(ctx, errorHandler.MsgBindRequestFailed, err)
-		return errorHandler.HandleError(c, err)
+		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
+		return errors.HandleError(c, err)
 	}
 
 	return nil

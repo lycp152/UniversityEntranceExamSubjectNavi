@@ -194,6 +194,7 @@ func GetUniversitiesWithRelations(ctx context.Context, db *gorm.DB) ([]Universit
 		Joins("LEFT JOIN test_types ON test_types.admission_schedule_id = admission_schedules.id").
 		Joins("LEFT JOIN subjects ON subjects.test_type_id = test_types.id").
 		Find(&universities).Error
+
 	if err != nil {
 
 		return nil, fmt.Errorf("大学一覧の取得に失敗しました: %w", err)

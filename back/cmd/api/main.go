@@ -165,6 +165,7 @@ func setupMetrics() {
 	go func() {
 		for {
 			var m runtime.MemStats
+
 			runtime.ReadMemStats(&m)
 			memoryUsage.Set(float64(m.Alloc))
 			time.Sleep(10 * time.Second)

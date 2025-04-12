@@ -1,3 +1,5 @@
+// Package repositories はユニットテスト用のモックリポジトリを提供します。
+// テストデータの作成、検索、更新、削除などの操作をシミュレートします。
 package repositories
 
 import (

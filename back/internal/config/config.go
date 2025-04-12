@@ -41,6 +41,7 @@ func (e *ConfigError) Is(target error) bool {
 	if !ok {
 		return false
 	}
+
 	return e.Code == t.Code
 }
 
@@ -51,6 +52,7 @@ func (e *ConfigError) As(target interface{}) bool {
 		*t = *e
 		return true
 	}
+
 	return false
 }
 
@@ -103,23 +105,29 @@ func (c *Config) Validate() error {
 	if c.Port == "" {
 		return &ConfigError{Field: "Port", Message: ErrMsgPortNotSet, Code: ErrCodePortNotSet}
 	}
+
 	if port, err := strconv.Atoi(c.Port); err != nil {
 		return &ConfigError{Field: "Port", Message: ErrMsgInvalidPort, Err: err, Code: ErrCodeInvalidPort}
 	} else if port < 1 || port > 65535 {
 		return &ConfigError{Field: "Port", Message: ErrMsgInvalidPort, Code: ErrCodeInvalidPort}
 	}
+
 	if c.DBHost == "" {
 		return &ConfigError{Field: "DBHost", Message: ErrMsgDBHostNotSet, Code: ErrCodeDBHostNotSet}
 	}
+
 	if c.DBPort == "" {
 		return &ConfigError{Field: "DBPort", Message: ErrMsgDBPortNotSet, Code: ErrCodeDBPortNotSet}
 	}
+
 	if c.DBUser == "" {
 		return &ConfigError{Field: "DBUser", Message: ErrMsgDBUserNotSet, Code: ErrCodeDBUserNotSet}
 	}
+
 	if c.DBName == "" {
 		return &ConfigError{Field: "DBName", Message: ErrMsgDBNameNotSet, Code: ErrCodeDBNameNotSet}
 	}
+
 	return nil
 }
 
@@ -157,6 +165,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -170,6 +179,7 @@ func getEnvOrDefaultInt(key string, defaultValue int) int {
 			return intValue
 		}
 	}
+
 	return defaultValue
 }
 
@@ -183,5 +193,6 @@ func getEnvOrDefaultDuration(key string, defaultValue time.Duration) time.Durati
 			return duration
 		}
 	}
+
 	return defaultValue
 }

@@ -143,7 +143,7 @@ func (b *BaseModel) BeforeUpdate() error {
 type University struct {
 	BaseModel
 	Name        string       `json:"name" gorm:"not null;uniqueIndex:idx_university_name;size:100;check:name <> ''"` // 大学名
-	Departments []Department `json:"departments" gorm:"foreignKey:UniversityID;constraint:OnDelete:CASCADE"`         // 学部一覧
+	Departments []Department `json:"departments" gorm:"foreignKey:UniversityID;constraint:OnDelete:CASCADE"` // 学部一覧
 }
 
 // Validate はUniversityのバリデーションを行う
@@ -330,7 +330,7 @@ type AdmissionSchedule struct {
 	BaseModel
 	MajorID       uint           `json:"major_id" gorm:"not null;index:idx_schedule_major_year"` // 学科ID
 	Name          string         `json:"name" gorm:"not null;size:6;check:name in ('前期','中期','後期')"` // 日程名
-	DisplayOrder  int           `json:"display_order" gorm:"not null;default:0;check:display_order >= 0 AND display_order <= 3"` // 表示順
+	DisplayOrder  int `json:"display_order" gorm:"not null;default:0;check:display_order >= 0 AND display_order <= 3"` // 表示順
 	Major         Major         `json:"-" gorm:"foreignKey:MajorID"` // 所属学科
 	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"` // 入試情報一覧
 	TestTypes     []TestType    `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"` // 試験種別一覧
@@ -440,7 +440,7 @@ type TestType struct {
 	AdmissionScheduleID uint      `json:"admission_schedule_id" gorm:"not null;index:idx_test_schedule"` // 入試日程ID
 	Name               string    `json:"name" gorm:"not null;type:varchar(10);check:name in ('共通','二次')"` // 試験種別名
 	AdmissionSchedule  AdmissionSchedule `json:"-" gorm:"foreignKey:AdmissionScheduleID"` // 所属入試日程
-	Subjects          []Subject         `json:"subjects,omitempty" gorm:"foreignKey:TestTypeID;constraint:OnDelete:CASCADE"` // 科目一覧
+	Subjects           []Subject `json:"subjects,omitempty" gorm:"foreignKey:TestTypeID;constraint:OnDelete:CASCADE"` // 科目一覧
 }
 
 // Validate はTestTypeのバリデーションを行う

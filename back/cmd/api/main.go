@@ -208,7 +208,10 @@ func main() {
 	// 環境変数の読み込みと検証
 	if err := setupEnvironment(cfg); err != nil {
 		applogger.Error(ctx, "環境変数の読み込みに失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("環境変数の読み込みに失敗しました: %v", err)
+		cancel()
+
+		return
 	}
 
 	// データベース接続の確立

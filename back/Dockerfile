@@ -1,6 +1,6 @@
 # マルチステージビルドを使用してイメージサイズを最適化
 # ビルドステージ
-FROM golang:1.24.1-alpine AS builder
+FROM golang:1.24.2-alpine AS builder
 
 # 必要なビルドツールをインストール
 RUN apk add --no-cache gcc git musl-dev

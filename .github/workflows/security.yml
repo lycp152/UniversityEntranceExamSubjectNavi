@@ -19,6 +19,8 @@ on:
 jobs:
   dependency-check:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     steps:
       - uses: actions/checkout@v3
 
@@ -28,11 +30,13 @@ jobs:
           project: "UniversityEntranceExamSubjectNavi"
           path: "."
           format: "SARIF"
+          out: "./dependency-check-report.sarif"
 
       - name: Upload dependency scan results
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: "dependency-check-report.sarif"
+          sarif_file: "./dependency-check-report.sarif"
+          checkout_path: ${{ github.workspace }}
 
   code-scanning:
     runs-on: ubuntu-latest

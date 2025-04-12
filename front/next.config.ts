@@ -14,9 +14,11 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   // Turbopackの設定
-  turbopack: {
-    resolveAlias: {
-      '@': './src',
+  experimental: {
+    turbo: {
+      resolveAlias: {
+        '@': './src',
+      },
     },
   },
 };

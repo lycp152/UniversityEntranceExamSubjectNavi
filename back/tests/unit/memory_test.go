@@ -96,15 +96,18 @@ func TestMemoryLeak(t *testing.T) {
 	runtime.ReadMemStats(&m2)
 
 	// メモリ使用量の増加を計算（ヒープメモリのみ）
-	allocated := int64(m2.HeapAlloc) - int64(m1.HeapAlloc)
-	if allocated < 0 {
-		allocated = 0 // 負の値は0として扱う
+	// uint64の差分を計算し、オーバーフローを防ぐ
+	var allocated uint64
+	if m2.HeapAlloc > m1.HeapAlloc {
+		allocated = m2.HeapAlloc - m1.HeapAlloc
+	} else {
+		allocated = 0
 	}
 
 	t.Logf("ヒープメモリ使用量の増加: %v bytes", allocated)
 
 	// メモリリークのチェック（1MBを超える場合はリークと判断）
-	maxAllowed := int64(1 * 1024 * 1024) // 1MB
+	maxAllowed := uint64(1 * 1024 * 1024) // 1MB
 	if allocated > maxAllowed {
 		t.Errorf("メモリリークの可能性があります: got = %v bytes, want <= %v bytes", allocated, maxAllowed)
 	}

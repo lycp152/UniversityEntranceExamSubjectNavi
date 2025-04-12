@@ -24,7 +24,10 @@ type AdmissionScheduleHandler struct {
 }
 
 // NewAdmissionScheduleHandler は新しいAdmissionScheduleHandlerインスタンスを生成
-func NewAdmissionScheduleHandler(repo repositories.IUniversityRepository, timeout time.Duration) *AdmissionScheduleHandler {
+func NewAdmissionScheduleHandler(
+	repo repositories.IUniversityRepository,
+	timeout time.Duration,
+) *AdmissionScheduleHandler {
 	return &AdmissionScheduleHandler{
 		repo:    repo,
 		timeout: timeout,

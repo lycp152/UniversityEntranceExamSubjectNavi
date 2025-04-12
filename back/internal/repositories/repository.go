@@ -289,7 +289,11 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 
 	err := r.db.
 		Where("id IN (?)", subQuery).
-		Select("DISTINCT universities.id, universities.name, universities.version, universities.created_at, universities.updated_at").
+		Select(
+			"DISTINCT universities.id, universities.name, "+
+			"universities.version, universities.created_at, "+
+			"universities.updated_at",
+		).
 		Scopes(func(db *gorm.DB) *gorm.DB {
 			return r.applyPreloads(db)
 		}).
@@ -651,7 +655,10 @@ func (r *universityRepository) getExistingSubjects(tx *gorm.DB, testTypeID uint)
 	return subjects, nil
 }
 
-func (r *universityRepository) updateSubjectInList(allSubjects []models.Subject, subject *models.Subject) []models.Subject {
+func (r *universityRepository) updateSubjectInList(
+	allSubjects []models.Subject,
+	subject *models.Subject,
+) []models.Subject {
 	for i, s := range allSubjects {
 		if s.ID == subject.ID {
 			subject.DisplayOrder = s.DisplayOrder

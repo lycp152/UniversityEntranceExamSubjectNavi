@@ -145,7 +145,9 @@ func NewDB() (*gorm.DB, error) {
 	}
 
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s search_path=%s sslmode=disable TimeZone=Asia/Tokyo client_encoding=UTF8",
+		"host=%s user=%s password=%s dbname=%s port=%s "+
+			"search_path=%s sslmode=disable TimeZone=Asia/Tokyo "+
+			"client_encoding=UTF8",
 		config.Host,
 		config.User,
 		config.Password,

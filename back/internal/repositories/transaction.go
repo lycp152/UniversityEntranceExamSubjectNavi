@@ -118,7 +118,10 @@ func (r *universityRepository) Transaction(fn func(repo IUniversityRepository) e
 }
 
 // TransactionWithOption は指定されたオプションでトランザクションを実行します
-func (r *universityRepository) TransactionWithOption(fn func(repo IUniversityRepository) error, opt *TransactionOption) error {
+func (r *universityRepository) TransactionWithOption(
+	fn func(repo IUniversityRepository) error,
+	opt *TransactionOption,
+) error {
 	operation := func() error {
 		return r.db.Transaction(func(tx *gorm.DB) error {
 			ctx, cancel := context.WithTimeout(context.Background(), opt.Timeout)

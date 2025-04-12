@@ -5,9 +5,11 @@ package testutils
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -48,13 +50,21 @@ const (
 
 const (
 	DefaultLogDirPerm = 0750
-	DefaultCSRFToken = "test-csrf-token"
 )
 
 var (
 	CSRFTokenHeader = getEnvOrDefault("CSRF_TOKEN_HEADER", "X-CSRF-Token")
-	TestCSRFToken   = getEnvOrDefault("TEST_CSRF_TOKEN", DefaultCSRFToken)
+	TestCSRFToken   = getEnvOrDefault("TEST_CSRF_TOKEN", generateRandomToken())
 )
+
+// generateRandomToken はランダムなCSRFトークンを生成します
+func generateRandomToken() string {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "test-csrf-token" // フォールバック値
+	}
+	return base64.URLEncoding.EncodeToString(b)
+}
 
 // getEnvOrDefault は環境変数の値を取得し、設定されていない場合はデフォルト値を返します
 func getEnvOrDefault(key, defaultValue string) string {
@@ -196,6 +206,12 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 	// ログファイルの作成
 	logFileName := fmt.Sprintf("test_%s.log", time.Now().Format("20060102_150405"))
 	logFilePath := filepath.Join(logDir, logFileName)
+	logFilePath = filepath.Clean(logFilePath) // パスの正規化
+
+	if !strings.HasPrefix(logFilePath, logDir) {
+		t.Fatalf("無効なログファイルパスです: %s", logFilePath)
+	}
+
 	logFile, err := os.Create(logFilePath)
 	if err != nil {
 		t.Fatalf("ログファイルの作成に失敗しました: %v", err)
@@ -279,7 +295,10 @@ func (h *TestHelper) LoadTestData() TestData {
 }
 
 // CreateTestContext はテストコンテキストを作成します
-func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*httptest.ResponseRecorder, echo.Context) {
+func (h *TestHelper) CreateTestContext(
+	method, path string,
+	body interface{},
+) (*httptest.ResponseRecorder, echo.Context) {
 	h.t.Helper()
 
 	var req *http.Request

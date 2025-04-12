@@ -142,7 +142,13 @@ func RunMigrations(ctx context.Context, db *gorm.DB, config *MigrationConfig) (*
 }
 
 // runMigrationsWithRetry はリトライ機能付きでマイグレーションを実行します
-func runMigrationsWithRetry(ctx context.Context, db *gorm.DB, metricsDB *gorm.DB, progress *MigrationProgress, config *MigrationConfig) error {
+func runMigrationsWithRetry(
+	ctx context.Context,
+	db *gorm.DB,
+	metricsDB *gorm.DB,
+	progress *MigrationProgress,
+	config *MigrationConfig,
+) error {
 	var lastErr error
 
 	for attempt := 1; attempt <= config.RetryAttempts; attempt++ {
@@ -180,7 +186,12 @@ func runMigrationsWithRetry(ctx context.Context, db *gorm.DB, metricsDB *gorm.DB
 }
 
 // migrateTable は単一のテーブルのマイグレーションを実行します
-func migrateTable(ctx context.Context, tx *gorm.DB, m struct{ Model interface{}; Name string }, progress *MigrationProgress) error {
+func migrateTable(
+	ctx context.Context,
+	tx *gorm.DB,
+	m struct{ Model interface{}; Name string },
+	progress *MigrationProgress,
+) error {
 	start := time.Now()
 
 	if err := tx.WithContext(ctx).AutoMigrate(m.Model); err != nil {
@@ -205,7 +216,13 @@ func migrateTable(ctx context.Context, tx *gorm.DB, m struct{ Model interface{};
 }
 
 // executeMigration は実際のマイグレーション処理を実行します
-func executeMigration(ctx context.Context, db *gorm.DB, metricsDB *gorm.DB, progress *MigrationProgress, config *MigrationConfig) error {
+func executeMigration(
+	ctx context.Context,
+	db *gorm.DB,
+	metricsDB *gorm.DB,
+	progress *MigrationProgress,
+	config *MigrationConfig,
+) error {
 	models := []struct {
 		Model interface{}
 		Name  string
@@ -237,7 +254,13 @@ func setupSchema(tx *gorm.DB, schema string) error {
 	return tx.Exec(fmt.Sprintf("SET search_path TO %s", schema)).Error
 }
 
-func processModels(ctx context.Context, tx *gorm.DB, metricsDB *gorm.DB, models []struct{ Model interface{}; Name string }, progress *MigrationProgress) error {
+func processModels(
+	ctx context.Context,
+	tx *gorm.DB,
+	metricsDB *gorm.DB,
+	models []struct{ Model interface{}; Name string },
+	progress *MigrationProgress,
+) error {
 	for i, m := range models {
 		if err := processModel(ctx, tx, metricsDB, m, i, progress); err != nil {
 			return err
@@ -247,7 +270,14 @@ func processModels(ctx context.Context, tx *gorm.DB, metricsDB *gorm.DB, models 
 	return nil
 }
 
-func processModel(ctx context.Context, tx *gorm.DB, metricsDB *gorm.DB, m struct{ Model interface{}; Name string }, index int, progress *MigrationProgress) error {
+func processModel(
+	ctx context.Context,
+	tx *gorm.DB,
+	metricsDB *gorm.DB,
+	m struct{ Model interface{}; Name string },
+	index int,
+	progress *MigrationProgress,
+) error {
 	select {
 	case <-ctx.Done():
 		progress.Metrics.RolledBackTables++
@@ -311,7 +341,13 @@ func releaseSavePoint(tx *gorm.DB, savePoint string) error {
 	return nil
 }
 
-func handleMigrationError(tx *gorm.DB, index int, m struct{ Model interface{}; Name string }, progress *MigrationProgress, err error) error {
+func handleMigrationError(
+	tx *gorm.DB,
+	index int,
+	m struct{ Model interface{}; Name string },
+	progress *MigrationProgress,
+	err error,
+) error {
 	if index > 0 && index%savePointInterval == 0 {
 		savePoint := fmt.Sprintf("sp_%d", index-savePointInterval)
 		if err := tx.RollbackTo(savePoint).Error; err != nil {

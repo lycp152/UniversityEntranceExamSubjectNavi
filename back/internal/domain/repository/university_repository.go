@@ -57,21 +57,21 @@ const (
 	defaultRetryInterval = 100 * time.Millisecond
 )
 
-// RepositoryError はリポジトリ層のエラーを表現します。
+// Error はリポジトリ層のエラーを表現します。
 // 操作名、元のエラー、エラーコードを含みます。
-type RepositoryError struct {
+type Error struct {
 	Op   string // 操作名
 	Err  error  // 元のエラー
 	Code string // エラーコード
 }
 
 // Error はエラーメッセージを返します。
-func (e *RepositoryError) Error() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("operation=%s, code=%s: %v", e.Op, e.Code, e.Err)
 }
 
 // Unwrap は元のエラーを返します。
-func (e *RepositoryError) Unwrap() error {
+func (e *Error) Unwrap() error {
 	return e.Err
 }
 
@@ -173,7 +173,7 @@ func (r *UniversityRepository) withTransaction(ctx context.Context, fn func(*gor
 		}
 	}
 
-	return &RepositoryError{
+	return &Error{
 		Op:   "withTransaction",
 		Err:  lastErr,
 		Code: ErrCodeDBError,
@@ -192,7 +192,7 @@ func isRetryableError(err error) bool {
 // 学部と学科の情報も同時に取得します。
 func (r *UniversityRepository) FindByID(ctx context.Context, id uint) (*models.University, error) {
 	if id == 0 {
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindByID",
 			Err:  errors.New(errMsgIDZero),
 			Code: ErrCodeInvalidInput,
@@ -205,13 +205,13 @@ func (r *UniversityRepository) FindByID(ctx context.Context, id uint) (*models.U
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &RepositoryError{
+			return nil, &Error{
 				Op:   "FindByID",
 				Err:  err,
 				Code: ErrCodeNotFound,
 			}
 		}
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindByID",
 			Err:  err,
 			Code: ErrCodeDBError,
@@ -228,7 +228,7 @@ func (r *UniversityRepository) FindAll(ctx context.Context) ([]models.University
 		Find(&universities).Error
 
 	if err != nil {
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindAll",
 			Err:  err,
 			Code: ErrCodeDBError,
@@ -241,7 +241,7 @@ func (r *UniversityRepository) FindAll(ctx context.Context) ([]models.University
 // 完全一致で検索を行います。
 func (r *UniversityRepository) FindByName(ctx context.Context, name string) (*models.University, error) {
 	if name == "" {
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindByName",
 			Err:  errors.New(errMsgNameEmpty),
 			Code: ErrCodeInvalidInput,
@@ -255,13 +255,13 @@ func (r *UniversityRepository) FindByName(ctx context.Context, name string) (*mo
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &RepositoryError{
+			return nil, &Error{
 				Op:   "FindByName",
 				Err:  err,
 				Code: ErrCodeNotFound,
 			}
 		}
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindByName",
 			Err:  err,
 			Code: ErrCodeDBError,
@@ -272,7 +272,10 @@ func (r *UniversityRepository) FindByName(ctx context.Context, name string) (*mo
 
 // FindWithFilters は指定された条件で大学を検索します。
 // フィルター条件に一致する大学を取得します。
-func (r *UniversityRepository) FindWithFilters(ctx context.Context, filters map[string]interface{}) ([]models.University, error) {
+func (r *UniversityRepository) FindWithFilters(
+	ctx context.Context,
+	filters map[string]interface{},
+) ([]models.University, error) {
 	var universities []models.University
 	query := r.db.WithContext(ctx).
 		Preload("Departments", func(db *gorm.DB) *gorm.DB {
@@ -285,7 +288,7 @@ func (r *UniversityRepository) FindWithFilters(ctx context.Context, filters map[
 
 	err := query.Find(&universities).Error
 	if err != nil {
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindWithFilters",
 			Err:  err,
 			Code: ErrCodeDBError,
@@ -299,7 +302,7 @@ func (r *UniversityRepository) FindWithFilters(ctx context.Context, filters map[
 func (r *UniversityRepository) Create(ctx context.Context, university *models.University) error {
 	return r.withTransaction(ctx, func(tx *gorm.DB) error {
 		if err := tx.Create(university).Error; err != nil {
-			return &RepositoryError{
+			return &Error{
 				Op:   "Create",
 				Err:  err,
 				Code: ErrCodeDBError,
@@ -313,7 +316,7 @@ func (r *UniversityRepository) Create(ctx context.Context, university *models.Un
 // トランザクション内で実行され、更新対象の存在確認を行います。
 func (r *UniversityRepository) Update(ctx context.Context, university *models.University) error {
 	if university.ID == 0 {
-		return &RepositoryError{
+		return &Error{
 			Op:   "Update",
 			Err:  errors.New(errMsgIDZero),
 			Code: ErrCodeInvalidInput,
@@ -327,7 +330,7 @@ func (r *UniversityRepository) Update(ctx context.Context, university *models.Un
 			Select("1").
 			Where("id = ?", university.ID).
 			Scan(&exists).Error; err != nil {
-			return &RepositoryError{
+			return &Error{
 				Op:   "Update",
 				Err:  err,
 				Code: ErrCodeDBError,
@@ -335,7 +338,7 @@ func (r *UniversityRepository) Update(ctx context.Context, university *models.Un
 		}
 
 		if !exists {
-			return &RepositoryError{
+			return &Error{
 				Op:   "Update",
 				Err:  fmt.Errorf(errMsgUniversityNotFound, university.ID),
 				Code: ErrCodeNotFound,
@@ -343,7 +346,7 @@ func (r *UniversityRepository) Update(ctx context.Context, university *models.Un
 		}
 
 		if err := tx.Save(university).Error; err != nil {
-			return &RepositoryError{
+			return &Error{
 				Op:   "Update",
 				Err:  err,
 				Code: ErrCodeDBError,
@@ -357,7 +360,7 @@ func (r *UniversityRepository) Update(ctx context.Context, university *models.Un
 // トランザクション内で実行され、削除対象の存在確認を行います。
 func (r *UniversityRepository) Delete(ctx context.Context, id uint) error {
 	if id == 0 {
-		return &RepositoryError{
+		return &Error{
 			Op:   "Delete",
 			Err:  errors.New(errMsgIDZero),
 			Code: ErrCodeInvalidInput,
@@ -371,7 +374,7 @@ func (r *UniversityRepository) Delete(ctx context.Context, id uint) error {
 			Select("1").
 			Where("id = ?", id).
 			Scan(&exists).Error; err != nil {
-			return &RepositoryError{
+			return &Error{
 				Op:   "Delete",
 				Err:  err,
 				Code: ErrCodeDBError,
@@ -379,7 +382,7 @@ func (r *UniversityRepository) Delete(ctx context.Context, id uint) error {
 		}
 
 		if !exists {
-			return &RepositoryError{
+			return &Error{
 				Op:   "Delete",
 				Err:  fmt.Errorf(errMsgUniversityNotFound, id),
 				Code: ErrCodeNotFound,
@@ -387,7 +390,7 @@ func (r *UniversityRepository) Delete(ctx context.Context, id uint) error {
 		}
 
 		if err := tx.Delete(&models.University{}, id).Error; err != nil {
-			return &RepositoryError{
+			return &Error{
 				Op:   "Delete",
 				Err:  err,
 				Code: ErrCodeDBError,
@@ -412,13 +415,13 @@ func (r *UniversityRepository) FindWithDepartmentsAndMajors(ctx context.Context,
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &RepositoryError{
+			return nil, &Error{
 				Op:   "FindWithDepartmentsAndMajors",
 				Err:  err,
 				Code: ErrCodeNotFound,
 			}
 		}
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindWithDepartmentsAndMajors",
 			Err:  err,
 			Code: ErrCodeDBError,
@@ -431,7 +434,7 @@ func (r *UniversityRepository) FindWithDepartmentsAndMajors(ctx context.Context,
 // 学部、学科、入試スケジュール、入試情報、試験種別、科目の情報を取得します。
 func (r *UniversityRepository) FindWithFullDetails(ctx context.Context, id uint) (*models.University, error) {
 	if id == 0 {
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindWithFullDetails",
 			Err:  errors.New(errMsgIDZero),
 			Code: ErrCodeInvalidInput,
@@ -444,13 +447,13 @@ func (r *UniversityRepository) FindWithFullDetails(ctx context.Context, id uint)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, &RepositoryError{
+			return nil, &Error{
 				Op:   "FindWithFullDetails",
 				Err:  err,
 				Code: ErrCodeNotFound,
 			}
 		}
-		return nil, &RepositoryError{
+		return nil, &Error{
 			Op:   "FindWithFullDetails",
 			Err:  err,
 			Code: ErrCodeDBError,
@@ -464,7 +467,7 @@ func (r *UniversityRepository) FindWithFullDetails(ctx context.Context, id uint)
 func (r *UniversityRepository) CreateInBatches(ctx context.Context, universities []models.University) error {
 	return r.withTransaction(ctx, func(tx *gorm.DB) error {
 		if err := tx.CreateInBatches(universities, r.batchSize).Error; err != nil {
-			return &RepositoryError{
+			return &Error{
 				Op:   "CreateInBatches",
 				Err:  err,
 				Code: ErrCodeDBError,
@@ -476,15 +479,18 @@ func (r *UniversityRepository) CreateInBatches(ctx context.Context, universities
 
 // ProcessInBatches は大学データをバッチで処理します。
 // 指定されたバッチ処理関数を実行します。
-func (r *UniversityRepository) ProcessInBatches(ctx context.Context, batchFunc func(*gorm.DB, []models.University) error) error {
+func (r *UniversityRepository) ProcessInBatches(
+	ctx context.Context,
+	batchFunc func(*gorm.DB, []models.University) error,
+) error {
 	var universities []models.University
 
-	result := r.db.WithContext(ctx).FindInBatches(&universities, r.batchSize, func(tx *gorm.DB, batch int) error {
+	result := r.db.WithContext(ctx).FindInBatches(&universities, r.batchSize, func(tx *gorm.DB, _ int) error {
 		return batchFunc(tx, universities)
 	})
 
 	if result.Error != nil {
-		return &RepositoryError{
+		return &Error{
 			Op:   "ProcessInBatches",
 			Err:  result.Error,
 			Code: ErrCodeDBError,
@@ -506,7 +512,7 @@ func (r *UniversityRepository) UpdateInBatches(ctx context.Context, universities
 
 			for _, univ := range batch {
 				if err := tx.Save(&univ).Error; err != nil {
-					return &RepositoryError{
+					return &Error{
 						Op:   "UpdateInBatches",
 						Err:  err,
 						Code: ErrCodeDBError,

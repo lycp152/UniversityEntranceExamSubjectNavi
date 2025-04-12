@@ -89,6 +89,7 @@ func checkDBHealth(ctx context.Context, db *gorm.DB) bool {
 
 func checkMemoryHealth(ctx context.Context) bool {
 	var m runtime.MemStats
+
 	runtime.ReadMemStats(&m)
 
 	// メモリ使用量が1GBを超えた場合に警告をログに記録
@@ -190,6 +191,7 @@ func setupMetrics() {
 
 		for range ticker.C {
 			var m runtime.MemStats
+
 			runtime.ReadMemStats(&m)
 			memoryUsage.Set(float64(m.Alloc))
 		}
@@ -214,8 +216,10 @@ func main() {
 
 	// ロガーの初期化
 	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
+		applogger.Error(ctx, "ロガーの初期化に失敗しました: %v", err)
 		log.Printf("ロガーの初期化に失敗しました: %v", err)
 		cancel()
+
 		return
 	}
 
@@ -227,6 +231,7 @@ func main() {
 		applogger.Error(ctx, "設定の読み込みに失敗しました: %v", err)
 		log.Printf("設定の読み込みに失敗しました: %v", err)
 		cancel()
+
 		return
 	}
 
@@ -235,6 +240,7 @@ func main() {
 		applogger.Error(ctx, "環境変数の読み込みに失敗しました: %v", err)
 		log.Printf("環境変数の読み込みに失敗しました: %v", err)
 		cancel()
+
 		return
 	}
 
@@ -244,6 +250,7 @@ func main() {
 		applogger.Error(ctx, "データベース接続の確立に失敗しました: %v", err)
 		log.Printf("データベース接続の確立に失敗しました: %v", err)
 		cancel()
+
 		return
 	}
 	defer cleanup()
@@ -253,8 +260,11 @@ func main() {
 	if err != nil {
 		applogger.Error(ctx, "データベース接続プールの設定に失敗しました: %v", err)
 		cancel()
+
 		return
 	}
+
+	// データベース接続プールのパラメータを設定
 	sqlDB.SetMaxIdleConns(maxIdleConns)
 	sqlDB.SetMaxOpenConns(maxOpenConns)
 	sqlDB.SetConnMaxLifetime(connMaxLifetime)
@@ -273,6 +283,7 @@ func main() {
 		applogger.Error(ctx, "ルーティングの設定に失敗しました: %v", err)
 		log.Printf("ルーティングの設定に失敗しました: %v", err)
 		cancel()
+
 		return
 	}
 
@@ -282,6 +293,7 @@ func main() {
 
 	// シャットダウン用のWaitGroup
 	var wg sync.WaitGroup
+
 	wg.Add(1)
 
 	// サーバーの起動
@@ -291,6 +303,7 @@ func main() {
 		if err := srv.Start(ctx); err != nil {
 			applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
 			sigChan <- syscall.SIGTERM
+
 			return
 		}
 	}()

@@ -20,6 +20,7 @@ func setupTestEnv(t *testing.T, envVars map[string]string) func() {
 	t.Helper()
 
 	var mu sync.Mutex
+
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -31,15 +32,20 @@ func setupTestEnv(t *testing.T, envVars map[string]string) func() {
 
 	// テスト用の環境変数を設定
 	for k, v := range envVars {
-		os.Setenv(k, v)
+		if err := os.Setenv(k, v); err != nil {
+			t.Fatalf("環境変数の設定に失敗しました: %v", err)
+		}
 	}
 
 	// クリーンアップ関数を返す
 	return func() {
 		mu.Lock()
 		defer mu.Unlock()
+
 		for k, v := range originalEnv {
-			os.Setenv(k, v)
+			if err := os.Setenv(k, v); err != nil {
+				t.Errorf("環境変数の復元に失敗しました: %v", err)
+			}
 		}
 	}
 }
@@ -50,7 +56,7 @@ func setupTestLogger(t *testing.T) {
 
 	// テスト用のログディレクトリを作成
 	logDir := filepath.Join("..", "..", "logs", "tests")
-	if err := os.MkdirAll(logDir, 0755); err != nil {
+	if err := os.MkdirAll(logDir, 0750); err != nil {
 		t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
 	}
 
@@ -73,6 +79,7 @@ type envTestCase struct {
 // TestSetupEnvironment は環境変数の設定をテストします
 func TestSetupEnvironment(t *testing.T) {
 	setupTestLogger(t)
+
 	tests := []envTestCase{
 		{
 			name: "正常系/全ての必須環境変数が設定されている",
@@ -99,7 +106,9 @@ func TestSetupEnvironment(t *testing.T) {
 		tt := tt // サブテストの並行実行のためのローカル変数
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel() // サブテストを並行実行
+
 			cleanup := setupTestEnv(t, tt.envVars)
+
 			defer cleanup()
 
 			ctx := context.Background()
@@ -126,19 +135,18 @@ type dbTestCase struct {
 // TestCheckDBHealth はデータベースの健全性チェックをテストします
 func TestCheckDBHealth(t *testing.T) {
 	setupTestLogger(t)
+
 	tests := []dbTestCase{
 		{
 			name: "正常系/データベース接続が正常",
 			setupDB: func(t *testing.T) *gorm.DB {
-				// メモリデータベースを使用し、共有キャッシュを有効化
 				db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
-					TranslateError: true, // エラーメッセージの翻訳を有効化
+					TranslateError: true,
 				})
 				if err != nil {
 					t.Fatalf("データベース接続の確立に失敗しました: %v", err)
 				}
 
-				// 接続プールの設定
 				sqlDB, err := db.DB()
 				if err != nil {
 					t.Fatalf("SQLデータベースの取得に失敗しました: %v", err)
@@ -146,9 +154,8 @@ func TestCheckDBHealth(t *testing.T) {
 				sqlDB.SetMaxIdleConns(1)
 				sqlDB.SetMaxOpenConns(1)
 
-				// 新しいセッションを作成して安全性を確保
 				return db.Session(&gorm.Session{
-					PrepareStmt: true, // プリペアドステートメントを有効化
+					PrepareStmt: true,
 				})
 			},
 			expected:    true,
@@ -184,9 +191,10 @@ func TestCheckDBHealth(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // サブテストの並行実行のためのローカル変数
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel() // サブテストを並行実行
+			t.Parallel()
+
 			ctx := context.Background()
 			db := tt.setupDB(t)
 			result := checkDBHealth(ctx, db)
@@ -198,7 +206,7 @@ func TestCheckDBHealth(t *testing.T) {
 // TestCheckMemoryHealth はメモリ使用量のチェックをテストします
 func TestCheckMemoryHealth(t *testing.T) {
 	setupTestLogger(t)
-	t.Parallel() // テストを並行実行
+
 	ctx := context.Background()
 	result := checkMemoryHealth(ctx)
 	assert.True(t, result, "アプリケーション起動直後のメモリ使用量は1GB以下であるべきです")

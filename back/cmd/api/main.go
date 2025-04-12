@@ -193,6 +193,7 @@ func main() {
 	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
 		log.Printf("ロガーの初期化に失敗しました: %v", err)
 		cancel()
+
 		return
 	}
 
@@ -218,7 +219,7 @@ func main() {
 	db, cleanup, err := database.Setup(ctx, cfg)
 	if err != nil {
 		applogger.Error(ctx, "データベース接続の確立に失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("データベース接続の確立に失敗しました: %v", err)
 	}
 	defer cleanup()
 

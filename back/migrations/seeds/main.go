@@ -218,6 +218,7 @@ func seedUniversities(tx *gorm.DB, universities []models.University) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -391,13 +392,19 @@ func main() {
 	}
 
 	if err := seedUniversities(tx, universities); err != nil {
-		tx.Rollback()
+		if err := tx.Rollback().Error; err != nil {
+			log.Printf("ロールバックに失敗しました: %v", err)
+		}
 		log.Printf("シードデータの投入に失敗しました: %v", err)
 		os.Exit(1)
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		log.Fatalf("トランザクションのコミットに失敗しました: %v", err)
+		if err := tx.Rollback().Error; err != nil {
+			log.Printf("ロールバックに失敗しました: %v", err)
+		}
+		log.Printf("トランザクションのコミットに失敗しました: %v", err)
+		os.Exit(1)
 	}
 
 	log.Println("シードデータの投入が正常に完了しました")

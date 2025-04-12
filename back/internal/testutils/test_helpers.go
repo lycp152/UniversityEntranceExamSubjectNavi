@@ -44,8 +44,25 @@ const (
 const (
 	ContentTypeHeader = "Content-Type"
 	ContentTypeJSON = "application/json"
-	CSRFTokenHeader = "X-CSRF-Token"
 )
+
+const (
+	DefaultLogDirPerm = 0750
+	DefaultCSRFToken = "test-csrf-token"
+)
+
+var (
+	CSRFTokenHeader = getEnvOrDefault("CSRF_TOKEN_HEADER", "X-CSRF-Token")
+	TestCSRFToken   = getEnvOrDefault("TEST_CSRF_TOKEN", DefaultCSRFToken)
+)
+
+// getEnvOrDefault は環境変数の値を取得し、設定されていない場合はデフォルト値を返します
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
 
 // テストデータ定数
 const (
@@ -172,12 +189,14 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 
 	// ログディレクトリの作成
 	logDir := filepath.Join("logs", "tests")
-	if err := os.MkdirAll(logDir, 0755); err != nil {
+	if err := os.MkdirAll(logDir, DefaultLogDirPerm); err != nil {
 		t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
 	}
 
 	// ログファイルの作成
-	logFile, err := os.Create(filepath.Join(logDir, fmt.Sprintf("test_%s.log", time.Now().Format("20060102_150405"))))
+	logFileName := fmt.Sprintf("test_%s.log", time.Now().Format("20060102_150405"))
+	logFilePath := filepath.Join(logDir, logFileName)
+	logFile, err := os.Create(logFilePath)
 	if err != nil {
 		t.Fatalf("ログファイルの作成に失敗しました: %v", err)
 	}
@@ -277,12 +296,11 @@ func (h *TestHelper) CreateTestContext(method, path string, body interface{}) (*
 		req = httptest.NewRequest(method, path, nil)
 	}
 
-	token := "test-csrf-token"
-	req.Header.Set(CSRFTokenHeader, token)
+	req.Header.Set(CSRFTokenHeader, TestCSRFToken)
 
 	rec := httptest.NewRecorder()
 	c := h.e.NewContext(req, rec)
-	c.Set("csrf", token)
+	c.Set("csrf", TestCSRFToken)
 
 	return rec, c
 }
@@ -380,7 +398,7 @@ func (h *TestHelper) AssertSpecialCharsSanitized(s string) {
 func TestMain(m *testing.M) {
 	// ログディレクトリの作成
 	logDir := filepath.Join("logs", "tests")
-	if err := os.MkdirAll(logDir, 0755); err != nil {
+	if err := os.MkdirAll(logDir, DefaultLogDirPerm); err != nil {
 		fmt.Printf("ログディレクトリの作成に失敗しました: %v\n", err)
 		os.Exit(1)
 	}
@@ -540,7 +558,7 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.UniversityHandler, *gorm.DB, error) {
 	t.Helper()
 
-	if err := os.MkdirAll(config.LogDir, 0755); err != nil {
+	if err := os.MkdirAll(config.LogDir, DefaultLogDirPerm); err != nil {
 		return nil, nil, nil, &TestError{
 			Code:    "LOG_DIR_CREATE_FAILED",
 			Message: fmt.Sprintf("ログディレクトリの作成に失敗しました: %v", err),

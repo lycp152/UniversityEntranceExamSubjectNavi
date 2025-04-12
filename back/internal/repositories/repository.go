@@ -401,7 +401,6 @@ func sanitizeName(name string) string {
 // Create は新しい大学を作成します
 func (r *universityRepository) Create(university *models.University) error {
 	if err := r.validateUniversity(university); err != nil {
-
 		return err
 	}
 
@@ -415,7 +414,6 @@ func (r *universityRepository) Create(university *models.University) error {
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(university).Error; err != nil {
-
 			return err
 		}
 
@@ -428,6 +426,7 @@ func (r *universityRepository) Create(university *models.University) error {
 
 	// キャッシュをクリア
 	r.cache.ClearAllRelatedCache(university.ID)
+
 	return nil
 }
 
@@ -447,7 +446,6 @@ func (r *universityRepository) Update(university *models.University) error {
 
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(university).Error; err != nil {
-
 			return err
 		}
 
@@ -460,6 +458,7 @@ func (r *universityRepository) Update(university *models.University) error {
 
 	// 全てのキャッシュをクリア
 	r.cache.ClearAllRelatedCache(university.ID)
+
 	return nil
 }
 
@@ -469,6 +468,7 @@ func (r *universityRepository) Delete(id uint) error {
 		if err := tx.Unscoped().Delete(&models.University{}, id).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -478,6 +478,7 @@ func (r *universityRepository) Delete(id uint) error {
 
 	// キャッシュをクリア
 	r.cache.ClearAllRelatedCache(id)
+
 	return nil
 }
 
@@ -486,6 +487,7 @@ func (r *universityRepository) CreateDepartment(department *models.Department) e
 	if err := r.db.Create(department).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -495,6 +497,7 @@ func (r *universityRepository) UpdateDepartment(department *models.Department) e
 		if err := tx.Save(department).Error; err != nil {
 			return err
 		}
+
 		return nil
 	})
 
@@ -504,6 +507,7 @@ func (r *universityRepository) UpdateDepartment(department *models.Department) e
 
 	// 全てのキャッシュをクリア
 	r.cache.ClearAllRelatedCache(department.UniversityID)
+
 	return nil
 }
 
@@ -512,6 +516,7 @@ func (r *universityRepository) DeleteDepartment(id uint) error {
 	if err := r.db.Delete(&models.Department{}, id).Error; err != nil {
 		return err
 	}
+
 	return nil
 }
 

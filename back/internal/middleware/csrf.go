@@ -4,15 +4,17 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 )
 
-const (
-	CSRFTokenHeader = "X-CSRF-Token"
+var (
+	CSRFTokenHeader = os.Getenv("CSRF_TOKEN_HEADER")
 	CSRFTokenLength = 32
+	TestCSRFToken   = os.Getenv("TEST_CSRF_TOKEN")
 )
 
 var (
@@ -95,7 +97,7 @@ func generateCSRFToken() string {
 // validateCSRFToken はCSRFトークンを検証します
 func validateCSRFToken(token string) bool {
 	// テスト用のトークンを許可
-	if token == "test-csrf-token" {
+	if TestCSRFToken != "" && token == TestCSRFToken {
 		return true
 	}
 

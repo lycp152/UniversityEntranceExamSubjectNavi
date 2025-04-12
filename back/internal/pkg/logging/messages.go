@@ -1,39 +1,41 @@
 package logging
 
+import "os"
+
 // ログメッセージ定数
-const (
+var (
 	// 大学関連のログメッセージ
-	LogGetUniversitiesSuccess = "%d件の大学を取得しました"
-	LogGetUniversitySuccess   = "大学ID %dを取得しました"
-	LogSearchUniversitiesSuccess = "検索クエリ '%s' で%d件の大学を検索しました"
-	LogCreateUniversitySuccess = "大学ID %dを作成しました"
-	LogUpdateUniversitySuccess = "大学ID %dを更新しました"
-	LogDeleteUniversitySuccess = "大学ID %dを削除しました"
+	LogGetUniversitiesSuccess = os.Getenv("LOG_GET_UNIVERSITIES_SUCCESS")
+	LogGetUniversitySuccess   = os.Getenv("LOG_GET_UNIVERSITY_SUCCESS")
+	LogSearchUniversitiesSuccess = os.Getenv("LOG_SEARCH_UNIVERSITIES_SUCCESS")
+	LogCreateUniversitySuccess = os.Getenv("LOG_CREATE_UNIVERSITY_SUCCESS")
+	LogUpdateUniversitySuccess = os.Getenv("LOG_UPDATE_UNIVERSITY_SUCCESS")
+	LogDeleteUniversitySuccess = os.Getenv("LOG_DELETE_UNIVERSITY_SUCCESS")
 
 	// 学部関連のログメッセージ
-	LogGetDepartmentSuccess   = "学部を取得しました (大学ID: %d, 学部ID: %d)"
-	LogCreateDepartmentSuccess = "学部ID %dを作成しました"
-	LogUpdateDepartmentSuccess = "学部ID %dを更新しました"
-	LogDeleteDepartmentSuccess = "学部ID %dを削除しました"
+	LogGetDepartmentSuccess   = os.Getenv("LOG_GET_DEPARTMENT_SUCCESS")
+	LogCreateDepartmentSuccess = os.Getenv("LOG_CREATE_DEPARTMENT_SUCCESS")
+	LogUpdateDepartmentSuccess = os.Getenv("LOG_UPDATE_DEPARTMENT_SUCCESS")
+	LogDeleteDepartmentSuccess = os.Getenv("LOG_DELETE_DEPARTMENT_SUCCESS")
 
 	// 科目関連のログメッセージ
-	LogGetSubjectSuccess      = "科目を取得しました (学部ID: %d, 科目ID: %d)"
-	LogCreateSubjectSuccess   = "科目ID %dを作成しました"
-	LogUpdateSubjectSuccess   = "科目ID %dを更新しました"
-	LogDeleteSubjectSuccess   = "科目ID %dを削除しました"
-	LogBatchUpdateSubjectSuccess = "科目の一括更新が完了しました"
+	LogGetSubjectSuccess      = os.Getenv("LOG_GET_SUBJECT_SUCCESS")
+	LogCreateSubjectSuccess   = os.Getenv("LOG_CREATE_SUBJECT_SUCCESS")
+	LogUpdateSubjectSuccess   = os.Getenv("LOG_UPDATE_SUBJECT_SUCCESS")
+	LogDeleteSubjectSuccess   = os.Getenv("LOG_DELETE_SUBJECT_SUCCESS")
+	LogBatchUpdateSubjectSuccess = os.Getenv("LOG_BATCH_UPDATE_SUBJECT_SUCCESS")
 
 	// 学科関連のログメッセージ
-	LogGetMajorSuccess   = "学科を取得しました (学部ID: %d, 学科ID: %d)"
-	LogCreateMajorSuccess = "学科ID %dを作成しました"
-	LogUpdateMajorSuccess = "学科ID %dを更新しました"
-	LogDeleteMajorSuccess = "学科ID %dを削除しました"
+	LogGetMajorSuccess   = os.Getenv("LOG_GET_MAJOR_SUCCESS")
+	LogCreateMajorSuccess = os.Getenv("LOG_CREATE_MAJOR_SUCCESS")
+	LogUpdateMajorSuccess = os.Getenv("LOG_UPDATE_MAJOR_SUCCESS")
+	LogDeleteMajorSuccess = os.Getenv("LOG_DELETE_MAJOR_SUCCESS")
 
 	// 募集情報関連のログメッセージ
-	LogGetAdmissionInfoSuccess   = "募集情報を取得しました (入試日程ID: %d, 募集情報ID: %d)"
-	LogCreateAdmissionInfoSuccess = "募集情報ID %dを作成しました"
-	LogUpdateAdmissionInfoSuccess = "募集情報ID %dを更新しました"
-	LogDeleteAdmissionInfoSuccess = "募集情報ID %dを削除しました"
+	LogGetAdmissionInfoSuccess   = os.Getenv("LOG_GET_ADMISSION_INFO_SUCCESS")
+	LogCreateAdmissionInfoSuccess = os.Getenv("LOG_CREATE_ADMISSION_INFO_SUCCESS")
+	LogUpdateAdmissionInfoSuccess = os.Getenv("LOG_UPDATE_ADMISSION_INFO_SUCCESS")
+	LogDeleteAdmissionInfoSuccess = os.Getenv("LOG_DELETE_ADMISSION_INFO_SUCCESS")
 
-	LogGetCSRFTokenSuccess = "CSRFトークンを正常に取得しました"
+	LogGetCSRFTokenSuccess = os.Getenv("LOG_GET_CSRF_TOKEN_SUCCESS")
 )

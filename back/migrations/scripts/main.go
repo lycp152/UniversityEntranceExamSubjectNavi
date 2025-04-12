@@ -152,8 +152,8 @@ func main() {
 
 	// 環境変数の設定
 	if err := setupEnvironment(); err != nil {
-		cancel()
 		log.Printf("環境変数の設定に失敗しました: %v", err)
+		cancel()
 		os.Exit(1)
 	}
 

@@ -73,7 +73,7 @@ func InitLoggers(cfg Config) error {
 	config = cfg
 
 	// ログディレクトリの作成
-	if err := os.MkdirAll(config.LogDir, 0755); err != nil {
+	if err := os.MkdirAll(config.LogDir, 0750); err != nil {
 		return fmt.Errorf("ログディレクトリの作成に失敗しました: %w", err)
 	}
 

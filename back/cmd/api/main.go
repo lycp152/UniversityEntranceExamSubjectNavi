@@ -190,8 +190,8 @@ func main() {
 
 	// ロガーの初期化
 	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
-		cancel()
 		log.Printf("ロガーの初期化に失敗しました: %v", err)
+		cancel()
 		os.Exit(1)
 	}
 

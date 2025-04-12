@@ -227,7 +227,9 @@ func main() {
 	srv := server.New(cfg)
 	if err := srv.SetupRoutes(db); err != nil {
 		applogger.Error(ctx, "ルーティングの設定に失敗しました: %v", err)
-		log.Fatal(err)
+		log.Printf("ルーティングの設定に失敗しました: %v", err)
+
+		return
 	}
 
 	// シグナルハンドリングの設定
@@ -246,6 +248,8 @@ func main() {
 		if err := srv.Start(ctx); err != nil {
 			applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
 			sigChan <- syscall.SIGTERM
+
+			return
 		}
 	}()
 

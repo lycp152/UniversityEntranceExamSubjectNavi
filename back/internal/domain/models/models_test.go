@@ -118,11 +118,9 @@ func (h *testHelper) createTestTestType(name string, scheduleID uint) TestType {
 
 // createTestSubject はテスト用の科目データを作成する
 func (h *testHelper) createTestSubject(
-	name string,
 	testTypeID uint,
 	score int,
 	percentage float64,
-	displayOrder int,
 ) Subject {
 	return Subject{
 		BaseModel: BaseModel{
@@ -130,11 +128,11 @@ func (h *testHelper) createTestSubject(
 			UpdatedAt: time.Now(),
 			Version:   1,
 		},
-		Name:         name,
+		Name:         "数学",
 		TestTypeID:   testTypeID,
 		Score:        score,
 		Percentage:   percentage,
-		DisplayOrder: displayOrder,
+		DisplayOrder: 1,
 	}
 }
 
@@ -489,22 +487,22 @@ func TestSubjectValidation(t *testing.T) {
 	}{
 		{
 			name:    "正常な科目",
-			subject: h.createTestSubject("数学", 1, 100, 50.0, 1),
+			subject: h.createTestSubject(1, 100, 50.0),
 			wantErr: false,
 		},
 		{
 			name:    "無効な配点",
-			subject: h.createTestSubject("数学", 1, -1, 50.0, 1),
+			subject: h.createTestSubject(1, -1, 50.0),
 			wantErr: true,
 		},
 		{
 			name:    "無効な配点比率",
-			subject: h.createTestSubject("数学", 1, 100, -1.0, 1),
+			subject: h.createTestSubject(1, 100, -1.0),
 			wantErr: true,
 		},
 		{
 			name:    "無効な試験種別ID",
-			subject: h.createTestSubject("数学", 0, 100, 50.0, 1),
+			subject: h.createTestSubject(0, 100, 50.0),
 			wantErr: true,
 		},
 	}

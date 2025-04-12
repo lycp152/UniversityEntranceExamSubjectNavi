@@ -401,6 +401,7 @@ func main() {
 		}
 
 		log.Printf("シードデータの投入に失敗しました: %v", err)
+
 		return
 	}
 
@@ -410,6 +411,7 @@ func main() {
 		}
 
 		log.Printf("トランザクションのコミットに失敗しました: %v", err)
+
 		return
 	}
 

@@ -18,7 +18,6 @@ const nextConfig: NextConfig = {
     turbo: {
       resolveAlias: {
         '@': './src',
-        '@/components': './src/components',
       },
     },
   },

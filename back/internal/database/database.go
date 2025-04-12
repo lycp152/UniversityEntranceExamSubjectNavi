@@ -41,18 +41,25 @@ type DBStats struct {
 // setupConnectionPool はコネクションプールの設定を行います
 func setupConnectionPool(sqlDB *sql.DB, cfg *config.Config) error {
 	maxIdleConns := defaultMaxIdleConns
+
 	if cfg.DBMaxIdleConns > 0 {
 		maxIdleConns = cfg.DBMaxIdleConns
 	}
+
 	maxOpenConns := defaultMaxOpenConns
+
 	if cfg.DBMaxOpenConns > 0 {
 		maxOpenConns = cfg.DBMaxOpenConns
 	}
+
 	connMaxLifetime := defaultConnMaxLifetime
+
 	if cfg.DBConnMaxLifetime > 0 {
 		connMaxLifetime = cfg.DBConnMaxLifetime
 	}
+
 	connMaxIdleTime := defaultConnMaxIdleTime
+
 	if cfg.DBConnMaxIdleTime > 0 {
 		connMaxIdleTime = cfg.DBConnMaxIdleTime
 	}
@@ -74,6 +81,7 @@ func setupConnectionPool(sqlDB *sql.DB, cfg *config.Config) error {
 func runMigrations(ctx context.Context, db *gorm.DB) error {
 	migrationCtx, cancel := context.WithTimeout(ctx, defaultMigrationTimeout)
 	defer cancel()
+
 	return database.AutoMigrate(migrationCtx, db.WithContext(migrationCtx))
 }
 
@@ -84,7 +92,9 @@ func establishConnection(ctx context.Context, cfg *config.Config) (*gorm.DB, *sq
 		if err != nil {
 			continue
 		}
+
 		sqlDB, err := db.DB()
+
 		if err != nil {
 			continue
 		}
@@ -101,6 +111,7 @@ func establishConnection(ctx context.Context, cfg *config.Config) (*gorm.DB, *sq
 			time.Sleep(defaultRetryDelay)
 		}
 	}
+
 	return nil, nil, fmt.Errorf("データベース接続の確立に失敗しました（試行回数: %d）", defaultRetryAttempts)
 }
 
@@ -150,6 +161,7 @@ func GetDBStats(db *gorm.DB) (*DBStats, error) {
 	}
 
 	stats := sqlDB.Stats()
+
 	return &DBStats{
 		MaxOpenConnections: stats.MaxOpenConnections,
 		OpenConnections:    stats.OpenConnections,

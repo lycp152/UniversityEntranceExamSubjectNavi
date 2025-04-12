@@ -27,6 +27,7 @@ func newTestHelper(t testing.TB) *testHelper {
 	t.Cleanup(func() {
 		// テスト終了時のクリーンアップ処理
 	})
+
 	return helper
 }
 
@@ -131,6 +132,7 @@ func validateAcademicYear(info *AdmissionInfo) error {
 	if info.AcademicYear < 2000 || info.AcademicYear > 2100 {
 		return ErrInvalidAcademicYear
 	}
+
 	return nil
 }
 
@@ -169,6 +171,7 @@ func TestAcademicYear(t *testing.T) {
 
 			info := h.createTestAdmissionInfo(1, 100, tt.academicYear, "draft")
 			err := validateAcademicYear(&info)
+
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
 				assert.ErrorIs(t, err, ErrInvalidAcademicYear, "期待されたエラー型ではありません")

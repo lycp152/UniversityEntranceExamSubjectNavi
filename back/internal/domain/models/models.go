@@ -37,9 +37,11 @@ func (e *ValidationError) Is(target error) bool {
 	if target == nil {
 		return false
 	}
+
 	if err, ok := target.(*ValidationError); ok {
 		return e.Code == err.Code
 	}
+
 	return false
 }
 
@@ -49,6 +51,7 @@ func (e *ValidationError) As(target interface{}) bool {
 		*err = *e
 		return true
 	}
+
 	return false
 }
 
@@ -174,6 +177,7 @@ func (u *University) BeforeUpdate(tx *gorm.DB) error {
 	if err := u.BaseModel.BeforeUpdate(); err != nil {
 		return err
 	}
+
 	return u.Validate()
 }
 
@@ -219,6 +223,7 @@ func (d *Department) Validate() error {
 // validateRules は指定されたルールに基づいてバリデーションを実行する
 func validateRules(v interface{}, rules []ValidationRule) error {
 	val := reflect.ValueOf(v).Elem()
+
 	var validationErrors []ValidationError
 
 	for _, rule := range rules {
@@ -226,6 +231,7 @@ func validateRules(v interface{}, rules []ValidationRule) error {
 		if !field.IsValid() {
 			continue
 		}
+
 		if !rule.Condition(field.Interface()) {
 			validationErrors = append(validationErrors, ValidationError{
 				Field:   rule.Field,
@@ -241,6 +247,7 @@ func validateRules(v interface{}, rules []ValidationRule) error {
 	if len(validationErrors) > 0 {
 		return &ValidationErrors{Errors: validationErrors}
 	}
+
 	return nil
 }
 
@@ -254,6 +261,7 @@ func (e *ValidationErrors) Error() string {
 	if len(e.Errors) == 0 {
 		return "バリデーションに失敗しました"
 	}
+
 	return fmt.Sprintf("バリデーションエラー: %v", e.Errors)
 }
 
@@ -265,6 +273,7 @@ func containsSpecialCharacters(s string) bool {
 			return true
 		}
 	}
+
 	return false
 }
 

@@ -12,7 +12,7 @@
     "jsx": "preserve",
     "types": ["node"],
     "paths": {
-      "@/*": ["./src/*", "./components/*"]
+      "@/*": ["./src/*"]
     },
     "target": "ES2024",
     "incremental": true,

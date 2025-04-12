@@ -168,12 +168,12 @@ func (u *University) Validate() error {
 }
 
 // BeforeCreate はGORMの作成前フックでバリデーションを行う
-func (u *University) BeforeCreate(tx *gorm.DB) error {
+func (u *University) BeforeCreate(_ *gorm.DB) error {
 	return u.Validate()
 }
 
 // BeforeUpdate はGORMの更新前フックでバリデーションを行う
-func (u *University) BeforeUpdate(tx *gorm.DB) error {
+func (u *University) BeforeUpdate(_ *gorm.DB) error {
 	if err := u.BaseModel.BeforeUpdate(); err != nil {
 		return err
 	}

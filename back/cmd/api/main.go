@@ -82,7 +82,7 @@ func checkMemoryHealth() bool {
 
 // setupHealthCheck はヘルスチェックエンドポイントを設定します
 func setupHealthCheck(db *gorm.DB) {
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		if !checkDBHealth(db) {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			_, err := w.Write([]byte("データベース接続に失敗しました"))

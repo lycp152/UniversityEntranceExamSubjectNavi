@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-// ConfigErrorは設定関連のエラーを表すカスタムエラー型です。
+// Error は設定関連のエラーを表すカスタムエラー型です。
 // エラーの詳細な情報（フィールド名、メッセージ、エラーコード）を保持します。
-type ConfigError struct {
+type Error struct {
 	Field   string // エラーが発生した設定フィールド名
 	Message string // エラーメッセージ
 	Err     error  // 元のエラー（存在する場合）
@@ -20,7 +20,7 @@ type ConfigError struct {
 
 // Errorはエラーメッセージを文字列として返します。
 // 元のエラーが存在する場合は、そのエラーも含めて返します。
-func (e *ConfigError) Error() string {
+func (e *Error) Error() string {
 	if e.Err != nil {
 		return fmt.Sprintf("%s: %s: %v", e.Field, e.Message, e.Err)
 	}
@@ -30,14 +30,14 @@ func (e *ConfigError) Error() string {
 
 // Unwrapは元のエラーを返します。
 // エラーが存在しない場合はnilを返します。
-func (e *ConfigError) Unwrap() error {
+func (e *Error) Unwrap() error {
 	return e.Err
 }
 
 // Isはエラーが指定されたエラーと等しいかどうかを判定します。
 // エラーコードが一致する場合にtrueを返します。
-func (e *ConfigError) Is(target error) bool {
-	t, ok := target.(*ConfigError)
+func (e *Error) Is(target error) bool {
+	t, ok := target.(*Error)
 	if !ok {
 		return false
 	}
@@ -47,8 +47,8 @@ func (e *ConfigError) Is(target error) bool {
 
 // Asはエラーを指定された型に変換します。
 // 変換に成功した場合はtrueを返します。
-func (e *ConfigError) As(target interface{}) bool {
-	if t, ok := target.(*ConfigError); ok {
+func (e *Error) As(target interface{}) bool {
+	if t, ok := target.(*Error); ok {
 		*t = *e
 		return true
 	}
@@ -103,29 +103,29 @@ const (
 // エラーが発生した場合は、エラーメッセージを返します。
 func (c *Config) Validate() error {
 	if c.Port == "" {
-		return &ConfigError{Field: "Port", Message: ErrMsgPortNotSet, Code: ErrCodePortNotSet}
+		return &Error{Field: "Port", Message: ErrMsgPortNotSet, Code: ErrCodePortNotSet}
 	}
 
 	if port, err := strconv.Atoi(c.Port); err != nil {
-		return &ConfigError{Field: "Port", Message: ErrMsgInvalidPort, Err: err, Code: ErrCodeInvalidPort}
+		return &Error{Field: "Port", Message: ErrMsgInvalidPort, Err: err, Code: ErrCodeInvalidPort}
 	} else if port < 1 || port > 65535 {
-		return &ConfigError{Field: "Port", Message: ErrMsgInvalidPort, Code: ErrCodeInvalidPort}
+		return &Error{Field: "Port", Message: ErrMsgInvalidPort, Code: ErrCodeInvalidPort}
 	}
 
 	if c.DBHost == "" {
-		return &ConfigError{Field: "DBHost", Message: ErrMsgDBHostNotSet, Code: ErrCodeDBHostNotSet}
+		return &Error{Field: "DBHost", Message: ErrMsgDBHostNotSet, Code: ErrCodeDBHostNotSet}
 	}
 
 	if c.DBPort == "" {
-		return &ConfigError{Field: "DBPort", Message: ErrMsgDBPortNotSet, Code: ErrCodeDBPortNotSet}
+		return &Error{Field: "DBPort", Message: ErrMsgDBPortNotSet, Code: ErrCodeDBPortNotSet}
 	}
 
 	if c.DBUser == "" {
-		return &ConfigError{Field: "DBUser", Message: ErrMsgDBUserNotSet, Code: ErrCodeDBUserNotSet}
+		return &Error{Field: "DBUser", Message: ErrMsgDBUserNotSet, Code: ErrCodeDBUserNotSet}
 	}
 
 	if c.DBName == "" {
-		return &ConfigError{Field: "DBName", Message: ErrMsgDBNameNotSet, Code: ErrCodeDBNameNotSet}
+		return &Error{Field: "DBName", Message: ErrMsgDBNameNotSet, Code: ErrCodeDBNameNotSet}
 	}
 
 	return nil

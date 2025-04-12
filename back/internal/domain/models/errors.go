@@ -1,3 +1,5 @@
+// Package models は、データベース操作に関連するエラーを定義するパッケージです。
+
 package models
 
 import (

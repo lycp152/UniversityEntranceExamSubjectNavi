@@ -1,6 +1,6 @@
-// Package admissionInfo は募集情報関連のHTTPリクエストを処理するハンドラーを提供します。
+// Package admission_info は募集情報関連のHTTPリクエストを処理するハンドラーを提供します。
 // 募集情報の取得、作成、更新、削除のエンドポイントを実装しています。
-package admissionInfo
+package admission_info
 
 import (
 	"context"
@@ -31,8 +31,8 @@ const (
 	AdmissionInfoPath         = "/admission-info"
 )
 
-// AdmissionInfoHandler は募集情報関連のHTTPリクエストを処理
-type AdmissionInfoHandler struct {
+// Handler は募集情報関連のHTTPリクエストを処理
+type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
 	// メトリクス
@@ -43,8 +43,8 @@ type AdmissionInfoHandler struct {
 	dbDuration     *prometheus.HistogramVec
 }
 
-// NewAdmissionHandler は新しいAdmissionHandlerインスタンスを生成
-func NewAdmissionHandler(repo repositories.IUniversityRepository, timeout time.Duration) *AdmissionInfoHandler {
+// NewHandler は新しいAdmissionHandlerインスタンスを生成
+func NewHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
 	// メトリクスの初期化
 	requestDuration := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -96,7 +96,7 @@ func NewAdmissionHandler(repo repositories.IUniversityRepository, timeout time.D
 	prometheus.MustRegister(responseSize)
 	prometheus.MustRegister(dbDuration)
 
-	return &AdmissionInfoHandler{
+	return &Handler{
 		repo:           repo,
 		timeout:        timeout,
 		requestDuration: requestDuration,
@@ -108,7 +108,7 @@ func NewAdmissionHandler(repo repositories.IUniversityRepository, timeout time.D
 }
 
 // bindRequest はリクエストボディのバインディングを共通化
-func (h *AdmissionInfoHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
+func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
 		return errors.NewValidationError(errors.MsgBindRequestFailed)
@@ -118,7 +118,7 @@ func (h *AdmissionInfoHandler) bindRequest(ctx context.Context, c echo.Context, 
 }
 
 // validateScheduleAndInfoID はスケジュールIDと情報IDのバリデーションを共通化
-func (h *AdmissionInfoHandler) validateScheduleAndInfoID(ctx context.Context, c echo.Context) (uint, uint, error) {
+func (h *Handler) validateScheduleAndInfoID(ctx context.Context, c echo.Context) (uint, uint, error) {
 	scheduleID, err := validation.ValidateScheduleID(ctx, c.Param("scheduleId"))
 	if err != nil {
 		return 0, 0, errors.NewValidationError("無効な入試日程ID形式です")
@@ -133,7 +133,7 @@ func (h *AdmissionInfoHandler) validateScheduleAndInfoID(ctx context.Context, c 
 }
 
 // GetAdmissionInfo は指定された募集情報を取得
-func (h *AdmissionInfoHandler) GetAdmissionInfo(c echo.Context) error {
+func (h *Handler) GetAdmissionInfo(c echo.Context) error {
 	start := time.Now()
 	defer func() {
 		h.requestDuration.WithLabelValues("GET", AdmissionInfoPath).Observe(time.Since(start).Seconds())
@@ -176,7 +176,7 @@ func (h *AdmissionInfoHandler) GetAdmissionInfo(c echo.Context) error {
 }
 
 // CreateAdmissionInfo は新しい募集情報を作成
-func (h *AdmissionInfoHandler) CreateAdmissionInfo(c echo.Context) error {
+func (h *Handler) CreateAdmissionInfo(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -203,7 +203,7 @@ func (h *AdmissionInfoHandler) CreateAdmissionInfo(c echo.Context) error {
 }
 
 // UpdateAdmissionInfo は既存の募集情報を更新
-func (h *AdmissionInfoHandler) UpdateAdmissionInfo(c echo.Context) error {
+func (h *Handler) UpdateAdmissionInfo(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 
@@ -231,7 +231,7 @@ func (h *AdmissionInfoHandler) UpdateAdmissionInfo(c echo.Context) error {
 }
 
 // DeleteAdmissionInfo は募集情報を削除
-func (h *AdmissionInfoHandler) DeleteAdmissionInfo(c echo.Context) error {
+func (h *Handler) DeleteAdmissionInfo(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
 

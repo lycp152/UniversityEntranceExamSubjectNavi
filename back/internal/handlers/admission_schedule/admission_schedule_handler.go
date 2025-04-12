@@ -1,6 +1,6 @@
-// Package admissionSchedule は入試日程関連のHTTPリクエストを処理するハンドラーを提供します。
+// Package admission_schedule は入試日程関連のHTTPリクエストを処理するハンドラーを提供します。
 // 入試日程の取得、作成、更新、削除のエンドポイントを実装しています。
-package admissionSchedule
+package admission_schedule
 
 import (
 	"context"
@@ -16,8 +16,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// AdmissionScheduleHandler は入試日程関連のHTTPリクエストを処理
-type AdmissionScheduleHandler struct {
+// Handler は入試日程関連のHTTPリクエストを処理
+type Handler struct {
 	repo            repositories.IUniversityRepository
 	timeout         time.Duration
 	requestDuration *prometheus.HistogramVec
@@ -25,12 +25,12 @@ type AdmissionScheduleHandler struct {
 	dbDuration      *prometheus.HistogramVec
 }
 
-// NewAdmissionScheduleHandler は新しいAdmissionScheduleHandlerインスタンスを生成
-func NewAdmissionScheduleHandler(
+// NewHandler は新しいHandlerインスタンスを生成
+func NewHandler(
 	repo repositories.IUniversityRepository,
 	timeout time.Duration,
-) *AdmissionScheduleHandler {
-	return &AdmissionScheduleHandler{
+) *Handler {
+	return &Handler{
 		repo:    repo,
 		timeout: timeout,
 		requestDuration: prometheus.NewHistogramVec(
@@ -60,7 +60,7 @@ func NewAdmissionScheduleHandler(
 }
 
 // bindRequest はリクエストボディのバインディングを共通化
-func (h *AdmissionScheduleHandler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
+func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
 		return errors.HandleError(c, err)
@@ -70,7 +70,7 @@ func (h *AdmissionScheduleHandler) bindRequest(ctx context.Context, c echo.Conte
 }
 
 // validateMajorAndScheduleID は学科IDとスケジュールIDのバリデーションを共通化
-func (h *AdmissionScheduleHandler) validateMajorAndScheduleID(ctx context.Context, c echo.Context) (uint, uint, error) {
+func (h *Handler) validateMajorAndScheduleID(ctx context.Context, c echo.Context) (uint, uint, error) {
 	majorID, err := validation.ValidateMajorID(ctx, c.Param("majorId"))
 	if err != nil {
 		return 0, 0, err
@@ -85,7 +85,7 @@ func (h *AdmissionScheduleHandler) validateMajorAndScheduleID(ctx context.Contex
 }
 
 // UpdateAdmissionSchedule は入試日程を更新します
-func (h *AdmissionScheduleHandler) UpdateAdmissionSchedule(c echo.Context) error {
+func (h *Handler) UpdateAdmissionSchedule(c echo.Context) error {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 

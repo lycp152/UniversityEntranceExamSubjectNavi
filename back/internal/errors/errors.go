@@ -58,6 +58,7 @@ func (e *Error) Error() string {
 	if e.Err != nil {
 		return fmt.Sprintf("%s: %s (%v)", e.Code, e.Message, e.Err)
 	}
+
 	return fmt.Sprintf("%s: %s", e.Code, e.Message)
 }
 
@@ -71,9 +72,11 @@ func (e *Error) Is(target error) bool {
 	if target == nil {
 		return e == nil
 	}
+
 	if t, ok := target.(*Error); ok {
 		return e.Code == t.Code
 	}
+
 	return false
 }
 
@@ -88,16 +91,20 @@ func (e *Error) WithStack() *Error {
 	const maxStackDepth = 32
 	pc := make([]uintptr, maxStackDepth)
 	n := runtime.Callers(2, pc)
+
 	if n > 0 {
 		frames := runtime.CallersFrames(pc[:n])
+
 		for {
 			frame, more := frames.Next()
 			e.Details.Stack = append(e.Details.Stack, fmt.Sprintf("%s:%d %s", frame.File, frame.Line, frame.Function))
+
 			if !more {
 				break
 			}
 		}
 	}
+
 	return e
 }
 
@@ -212,6 +219,7 @@ func NewAuthenticationError(message string, extra map[string]string) *Error {
 // NewAuthorizationError は新しい認可エラーを生成します
 func NewAuthorizationError(message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeAuthzError,
 		Message: message,
@@ -228,6 +236,7 @@ func NewAuthorizationError(message string, extra map[string]string) *Error {
 // NewExternalAPIError は新しい外部APIエラーを生成します
 func NewExternalAPIError(service, message string, err error, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeExternalAPIError,
 		Message: fmt.Sprintf("外部API '%s' でエラーが発生しました: %s", service, message),
@@ -246,6 +255,7 @@ func NewExternalAPIError(service, message string, err error, extra map[string]st
 // NewTimeoutError は新しいタイムアウトエラーを生成します
 func NewTimeoutError(operation string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeTimeoutError,
 		Message: fmt.Sprintf("操作 '%s' がタイムアウトしました", operation),
@@ -263,6 +273,7 @@ func NewTimeoutError(operation string, extra map[string]string) *Error {
 // NewRateLimitError は新しいレート制限エラーを生成します
 func NewRateLimitError(message string, extra map[string]string) *Error {
 	_, file, line, _ := runtime.Caller(1)
+
 	return &Error{
 		Code:    CodeRateLimitError,
 		Message: message,

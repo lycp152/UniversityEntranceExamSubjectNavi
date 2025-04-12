@@ -226,6 +226,7 @@ func (h *AdmissionInfoHandler) UpdateAdmissionInfo(c echo.Context) error {
 	}
 
 	applogger.Info(ctx, logging.LogUpdateAdmissionInfoSuccess, infoID)
+
 	return c.JSON(http.StatusOK, info)
 }
 
@@ -241,9 +242,11 @@ func (h *AdmissionInfoHandler) DeleteAdmissionInfo(c echo.Context) error {
 
 	if err := h.repo.DeleteAdmissionInfo(infoID); err != nil {
 		applogger.Error(ctx, ErrMsgDeleteAdmissionInfo, infoID, err)
+
 		return errors.HandleError(c, err)
 	}
 
 	applogger.Info(ctx, logging.LogDeleteAdmissionInfoSuccess, infoID)
+
 	return c.NoContent(http.StatusNoContent)
 }

@@ -157,6 +157,7 @@ func (r *UniversityRepository) withTransaction(ctx context.Context, fn func(*gor
 	})
 
 	var lastErr error
+
 	for i := 0; i < r.maxRetries; i++ {
 		if i > 0 {
 			time.Sleep(r.retryInterval)
@@ -168,6 +169,7 @@ func (r *UniversityRepository) withTransaction(ctx context.Context, fn func(*gor
 		}
 
 		lastErr = err
+
 		if !isRetryableError(err) {
 			break
 		}
@@ -211,12 +213,14 @@ func (r *UniversityRepository) FindByID(ctx context.Context, id uint) (*models.U
 				Code: ErrCodeNotFound,
 			}
 		}
+
 		return nil, &Error{
 			Op:   "FindByID",
 			Err:  err,
 			Code: ErrCodeDBError,
 		}
 	}
+
 	return &university, nil
 }
 
@@ -234,6 +238,7 @@ func (r *UniversityRepository) FindAll(ctx context.Context) ([]models.University
 			Code: ErrCodeDBError,
 		}
 	}
+
 	return universities, nil
 }
 
@@ -261,12 +266,14 @@ func (r *UniversityRepository) FindByName(ctx context.Context, name string) (*mo
 				Code: ErrCodeNotFound,
 			}
 		}
+
 		return nil, &Error{
 			Op:   "FindByName",
 			Err:  err,
 			Code: ErrCodeDBError,
 		}
 	}
+
 	return &university, nil
 }
 
@@ -277,6 +284,7 @@ func (r *UniversityRepository) FindWithFilters(
 	filters map[string]interface{},
 ) ([]models.University, error) {
 	var universities []models.University
+
 	query := r.db.WithContext(ctx).
 		Preload("Departments", func(db *gorm.DB) *gorm.DB {
 			return db.Order(orderByDepartmentName)
@@ -294,6 +302,7 @@ func (r *UniversityRepository) FindWithFilters(
 			Code: ErrCodeDBError,
 		}
 	}
+
 	return universities, nil
 }
 
@@ -308,6 +317,7 @@ func (r *UniversityRepository) Create(ctx context.Context, university *models.Un
 				Code: ErrCodeDBError,
 			}
 		}
+
 		return nil
 	})
 }
@@ -352,6 +362,7 @@ func (r *UniversityRepository) Update(ctx context.Context, university *models.Un
 				Code: ErrCodeDBError,
 			}
 		}
+
 		return nil
 	})
 }
@@ -396,6 +407,7 @@ func (r *UniversityRepository) Delete(ctx context.Context, id uint) error {
 				Code: ErrCodeDBError,
 			}
 		}
+
 		return nil
 	})
 }
@@ -421,12 +433,14 @@ func (r *UniversityRepository) FindWithDepartmentsAndMajors(ctx context.Context,
 				Code: ErrCodeNotFound,
 			}
 		}
+
 		return nil, &Error{
 			Op:   "FindWithDepartmentsAndMajors",
 			Err:  err,
 			Code: ErrCodeDBError,
 		}
 	}
+
 	return &university, nil
 }
 
@@ -453,12 +467,14 @@ func (r *UniversityRepository) FindWithFullDetails(ctx context.Context, id uint)
 				Code: ErrCodeNotFound,
 			}
 		}
+
 		return nil, &Error{
 			Op:   "FindWithFullDetails",
 			Err:  err,
 			Code: ErrCodeDBError,
 		}
 	}
+
 	return &university, nil
 }
 
@@ -473,6 +489,7 @@ func (r *UniversityRepository) CreateInBatches(ctx context.Context, universities
 				Code: ErrCodeDBError,
 			}
 		}
+
 		return nil
 	})
 }
@@ -496,6 +513,7 @@ func (r *UniversityRepository) ProcessInBatches(
 			Code: ErrCodeDBError,
 		}
 	}
+
 	return nil
 }
 
@@ -508,6 +526,7 @@ func (r *UniversityRepository) UpdateInBatches(ctx context.Context, universities
 			if end > len(universities) {
 				end = len(universities)
 			}
+
 			batch := universities[i:end]
 
 			for _, univ := range batch {
@@ -520,6 +539,7 @@ func (r *UniversityRepository) UpdateInBatches(ctx context.Context, universities
 				}
 			}
 		}
+
 		return nil
 	})
 }

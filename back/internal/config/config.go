@@ -3,6 +3,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -36,8 +37,8 @@ func (e *Error) Unwrap() error {
 
 // Is はエラーが指定されたエラーと等しいかどうかを判定します。
 func (e *Error) Is(target error) bool {
-	t, ok := target.(*Error)
-	if !ok {
+	var t *Error
+	if !errors.As(target, &t) {
 		return false
 	}
 
@@ -104,10 +105,8 @@ func (c *Config) Validate() error {
 		return &Error{Field: "Port", Message: ErrMsgPortNotSet, Code: ErrCodePortNotSet}
 	}
 
-	if port, err := strconv.Atoi(c.Port); err != nil {
+	if port, err := strconv.Atoi(c.Port); err != nil || port < 1 || port > 65535 {
 		return &Error{Field: "Port", Message: ErrMsgInvalidPort, Err: err, Code: ErrCodeInvalidPort}
-	} else if port < 1 || port > 65535 {
-		return &Error{Field: "Port", Message: ErrMsgInvalidPort, Code: ErrCodeInvalidPort}
 	}
 
 	if c.DBHost == "" {
@@ -136,11 +135,11 @@ func New() (*Config, error) {
 	config := &Config{
 		Port:              getEnvOrDefault("PORT", defaultPort),
 		Env:               getEnvOrDefault("ENV", "development"),
-		DBHost:            getEnvOrDefault("DB_HOST", "localhost"),
-		DBPort:            getEnvOrDefault("DB_PORT", "5432"),
-		DBUser:            getEnvOrDefault("DB_USER", "postgres"),
-		DBPassword:        getEnvOrDefault("DB_PASSWORD", "postgres"),
-		DBName:            getEnvOrDefault("DB_NAME", "university_exam_db"),
+		DBHost:            getEnvOrDefault("DB_HOST", ""),
+		DBPort:            getEnvOrDefault("DB_PORT", ""),
+		DBUser:            getEnvOrDefault("DB_USER", ""),
+		DBPassword:        getEnvOrDefault("DB_PASSWORD", ""),
+		DBName:            getEnvOrDefault("DB_NAME", ""),
 		DBSSLMode:         getEnvOrDefault("DB_SSL_MODE", "disable"),
 		DBMaxIdleConns:    getEnvOrDefaultInt("DB_MAX_IDLE_CONNS", 10),
 		DBMaxOpenConns:    getEnvOrDefaultInt("DB_MAX_OPEN_CONNS", 100),
@@ -160,7 +159,7 @@ func New() (*Config, error) {
 // defaultValue: デフォルト値
 // 戻り値: 環境変数の値またはデフォルト値
 func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
+	if value, exists := os.LookupEnv(key); exists && value != "" {
 		return value
 	}
 
@@ -172,7 +171,7 @@ func getEnvOrDefault(key, defaultValue string) string {
 // defaultValue: デフォルト値
 // 戻り値: 環境変数の値またはデフォルト値
 func getEnvOrDefaultInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
+	if value, exists := os.LookupEnv(key); exists && value != "" {
 		if intValue, err := strconv.Atoi(value); err == nil {
 			return intValue
 		}
@@ -186,7 +185,7 @@ func getEnvOrDefaultInt(key string, defaultValue int) int {
 // defaultValue: デフォルト値
 // 戻り値: 環境変数の値またはデフォルト値
 func getEnvOrDefaultDuration(key string, defaultValue time.Duration) time.Duration {
-	if value := os.Getenv(key); value != "" {
+	if value, exists := os.LookupEnv(key); exists {
 		if duration, err := time.ParseDuration(value); err == nil {
 			return duration
 		}

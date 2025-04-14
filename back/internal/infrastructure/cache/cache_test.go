@@ -30,7 +30,7 @@ func setup() {
 }
 
 // teardown はテストの後処理を行います
-func teardown(tb testing.TB) {
+func teardown(_ testing.TB) {
 	// キャッシュをクリア
 	c := GetInstance()
 	_ = c.ClearAll()
@@ -39,10 +39,8 @@ func teardown(tb testing.TB) {
 }
 
 func TestCacheSet(t *testing.T) {
-	// 並列実行を無効化
-	// t.Parallel()
-
 	setup()
+
 	defer teardown(t)
 
 	c := GetInstance()
@@ -92,9 +90,6 @@ func TestCacheSet(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			// サブテストの並列実行も無効化
-			// t.Parallel()
-
 			err := c.Set(tt.key, tt.value, tt.duration)
 			if (err != nil) != tt.wantError {
 				t.Errorf(errMsgSet, err)
@@ -109,10 +104,8 @@ func TestCacheSet(t *testing.T) {
 }
 
 func TestCacheGet(t *testing.T) {
-	// 並列実行を無効化
-	// t.Parallel()
-
 	setup()
+
 	defer teardown(t)
 
 	c := GetInstance()
@@ -163,9 +156,6 @@ func TestCacheGet(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			// サブテストの並列実行も無効化
-			// t.Parallel()
-
 			gotValue, gotFound, err := c.Get(tt.key)
 			if (err != nil) != tt.wantError {
 				t.Errorf(errMsgGet, err)
@@ -188,10 +178,8 @@ func TestCacheGet(t *testing.T) {
 }
 
 func TestCacheTransaction(t *testing.T) {
-	// 並列実行を無効化
-	// t.Parallel()
-
 	setup()
+
 	defer teardown(t)
 
 	c := GetInstance()
@@ -230,7 +218,6 @@ func TestCacheTransaction(t *testing.T) {
 		{
 			name: "トランザクションなしでのコミット",
 			operation: func() error {
-				// トランザクションを明示的にクリアするためにロールバックを実行
 				_ = c.RollbackTransaction()
 				return c.CommitTransaction()
 			},
@@ -242,10 +229,6 @@ func TestCacheTransaction(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			// サブテストの並列実行も無効化
-			// t.Parallel()
-
-			// 各テストの前にトランザクションをクリア
 			_ = c.RollbackTransaction()
 
 			err := tt.operation()
@@ -262,24 +245,26 @@ func TestCacheTransaction(t *testing.T) {
 }
 
 func TestCachePerformance(t *testing.T) {
-	// 並列実行を無効化
-	// t.Parallel()
-
 	setup()
+
 	defer teardown(t)
 
 	c := GetInstance()
 
 	// パフォーマンステスト
 	start := time.Now()
+
 	const testCount = 1000
+
 	for i := 0; i < testCount; i++ {
 		key := fmt.Sprintf(keyFormat, i)
 		value := fmt.Sprintf(valueFormat, i)
+
 		if err := c.Set(key, value, time.Minute); err != nil {
 			t.Fatalf(errMsgSet, err)
 		}
 	}
+
 	duration := time.Since(start)
 
 	// パフォーマンスメトリクスの取得
@@ -312,14 +297,17 @@ func TestCachePerformance(t *testing.T) {
 // BenchmarkCacheSet はキャッシュのSet操作のベンチマークテストを行います
 func BenchmarkCacheSet(b *testing.B) {
 	setup()
+
 	defer teardown(b)
 
 	c := GetInstance()
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		key := fmt.Sprintf(keyFormat, i)
 		value := fmt.Sprintf(valueFormat, i)
+
 		if err := c.Set(key, value, time.Minute); err != nil {
 			b.Fatalf(errMsgSet, err)
 		}
@@ -329,6 +317,7 @@ func BenchmarkCacheSet(b *testing.B) {
 // BenchmarkCacheGet はキャッシュのGet操作のベンチマークテストを行います
 func BenchmarkCacheGet(b *testing.B) {
 	setup()
+
 	defer teardown(b)
 
 	c := GetInstance()
@@ -337,15 +326,18 @@ func BenchmarkCacheGet(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		key := fmt.Sprintf(keyFormat, i)
 		value := fmt.Sprintf(valueFormat, i)
+
 		if err := c.Set(key, value, time.Minute); err != nil {
 			b.Fatalf(errMsgSet, err)
 		}
 	}
 
 	b.ResetTimer()
+
 	for i := 0; i < b.N; i++ {
 		key := fmt.Sprintf(keyFormat, i)
 		_, _, err := c.Get(key)
+
 		if err != nil {
 			b.Fatalf("Get() error = %v", err)
 		}
@@ -354,6 +346,7 @@ func BenchmarkCacheGet(b *testing.B) {
 
 func TestCachePerformanceMetrics(t *testing.T) {
 	setup()
+
 	defer teardown(t)
 
 	c := GetInstance()
@@ -381,6 +374,7 @@ func TestCachePerformanceMetrics(t *testing.T) {
 
 func TestCacheErrorHandling(t *testing.T) {
 	setup()
+
 	defer teardown(t)
 
 	c := GetInstance()

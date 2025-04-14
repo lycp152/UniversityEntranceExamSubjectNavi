@@ -4,6 +4,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -25,15 +26,30 @@ const (
 	errMsgSQLDBClose    = "SQLデータベースの取得に失敗: %w"
 
 	// デフォルト値
-	defaultMaxIdleConns    = 10
-	defaultMaxOpenConns    = 100
-	defaultConnMaxLifetime = time.Hour
-	defaultRetryAttempts   = 3
-	defaultRetryDelay      = 5 * time.Second
+	defaultMaxIdleConns     = 10            // アイドル接続の最大数
+	defaultMaxOpenConns     = 100           // 同時接続の最大数
+	defaultConnMaxLifetime  = time.Hour     // 接続の最大生存時間
+	defaultConnMaxIdleTime  = time.Minute * 30 // アイドル接続の最大時間
+	defaultMigrationTimeout = 30 * time.Second // マイグレーションのタイムアウト時間
+	defaultRetryAttempts    = 3            // 接続試行の最大回数
+	defaultRetryDelay       = 5 * time.Second // 接続リトライの待機時間
 
 	// ロガー設定
 	logSlowThreshold = time.Second
 )
+
+// DBStats はデータベース接続の統計情報を保持します。
+// この構造体は複数のゴルーチンから同時にアクセスしても安全です。
+type DBStats struct {
+	MaxOpenConnections int           // 設定された最大オープン接続数
+	OpenConnections    int           // 現在のオープン接続数
+	InUse             int           // 使用中の接続数
+	Idle              int           // アイドル状態の接続数
+	WaitCount         int64         // 接続待ちの累積数
+	WaitDuration      time.Duration // 接続待ちの累積時間
+	MaxIdleClosed     int64         // アイドル最大数超過で閉じられた接続数
+	MaxLifetimeClosed int64         // 生存期間超過で閉じられた接続数
+}
 
 // Config はデータベース設定を保持します
 type Config struct {
@@ -46,6 +62,7 @@ type Config struct {
 	MaxIdleConns    int
 	MaxOpenConns    int
 	ConnMaxLifetime time.Duration
+	ConnMaxIdleTime time.Duration
 	RetryAttempts   int
 	RetryDelay      time.Duration
 }
@@ -103,6 +120,7 @@ func NewConfig() (*Config, error) {
 		MaxIdleConns:    getEnvInt("DB_MAX_IDLE_CONNS", defaultMaxIdleConns),
 		MaxOpenConns:    getEnvInt("DB_MAX_OPEN_CONNS", defaultMaxOpenConns),
 		ConnMaxLifetime: getEnvDuration("DB_CONN_MAX_LIFETIME", defaultConnMaxLifetime),
+		ConnMaxIdleTime: getEnvDuration("DB_CONN_MAX_IDLE_TIME", defaultConnMaxIdleTime),
 		RetryAttempts:   getEnvInt("DB_RETRY_ATTEMPTS", defaultRetryAttempts),
 		RetryDelay:      getEnvDuration("DB_RETRY_DELAY", defaultRetryDelay),
 	}, nil
@@ -169,9 +187,10 @@ func NewDB() (*gorm.DB, error) {
 		return nil, fmt.Errorf(errMsgDBInstance, err)
 	}
 
-	sqlDB.SetMaxIdleConns(config.MaxIdleConns)
-	sqlDB.SetMaxOpenConns(config.MaxOpenConns)
-	sqlDB.SetConnMaxLifetime(config.ConnMaxLifetime)
+	err = setupConnectionPool(sqlDB, config)
+	if err != nil {
+		return nil, err
+	}
 
 	if err := db.Exec(fmt.Sprintf("SET search_path TO %s", config.Schema)).Error; err != nil {
 		return nil, fmt.Errorf(errMsgSchemaSetting, err)
@@ -206,4 +225,61 @@ func AutoMigrate(ctx context.Context, db *gorm.DB) error {
 // WithTransaction はトランザクションを実行します
 func WithTransaction(ctx context.Context, db *gorm.DB, fn func(tx *gorm.DB) error) error {
 	return db.WithContext(ctx).Transaction(fn)
+}
+
+// setupConnectionPool はコネクションプールの設定を行います
+func setupConnectionPool(sqlDB *sql.DB, cfg *Config) error {
+	maxIdleConns := defaultMaxIdleConns
+	if cfg.MaxIdleConns > 0 {
+		maxIdleConns = cfg.MaxIdleConns
+	}
+
+	maxOpenConns := defaultMaxOpenConns
+	if cfg.MaxOpenConns > 0 {
+		maxOpenConns = cfg.MaxOpenConns
+	}
+
+	connMaxLifetime := defaultConnMaxLifetime
+	if cfg.ConnMaxLifetime > 0 {
+		connMaxLifetime = cfg.ConnMaxLifetime
+	}
+
+	connMaxIdleTime := defaultConnMaxIdleTime
+	if cfg.ConnMaxIdleTime > 0 {
+		connMaxIdleTime = cfg.ConnMaxIdleTime
+	}
+
+	sqlDB.SetMaxIdleConns(maxIdleConns)
+	sqlDB.SetMaxOpenConns(maxOpenConns)
+	sqlDB.SetConnMaxLifetime(connMaxLifetime)
+	sqlDB.SetConnMaxIdleTime(connMaxIdleTime)
+
+	// 設定の検証
+	if sqlDB.Stats().MaxOpenConnections != maxOpenConns {
+		return fmt.Errorf("コネクションプールの設定に失敗しました: MaxOpenConnsの設定が反映されていません")
+	}
+
+	return nil
+}
+
+// GetDBStats はデータベース接続の統計情報を取得します。
+// この関数は複数のゴルーチンから同時に呼び出しても安全です。
+func GetDBStats(db *gorm.DB) (*DBStats, error) {
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("データベース統計情報の取得に失敗しました: %w", err)
+	}
+
+	stats := sqlDB.Stats()
+
+	return &DBStats{
+		MaxOpenConnections: stats.MaxOpenConnections,
+		OpenConnections:    stats.OpenConnections,
+		InUse:             stats.InUse,
+		Idle:              stats.Idle,
+		WaitCount:         stats.WaitCount,
+		WaitDuration:      stats.WaitDuration,
+		MaxIdleClosed:     stats.MaxIdleClosed,
+		MaxLifetimeClosed: stats.MaxLifetimeClosed,
+	}, nil
 }

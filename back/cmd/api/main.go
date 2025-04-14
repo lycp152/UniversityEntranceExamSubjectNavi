@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"time"
 	"university-exam-api/internal/config"
-	"university-exam-api/internal/database"
+	"university-exam-api/internal/infrastructure/database"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/server"
 
@@ -245,7 +245,7 @@ func main() {
 	}
 
 	// データベース接続の確立
-	db, cleanup, err := database.Setup(ctx, cfg)
+	db, err := database.NewDB()
 	if err != nil {
 		applogger.Error(ctx, "データベース接続の確立に失敗しました: %v", err)
 		log.Printf("データベース接続の確立に失敗しました: %v", err)
@@ -253,7 +253,12 @@ func main() {
 
 		return
 	}
-	defer cleanup()
+
+	defer func() {
+		if err := database.CloseDB(db); err != nil {
+			applogger.Error(ctx, "データベース接続のクローズに失敗しました: %v", err)
+		}
+	}()
 
 	// データベース接続プールの設定
 	sqlDB, err := db.DB()

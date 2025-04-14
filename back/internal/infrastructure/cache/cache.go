@@ -469,6 +469,7 @@ func (c *Cache) CommitTransaction() error {
 		itemSize := calculateItemSize(item.value)
 		if c.currentSize+itemSize > c.maxSize {
 			c.evictItems()
+
 			if c.currentSize+itemSize > c.maxSize {
 				c.transaction = nil
 				return appErrors.NewSystemError(ErrCacheFull, nil, nil)
@@ -481,6 +482,7 @@ func (c *Cache) CommitTransaction() error {
 	}
 
 	c.transaction = nil
+
 	return nil
 }
 
@@ -494,6 +496,7 @@ func (c *Cache) RollbackTransaction() error {
 	}
 
 	c.transaction = nil
+
 	return nil
 }
 
@@ -533,7 +536,7 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 }
 
 // RecordLatency は操作のレイテンシを記録します
-func (c *Cache) RecordLatency(operation string, duration time.Duration) error {
+func (c *Cache) RecordLatency(_ string, duration time.Duration) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

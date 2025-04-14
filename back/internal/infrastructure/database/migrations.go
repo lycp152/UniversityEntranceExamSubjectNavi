@@ -14,7 +14,6 @@ import (
 
 const (
 	// タイムアウトと再試行の設定
-	defaultMigrationTimeout = 30 * time.Second
 	migrationRetryAttempts = 3
 	migrationRetryDelay    = time.Second * 2
 	defaultBatchSize       = 100

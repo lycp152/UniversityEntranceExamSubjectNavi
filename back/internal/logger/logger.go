@@ -5,6 +5,7 @@ package applogger
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -261,4 +262,18 @@ func AccessLogMiddleware() echo.MiddlewareFunc {
 			return err
 		}
 	}
+}
+
+// InitTestLogger はテスト用のロガーを初期化します
+func InitTestLogger() {
+	// テスト用のロガー設定
+	infoLogger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	errorLogger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+	accessLogger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 }

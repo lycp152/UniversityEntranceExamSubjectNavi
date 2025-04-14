@@ -66,6 +66,8 @@ const (
 	ErrCacheFull = "キャッシュが最大サイズに達しました"
 	ErrTransactionInProgress = "トランザクションが既に進行中です"
 	ErrNoTransaction = "アクティブなトランザクションがありません"
+	ErrInvalidOperation = "無効な操作が実行されました"
+	ErrMemoryLimitExceeded = "メモリ制限を超えました"
 )
 
 // Cache はキャッシュの実装を提供します
@@ -177,8 +179,24 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) error
 
 // calculateItemSize はアイテムのサイズを計算します
 func calculateItemSize(value interface{}) int64 {
-	// 簡易的なサイズ計算
-	return int64(unsafe.Sizeof(value))
+	// より正確なサイズ計算
+	switch v := value.(type) {
+	case string:
+		return int64(len(v))
+	case []byte:
+		return int64(len(v))
+	case int, int8, int16, int32, int64:
+		return 8
+	case uint, uint8, uint16, uint32, uint64:
+		return 8
+	case float32, float64:
+		return 8
+	case bool:
+		return 1
+	default:
+		// 複雑な型の場合は概算値を使用
+		return int64(unsafe.Sizeof(value))
+	}
 }
 
 // evictItems は古いアイテムを削除してメモリを解放します
@@ -445,15 +463,24 @@ func (c *Cache) CommitTransaction() error {
 		return appErrors.NewSystemError(ErrNoTransaction, nil, nil)
 	}
 
-	c.transaction.mu.Lock()
-	defer c.transaction.mu.Unlock()
-
+	// トランザクションのアイテムをメインキャッシュに移動
 	for key, item := range c.transaction.items {
+		// メモリ使用量のチェック
+		itemSize := calculateItemSize(item.value)
+		if c.currentSize+itemSize > c.maxSize {
+			c.evictItems()
+			if c.currentSize+itemSize > c.maxSize {
+				c.transaction = nil
+				return appErrors.NewSystemError(ErrCacheFull, nil, nil)
+			}
+		}
+
 		c.items[key] = item
+		c.currentSize += itemSize
+		c.stats.ItemCount++
 	}
 
 	c.transaction = nil
-
 	return nil
 }
 
@@ -467,7 +494,6 @@ func (c *Cache) RollbackTransaction() error {
 	}
 
 	c.transaction = nil
-
 	return nil
 }
 
@@ -507,7 +533,7 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 }
 
 // RecordLatency は操作のレイテンシを記録します
-func (c *Cache) RecordLatency(_ string, duration time.Duration) error {
+func (c *Cache) RecordLatency(operation string, duration time.Duration) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

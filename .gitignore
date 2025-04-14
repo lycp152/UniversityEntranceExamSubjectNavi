@@ -34,6 +34,7 @@ back/logs/
 back/bin/*
 back/internal/repositories/mocks/mock_university_repository.go
 back/coverage.txt
+back/.air.toml
 
 # Frontend
 front/.next/

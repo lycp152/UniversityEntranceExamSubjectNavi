@@ -110,7 +110,7 @@ type BaseModel struct {
 	ID        uint       `json:"id" gorm:"primarykey"`                    // 主キー
 	CreatedAt time.Time  `json:"created_at"`                              // 作成日時
 	UpdatedAt time.Time  `json:"updated_at"`                              // 更新日時
-	DeletedAt *time.Time `json:"deleted_at,omitempty" gorm:"index"`       // 削除日時（ソフトデリート用）
+	DeletedAt *time.Time `json:"deleted_at,omitempty" gorm:"index:idx_deleted_at"` // 削除日時（ソフトデリート用）
 	Version   int        `json:"version" gorm:"not null;default:1"`       // 楽観的ロック用バージョン
 	CreatedBy string     `json:"created_by" gorm:"size:100"`              // 作成者
 	UpdatedBy string     `json:"updated_by" gorm:"size:100"`              // 更新者
@@ -142,8 +142,10 @@ func (b *BaseModel) BeforeUpdate() error {
 // University は大学エンティティを表現する
 type University struct {
 	BaseModel
-	Name        string       `json:"name" gorm:"not null;uniqueIndex:idx_university_name;size:100;check:name <> ''"` // 大学名
-	Departments []Department `json:"departments" gorm:"foreignKey:UniversityID;constraint:OnDelete:CASCADE"` // 学部一覧
+	Name        string       `json:"name"` // 大学名
+	_ struct{} `gorm:"not null;uniqueIndex:idx_university_name;size:100;check:name <> ''"`
+	Departments []Department `json:"departments"` // 学部一覧
+	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 // Validate はUniversityのバリデーションを行う
@@ -184,10 +186,14 @@ func (u *University) BeforeUpdate(_ *gorm.DB) error {
 // Department は学部エンティティを表現する
 type Department struct {
 	BaseModel
-	UniversityID uint       `json:"university_id" gorm:"not null;index:idx_dept_univ_name"` // 大学ID
-	Name         string     `json:"name" gorm:"not null;index:idx_dept_univ_name;size:100;check:name <> ''"` // 学部名
-	University   University `json:"-" gorm:"foreignKey:UniversityID"`                        // 所属大学
-	Majors       []Major    `json:"majors" gorm:"foreignKey:DepartmentID;constraint:OnDelete:CASCADE"` // 学科一覧
+	UniversityID uint       `json:"university_id"` // 大学ID
+	_ struct{} `gorm:"not null;index:idx_dept_univ_name,type:btree"`
+	Name         string     `json:"name"` // 学部名
+	_ struct{} `gorm:"not null;index:idx_dept_univ_name,type:btree;size:100;check:name <> ''"`
+	University   University `json:"-"` // 所属大学
+	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Majors       []Major    `json:"majors"` // 学科一覧
+	_ struct{} `gorm:"foreignKey:DepartmentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 // Validate はDepartmentのバリデーションを行う
@@ -280,11 +286,13 @@ func containsSpecialCharacters(s string) bool {
 // Major は学科エンティティを表現する
 type Major struct {
 	BaseModel
-	DepartmentID      uint              `json:"department_id" gorm:"not null;index:idx_major_dept"` // 学部ID
-	Name             string            `json:"name" gorm:"not null;index:idx_major_name;size:100;check:name <> ''"` // 学科名
-	Department       Department        `json:"-" gorm:"foreignKey:DepartmentID"` // 所属学部
+	DepartmentID      uint              `json:"department_id" gorm:"not null;index:idx_major_dept,type:btree"` // 学部ID
+	Name             string            `json:"name"` // 学科名
+	_ struct{} `gorm:"not null;index:idx_major_name,type:btree;size:100;check:name <> ''"`
+	Department       Department        `json:"-"` // 所属学部
+	_ struct{} `gorm:"foreignKey:DepartmentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty"` // 入試日程一覧
-	_ struct{} `gorm:"foreignkey:MajorID;constraint:OnDelete:CASCADE"`
+	_ struct{} `gorm:"foreignKey:MajorID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 // Validate はMajorのバリデーションを行う
@@ -329,15 +337,15 @@ func (m *Major) Validate() error {
 // AdmissionSchedule は入試日程エンティティを表現する
 type AdmissionSchedule struct {
 	BaseModel
-	MajorID       uint           `json:"major_id" gorm:"not null;index:idx_schedule_major_year"` // 学科ID
+	MajorID       uint           `json:"major_id" gorm:"not null;index:idx_schedule_major_year,type:btree"` // 学科ID
 	Name          string         `json:"name" gorm:"not null;size:6;check:name in ('前期','中期','後期')"` // 日程名
-	DisplayOrder  int `json:"display_order" gorm:"not null;default:0"` // 表示順
+	DisplayOrder  int `json:"display_order" gorm:"not null;default:0;index:idx_schedule_display_order,type:btree"` // 表示順
 	_ struct{} `gorm:"check:display_order >= 0 AND display_order <= 3"`
-	Major         Major         `json:"-" gorm:"foreignKey:MajorID"` // 所属学科
+	Major         Major         `json:"-" gorm:"foreignKey:MajorID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"` // 所属学科
 	AdmissionInfos []AdmissionInfo `json:"admission_infos,omitempty"` // 入試情報一覧
-	_ struct{} `gorm:"foreignKey:AdmissionScheduleID;constraint:OnDelete:CASCADE"`
-	TestTypes     []TestType    `json:"test_types,omitempty" gorm:"foreignKey:AdmissionScheduleID"`
-	_ struct{} `gorm:"constraint:OnDelete:CASCADE"` // 試験種別一覧
+	_ struct{} `gorm:"foreignKey:AdmissionScheduleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	TestTypes     []TestType    `json:"test_types,omitempty"` // 試験種別一覧
+	_ struct{} `gorm:"foreignKey:AdmissionScheduleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 // Validate はAdmissionScheduleのバリデーションを行う
@@ -386,10 +394,11 @@ type AdmissionInfo struct {
 	Enrollment int `json:"enrollment" gorm:"not null;check:enrollment > 0 AND enrollment <= 9999"` // 募集人数
 	AcademicYear int `json:"academic_year" gorm:"not null;index:idx_info_schedule_year"`
 	_ struct{} `gorm:"check:academic_year >= 2000 AND academic_year <= 2100"` // 学年度
-	Status string `json:"status" gorm:"type:varchar(20);default:'draft'"`
+	Status string `json:"status" gorm:"type:varchar(20);default:'draft';index:idx_info_status"`
 	_ struct{} `gorm:"check:status in ('draft','published','archived')"` // ステータス
 	AdmissionSchedule  AdmissionSchedule `json:"-" gorm:"foreignKey:AdmissionScheduleID"` // 所属入試日程
 	TestTypes []TestType `json:"test_types,omitempty" gorm:"many2many:admission_info_test_types"` // 試験種別一覧
+	_ struct{} `gorm:"index:idx_info_test_types"`
 }
 
 // Validate はAdmissionInfoのバリデーションを行う
@@ -443,11 +452,14 @@ func (a *AdmissionInfo) Validate() error {
 // TestType は試験種別エンティティを表現する
 type TestType struct {
 	BaseModel
-	AdmissionScheduleID uint      `json:"admission_schedule_id" gorm:"not null;index:idx_test_schedule"` // 入試日程ID
+	AdmissionScheduleID uint      `json:"admission_schedule_id"` // 入試日程ID
+	_ struct{} `gorm:"not null;index:idx_test_type_schedule,type:btree"`
 	Name               string    `json:"name" gorm:"not null;type:varchar(10);check:name in ('共通','二次')"` // 試験種別名
-	AdmissionSchedule  AdmissionSchedule `json:"-" gorm:"foreignKey:AdmissionScheduleID"` // 所属入試日程
-	Subjects           []Subject `json:"subjects,omitempty" gorm:"foreignKey:TestTypeID"`
-	_ struct{} `gorm:"constraint:OnDelete:CASCADE"` // 科目一覧
+	_ struct{} `gorm:"index:idx_test_type_name,type:btree,comment:'試験種別名のインデックス'"`
+	AdmissionSchedule  AdmissionSchedule `json:"-"` // 所属入試日程
+	_ struct{} `gorm:"foreignKey:AdmissionScheduleID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Subjects           []Subject `json:"subjects,omitempty"` // 科目一覧
+	_ struct{} `gorm:"foreignKey:TestTypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 // Validate はTestTypeのバリデーションを行う
@@ -483,12 +495,13 @@ func (t *TestType) Validate() error {
 // Subject は科目エンティティを表現する
 type Subject struct {
 	BaseModel
-	TestTypeID   uint     `json:"test_type_id" gorm:"not null;index:idx_subject_test"` // 試験種別ID
-	Name         string   `json:"name" gorm:"not null;index:idx_subject_name;size:20;check:name <> ''"` // 科目名
+	TestTypeID   uint     `json:"test_type_id" gorm:"not null;index:idx_subject_test_type,type:btree"` // 試験種別ID
+	Name         string   `json:"name" gorm:"not null;index:idx_subject_name,type:btree;size:20;check:name <> ''"` // 科目名
 	Score        int      `json:"score" gorm:"not null;check:score >= 0 AND score <= 1000"` // 配点
 	Percentage   float64  `json:"percentage" gorm:"not null;check:percentage >= 0 AND percentage <= 100"` // 配点比率
-	DisplayOrder int      `json:"display_order" gorm:"not null;default:0;check:display_order >= 0"` // 表示順
-	TestType     TestType `json:"-" gorm:"foreignKey:TestTypeID"` // 所属試験種別
+	DisplayOrder int      `json:"display_order" gorm:"not null;default:0"` // 表示順
+	_ struct{} `gorm:"index:idx_subject_display_order,type:btree"`
+	TestType     TestType `json:"-" gorm:"foreignKey:TestTypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"` // 所属試験種別
 }
 
 // Validate はSubjectのバリデーションを行う

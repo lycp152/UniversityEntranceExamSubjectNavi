@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/labstack/echo/v4"
@@ -13,9 +15,9 @@ import (
 )
 
 const (
-	errorFormat = "%w: %v"
+	errorFormat      = "%w: %v"
 	defaultBufferSize = 1024
-	maxBufferSize = 1024 * 1024 // 1MB
+	maxBufferSize    = 1024 * 1024 // 1MB
 )
 
 // RequestProcessor はリクエスト処理のインターフェースを定義します
@@ -41,11 +43,11 @@ func (e *SanitizerError) Unwrap() error {
 
 // エラー定義
 var (
-	ErrInvalidInput     = &SanitizerError{Message: "無効な入力データです", Code: 400}
-	ErrReadBodyFailed   = &SanitizerError{Message: "リクエストボディの読み込みに失敗しました", Code: 500}
-	ErrWriteBodyFailed  = &SanitizerError{Message: "リクエストボディの書き込みに失敗しました", Code: 500}
-	ErrInvalidJSON      = &SanitizerError{Message: "無効なJSON形式です", Code: 400}
-	ErrBufferOverflow   = &SanitizerError{Message: "リクエストボディが大きすぎます", Code: 413}
+	ErrInvalidInput     = &SanitizerError{Message: "無効な入力データです", Code: http.StatusBadRequest}
+	ErrReadBodyFailed   = &SanitizerError{Message: "リクエストボディの読み込みに失敗しました", Code: http.StatusInternalServerError}
+	ErrWriteBodyFailed  = &SanitizerError{Message: "リクエストボディの書き込みに失敗しました", Code: http.StatusInternalServerError}
+	ErrInvalidJSON      = &SanitizerError{Message: "無効なJSON形式です", Code: http.StatusBadRequest}
+	ErrBufferOverflow   = &SanitizerError{Message: "リクエストボディが大きすぎます", Code: http.StatusRequestEntityTooLarge}
 )
 
 // SanitizerConfig はサニタイザーの設定を定義します
@@ -67,14 +69,18 @@ func DefaultConfig() SanitizerConfig {
 type requestProcessor struct {
 	policy *bluemonday.Policy
 	fields []string
-	buf    *bytes.Buffer
+	pool   sync.Pool
 }
 
 func newRequestProcessor(policy *bluemonday.Policy, fields []string) RequestProcessor {
 	return &requestProcessor{
 		policy: policy,
 		fields: fields,
-		buf:    bytes.NewBuffer(make([]byte, 0, defaultBufferSize)),
+		pool: sync.Pool{
+			New: func() interface{} {
+				return bytes.NewBuffer(make([]byte, 0, defaultBufferSize))
+			},
+		},
 	}
 }
 
@@ -83,36 +89,62 @@ func (p *requestProcessor) ReadBody(c echo.Context) (map[string]interface{}, err
 		return nil, nil
 	}
 
-	p.buf.Reset()
+	buf := p.pool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		p.pool.Put(buf)
+	}()
 
-	if _, err := p.buf.ReadFrom(c.Request().Body); err != nil {
+	if _, err := buf.ReadFrom(c.Request().Body); err != nil {
 		return nil, fmt.Errorf(errorFormat, ErrReadBodyFailed, err)
 	}
 
-	if p.buf.Len() > maxBufferSize {
+	if buf.Len() > maxBufferSize {
 		return nil, ErrBufferOverflow
 	}
 
-	c.Request().Body = io.NopCloser(bytes.NewReader(p.buf.Bytes()))
+	c.Request().Body = io.NopCloser(bytes.NewReader(buf.Bytes()))
 
 	var data map[string]interface{}
-	if err := json.Unmarshal(p.buf.Bytes(), &data); err != nil {
+	if err := json.NewDecoder(bytes.NewReader(buf.Bytes())).Decode(&data); err != nil {
 		return nil, fmt.Errorf(errorFormat, ErrInvalidJSON, err)
 	}
 
-	return data, nil
+	return sanitizeData(p.policy, data, p.fields), nil
 }
 
 func (p *requestProcessor) WriteBody(c echo.Context, data map[string]interface{}) error {
-	p.buf.Reset()
+	buf := p.pool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		p.pool.Put(buf)
+	}()
 
-	if err := json.NewEncoder(p.buf).Encode(data); err != nil {
+	if err := json.NewEncoder(buf).Encode(data); err != nil {
 		return fmt.Errorf(errorFormat, ErrWriteBodyFailed, err)
 	}
 
-	c.Request().Body = io.NopCloser(bytes.NewReader(p.buf.Bytes()))
+	c.Request().Body = io.NopCloser(bytes.NewReader(buf.Bytes()))
 
 	return nil
+}
+
+func shouldProcessRequest(c echo.Context) bool {
+	method := c.Request().Method
+	return method != http.MethodGet && method != http.MethodHead && method != http.MethodOptions
+}
+
+func shouldProcessContentType(c echo.Context) bool {
+	contentType := c.Request().Header.Get(echo.HeaderContentType)
+	return strings.Contains(contentType, echo.MIMEApplicationJSON)
+}
+
+func handleSanitizerError(c echo.Context, err error) error {
+	if sanitizerErr, ok := err.(*SanitizerError); ok {
+		return c.JSON(sanitizerErr.Code, map[string]string{"error": sanitizerErr.Message})
+	}
+
+	return err
 }
 
 // Sanitizer は入力データをサニタイズするミドルウェアを提供します
@@ -125,18 +157,21 @@ func Sanitizer(config SanitizerConfig) echo.MiddlewareFunc {
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			if !shouldProcessRequest(c) || !shouldProcessContentType(c) {
+				return next(c)
+			}
+
 			data, err := processor.ReadBody(c)
 			if err != nil {
-				return err
+				return handleSanitizerError(c, err)
 			}
 
 			if data == nil {
 				return next(c)
 			}
 
-			data = sanitizeData(config.Policy, data, config.Fields)
 			if err := processor.WriteBody(c, data); err != nil {
-				return err
+				return handleSanitizerError(c, err)
 			}
 
 			return next(c)
@@ -155,12 +190,12 @@ func removeControlChars(s string) string {
 	}, s)
 }
 
-// normalizeSpaces は全角スペースを半角スペースに変換し、連続する空白を1つに正規化します
+// normalizeSpaces は全角スペースを半角スペースに変換し、連続する空白を削除します
 func normalizeSpaces(s string) string {
 	// 全角スペースを半角スペースに変換
 	s = strings.ReplaceAll(s, "　", " ")
-	// 連続する空白を1つに
-	return strings.Join(strings.Fields(s), " ")
+	// すべての空白を削除
+	return strings.ReplaceAll(s, " ", "")
 }
 
 // sanitizeString は文字列をサニタイズします
@@ -176,19 +211,36 @@ func sanitizeString(policy *bluemonday.Policy, input string) string {
 	return strings.TrimSpace(sanitized)
 }
 
+// sanitizeValue は値を再帰的にサニタイズします
+func sanitizeValue(policy *bluemonday.Policy, value interface{}) interface{} {
+	switch v := value.(type) {
+	case string:
+		return sanitizeString(policy, v)
+	case map[string]interface{}:
+		return sanitizeData(policy, v, nil)
+	case []interface{}:
+		result := make([]interface{}, len(v))
+		for i, item := range v {
+			result[i] = sanitizeValue(policy, item)
+		}
+
+		return result
+	default:
+		return v
+	}
+}
+
 func sanitizeData(policy *bluemonday.Policy, data map[string]interface{}, fields []string) map[string]interface{} {
 	if len(fields) == 0 {
-		// フィールドが指定されていない場合は、すべての文字列フィールドをサニタイズ
+		// フィールドが指定されていない場合は、すべてのフィールドを再帰的にサニタイズ
 		for key, value := range data {
-			if str, ok := value.(string); ok {
-				data[key] = sanitizeString(policy, str)
-			}
+			data[key] = sanitizeValue(policy, value)
 		}
 	} else {
-		// 指定されたフィールドのみをサニタイズ
+		// 指定されたフィールドのみを再帰的にサニタイズ
 		for _, field := range fields {
-			if value, ok := data[field].(string); ok {
-				data[field] = sanitizeString(policy, value)
+			if value, ok := data[field]; ok {
+				data[field] = sanitizeValue(policy, value)
 			}
 		}
 	}

@@ -121,17 +121,19 @@ func RequestValidationMiddleware(config *SecurityConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Content-Typeのチェック（OPTIONS以外）
-			if c.Request().Method != http.MethodOptions && c.Request().Header.Get(echo.HeaderContentType) != "" &&
-				c.Request().Header.Get(echo.HeaderContentType) != echo.MIMEApplicationJSON {
-				return c.JSON(http.StatusUnsupportedMediaType, map[string]string{
-					"error":   ErrInvalidContentType.Error(),
-					"message": "Content-Typeはapplication/jsonである必要があります",
-				})
+			if c.Request().Method != http.MethodOptions {
+				contentType := c.Request().Header.Get(echo.HeaderContentType)
+				if contentType != "" && contentType != echo.MIMEApplicationJSON {
+					return echo.NewHTTPError(http.StatusUnsupportedMediaType, map[string]string{
+						"error":   ErrInvalidContentType.Error(),
+						"message": "Content-Typeはapplication/jsonである必要があります",
+					})
+				}
 			}
 
 			// リクエストサイズの制限
 			if c.Request().ContentLength > config.MaxBodySize {
-				return c.JSON(http.StatusRequestEntityTooLarge, map[string]string{
+				return echo.NewHTTPError(http.StatusRequestEntityTooLarge, map[string]string{
 					"error":   ErrRequestTooLarge.Error(),
 					"message": fmt.Sprintf("リクエストボディは%dバイト以下である必要があります", config.MaxBodySize),
 				})

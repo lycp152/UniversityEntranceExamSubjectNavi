@@ -9,7 +9,6 @@ import (
 	"time"
 	applogger "university-exam-api/internal/logger"
 	errorHandler "university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 	"university-exam-api/internal/repositories"
 
 	"github.com/labstack/echo/v4"
@@ -72,7 +71,7 @@ func (h *Handler) SearchUniversities(c echo.Context) error {
 		return errorHandler.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogSearchUniversitiesSuccess, query, len(universities))
+	applogger.Info(ctx, applogger.LogSearchUniversitiesSuccess, query, len(universities))
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": universities,

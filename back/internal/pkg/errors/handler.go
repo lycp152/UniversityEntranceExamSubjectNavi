@@ -33,6 +33,25 @@ const (
 	InternalServerError = "INTERNAL_SERVER_ERROR"
 )
 
+// AppError はアプリケーションエラーを表す構造体
+type AppError struct {
+	Code    string
+	Message string
+}
+
+// Error はAppErrorの文字列表現を返す
+func (e *AppError) Error() string {
+	return fmt.Sprintf("code=%s, message=%s", e.Code, e.Message)
+}
+
+// NewAppError は新しいAppErrorを生成
+func NewAppError(code string, message string) *AppError {
+	return &AppError{
+		Code:    code,
+		Message: message,
+	}
+}
+
 // NewValidationError はバリデーションエラーを生成
 func NewValidationError(message string) error {
 	return &errors.Error{
@@ -67,10 +86,13 @@ func NewInvalidContentTypeError(message string) error {
 
 // WrapError はエラーをラップして詳細情報を追加
 func WrapError(err error, code string, message string) error {
-	return fmt.Errorf("%s: %w", message, &errors.Error{
-		Code:    errors.Code(code),
+	if err == nil {
+		return nil
+	}
+
+	return fmt.Errorf("%s: %w", message, &AppError{
+		Code:    code,
 		Message: message,
-		Details: errors.ErrorDetails{Extra: map[string]string{"error": err.Error()}},
 	})
 }
 

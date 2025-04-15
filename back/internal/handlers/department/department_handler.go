@@ -9,7 +9,6 @@ import (
 	"university-exam-api/internal/domain/models"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 	"university-exam-api/internal/pkg/validation"
 	"university-exam-api/internal/repositories"
 
@@ -126,7 +125,7 @@ func (h *Handler) GetDepartment(c echo.Context) error {
 
 	h.dbDuration.WithLabelValues("find").Observe(time.Since(dbStart).Seconds())
 
-	applogger.Info(ctx, logging.LogGetDepartmentSuccess, universityID, departmentID)
+	applogger.Info(ctx, applogger.LogGetDepartmentSuccess, universityID, departmentID)
 	h.requestDuration.WithLabelValues(c.Request().Method, c.Path(), "200").Observe(time.Since(start).Seconds())
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
@@ -159,7 +158,7 @@ func (h *Handler) CreateDepartment(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogCreateDepartmentSuccess, department.ID)
+	applogger.Info(ctx, applogger.LogCreateDepartmentSuccess, department.ID)
 
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"data": department,
@@ -191,7 +190,7 @@ func (h *Handler) UpdateDepartment(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogUpdateDepartmentSuccess, departmentID)
+	applogger.Info(ctx, applogger.LogUpdateDepartmentSuccess, departmentID)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": department,
@@ -213,7 +212,7 @@ func (h *Handler) DeleteDepartment(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogDeleteDepartmentSuccess, departmentID)
+	applogger.Info(ctx, applogger.LogDeleteDepartmentSuccess, departmentID)
 
 	return c.NoContent(http.StatusNoContent)
 }

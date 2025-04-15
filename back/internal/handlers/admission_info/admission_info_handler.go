@@ -10,7 +10,6 @@ import (
 	"university-exam-api/internal/domain/models"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 	"university-exam-api/internal/pkg/validation"
 	"university-exam-api/internal/repositories"
 
@@ -170,7 +169,7 @@ func (h *Handler) GetAdmissionInfo(c echo.Context) error {
 		h.responseSize.WithLabelValues("GET", AdmissionInfoPath).Observe(float64(len(responseData)))
 	}
 
-	applogger.Info(ctx, logging.LogGetAdmissionInfoSuccess, scheduleID, infoID)
+	applogger.Info(ctx, applogger.LogGetAdmissionInfoSuccess, scheduleID, infoID)
 
 	return c.JSON(http.StatusOK, info)
 }
@@ -197,7 +196,7 @@ func (h *Handler) CreateAdmissionInfo(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogCreateAdmissionInfoSuccess, info.ID)
+	applogger.Info(ctx, applogger.LogCreateAdmissionInfoSuccess, info.ID)
 
 	return c.JSON(http.StatusCreated, info)
 }
@@ -225,7 +224,7 @@ func (h *Handler) UpdateAdmissionInfo(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogUpdateAdmissionInfoSuccess, infoID)
+	applogger.Info(ctx, applogger.LogUpdateAdmissionInfoSuccess, infoID)
 
 	return c.JSON(http.StatusOK, info)
 }
@@ -246,7 +245,7 @@ func (h *Handler) DeleteAdmissionInfo(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogDeleteAdmissionInfoSuccess, infoID)
+	applogger.Info(ctx, applogger.LogDeleteAdmissionInfoSuccess, infoID)
 
 	return c.NoContent(http.StatusNoContent)
 }

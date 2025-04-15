@@ -10,7 +10,6 @@ import (
 	customErrors "university-exam-api/internal/errors"
 	applogger "university-exam-api/internal/logger"
 	errorMessages "university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 	"university-exam-api/internal/pkg/validation"
 	"university-exam-api/internal/repositories"
 
@@ -118,7 +117,7 @@ func (h *Handler) GetUniversities(c echo.Context) error {
 		return h.handleError(ctx, c, err)
 	}
 
-	applogger.Info(ctx, logging.LogGetUniversitiesSuccess, len(universities))
+	applogger.Info(ctx, applogger.LogGetUniversitiesSuccess, len(universities))
 
 	return c.JSON(http.StatusOK, universities)
 }
@@ -139,7 +138,7 @@ func (h *Handler) GetUniversity(c echo.Context) error {
 		return h.handleError(ctx, c, err)
 	}
 
-	applogger.Info(ctx, logging.LogGetUniversitySuccess, id)
+	applogger.Info(ctx, applogger.LogGetUniversitySuccess, id)
 
 	return c.JSON(http.StatusOK, university)
 }
@@ -159,7 +158,7 @@ func (h *Handler) CreateUniversity(c echo.Context) error {
 		return h.handleError(ctx, c, err)
 	}
 
-	applogger.Info(ctx, logging.LogCreateUniversitySuccess, university.ID)
+	applogger.Info(ctx, applogger.LogCreateUniversitySuccess, university.ID)
 
 	return c.JSON(http.StatusCreated, university)
 }
@@ -185,7 +184,7 @@ func (h *Handler) UpdateUniversity(c echo.Context) error {
 		return h.handleError(ctx, c, err)
 	}
 
-	applogger.Info(ctx, logging.LogUpdateUniversitySuccess, id)
+	applogger.Info(ctx, applogger.LogUpdateUniversitySuccess, id)
 
 	return c.JSON(http.StatusOK, university)
 }
@@ -205,7 +204,7 @@ func (h *Handler) DeleteUniversity(c echo.Context) error {
 		return h.handleError(ctx, c, err)
 	}
 
-	applogger.Info(ctx, logging.LogDeleteUniversitySuccess, id)
+	applogger.Info(ctx, applogger.LogDeleteUniversitySuccess, id)
 
 	return c.NoContent(http.StatusNoContent)
 }
@@ -229,7 +228,7 @@ func (h *Handler) GetCSRFToken(c echo.Context) error {
 		return h.handleError(ctx, c, customErrors.NewSystemError(ErrMsgCSRFTokenInvalidType, nil, nil))
 	}
 
-	applogger.Info(ctx, logging.LogGetCSRFTokenSuccess)
+	applogger.Info(ctx, applogger.LogGetCSRFTokenSuccess)
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"token": tokenStr,

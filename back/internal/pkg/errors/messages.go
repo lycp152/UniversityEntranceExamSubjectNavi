@@ -27,7 +27,7 @@ const (
 	MsgInvalidAdmissionInfoID = "募集情報IDの形式が不正です: %v"
 
 	// リクエスト関連のエラーメッセージ
-	MsgInvalidRequestBody = "リクエストボディが不正です: %v"
+	MsgInvalidRequestBody = "リクエストボディが不正です"
 	MsgBindDataFailed     = "データのバインドに失敗しました: %v"
 	MsgBindRequestFailed  = "リクエストのバインドに失敗しました: %v"
 )

@@ -9,7 +9,6 @@ import (
 	"university-exam-api/internal/domain/models"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 	"university-exam-api/internal/pkg/validation"
 	"university-exam-api/internal/repositories"
 
@@ -89,7 +88,7 @@ func (h *Handler) GetSubject(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogGetSubjectSuccess, departmentID, subjectID)
+	applogger.Info(ctx, applogger.LogGetSubjectSuccess, departmentID, subjectID)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": subject,
@@ -121,7 +120,7 @@ func (h *Handler) CreateSubject(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogCreateSubjectSuccess, subject.ID)
+	applogger.Info(ctx, applogger.LogCreateSubjectSuccess, subject.ID)
 
 	return c.JSON(http.StatusCreated, map[string]interface{}{
 		"data": subject,
@@ -153,7 +152,7 @@ func (h *Handler) UpdateSubject(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogUpdateSubjectSuccess, subjectID)
+	applogger.Info(ctx, applogger.LogUpdateSubjectSuccess, subjectID)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": subject,
@@ -175,7 +174,7 @@ func (h *Handler) DeleteSubject(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogDeleteSubjectSuccess, subjectID)
+	applogger.Info(ctx, applogger.LogDeleteSubjectSuccess, subjectID)
 
 	return c.NoContent(http.StatusNoContent)
 }
@@ -207,7 +206,7 @@ func (h *Handler) UpdateSubjectsBatch(c echo.Context) error {
 		return errors.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogBatchUpdateSubjectSuccess)
+	applogger.Info(ctx, applogger.LogBatchUpdateSubjectSuccess)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": subjects,

@@ -163,6 +163,11 @@ func getEnvOrDefault(key, defaultValue string) string {
 		return value
 	}
 
+	// 必須環境変数の場合は空文字列を返す
+	if key == "DB_HOST" || key == "DB_PORT" || key == "DB_USER" || key == "DB_NAME" {
+		return ""
+	}
+
 	return defaultValue
 }
 

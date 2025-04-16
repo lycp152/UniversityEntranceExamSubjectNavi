@@ -3,16 +3,26 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"sync"
 	"testing"
+	"time"
 	"university-exam-api/internal/config"
 	applogger "university-exam-api/internal/logger"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+)
+
+const (
+	// sqliteMemoryDSN はメモリ内SQLiteデータベースの接続文字列です
+	sqliteMemoryDSN = "file::memory:?cache=shared"
+	// dbConnectionErrorMsg はデータベース接続エラーのメッセージです
+	dbConnectionErrorMsg = "データベース接続の確立に失敗しました: %v"
 )
 
 // setupTestEnv はテスト環境をセットアップするヘルパー関数です
@@ -114,6 +124,7 @@ func TestSetupEnvironment(t *testing.T) {
 			envVars: map[string]string{
 				"DB_HOST": "localhost",
 				"DB_PORT": "5432",
+				// DB_NAME, DB_USER, DB_PASSWORDが不足
 			},
 			expectedErr: true,
 		},
@@ -124,9 +135,11 @@ func TestSetupEnvironment(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+			// 環境変数の設定
 			cleanup := setupTestEnv(t, tt.envVars)
 			defer cleanup()
 
+			// 環境変数の検証
 			ctx := context.Background()
 			cfg := &config.Config{Env: "test"}
 			err := setupEnvironment(ctx, cfg)
@@ -164,11 +177,11 @@ func TestCheckDBHealth(t *testing.T) {
 		{
 			name: "正常系/データベース接続が正常",
 			setupDB: func(t *testing.T) *gorm.DB {
-				db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+				db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
 					TranslateError: true,
 				})
 				if err != nil {
-					t.Fatalf("データベース接続の確立に失敗しました: %v", err)
+					t.Fatalf(dbConnectionErrorMsg, err)
 				}
 
 				sqlDB, err := db.DB()
@@ -188,11 +201,11 @@ func TestCheckDBHealth(t *testing.T) {
 		{
 			name: "異常系/データベース接続が切断されている",
 			setupDB: func(t *testing.T) *gorm.DB {
-				db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+				db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
 					TranslateError: true,
 				})
 				if err != nil {
-					t.Fatalf("データベース接続の確立に失敗しました: %v", err)
+					t.Fatalf(dbConnectionErrorMsg, err)
 				}
 
 				sqlDB, err := db.DB()
@@ -206,7 +219,7 @@ func TestCheckDBHealth(t *testing.T) {
 
 				// 新しいセッションを作成して安全性を確保
 				return db.Session(&gorm.Session{
-					PrepareStmt: true, // プリペアドステートメントを有効化
+					PrepareStmt: true,
 				})
 			},
 			expected:    false,
@@ -234,4 +247,84 @@ func TestCheckMemoryHealth(t *testing.T) {
 	ctx := context.Background()
 	result := checkMemoryHealth(ctx)
 	assert.True(t, result, "アプリケーション起動直後のメモリ使用量は1GB以下であるべきです")
+}
+
+// TestMain はmain関数のテストを行います
+func TestMain(t *testing.T) {
+	setupTestLogger(t)
+
+	// テスト用のコンテキストを作成
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// テスト用のデータベース接続を作成
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	if err != nil {
+		t.Fatalf(dbConnectionErrorMsg, err)
+	}
+
+	// ヘルスチェックのテスト
+	t.Run("ヘルスチェックの設定", func(t *testing.T) {
+		setupHealthCheck(ctx, db)
+
+		// ヘルスチェックエンドポイントへのリクエストをシミュレート
+		req := httptest.NewRequest("GET", "/health", nil)
+		w := httptest.NewRecorder()
+
+		http.DefaultServeMux.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("ヘルスチェックのステータスコードが期待値と異なります: got %v, want %v", w.Code, http.StatusOK)
+		}
+	})
+
+	// メトリクスのテスト
+	t.Run("メトリクスの設定", func(t *testing.T) {
+		setupMetrics()
+
+		// メトリクスエンドポイントへのリクエストをシミュレート
+		req := httptest.NewRequest("GET", "/metrics", nil)
+		w := httptest.NewRecorder()
+
+		http.DefaultServeMux.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("メトリクスのステータスコードが期待値と異なります: got %v, want %v", w.Code, http.StatusOK)
+		}
+	})
+
+	// メモリヘルスチェックのテスト
+	t.Run("メモリヘルスチェック", func(t *testing.T) {
+		result := checkMemoryHealth(ctx)
+		if !result {
+			t.Error("メモリヘルスチェックが失敗しました")
+		}
+	})
+}
+
+// TestServerShutdown はサーバーのシャットダウン処理をテストします
+func TestServerShutdown(t *testing.T) {
+	setupTestLogger(t)
+
+	// テスト用のサーバーを作成
+	srv := &http.Server{
+		Addr:              ":0",
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	// シャットダウンのタイムアウト設定
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	// シャットダウン処理のテスト
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		shutdownCancel()
+	}()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		t.Errorf("サーバーのシャットダウンに失敗しました: %v", err)
+	}
 }

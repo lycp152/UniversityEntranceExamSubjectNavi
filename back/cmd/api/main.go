@@ -59,10 +59,16 @@ func setupEnvironment(ctx context.Context, cfg *config.Config) error {
 		"DB_NAME",
 	}
 
+	var missingVars []string
+
 	for _, envVar := range requiredVars {
 		if os.Getenv(envVar) == "" {
-			return fmt.Errorf("必須環境変数 %s が設定されていません", envVar)
+			missingVars = append(missingVars, envVar)
 		}
+	}
+
+	if len(missingVars) > 0 {
+		return fmt.Errorf("以下の必須環境変数が設定されていません: %v", missingVars)
 	}
 
 	return nil

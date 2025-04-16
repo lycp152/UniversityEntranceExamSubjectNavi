@@ -83,7 +83,7 @@ func validateEnvVars() error {
 	return nil
 }
 
-func setupEnvironment(ctx context.Context, cfg *config.Config) error {
+func setupEnvironment(_ context.Context, _ *config.Config) error {
 	return validateEnvVars()
 }
 

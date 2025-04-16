@@ -76,6 +76,23 @@ type envTestCase struct {
 	expectedErr bool      // 期待されるエラー状態
 }
 
+// verifyEnvVars は必須環境変数の存在を確認します
+func verifyEnvVars(t *testing.T) {
+	requiredVars := []string{
+		"DB_HOST",
+		"DB_PORT",
+		"DB_NAME",
+		"DB_USER",
+		"DB_PASSWORD",
+	}
+
+	for _, key := range requiredVars {
+		if value := os.Getenv(key); value == "" {
+			t.Errorf("必須環境変数 %s が設定されていません", key)
+		}
+	}
+}
+
 // TestSetupEnvironment は環境変数の設定をテストします
 func TestSetupEnvironment(t *testing.T) {
 	setupTestLogger(t)
@@ -86,9 +103,9 @@ func TestSetupEnvironment(t *testing.T) {
 			envVars: map[string]string{
 				"DB_HOST":     "localhost",
 				"DB_PORT":     "5432",
+				"DB_NAME":     "testdb",
 				"DB_USER":     "user",
 				"DB_PASSWORD": "password",
-				"DB_NAME":     "testdb",
 			},
 			expectedErr: false,
 		},
@@ -103,12 +120,11 @@ func TestSetupEnvironment(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // サブテストの並行実行のためのローカル変数
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel() // サブテストを並行実行
+			t.Parallel()
 
 			cleanup := setupTestEnv(t, tt.envVars)
-
 			defer cleanup()
 
 			ctx := context.Background()
@@ -116,10 +132,18 @@ func TestSetupEnvironment(t *testing.T) {
 			err := setupEnvironment(ctx, cfg)
 
 			if tt.expectedErr {
-				assert.Error(t, err, "環境変数が不足している場合はエラーが返されるべきです: %v", err)
-			} else {
-				assert.NoError(t, err, "全ての必須環境変数が設定されている場合はエラーが返されるべきではありません: %v", err)
+				if err == nil {
+					t.Error("環境変数が不足している場合はエラーが返されるべきです")
+				}
+
+				return
 			}
+
+			if err != nil {
+				t.Errorf("環境変数の設定に失敗しました: %v", err)
+			}
+
+			verifyEnvVars(t)
 		})
 	}
 }

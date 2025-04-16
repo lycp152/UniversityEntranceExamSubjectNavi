@@ -62,7 +62,8 @@ func setupEnvironment(ctx context.Context, cfg *config.Config) error {
 	var missingVars []string
 
 	for _, envVar := range requiredVars {
-		if value := os.Getenv(envVar); value == "" {
+		value, exists := os.LookupEnv(envVar)
+		if !exists || value == "" {
 			missingVars = append(missingVars, envVar)
 		}
 	}

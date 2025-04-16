@@ -57,7 +57,7 @@ func validateEnvVars() error {
 		value, exists := os.LookupEnv(envVar)
 		if !exists {
 			missingVars = append(missingVars, envVar)
-		} else if value == "" {
+		} else if strings.TrimSpace(value) == "" {
 			emptyVars = append(emptyVars, envVar)
 		}
 	}

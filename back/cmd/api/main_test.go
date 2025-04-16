@@ -44,19 +44,6 @@ func setupTestLogger(t *testing.T) {
 	}
 }
 
-// verifyError はエラーチェックのロジックを分離した関数です
-func verifyError(t *testing.T, err error, expectedErr bool, errContains string) {
-	if expectedErr {
-		if err == nil {
-			t.Error("エラーが発生するはずでしたが、発生しませんでした")
-		} else if errContains != "" && !strings.Contains(err.Error(), errContains) {
-			t.Errorf("エラーメッセージに '%s' が含まれていません。実際のエラー: %v", errContains, err)
-		}
-	} else if err != nil {
-		t.Errorf("予期しないエラーが発生しました: %v", err)
-	}
-}
-
 // TestSetupEnvironment は環境変数の設定をテストします
 func TestSetupEnvironment(t *testing.T) {
 	// テストケースの定義
@@ -115,7 +102,15 @@ func TestSetupEnvironment(t *testing.T) {
 			err := setupEnvironment(ctx, cfg)
 
 			// エラーチェック
-			verifyError(t, err, tt.expectedErr, tt.errContains)
+			if tt.expectedErr {
+				if err == nil {
+					t.Error("エラーが発生するはずでしたが、発生しませんでした")
+				} else if !strings.Contains(err.Error(), tt.errContains) {
+					t.Errorf("エラーメッセージに '%s' が含まれていません。実際のエラー: %v", tt.errContains, err)
+				}
+			} else if err != nil {
+				t.Errorf("予期しないエラーが発生しました: %v", err)
+			}
 		})
 	}
 }

@@ -44,9 +44,40 @@ func setupTestLogger(t *testing.T) {
 	}
 }
 
+// setupTestEnv は環境変数を設定し、クリーンアップ関数を返します
+func setupTestEnv(t *testing.T, envVars map[string]string) {
+	t.Helper()
+
+	for key, value := range envVars {
+		if err := os.Setenv(key, value); err != nil {
+			t.Fatalf("環境変数の設定に失敗しました: %v", err)
+		}
+
+		t.Cleanup(func() {
+			if err := os.Unsetenv(key); err != nil {
+				t.Errorf("環境変数の削除に失敗しました: %v", err)
+			}
+		})
+	}
+}
+
+// checkEnvError はエラーの期待値と実際の値を検証します
+func checkEnvError(t *testing.T, err error, expectedErr bool, errContains string) {
+	t.Helper()
+
+	if expectedErr {
+		if err == nil {
+			t.Error("エラーが発生するはずでしたが、発生しませんでした")
+		} else if !strings.Contains(err.Error(), errContains) {
+			t.Errorf("エラーメッセージに '%s' が含まれていません。実際のエラー: %v", errContains, err)
+		}
+	} else if err != nil {
+		t.Errorf("予期しないエラーが発生しました: %v", err)
+	}
+}
+
 // TestSetupEnvironment は環境変数の設定をテストします
 func TestSetupEnvironment(t *testing.T) {
-	// テストケースの定義
 	tests := []struct {
 		name        string
 		envVars     map[string]string
@@ -69,7 +100,6 @@ func TestSetupEnvironment(t *testing.T) {
 			envVars: map[string]string{
 				"DB_HOST": "localhost",
 				"DB_PORT": "5432",
-				// DB_NAME, DB_USER, DB_PASSWORDが不足
 			},
 			expectedErr: true,
 			errContains: "以下の必須環境変数が設定されていません",
@@ -88,29 +118,13 @@ func TestSetupEnvironment(t *testing.T) {
 		},
 	}
 
-	// 各テストケースの実行
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 環境変数の設定
-			for key, value := range tt.envVars {
-				t.Setenv(key, value)
-			}
+			setupTestEnv(t, tt.envVars)
 
-			// 環境変数の設定を実行
-			ctx := context.Background()
-			cfg := &config.Config{}
-			err := setupEnvironment(ctx, cfg)
+			err := setupEnvironment(context.Background(), &config.Config{})
 
-			// エラーチェック
-			if tt.expectedErr {
-				if err == nil {
-					t.Error("エラーが発生するはずでしたが、発生しませんでした")
-				} else if !strings.Contains(err.Error(), tt.errContains) {
-					t.Errorf("エラーメッセージに '%s' が含まれていません。実際のエラー: %v", tt.errContains, err)
-				}
-			} else if err != nil {
-				t.Errorf("予期しないエラーが発生しました: %v", err)
-			}
+			checkEnvError(t, err, tt.expectedErr, tt.errContains)
 		})
 	}
 }

@@ -75,27 +75,24 @@ func validatePathParams(next echo.HandlerFunc) echo.HandlerFunc {
 		subjectID := c.Param("subjectID")
 
 		if universityID != "" && !universityIDRegex.MatchString(universityID) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{
-				Error:   "Invalid University ID",
-				Message: "大学IDは数値である必要があります",
+			return &echo.HTTPError{
 				Code:    http.StatusBadRequest,
-			})
+				Message: "大学IDは数値である必要があります",
+			}
 		}
 
 		if departmentID != "" && !departmentIDRegex.MatchString(departmentID) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{
-				Error:   "Invalid Department ID",
-				Message: "学部IDは数値である必要があります",
+			return &echo.HTTPError{
 				Code:    http.StatusBadRequest,
-			})
+				Message: "学部IDは数値である必要があります",
+			}
 		}
 
 		if subjectID != "" && !subjectIDRegex.MatchString(subjectID) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{
-				Error:   "Invalid Subject ID",
-				Message: "科目IDは数値である必要があります",
+			return &echo.HTTPError{
 				Code:    http.StatusBadRequest,
-			})
+				Message: "科目IDは数値である必要があります",
+			}
 		}
 
 		return next(c)
@@ -111,38 +108,27 @@ func validateRequestBody(next echo.HandlerFunc) echo.HandlerFunc {
 
 		contentType := c.Request().Header.Get("Content-Type")
 		if contentType != "application/json" {
-			return c.JSON(http.StatusUnsupportedMediaType, ErrorResponse{
-				Error:   "Unsupported Media Type",
-				Message: "Content-Typeはapplication/jsonである必要があります",
+			return &echo.HTTPError{
 				Code:    http.StatusUnsupportedMediaType,
-			})
+				Message: "Content-Typeはapplication/jsonである必要があります",
+			}
 		}
 
 		// リクエストボディの最大サイズを制限
 		if c.Request().ContentLength > 1024*1024 { // 1MB
-			return c.JSON(http.StatusRequestEntityTooLarge, ErrorResponse{
-				Error:   "Request Entity Too Large",
-				Message: "リクエストボディのサイズが大きすぎます",
+			return &echo.HTTPError{
 				Code:    http.StatusRequestEntityTooLarge,
-			})
-		}
-
-		// リクエストボディのバリデーション
-		if err := c.Request().ParseForm(); err != nil {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{
-				Error:   "Invalid Request Body",
-				Message: "リクエストボディの形式が不正です",
-				Code:    http.StatusBadRequest,
-			})
+				Message: "リクエストボディのサイズが大きすぎます",
+			}
 		}
 
 		// リクエストボディのJSONバリデーション
-		if err := c.Bind(nil); err != nil {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{
-				Error:   "Invalid JSON",
-				Message: "JSONの形式が不正です",
+		var body interface{}
+		if err := c.Bind(&body); err != nil {
+			return &echo.HTTPError{
 				Code:    http.StatusBadRequest,
-			})
+				Message: "JSONの形式が不正です",
+			}
 		}
 
 		return next(c)

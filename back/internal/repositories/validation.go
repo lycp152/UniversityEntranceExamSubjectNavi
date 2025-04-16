@@ -83,8 +83,11 @@ func getValidationRules() ValidationRules {
 					{
 						Field: "name",
 						Validator: func(v interface{}) error {
-							name := v.(string)
-							return validateName(name, "大学名")
+							university, ok := v.(*models.University)
+							if !ok {
+								return fmt.Errorf("invalid type: expected *models.University")
+							}
+							return validateName(university.Name, "大学名")
 						},
 						Message: "大学名のバリデーションに失敗しました",
 						Code:    "INVALID_NAME",
@@ -95,8 +98,11 @@ func getValidationRules() ValidationRules {
 					{
 						Field: "name",
 						Validator: func(v interface{}) error {
-							name := v.(string)
-							return validateName(name, "学部名")
+							department, ok := v.(models.Department)
+							if !ok {
+								return fmt.Errorf("invalid type: expected models.Department")
+							}
+							return validateName(department.Name, "学部名")
 						},
 						Message: "学部名のバリデーションに失敗しました",
 						Code:    "INVALID_NAME",
@@ -129,22 +135,24 @@ func validateName(name string, field string) error {
 // validateUniversity は大学のバリデーションを行います
 func (r *universityRepository) validateUniversity(university *models.University) error {
 	if university == nil {
-		return appErrors.NewInvalidInputError("university", "大学データが指定されていません", nil)
+		return appErrors.NewInvalidInputError("university", errEmptyUniversity, nil)
 	}
 
-	rules := getValidationRules()
-	if err := validateWithRules(university, rules["university"]); err != nil {
+	// バージョンチェックを最初に行う
+	if university.Version < 1 {
+		return appErrors.NewInvalidInputError("version", errInvalidVersion, nil)
+	}
+
+	// 名前のバリデーション
+	if err := validateName(university.Name, "大学名"); err != nil {
 		return err
 	}
 
-	if university.Version < 1 {
-		return appErrors.NewInvalidInputError("version", "バージョンは1以上である必要があります", nil)
-	}
-
+	// 学部数のバリデーション
 	if len(university.Departments) > maxDepartmentsPerUniversity {
 		return appErrors.NewInvalidInputError(
 			"departments",
-			fmt.Sprintf("学部数は%d以下である必要があります", maxDepartmentsPerUniversity),
+			fmt.Sprintf(errMaxItems, "学部数", maxDepartmentsPerUniversity),
 			nil,
 		)
 	}

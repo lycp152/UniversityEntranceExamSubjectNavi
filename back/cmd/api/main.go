@@ -40,8 +40,7 @@ type DB struct {
 	*gorm.DB
 }
 
-// validateRequiredEnvVars は必須環境変数の検証を行います
-func validateRequiredEnvVars() error {
+func validateEnvVars() error {
 	requiredVars := []string{
 		"DB_HOST",
 		"DB_PORT",
@@ -64,20 +63,22 @@ func validateRequiredEnvVars() error {
 	}
 
 	if len(missingVars) > 0 || len(emptyVars) > 0 {
-		var errMsg string
+		var errMsg strings.Builder
 		if len(missingVars) > 0 {
-			errMsg = "以下の必須環境変数が設定されていません: " + strings.Join(missingVars, ", ")
+			errMsg.WriteString("以下の必須環境変数が設定されていません: ")
+			errMsg.WriteString(strings.Join(missingVars, ", "))
 		}
 
 		if len(emptyVars) > 0 {
-			if errMsg != "" {
-				errMsg += "\n"
+			if errMsg.Len() > 0 {
+				errMsg.WriteString("\n")
 			}
 
-			errMsg += "以下の必須環境変数が空です: " + strings.Join(emptyVars, ", ")
+			errMsg.WriteString("以下の必須環境変数が空です: ")
+			errMsg.WriteString(strings.Join(emptyVars, ", "))
 		}
 
-		return fmt.Errorf("%s", errMsg)
+		return fmt.Errorf("%s", errMsg.String())
 	}
 
 	return nil
@@ -90,7 +91,7 @@ func setupEnvironment(ctx context.Context, cfg *config.Config) error {
 		}
 	}
 
-	return validateRequiredEnvVars()
+	return validateEnvVars()
 }
 
 // checkDBHealth はデータベースの健全性をチェックします

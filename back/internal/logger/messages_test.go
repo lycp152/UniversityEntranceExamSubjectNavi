@@ -1,6 +1,7 @@
 package applogger
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,12 +11,33 @@ import (
 )
 
 func setupEnv() error {
-	// テスト用の.envファイルのパスを取得
-	envPath := filepath.Join("..", "..", "tests", "testdata", ".env")
+	// カレントディレクトリを確認
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("カレントディレクトリの取得に失敗しました: %w", err)
+	}
+
+	fmt.Printf("カレントディレクトリ: %s\n", wd)
+
+	// プロジェクトのルートディレクトリを特定
+	// 1. カレントディレクトリがback/internal/loggerの場合
+	envPath := filepath.Join(wd, "..", "..", "tests", "testdata", ".env")
+
+	// 2. カレントディレクトリがbackの場合
+	if _, err := os.Stat(envPath); os.IsNotExist(err) {
+		envPath = filepath.Join(wd, "tests", "testdata", ".env")
+	}
+
+	// 3. カレントディレクトリがプロジェクトルートの場合
+	if _, err := os.Stat(envPath); os.IsNotExist(err) {
+		envPath = filepath.Join(wd, "back", "tests", "testdata", ".env")
+	}
+
+	fmt.Printf("環境変数ファイルのパス: %s\n", envPath)
 
 	// .envファイルを読み込む
 	if err := godotenv.Load(envPath); err != nil {
-		return err
+		return fmt.Errorf("環境変数の設定に失敗しました: %w", err)
 	}
 
 	// テスト用の環境変数を設定

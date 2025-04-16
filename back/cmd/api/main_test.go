@@ -133,8 +133,6 @@ func TestSetupEnvironment(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			// 環境変数の設定
 			cleanup := setupTestEnv(t, tt.envVars)
 			defer cleanup()

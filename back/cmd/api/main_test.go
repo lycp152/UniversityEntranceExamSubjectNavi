@@ -88,6 +88,8 @@ type envTestCase struct {
 
 // verifyEnvVars は必須環境変数の存在を確認します
 func verifyEnvVars(t *testing.T) {
+	t.Helper()
+
 	requiredVars := []string{
 		"DB_HOST",
 		"DB_PORT",
@@ -97,7 +99,7 @@ func verifyEnvVars(t *testing.T) {
 	}
 
 	for _, key := range requiredVars {
-		if value := os.Getenv(key); value == "" {
+		if value, exists := os.LookupEnv(key); !exists || value == "" {
 			t.Errorf("必須環境変数 %s が設定されていません", key)
 		}
 	}
@@ -156,6 +158,7 @@ func TestSetupEnvironment(t *testing.T) {
 				t.Errorf("環境変数の設定に失敗しました: %v", err)
 			}
 
+			// 環境変数の存在を確認
 			verifyEnvVars(t)
 		})
 	}

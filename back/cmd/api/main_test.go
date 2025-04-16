@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"sync"
+	"strings"
 	"testing"
 	"time"
 	"university-exam-api/internal/config"
@@ -24,41 +24,6 @@ const (
 	// dbConnectionErrorMsg はデータベース接続エラーのメッセージです
 	dbConnectionErrorMsg = "データベース接続の確立に失敗しました: %v"
 )
-
-// setupTestEnv はテスト環境をセットアップするヘルパー関数です
-func setupTestEnv(t *testing.T, envVars map[string]string) func() {
-	t.Helper()
-
-	var mu sync.Mutex
-
-	mu.Lock()
-	defer mu.Unlock()
-
-	// 元の環境変数を保存
-	originalEnv := make(map[string]string)
-	for k := range envVars {
-		originalEnv[k] = os.Getenv(k)
-	}
-
-	// テスト用の環境変数を設定
-	for k, v := range envVars {
-		if err := os.Setenv(k, v); err != nil {
-			t.Fatalf("環境変数の設定に失敗しました: %v", err)
-		}
-	}
-
-	// クリーンアップ関数を返す
-	return func() {
-		mu.Lock()
-		defer mu.Unlock()
-
-		for k, v := range originalEnv {
-			if err := os.Setenv(k, v); err != nil {
-				t.Errorf("環境変数の復元に失敗しました: %v", err)
-			}
-		}
-	}
-}
 
 // setupTestLogger はテスト用のロガーをセットアップします
 func setupTestLogger(t *testing.T) {
@@ -79,45 +44,36 @@ func setupTestLogger(t *testing.T) {
 	}
 }
 
-// envTestCase は環境変数テストのケースを定義する構造体です
-type envTestCase struct {
-	name        string    // テストケースの名前
-	envVars     map[string]string // テストする環境変数
-	expectedErr bool      // 期待されるエラー状態
-}
-
-// verifyEnvVars は必須環境変数の存在を確認します
-func verifyEnvVars(t *testing.T) {
-	t.Helper()
-
-	requiredVars := []string{
-		"DB_HOST",
-		"DB_PORT",
-		"DB_NAME",
-		"DB_USER",
-		"DB_PASSWORD",
-	}
-
-	for _, key := range requiredVars {
-		if value, exists := os.LookupEnv(key); !exists || value == "" {
-			t.Errorf("必須環境変数 %s が設定されていません", key)
+// verifyError はエラーチェックのロジックを分離した関数です
+func verifyError(t *testing.T, err error, expectedErr bool, errContains string) {
+	if expectedErr {
+		if err == nil {
+			t.Error("エラーが発生するはずでしたが、発生しませんでした")
+		} else if errContains != "" && !strings.Contains(err.Error(), errContains) {
+			t.Errorf("エラーメッセージに '%s' が含まれていません。実際のエラー: %v", errContains, err)
 		}
+	} else if err != nil {
+		t.Errorf("予期しないエラーが発生しました: %v", err)
 	}
 }
 
 // TestSetupEnvironment は環境変数の設定をテストします
 func TestSetupEnvironment(t *testing.T) {
-	setupTestLogger(t)
-
-	tests := []envTestCase{
+	// テストケースの定義
+	tests := []struct {
+		name        string
+		envVars     map[string]string
+		expectedErr bool
+		errContains string
+	}{
 		{
 			name: "正常系/全ての必須環境変数が設定されている",
 			envVars: map[string]string{
 				"DB_HOST":     "localhost",
 				"DB_PORT":     "5432",
 				"DB_NAME":     "testdb",
-				"DB_USER":     "user",
-				"DB_PASSWORD": "password",
+				"DB_USER":     "testuser",
+				"DB_PASSWORD": "testpass",
 			},
 			expectedErr: false,
 		},
@@ -129,37 +85,37 @@ func TestSetupEnvironment(t *testing.T) {
 				// DB_NAME, DB_USER, DB_PASSWORDが不足
 			},
 			expectedErr: true,
+			errContains: "以下の必須環境変数が設定されていません",
+		},
+		{
+			name: "異常系/必須環境変数が空",
+			envVars: map[string]string{
+				"DB_HOST":     "localhost",
+				"DB_PORT":     "5432",
+				"DB_NAME":     "",
+				"DB_USER":     "",
+				"DB_PASSWORD": "",
+			},
+			expectedErr: true,
+			errContains: "以下の必須環境変数が空です",
 		},
 	}
 
+	// 各テストケースの実行
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// 環境変数の設定
-			cleanup := setupTestEnv(t, tt.envVars)
-			defer cleanup()
+			for key, value := range tt.envVars {
+				t.Setenv(key, value)
+			}
 
-			// 環境変数の検証
+			// 環境変数の設定を実行
 			ctx := context.Background()
-			cfg := &config.Config{Env: "test"}
+			cfg := &config.Config{}
 			err := setupEnvironment(ctx, cfg)
 
-			if tt.expectedErr {
-				if err == nil {
-					t.Error("環境変数が不足している場合はエラーが返されるべきです")
-				} else {
-					t.Logf("期待通りのエラーが返されました: %v", err)
-				}
-
-				return
-			}
-
-			if err != nil {
-				t.Errorf("環境変数の設定に失敗しました: %v", err)
-			}
-
-			// 環境変数の存在を確認
-			verifyEnvVars(t)
+			// エラーチェック
+			verifyError(t, err, tt.expectedErr, tt.errContains)
 		})
 	}
 }

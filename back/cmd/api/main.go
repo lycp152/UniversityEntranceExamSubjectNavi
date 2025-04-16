@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -39,18 +40,8 @@ type DB struct {
 	*gorm.DB
 }
 
-// setupEnvironment は環境変数の読み込みと検証を行います。
-// 開発環境の場合は.envファイルから環境変数を読み込みます。
-// cfg: アプリケーション設定
-// 戻り値: エラー情報
-func setupEnvironment(ctx context.Context, cfg *config.Config) error {
-	if cfg.Env == "development" {
-		if err := godotenv.Load(); err != nil {
-			applogger.Warn(ctx, "警告: .envファイルが見つかりません: %v", err)
-		}
-	}
-
-	// 必須環境変数の検証
+// validateRequiredEnvVars は必須環境変数の検証を行います
+func validateRequiredEnvVars() error {
 	requiredVars := []string{
 		"DB_HOST",
 		"DB_PORT",
@@ -61,18 +52,45 @@ func setupEnvironment(ctx context.Context, cfg *config.Config) error {
 
 	var missingVars []string
 
+	var emptyVars []string
+
 	for _, envVar := range requiredVars {
 		value, exists := os.LookupEnv(envVar)
-		if !exists || value == "" {
+		if !exists {
 			missingVars = append(missingVars, envVar)
+		} else if value == "" {
+			emptyVars = append(emptyVars, envVar)
 		}
 	}
 
-	if len(missingVars) > 0 {
-		return fmt.Errorf("以下の必須環境変数が設定されていません: %v", missingVars)
+	if len(missingVars) > 0 || len(emptyVars) > 0 {
+		var errMsg string
+		if len(missingVars) > 0 {
+			errMsg = "以下の必須環境変数が設定されていません: " + strings.Join(missingVars, ", ")
+		}
+
+		if len(emptyVars) > 0 {
+			if errMsg != "" {
+				errMsg += "\n"
+			}
+
+			errMsg += "以下の必須環境変数が空です: " + strings.Join(emptyVars, ", ")
+		}
+
+		return fmt.Errorf("%s", errMsg)
 	}
 
 	return nil
+}
+
+func setupEnvironment(ctx context.Context, cfg *config.Config) error {
+	if cfg.Env == "development" {
+		if err := godotenv.Load(); err != nil {
+			applogger.Warn(ctx, "警告: .envファイルが見つかりません: %v", err)
+		}
+	}
+
+	return validateRequiredEnvVars()
 }
 
 // checkDBHealth はデータベースの健全性をチェックします

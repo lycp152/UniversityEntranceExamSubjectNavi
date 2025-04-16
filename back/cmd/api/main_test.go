@@ -147,6 +147,8 @@ func TestSetupEnvironment(t *testing.T) {
 			if tt.expectedErr {
 				if err == nil {
 					t.Error("環境変数が不足している場合はエラーが返されるべきです")
+				} else {
+					t.Logf("期待通りのエラーが返されました: %v", err)
 				}
 
 				return

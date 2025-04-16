@@ -20,7 +20,6 @@ import (
 
 	"runtime"
 
-	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/gorm"
@@ -85,12 +84,6 @@ func validateEnvVars() error {
 }
 
 func setupEnvironment(ctx context.Context, cfg *config.Config) error {
-	if cfg.Env == "development" {
-		if err := godotenv.Load(); err != nil {
-			applogger.Warn(ctx, "警告: .envファイルが見つかりません: %v", err)
-		}
-	}
-
 	return validateEnvVars()
 }
 

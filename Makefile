@@ -7,6 +7,8 @@ CURRENT_TIME := $(shell date "+%Y%m%d_%H%M%S")
 # 環境変数ファイルのパス
 ENV_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV)
 ENV_EXAMPLE_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV).example
+TEST_ENV_FILE = back/tests/testdata/.env
+TEST_ENV_EXAMPLE_FILE = back/tests/testdata/.env.example
 
 # 基本コマンド
 .PHONY: help
@@ -218,6 +220,12 @@ init: ## 環境変数ファイルを初期化
 		echo "✅ 環境変数ファイルを作成しました: $(ENV_FILE)"; \
 	else \
 		echo "✅ 環境変数ファイルは既に存在します: $(ENV_FILE)"; \
+	fi
+	@if [ ! -f $(TEST_ENV_FILE) ]; then \
+		cp $(TEST_ENV_EXAMPLE_FILE) $(TEST_ENV_FILE); \
+		echo "✅ テスト用環境変数ファイルを作成しました: $(TEST_ENV_FILE)"; \
+	else \
+		echo "✅ テスト用環境変数ファイルは既に存在します: $(TEST_ENV_FILE)"; \
 	fi
 
 .PHONY: release

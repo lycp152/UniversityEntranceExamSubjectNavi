@@ -15,25 +15,26 @@ func TestDBError(t *testing.T) {
 
 	now := time.Now()
 	originalErr := errors.New("original error")
-	details := "詳細情報"
+	errorDetails := "詳細情報"
 
 	t.Run("正常系: DBErrorの生成と取得", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", details)
+		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		assert.NotNil(t, dbErr)
 		assert.Equal(t, originalErr, dbErr.Err)
 		assert.Equal(t, CodeNotFound, dbErr.Code)
 		assert.Equal(t, "SELECT", dbErr.Operation)
 		assert.Equal(t, "users", dbErr.Table)
-		assert.Equal(t, details, dbErr.Details)
+		assert.Equal(t, errorDetails, dbErr.Details.Message)
+		assert.Empty(t, dbErr.Details.Context)
 		assert.True(t, dbErr.Timestamp.After(now))
 	})
 
 	t.Run("正常系: エラーメッセージのフォーマット", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", details)
+		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		expected := "users テーブルでの SELECT 操作中にエラーが発生しました: original error " +
 			"(エラーコード: NOT_FOUND, 時刻: " + dbErr.Timestamp.Format(time.RFC3339) + ", 詳細: 詳細情報)"
 		assert.Equal(t, expected, dbErr.Error())
@@ -42,81 +43,139 @@ func TestDBError(t *testing.T) {
 	t.Run("正常系: Unwrapの動作確認", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", details)
+		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		assert.Equal(t, originalErr, dbErr.Unwrap())
+	})
+
+	t.Run("正常系: コンテキスト情報の追加", func(t *testing.T) {
+		t.Parallel()
+
+		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
+		dbErr = dbErr.WithContext("key1", "value1")
+		dbErr = dbErr.WithContext("key2", "value2")
+
+		assert.Equal(t, "value1", dbErr.Details.Context["key1"])
+		assert.Equal(t, "value2", dbErr.Details.Context["key2"])
+	})
+
+	t.Run("正常系: エラー詳細の取得", func(t *testing.T) {
+		t.Parallel()
+
+		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
+		details, ok := GetErrorDetails(dbErr)
+		assert.True(t, ok)
+		assert.Equal(t, errorDetails, details.Message)
+		assert.NotEmpty(t, details.StackTrace)
+		assert.Empty(t, details.Context)
 	})
 }
 
 func TestErrorCheckers(t *testing.T) {
 	t.Parallel()
 
-	t.Run("正常系: IsNotFound", func(t *testing.T) {
-		t.Parallel()
+	tests := []struct {
+		name     string
+		err      error
+		checker  func(error) bool
+		expected bool
+	}{
+		{
+			name:     "IsNotFound - DBErrorの場合",
+			err:      NewDBError(ErrRecordNotFound, CodeNotFound, "SELECT", "users"),
+			checker:  IsNotFound,
+			expected: true,
+		},
+		{
+			name:     "IsNotFound - 直接ErrRecordNotFoundの場合",
+			err:      ErrRecordNotFound,
+			checker:  IsNotFound,
+			expected: true,
+		},
+		{
+			name:     "IsNotFound - 他のエラーの場合",
+			err:      errors.New(testOtherError),
+			checker:  IsNotFound,
+			expected: false,
+		},
+		{
+			name:     "IsDuplicateKey - DBErrorの場合",
+			err:      NewDBError(ErrDuplicateKey, CodeDuplicateKey, "INSERT", "users"),
+			checker:  IsDuplicateKey,
+			expected: true,
+		},
+		{
+			name:     "IsDuplicateKey - 直接ErrDuplicateKeyの場合",
+			err:      ErrDuplicateKey,
+			checker:  IsDuplicateKey,
+			expected: true,
+		},
+		{
+			name:     "IsDuplicateKey - 他のエラーの場合",
+			err:      errors.New(testOtherError),
+			checker:  IsDuplicateKey,
+			expected: false,
+		},
+		{
+			name:     "IsValidationError - DBErrorの場合",
+			err:      NewDBError(ErrValidationFailed, CodeValidationError, "UPDATE", "users"),
+			checker:  IsValidationError,
+			expected: true,
+		},
+		{
+			name:     "IsValidationError - 直接ErrValidationFailedの場合",
+			err:      ErrValidationFailed,
+			checker:  IsValidationError,
+			expected: true,
+		},
+		{
+			name:     "IsValidationError - 他のエラーの場合",
+			err:      errors.New(testOtherError),
+			checker:  IsValidationError,
+			expected: false,
+		},
+		{
+			name:     "IsTimeout - DBErrorの場合",
+			err:      NewDBError(ErrTimeout, CodeTimeout, "SELECT", "users"),
+			checker:  IsTimeout,
+			expected: true,
+		},
+		{
+			name:     "IsTimeout - 直接ErrTimeoutの場合",
+			err:      ErrTimeout,
+			checker:  IsTimeout,
+			expected: true,
+		},
+		{
+			name:     "IsTimeout - 他のエラーの場合",
+			err:      errors.New(testOtherError),
+			checker:  IsTimeout,
+			expected: false,
+		},
+		{
+			name:     "IsDeadlock - DBErrorの場合",
+			err:      NewDBError(ErrDeadlock, CodeDeadlock, "UPDATE", "users"),
+			checker:  IsDeadlock,
+			expected: true,
+		},
+		{
+			name:     "IsDeadlock - 直接ErrDeadlockの場合",
+			err:      ErrDeadlock,
+			checker:  IsDeadlock,
+			expected: true,
+		},
+		{
+			name:     "IsDeadlock - 他のエラーの場合",
+			err:      errors.New(testOtherError),
+			checker:  IsDeadlock,
+			expected: false,
+		},
+	}
 
-		// DBErrorの場合
-		dbErr := NewDBError(ErrRecordNotFound, CodeNotFound, "SELECT", "users")
-		assert.True(t, IsNotFound(dbErr))
-
-		// 直接ErrRecordNotFoundの場合
-		assert.True(t, IsNotFound(ErrRecordNotFound))
-
-		// 他のエラーの場合
-		assert.False(t, IsNotFound(errors.New(testOtherError)))
-	})
-
-	t.Run("正常系: IsDuplicateKey", func(t *testing.T) {
-		t.Parallel()
-
-		// DBErrorの場合
-		dbErr := NewDBError(ErrDuplicateKey, CodeDuplicateKey, "INSERT", "users")
-		assert.True(t, IsDuplicateKey(dbErr))
-
-		// 直接ErrDuplicateKeyの場合
-		assert.True(t, IsDuplicateKey(ErrDuplicateKey))
-
-		// 他のエラーの場合
-		assert.False(t, IsDuplicateKey(errors.New(testOtherError)))
-	})
-
-	t.Run("正常系: IsValidationError", func(t *testing.T) {
-		t.Parallel()
-
-		// DBErrorの場合
-		dbErr := NewDBError(ErrValidationFailed, CodeValidationError, "UPDATE", "users")
-		assert.True(t, IsValidationError(dbErr))
-
-		// 直接ErrValidationFailedの場合
-		assert.True(t, IsValidationError(ErrValidationFailed))
-
-		// 他のエラーの場合
-		assert.False(t, IsValidationError(errors.New(testOtherError)))
-	})
-
-	t.Run("正常系: IsTimeout", func(t *testing.T) {
-		t.Parallel()
-
-		// DBErrorの場合
-		dbErr := NewDBError(ErrTimeout, CodeTimeout, "SELECT", "users")
-		assert.True(t, IsTimeout(dbErr))
-
-		// 直接ErrTimeoutの場合
-		assert.True(t, IsTimeout(ErrTimeout))
-
-		// 他のエラーの場合
-		assert.False(t, IsTimeout(errors.New(testOtherError)))
-	})
-
-	t.Run("正常系: IsDeadlock", func(t *testing.T) {
-		t.Parallel()
-
-		// DBErrorの場合
-		dbErr := NewDBError(ErrDeadlock, CodeDeadlock, "UPDATE", "users")
-		assert.True(t, IsDeadlock(dbErr))
-
-		// 直接ErrDeadlockの場合
-		assert.True(t, IsDeadlock(ErrDeadlock))
-
-		// 他のエラーの場合
-		assert.False(t, IsDeadlock(errors.New(testOtherError)))
-	})
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tt.expected, tt.checker(tt.err))
+		})
+	}
 }

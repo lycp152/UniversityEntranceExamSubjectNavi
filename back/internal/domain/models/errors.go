@@ -4,6 +4,8 @@ package models
 import (
 	"errors"
 	"fmt"
+	"runtime"
+	"strings"
 	"time"
 )
 
@@ -19,6 +21,7 @@ const (
 	CodeInvalidYear     ErrorCode = "INVALID_YEAR"
 	CodeTimeout         ErrorCode = "TIMEOUT"
 	CodeDeadlock        ErrorCode = "DEADLOCK"
+	CodeCustom          ErrorCode = "CUSTOM_ERROR"
 )
 
 // データベース操作で発生する一般的なエラー
@@ -39,20 +42,38 @@ var (
 	ErrDeadlock = errors.New("デッドロックが発生しました")
 )
 
+// ErrorDetail はエラーの詳細情報を保持する構造体
+type ErrorDetail struct {
+	Message    string            // エラーメッセージ
+	StackTrace string            // スタックトレース
+	Context    map[string]string // コンテキスト情報
+}
+
 // DBError はデータベース操作の詳細なエラー情報を保持する構造体
 type DBError struct {
-	Err       error     // 元のエラー
-	Code      ErrorCode // エラーコード
-	Operation string    // 実行された操作
-	Table     string    // 操作対象のテーブル
-	Timestamp time.Time // エラー発生時刻
-	Details   string    // 追加の詳細情報
+	Err       error      // 元のエラー
+	Code      ErrorCode  // エラーコード
+	Operation string     // 実行された操作
+	Table     string     // 操作対象のテーブル
+	Timestamp time.Time  // エラー発生時刻
+	Details   ErrorDetail // 追加の詳細情報
 }
 
 // Error はDBErrorの文字列表現を返す
 func (e *DBError) Error() string {
-	return fmt.Sprintf("%s テーブルでの %s 操作中にエラーが発生しました: %v (エラーコード: %s, 時刻: %s, 詳細: %s)",
-		e.Table, e.Operation, e.Err, e.Code, e.Timestamp.Format(time.RFC3339), e.Details)
+	var contextStr string
+
+	if len(e.Details.Context) > 0 {
+		var contextParts []string
+		for k, v := range e.Details.Context {
+			contextParts = append(contextParts, fmt.Sprintf("%s=%s", k, v))
+		}
+
+		contextStr = fmt.Sprintf(", コンテキスト: {%s}", strings.Join(contextParts, ", "))
+	}
+
+	return fmt.Sprintf("%s テーブルでの %s 操作中にエラーが発生しました: %v (エラーコード: %s, 時刻: %s, 詳細: %s%s)",
+		e.Table, e.Operation, e.Err, e.Code, e.Timestamp.Format(time.RFC3339), e.Details.Message, contextStr)
 }
 
 // Unwrap は元のエラーを返す
@@ -67,14 +88,47 @@ func NewDBError(err error, code ErrorCode, operation, table string, details ...s
 		detail = details[0]
 	}
 
+	// スタックトレースの取得
+	var stackTrace string
+
+	pc := make([]uintptr, 10)
+	n := runtime.Callers(2, pc)
+
+	if n > 0 {
+		frames := runtime.CallersFrames(pc[:n])
+
+		var stack []string
+
+		for {
+			frame, more := frames.Next()
+			stack = append(stack, fmt.Sprintf("%s:%d %s", frame.File, frame.Line, frame.Function))
+
+			if !more {
+				break
+			}
+		}
+
+		stackTrace = strings.Join(stack, "\n")
+	}
+
 	return &DBError{
 		Err:       err,
 		Code:      code,
 		Operation: operation,
 		Table:     table,
 		Timestamp: time.Now(),
-		Details:   detail,
+		Details: ErrorDetail{
+			Message:    detail,
+			StackTrace: stackTrace,
+			Context:    make(map[string]string),
+		},
 	}
+}
+
+// WithContext はエラーにコンテキスト情報を追加する
+func (e *DBError) WithContext(key, value string) *DBError {
+	e.Details.Context[key] = value
+	return e
 }
 
 // IsNotFound はエラーがレコード未検出エラーかどうかを判定する
@@ -125,4 +179,14 @@ func IsDeadlock(err error) bool {
 	}
 
 	return errors.Is(err, ErrDeadlock)
+}
+
+// GetErrorDetails はエラーの詳細情報を取得する
+func GetErrorDetails(err error) (ErrorDetail, bool) {
+	var dbErr *DBError
+	if errors.As(err, &dbErr) {
+		return dbErr.Details, true
+	}
+
+	return ErrorDetail{}, false
 }

@@ -145,7 +145,7 @@ func TestGetEnvOrDefault(t *testing.T) {
 		},
 		{
 			name:         testCaseEnvNotSet,
-			key:          "TEST_KEY",
+			key:          "TEST_KEY_NOT_SET",
 			defaultValue: "default",
 			envValue:     "",
 			expected:     "default",
@@ -156,6 +156,11 @@ func TestGetEnvOrDefault(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			// 環境変数を確実にクリア
+			if err := os.Unsetenv(tt.key); err != nil {
+				t.Errorf(errMsgEnvUnset, err)
+			}
 
 			if tt.envValue != "" {
 				require.NoError(t, os.Setenv(tt.key, tt.envValue))

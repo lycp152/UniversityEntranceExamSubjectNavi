@@ -21,7 +21,7 @@ func setupEnv() error {
 
 	// プロジェクトのルートディレクトリを特定
 	// 1. カレントディレクトリがback/internal/loggerの場合
-	envPath := filepath.Join(wd, "..", "..", "tests", "testdata", ".env")
+	envPath := filepath.Join(wd, "..", "..", "..", "tests", "testdata", ".env")
 
 	// 2. カレントディレクトリがbackの場合
 	if _, err := os.Stat(envPath); os.IsNotExist(err) {
@@ -35,9 +35,14 @@ func setupEnv() error {
 
 	fmt.Printf("環境変数ファイルのパス: %s\n", envPath)
 
-	// .envファイルを読み込む
-	if err := godotenv.Load(envPath); err != nil {
-		return fmt.Errorf("環境変数の設定に失敗しました: %w", err)
+	// .envファイルが存在しない場合は、デフォルトの環境変数を使用
+	if _, err := os.Stat(envPath); os.IsNotExist(err) {
+		fmt.Println("警告: .envファイルが見つかりません。デフォルトの環境変数を使用します。")
+	} else {
+		// .envファイルを読み込む
+		if err := godotenv.Load(envPath); err != nil {
+			return fmt.Errorf("環境変数の設定に失敗しました: %w", err)
+		}
 	}
 
 	// テスト用の環境変数を設定

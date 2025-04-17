@@ -19,17 +19,17 @@ const (
 
 // テスト用の定数をインポート
 var (
-	_ = testUserName
-	_ = testUserEmail
-	_ = testUserPassword
+	_ = TestUserName
+	_ = TestUserEmail
+	_ = TestUserPassword
 )
 
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     TestUserName,
+		Email:    TestUserEmail,
+		Password: TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -50,9 +50,9 @@ func BenchmarkUserRepository(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     TestUserName,
+		Email:    TestUserEmail,
+		Password: TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -62,7 +62,7 @@ func BenchmarkUserRepository(b *testing.B) {
 	}
 }
 
-// BenchmarkConcurrentUserCreation は並行処理でのユーザー作成のパフォーマンスを測定します
+// BenchmarkConcurrentUserCreation は並行ユーザー作成のパフォーマンスを測定します
 func BenchmarkConcurrentUserCreation(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -72,25 +72,19 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(b, 100)
+	users := createTestUsers(b, b.N)
 
 	b.ResetTimer()
 
+	var wg sync.WaitGroup
 	for i := 0; i < b.N; i++ {
-		var wg sync.WaitGroup
-
-		wg.Add(len(users))
-
-		for _, user := range users {
-			go func(u *models.User) {
-				defer wg.Done()
-
-				_ = repo.Create(u)
-			}(user)
-		}
-
-		wg.Wait()
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			_ = repo.Create(users[i])
+		}(i)
 	}
+	wg.Wait()
 }
 
 // BenchmarkMemoryUsage はメモリ使用量を測定します

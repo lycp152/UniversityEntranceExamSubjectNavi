@@ -143,7 +143,7 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:8080
         run: |
           cd front
-          yarn vitest run --coverage
+          yarn test:coverage
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5

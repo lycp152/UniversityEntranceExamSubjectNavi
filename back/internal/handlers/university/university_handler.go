@@ -1,5 +1,9 @@
 // Package university は大学関連のHTTPリクエストを処理するパッケージです。
-// このパッケージは、大学の作成、取得、更新、削除などの機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - 大学の作成、取得、更新、削除
+// - 大学のバリデーション
+// - エラーハンドリング
+// - ログ記録
 package university
 
 import (
@@ -39,13 +43,21 @@ const (
 	ErrMsgGetUniversityFailed = "大学の取得に失敗しました"
 )
 
-// Handler は大学関連のHTTPリクエストを処理するハンドラー
+// Handler は大学関連のHTTPリクエストを処理する構造体です。
+// この構造体は以下の機能を提供します：
+// - リポジトリとの連携
+// - リクエストタイムアウトの管理
+// - エラーハンドリング
 type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
 }
 
-// NewUniversityHandler は新しいHandlerインスタンスを生成
+// NewUniversityHandler は新しいHandlerインスタンスを生成します。
+// この関数は以下の処理を行います：
+// - リポジトリの初期化
+// - タイムアウトの設定
+// - ハンドラーの初期化
 func NewUniversityHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
 	return &Handler{
 		repo:    repo,
@@ -53,17 +65,27 @@ func NewUniversityHandler(repo repositories.IUniversityRepository, timeout time.
 	}
 }
 
-// SetRepo はリポジトリを設定します（テスト用）
+// SetRepo はリポジトリを設定します（テスト用）。
+// この関数は以下の処理を行います：
+// - リポジトリの設定
+// - テスト用の機能提供
 func (h *Handler) SetRepo(repo repositories.IUniversityRepository) {
 	h.repo = repo
 }
 
-// GetRepo はリポジトリを取得します（テスト用）
+// GetRepo はリポジトリを取得します（テスト用）。
+// この関数は以下の処理を行います：
+// - リポジトリの取得
+// - テスト用の機能提供
 func (h *Handler) GetRepo() repositories.IUniversityRepository {
 	return h.repo
 }
 
-// handleError はエラーをHTTPレスポンスに変換
+// handleError はエラーをHTTPレスポンスに変換します。
+// この関数は以下の処理を行います：
+// - エラーの種類に応じたステータスコードの設定
+// - エラーメッセージの整形
+// - ログ記録
 func (h *Handler) handleError(ctx context.Context, c echo.Context, err error) error {
 	switch e := err.(type) {
 	case *customErrors.Error:
@@ -96,7 +118,11 @@ func (h *Handler) handleError(ctx context.Context, c echo.Context, err error) er
 	}
 }
 
-// bindRequest はリクエストボディのバインディング
+// bindRequest はリクエストボディのバインディングを共通化します。
+// この関数は以下の処理を行います：
+// - リクエストボディのバインディング
+// - エラーハンドリング
+// - ログ記録
 func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errorMessages.MsgBindDataFailed, err)
@@ -106,7 +132,11 @@ func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interfac
 	return nil
 }
 
-// GetUniversities は大学一覧を取得
+// GetUniversities は大学一覧を取得します。
+// この関数は以下の処理を行います：
+// - 大学一覧の取得
+// - エラーハンドリング
+// - ログ記録
 func (h *Handler) GetUniversities(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -122,7 +152,11 @@ func (h *Handler) GetUniversities(c echo.Context) error {
 	return c.JSON(http.StatusOK, universities)
 }
 
-// GetUniversity は指定された大学の情報を取得
+// GetUniversity は指定された大学の情報を取得します。
+// この関数は以下の処理を行います：
+// - 大学IDのバリデーション
+// - 大学情報の取得
+// - エラーハンドリング
 func (h *Handler) GetUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -143,7 +177,11 @@ func (h *Handler) GetUniversity(c echo.Context) error {
 	return c.JSON(http.StatusOK, university)
 }
 
-// CreateUniversity は新しい大学を作成します
+// CreateUniversity は新しい大学を作成します。
+// この関数は以下の処理を行います：
+// - リクエストボディのバインディング
+// - 大学の作成
+// - エラーハンドリング
 func (h *Handler) CreateUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -163,7 +201,12 @@ func (h *Handler) CreateUniversity(c echo.Context) error {
 	return c.JSON(http.StatusCreated, university)
 }
 
-// UpdateUniversity は既存の大学を更新します
+// UpdateUniversity は既存の大学を更新します。
+// この関数は以下の処理を行います：
+// - 大学IDのバリデーション
+// - リクエストボディのバインディング
+// - 大学の更新
+// - エラーハンドリング
 func (h *Handler) UpdateUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -189,7 +232,11 @@ func (h *Handler) UpdateUniversity(c echo.Context) error {
 	return c.JSON(http.StatusOK, university)
 }
 
-// DeleteUniversity は大学を削除します
+// DeleteUniversity は大学を削除します。
+// この関数は以下の処理を行います：
+// - 大学IDのバリデーション
+// - 大学の削除
+// - エラーハンドリング
 func (h *Handler) DeleteUniversity(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -209,7 +256,11 @@ func (h *Handler) DeleteUniversity(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// GetCSRFToken はCSRFトークンを返します
+// GetCSRFToken はCSRFトークンを返します。
+// この関数は以下の処理を行います：
+// - CSRFトークンの取得
+// - トークンの型チェック
+// - エラーハンドリング
 func (h *Handler) GetCSRFToken(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()

@@ -1,5 +1,9 @@
 // Package major は学科関連のHTTPリクエストを処理するハンドラーを提供します。
-// 学科の取得、作成、更新、削除のエンドポイントを実装しています。
+// このパッケージは以下の機能を提供します：
+// - 学科の取得、作成、更新、削除
+// - リクエストのバリデーション
+// - エラーハンドリング
+// - ログ記録
 package major
 
 import (
@@ -22,13 +26,21 @@ const (
 	logDeleteMajorSuccess = "学科の削除に成功しました (ID: %d)"
 )
 
-// Handler は学科関連のHTTPリクエストを処理
+// Handler は学科関連のHTTPリクエストを処理する構造体です。
+// この構造体は以下の機能を提供します：
+// - リポジトリとの連携
+// - リクエストタイムアウトの管理
+// - エラーハンドリング
 type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
 }
 
-// NewMajorHandler は新しいHandlerインスタンスを生成
+// NewMajorHandler は新しいHandlerインスタンスを生成します。
+// この関数は以下の処理を行います：
+// - リポジトリの初期化
+// - タイムアウトの設定
+// - ハンドラーの初期化
 func NewMajorHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
 	return &Handler{
 		repo:    repo,
@@ -36,7 +48,11 @@ func NewMajorHandler(repo repositories.IUniversityRepository, timeout time.Durat
 	}
 }
 
-// bindRequest はリクエストボディのバインディングを共通化
+// bindRequest はリクエストボディのバインディングを共通化します。
+// この関数は以下の処理を行います：
+// - リクエストボディのバインディング
+// - エラーログの記録
+// - バリデーションエラーの生成
 func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, "リクエストのバインドに失敗しました: %v", err)
@@ -46,7 +62,11 @@ func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interfac
 	return nil
 }
 
-// validateMajorRequest は学科リクエストのバリデーションを共通化
+// validateMajorRequest は学科リクエストのバリデーションを共通化します。
+// この関数は以下の処理を行います：
+// - 学科名の検証
+// - 学部IDの検証
+// - エラーメッセージの生成
 func (h *Handler) validateMajorRequest(major *models.Major) error {
 	if major.Name == "" {
 		return errors.NewValidationError("学科名は必須です")
@@ -63,7 +83,11 @@ func (h *Handler) validateMajorRequest(major *models.Major) error {
 	return nil
 }
 
-// validateDepartmentAndMajorID は学部IDと学科IDのバリデーションを共通化
+// validateDepartmentAndMajorID は学部IDと学科IDのバリデーションを共通化します。
+// この関数は以下の処理を行います：
+// - 学部IDの検証
+// - 学科IDの検証
+// - エラーハンドリング
 func (h *Handler) validateDepartmentAndMajorID(ctx context.Context, c echo.Context) (uint, uint, error) {
 	departmentID, err := validation.ValidateDepartmentID(ctx, c.Param("departmentId"))
 	if err != nil {
@@ -78,7 +102,11 @@ func (h *Handler) validateDepartmentAndMajorID(ctx context.Context, c echo.Conte
 	return departmentID, majorID, nil
 }
 
-// GetMajor は指定された学科の情報を取得
+// GetMajor は指定された学科の情報を取得します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - データベースからの取得
+// - エラーハンドリング
 func (h *Handler) GetMajor(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -101,7 +129,11 @@ func (h *Handler) GetMajor(c echo.Context) error {
 	})
 }
 
-// CreateMajor は新しい学科を作成
+// CreateMajor は新しい学科を作成します。
+// この関数は以下の処理を行います：
+// - リクエストのバリデーション
+// - データベースへの保存
+// - エラーハンドリング
 func (h *Handler) CreateMajor(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -133,7 +165,12 @@ func (h *Handler) CreateMajor(c echo.Context) error {
 	})
 }
 
-// UpdateMajor は既存の学科を更新
+// UpdateMajor は既存の学科を更新します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - リクエストのバリデーション
+// - データベースの更新
+// - エラーハンドリング
 func (h *Handler) UpdateMajor(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -165,7 +202,11 @@ func (h *Handler) UpdateMajor(c echo.Context) error {
 	})
 }
 
-// DeleteMajor は学科を削除
+// DeleteMajor は学科を削除します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - データベースからの削除
+// - エラーハンドリング
 func (h *Handler) DeleteMajor(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()

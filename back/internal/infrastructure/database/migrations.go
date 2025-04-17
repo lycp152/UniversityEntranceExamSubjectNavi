@@ -35,7 +35,12 @@ const (
 	insertMigrationMetricsSQL = "INSERT INTO migration_metrics (table_name, status, duration) VALUES (?, ?, ?)"
 )
 
-// MigrationConfig はマイグレーションの設定を保持します
+// MigrationConfig はマイグレーションの設定を保持する構造体です。
+// この構造体は以下の設定を保持します：
+// - タイムアウト設定
+// - リトライ設定
+// - スキーマ設定
+// - バッチサイズ
 type MigrationConfig struct {
 	Timeout       time.Duration
 	RetryAttempts int
@@ -44,7 +49,12 @@ type MigrationConfig struct {
 	BatchSize     int
 }
 
-// MigrationMetrics はマイグレーションのメトリクスを保持します
+// MigrationMetrics はマイグレーションのメトリクスを保持する構造体です。
+// この構造体は以下の情報を保持します：
+// - 開始時間と終了時間
+// - 所要時間
+// - テーブル数と進捗
+// - エラー数とリトライ数
 type MigrationMetrics struct {
 	StartTime        time.Time
 	EndTime          time.Time
@@ -59,7 +69,10 @@ type MigrationMetrics struct {
 	RollbackPoints   int
 }
 
-// DefaultMigrationConfig はデフォルトのマイグレーション設定を返します
+// DefaultMigrationConfig はデフォルトのマイグレーション設定を返します。
+// この関数は以下の処理を行います：
+// - デフォルト値の設定
+// - 設定の初期化
 func DefaultMigrationConfig() *MigrationConfig {
 	return &MigrationConfig{
 		Timeout:       defaultMigrationTimeout,
@@ -70,7 +83,12 @@ func DefaultMigrationConfig() *MigrationConfig {
 	}
 }
 
-// MigrationProgress はマイグレーションの進捗を追跡します
+// MigrationProgress はマイグレーションの進捗を追跡する構造体です。
+// この構造体は以下の情報を保持します：
+// - 総テーブル数
+// - 完了テーブル数
+// - 現在のテーブル
+// - エラー情報
 type MigrationProgress struct {
 	TotalTables     int
 	CompletedTables int
@@ -80,7 +98,11 @@ type MigrationProgress struct {
 	Metrics         *MigrationMetrics
 }
 
-// RunMigrations はデータベースのマイグレーションを実行します
+// RunMigrations はデータベースのマイグレーションを実行します。
+// この関数は以下の処理を行います：
+// - マイグレーションセッションの作成
+// - メトリクス収集の設定
+// - マイグレーションの実行
 func RunMigrations(ctx context.Context, db *gorm.DB, config *MigrationConfig) (*MigrationMetrics, error) {
 	if config == nil {
 		config = DefaultMigrationConfig()
@@ -140,7 +162,11 @@ func RunMigrations(ctx context.Context, db *gorm.DB, config *MigrationConfig) (*
 	return metrics, err
 }
 
-// runMigrationsWithRetry はリトライ機能付きでマイグレーションを実行します
+// runMigrationsWithRetry はリトライ機能付きでマイグレーションを実行します。
+// この関数は以下の処理を行います：
+// - タイムアウトの設定
+// - リトライ処理
+// - エラーハンドリング
 func runMigrationsWithRetry(
 	ctx context.Context,
 	db *gorm.DB,
@@ -184,7 +210,11 @@ func runMigrationsWithRetry(
 	return fmt.Errorf(errFmt, errMsgRetryFailed, lastErr)
 }
 
-// migrateTable は単一のテーブルのマイグレーションを実行します
+// migrateTable は単一のテーブルのマイグレーションを実行します。
+// この関数は以下の処理を行います：
+// - テーブルのマイグレーション
+// - スロークエリの検出
+// - 進捗の更新
 func migrateTable(
 	ctx context.Context,
 	tx *gorm.DB,
@@ -214,7 +244,11 @@ func migrateTable(
 	return nil
 }
 
-// executeMigration は実際のマイグレーション処理を実行します
+// executeMigration は実際のマイグレーション処理を実行します。
+// この関数は以下の処理を行います：
+// - モデルの定義
+// - トランザクションの開始
+// - スキーマの設定
 func executeMigration(
 	ctx context.Context,
 	db *gorm.DB,
@@ -249,10 +283,18 @@ func executeMigration(
 	})
 }
 
+// setupSchema はスキーマを設定します。
+// この関数は以下の処理を行います：
+// - スキーマの設定
+// - エラーハンドリング
 func setupSchema(tx *gorm.DB, schema string) error {
 	return tx.Exec(fmt.Sprintf("SET search_path TO %s", schema)).Error
 }
 
+// processModels はモデルのマイグレーションを処理します。
+// この関数は以下の処理を行います：
+// - モデルの順次処理
+// - エラーハンドリング
 func processModels(
 	ctx context.Context,
 	tx *gorm.DB,
@@ -269,6 +311,11 @@ func processModels(
 	return nil
 }
 
+// processModel は単一のモデルのマイグレーションを処理します。
+// この関数は以下の処理を行います：
+// - セーブポイントの作成
+// - マイグレーションの実行
+// - メトリクスの収集
 func processModel(
 	ctx context.Context,
 	tx *gorm.DB,
@@ -313,6 +360,10 @@ func processModel(
 	return nil
 }
 
+// createSavePoint はセーブポイントを作成します。
+// この関数は以下の処理を行います：
+// - セーブポイントの作成
+// - エラーハンドリング
 func createSavePoint(tx *gorm.DB, index int, progress *MigrationProgress) error {
 	if index > 0 && index%savePointInterval == 0 {
 		savePoint := fmt.Sprintf("sp_%d", index)
@@ -329,6 +380,10 @@ func createSavePoint(tx *gorm.DB, index int, progress *MigrationProgress) error 
 	return nil
 }
 
+// releaseSavePoint はセーブポイントを解放します。
+// この関数は以下の処理を行います：
+// - セーブポイントの解放
+// - エラーハンドリング
 func releaseSavePoint(tx *gorm.DB, savePoint string) error {
 	if err := tx.Exec(fmt.Sprintf("RELEASE SAVEPOINT %s", savePoint)).Error; err != nil {
 		log.Printf("セーブポイント %s の解放に失敗: %v", savePoint, err)
@@ -340,6 +395,11 @@ func releaseSavePoint(tx *gorm.DB, savePoint string) error {
 	return nil
 }
 
+// handleMigrationError はマイグレーションエラーを処理します。
+// この関数は以下の処理を行います：
+// - セーブポイントへのロールバック
+// - エラーログの記録
+// - メトリクスの更新
 func handleMigrationError(
 	tx *gorm.DB,
 	index int,

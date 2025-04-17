@@ -1,5 +1,9 @@
 // Package department は学部関連のHTTPリクエストを処理するハンドラーを提供します。
-// 学部の取得、作成、更新、削除のエンドポイントを実装しています。
+// このパッケージは以下の機能を提供します：
+// - 学部の取得、作成、更新、削除
+// - リクエストのバリデーション
+// - エラーハンドリング
+// - パフォーマンスメトリクスの収集
 package department
 
 import (
@@ -16,7 +20,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Handler は学部関連のHTTPリクエストを処理
+// Handler は学部関連のHTTPリクエストを処理する構造体です。
+// この構造体は以下の機能を提供します：
+// - リポジトリとの連携
+// - リクエストタイムアウトの管理
+// - パフォーマンスメトリクスの収集
 type Handler struct {
 	repo            repositories.IUniversityRepository
 	timeout         time.Duration
@@ -25,7 +33,11 @@ type Handler struct {
 	dbDuration      *prometheus.HistogramVec
 }
 
-// NewDepartmentHandler は新しいHandlerインスタンスを生成
+// NewDepartmentHandler は新しいHandlerインスタンスを生成します。
+// この関数は以下の処理を行います：
+// - リポジトリの初期化
+// - タイムアウトの設定
+// - メトリクスの初期化と登録
 func NewDepartmentHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
 	return &Handler{
 		repo:    repo,
@@ -56,7 +68,11 @@ func NewDepartmentHandler(repo repositories.IUniversityRepository, timeout time.
 	}
 }
 
-// bindRequest はリクエストボディのバインディングを共通化
+// bindRequest はリクエストボディのバインディングを共通化します。
+// この関数は以下の処理を行います：
+// - リクエストボディのバインディング
+// - エラーログの記録
+// - バリデーションエラーの生成
 func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
@@ -66,7 +82,11 @@ func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interfac
 	return nil
 }
 
-// validateDepartmentRequest は学部リクエストのバリデーションを共通化
+// validateDepartmentRequest は学部リクエストのバリデーションを共通化します。
+// この関数は以下の処理を行います：
+// - 学部名の検証
+// - 大学IDの検証
+// - エラーメッセージの生成
 func (h *Handler) validateDepartmentRequest(department *models.Department) error {
 	if department.Name == "" {
 		return errors.NewValidationError("学部名は必須です")
@@ -83,7 +103,11 @@ func (h *Handler) validateDepartmentRequest(department *models.Department) error
 	return nil
 }
 
-// validateUniversityAndDepartmentID は大学IDと学部IDのバリデーションを共通化
+// validateUniversityAndDepartmentID は大学IDと学部IDのバリデーションを共通化します。
+// この関数は以下の処理を行います：
+// - 大学IDの検証
+// - 学部IDの検証
+// - エラーハンドリング
 func (h *Handler) validateUniversityAndDepartmentID(ctx context.Context, c echo.Context) (uint, uint, error) {
 	universityID, err := validation.ValidateUniversityID(ctx, c.Param("universityId"))
 	if err != nil {
@@ -98,7 +122,12 @@ func (h *Handler) validateUniversityAndDepartmentID(ctx context.Context, c echo.
 	return universityID, departmentID, nil
 }
 
-// GetDepartment は指定された学部の情報を取得
+// GetDepartment は指定された学部の情報を取得します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - データベースからの取得
+// - パフォーマンスメトリクスの収集
+// - エラーハンドリング
 func (h *Handler) GetDepartment(c echo.Context) error {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
@@ -133,7 +162,11 @@ func (h *Handler) GetDepartment(c echo.Context) error {
 	})
 }
 
-// CreateDepartment は新しい学部を作成
+// CreateDepartment は新しい学部を作成します。
+// この関数は以下の処理を行います：
+// - リクエストのバリデーション
+// - データベースへの保存
+// - エラーハンドリング
 func (h *Handler) CreateDepartment(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -165,7 +198,12 @@ func (h *Handler) CreateDepartment(c echo.Context) error {
 	})
 }
 
-// UpdateDepartment は既存の学部を更新
+// UpdateDepartment は既存の学部を更新します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - リクエストのバリデーション
+// - データベースの更新
+// - エラーハンドリング
 func (h *Handler) UpdateDepartment(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -197,7 +235,11 @@ func (h *Handler) UpdateDepartment(c echo.Context) error {
 	})
 }
 
-// DeleteDepartment は学部を削除
+// DeleteDepartment は学部を削除します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - データベースからの削除
+// - エラーハンドリング
 func (h *Handler) DeleteDepartment(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()

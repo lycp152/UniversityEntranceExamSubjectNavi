@@ -1,5 +1,9 @@
 // Package admissioninfo は募集情報関連のHTTPリクエストを処理するハンドラーを提供します。
-// 募集情報の取得、作成、更新、削除のエンドポイントを実装しています。
+// このパッケージは以下の機能を提供します：
+// - 募集情報の取得、作成、更新、削除
+// - リクエストのバリデーション
+// - エラーハンドリング
+// - パフォーマンスメトリクスの収集
 package admissioninfo
 
 import (
@@ -30,7 +34,11 @@ const (
 	AdmissionInfoPath         = "/admission-info"
 )
 
-// Handler は募集情報関連のHTTPリクエストを処理
+// Handler は募集情報関連のHTTPリクエストを処理する構造体です。
+// この構造体は以下の機能を提供します：
+// - リポジトリとの連携
+// - リクエストタイムアウトの管理
+// - パフォーマンスメトリクスの収集
 type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
@@ -42,7 +50,11 @@ type Handler struct {
 	dbDuration     *prometheus.HistogramVec
 }
 
-// NewHandler は新しいAdmissionHandlerインスタンスを生成
+// NewHandler は新しいAdmissionHandlerインスタンスを生成します。
+// この関数は以下の処理を行います：
+// - リポジトリの初期化
+// - タイムアウトの設定
+// - メトリクスの初期化と登録
 func NewHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
 	// メトリクスの初期化
 	requestDuration := prometheus.NewHistogramVec(
@@ -106,7 +118,11 @@ func NewHandler(repo repositories.IUniversityRepository, timeout time.Duration) 
 	}
 }
 
-// bindRequest はリクエストボディのバインディングを共通化
+// bindRequest はリクエストボディのバインディングを共通化します。
+// この関数は以下の処理を行います：
+// - リクエストボディのバインディング
+// - エラーログの記録
+// - バリデーションエラーの生成
 func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
@@ -116,7 +132,11 @@ func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interfac
 	return nil
 }
 
-// validateScheduleAndInfoID はスケジュールIDと情報IDのバリデーションを共通化
+// validateScheduleAndInfoID はスケジュールIDと情報IDのバリデーションを共通化します。
+// この関数は以下の処理を行います：
+// - スケジュールIDの検証
+// - 情報IDの検証
+// - エラーハンドリング
 func (h *Handler) validateScheduleAndInfoID(ctx context.Context, c echo.Context) (uint, uint, error) {
 	scheduleID, err := validation.ValidateScheduleID(ctx, c.Param("scheduleId"))
 	if err != nil {
@@ -131,7 +151,12 @@ func (h *Handler) validateScheduleAndInfoID(ctx context.Context, c echo.Context)
 	return scheduleID, infoID, nil
 }
 
-// GetAdmissionInfo は指定された募集情報を取得
+// GetAdmissionInfo は指定された募集情報を取得します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - データベースからの取得
+// - パフォーマンスメトリクスの収集
+// - エラーハンドリング
 func (h *Handler) GetAdmissionInfo(c echo.Context) error {
 	start := time.Now()
 	defer func() {
@@ -174,7 +199,11 @@ func (h *Handler) GetAdmissionInfo(c echo.Context) error {
 	return c.JSON(http.StatusOK, info)
 }
 
-// CreateAdmissionInfo は新しい募集情報を作成
+// CreateAdmissionInfo は新しい募集情報を作成します。
+// この関数は以下の処理を行います：
+// - リクエストのバリデーション
+// - データベースへの保存
+// - エラーハンドリング
 func (h *Handler) CreateAdmissionInfo(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -201,7 +230,12 @@ func (h *Handler) CreateAdmissionInfo(c echo.Context) error {
 	return c.JSON(http.StatusCreated, info)
 }
 
-// UpdateAdmissionInfo は既存の募集情報を更新
+// UpdateAdmissionInfo は既存の募集情報を更新します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - リクエストのバリデーション
+// - データベースの更新
+// - エラーハンドリング
 func (h *Handler) UpdateAdmissionInfo(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -229,7 +263,11 @@ func (h *Handler) UpdateAdmissionInfo(c echo.Context) error {
 	return c.JSON(http.StatusOK, info)
 }
 
-// DeleteAdmissionInfo は募集情報を削除
+// DeleteAdmissionInfo は募集情報を削除します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - データベースからの削除
+// - エラーハンドリング
 func (h *Handler) DeleteAdmissionInfo(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()

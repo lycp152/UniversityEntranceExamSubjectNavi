@@ -1,3 +1,8 @@
+// Package cache はキャッシュ機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - キーバリューストアの実装
+// - トランザクションのサポート
+// - パフォーマンスメトリクスの収集
 package cache
 
 import (
@@ -23,13 +28,19 @@ const (
 	valueFormat = "value_%d"
 )
 
-// setup はテストの前処理を行います
+// setup はテストの前処理を行います。
+// この関数は以下の処理を行います：
+// - テスト用のロガーの初期化
+// - キャッシュの初期化
 func setup() {
 	// テスト用のロガーを初期化
 	applogger.InitTestLogger()
 }
 
-// teardown はテストの後処理を行います
+// teardown はテストの後処理を行います。
+// この関数は以下の処理を行います：
+// - キャッシュのクリア
+// - トランザクションのロールバック
 func teardown(_ testing.TB) {
 	// キャッシュをクリア
 	c := GetInstance()
@@ -38,6 +49,12 @@ func teardown(_ testing.TB) {
 	_ = c.RollbackTransaction()
 }
 
+// TestCacheSet はキャッシュのSet操作をテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：有効なキーと値の設定
+// - 異常系：空のキー
+// - 異常系：nil値
+// - 異常系：無効な期間
 func TestCacheSet(t *testing.T) {
 	setup()
 
@@ -103,6 +120,11 @@ func TestCacheSet(t *testing.T) {
 	}
 }
 
+// TestCacheGet はキャッシュのGet操作をテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：存在するキーの取得
+// - 正常系：存在しないキーの取得
+// - 異常系：空のキー
 func TestCacheGet(t *testing.T) {
 	setup()
 
@@ -177,6 +199,11 @@ func TestCacheGet(t *testing.T) {
 	}
 }
 
+// TestCacheTransaction はキャッシュのトランザクション機能をテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：トランザクションのコミット
+// - 異常系：重複したトランザクション開始
+// - 異常系：トランザクションなしでのコミット
 func TestCacheTransaction(t *testing.T) {
 	setup()
 
@@ -244,6 +271,11 @@ func TestCacheTransaction(t *testing.T) {
 	}
 }
 
+// TestCachePerformance はキャッシュのパフォーマンスをテストします。
+// このテストは以下の項目を検証します：
+// - 大量のデータ操作の処理時間
+// - ヒット率の妥当性
+// - 総アイテム数の正確性
 func TestCachePerformance(t *testing.T) {
 	setup()
 
@@ -294,7 +326,11 @@ func TestCachePerformance(t *testing.T) {
 	}
 }
 
-// BenchmarkCacheSet はキャッシュのSet操作のベンチマークテストを行います
+// BenchmarkCacheSet はキャッシュのSet操作のベンチマークテストを行います。
+// このベンチマークは以下の項目を測定します：
+// - 単一のSet操作の処理時間
+// - 大量のSet操作の処理時間
+// - メモリ使用量
 func BenchmarkCacheSet(b *testing.B) {
 	setup()
 
@@ -314,7 +350,11 @@ func BenchmarkCacheSet(b *testing.B) {
 	}
 }
 
-// BenchmarkCacheGet はキャッシュのGet操作のベンチマークテストを行います
+// BenchmarkCacheGet はキャッシュのGet操作のベンチマークテストを行います。
+// このベンチマークは以下の項目を測定します：
+// - 単一のGet操作の処理時間
+// - 大量のGet操作の処理時間
+// - キャッシュヒット率
 func BenchmarkCacheGet(b *testing.B) {
 	setup()
 
@@ -344,6 +384,11 @@ func BenchmarkCacheGet(b *testing.B) {
 	}
 }
 
+// TestCachePerformanceMetrics はキャッシュのパフォーマンスメトリクスをテストします。
+// このテストは以下の項目を検証します：
+// - メトリクスの取得
+// - ヒット率の妥当性
+// - 総アイテム数の正確性
 func TestCachePerformanceMetrics(t *testing.T) {
 	setup()
 
@@ -372,6 +417,11 @@ func TestCachePerformanceMetrics(t *testing.T) {
 	}
 }
 
+// TestCacheErrorHandling はキャッシュのエラーハンドリングをテストします。
+// このテストは以下のケースを検証します：
+// - トランザクションの重複開始
+// - トランザクションなしでのコミット
+// - エラーメッセージの正確性
 func TestCacheErrorHandling(t *testing.T) {
 	setup()
 

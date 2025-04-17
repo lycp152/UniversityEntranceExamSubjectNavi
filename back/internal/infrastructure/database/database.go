@@ -1,5 +1,9 @@
-// Package database はデータベース接続と操作を管理するパッケージです
-// PostgreSQLデータベースとの接続、設定、トランザクション管理などの機能を提供します
+// Package database はデータベース接続と操作を管理するパッケージです。
+// このパッケージは以下の機能を提供します：
+// - データベース接続の管理
+// - コネクションプールの設定
+// - トランザクション管理
+// - マイグレーション
 package database
 
 import (
@@ -38,8 +42,13 @@ const (
 	logSlowThreshold = time.Second
 )
 
-// DBStats はデータベース接続の統計情報を保持します。
-// この構造体は複数のゴルーチンから同時にアクセスしても安全です。
+// DBStats はデータベース接続の統計情報を保持する構造体です。
+// この構造体は以下の情報を保持します：
+// - 最大接続数
+// - 現在の接続数
+// - 使用中の接続数
+// - アイドル接続数
+// - 待機統計
 type DBStats struct {
 	MaxOpenConnections int           // 設定された最大オープン接続数
 	OpenConnections    int           // 現在のオープン接続数
@@ -51,7 +60,12 @@ type DBStats struct {
 	MaxLifetimeClosed int64         // 生存期間超過で閉じられた接続数
 }
 
-// Config はデータベース設定を保持します
+// Config はデータベース接続の設定を保持する構造体です。
+// この構造体は以下の設定を保持します：
+// - 接続情報（ホスト、ポート、ユーザー、パスワード、データベース名）
+// - スキーマ設定
+// - コネクションプール設定
+// - リトライ設定
 type Config struct {
 	Host            string
 	Port            string
@@ -67,7 +81,11 @@ type Config struct {
 	RetryDelay      time.Duration
 }
 
-// getEnvInt は環境変数を整数として取得します
+// getEnvInt は環境変数を整数として取得します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - 整数への変換
+// - デフォルト値の提供
 func getEnvInt(key string, defaultValue int) int {
 	if v := os.Getenv(key); v != "" {
 		if n, err := strconv.Atoi(v); err == nil {
@@ -78,7 +96,11 @@ func getEnvInt(key string, defaultValue int) int {
 	return defaultValue
 }
 
-// getEnvDuration は環境変数をDurationとして取得します
+// getEnvDuration は環境変数をDurationとして取得します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - Durationへの変換
+// - デフォルト値の提供
 func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 	if v := os.Getenv(key); v != "" {
 		if d, err := time.ParseDuration(v); err == nil {
@@ -89,7 +111,11 @@ func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 	return defaultValue
 }
 
-// NewConfig は環境変数からデータベース設定を作成します
+// NewConfig は環境変数からデータベース設定を作成します。
+// この関数は以下の処理を行います：
+// - 必須環境変数の検証
+// - 設定値の取得
+// - デフォルト値の設定
 func NewConfig() (*Config, error) {
 	requiredEnvVars := []string{
 		"DB_HOST",
@@ -126,7 +152,11 @@ func NewConfig() (*Config, error) {
 	}, nil
 }
 
-// connectWithRetry はリトライ付きでデータベース接続を試みます
+// connectWithRetry はリトライ付きでデータベース接続を試みます。
+// この関数は以下の処理を行います：
+// - データベース接続の試行
+// - リトライ処理
+// - エラーハンドリング
 func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 	var db *gorm.DB
 
@@ -158,7 +188,12 @@ func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 	return nil, fmt.Errorf(errMsgDBConnection, err)
 }
 
-// NewDB はデータベース接続を作成します
+// NewDB はデータベース接続を作成します。
+// この関数は以下の処理を行います：
+// - 設定の取得
+// - 接続文字列の生成
+// - データベース接続の確立
+// - コネクションプールの設定
 func NewDB() (*gorm.DB, error) {
 	config, err := NewConfig()
 	if err != nil {
@@ -199,7 +234,10 @@ func NewDB() (*gorm.DB, error) {
 	return db, nil
 }
 
-// CloseDB はデータベース接続を閉じます
+// CloseDB はデータベース接続を閉じます。
+// この関数は以下の処理を行います：
+// - データベース接続のクローズ
+// - エラーハンドリング
 func CloseDB(db *gorm.DB) error {
 	sqlDB, err := db.DB()
 	if err != nil {
@@ -209,7 +247,10 @@ func CloseDB(db *gorm.DB) error {
 	return sqlDB.Close()
 }
 
-// AutoMigrate はデータベースのマイグレーションを実行します
+// AutoMigrate はデータベースのマイグレーションを実行します。
+// この関数は以下の処理を行います：
+// - モデルのマイグレーション
+// - エラーハンドリング
 func AutoMigrate(ctx context.Context, db *gorm.DB) error {
 	return db.WithContext(ctx).AutoMigrate(
 		&models.University{},
@@ -222,12 +263,20 @@ func AutoMigrate(ctx context.Context, db *gorm.DB) error {
 	)
 }
 
-// WithTransaction はトランザクションを実行します
+// WithTransaction はトランザクションを実行します。
+// この関数は以下の処理を行います：
+// - トランザクションの開始
+// - トランザクション内での処理実行
+// - エラーハンドリング
 func WithTransaction(ctx context.Context, db *gorm.DB, fn func(tx *gorm.DB) error) error {
 	return db.WithContext(ctx).Transaction(fn)
 }
 
-// setupConnectionPool はコネクションプールの設定を行います
+// setupConnectionPool はコネクションプールの設定を行います。
+// この関数は以下の処理を行います：
+// - コネクションプールの設定
+// - 設定値の検証
+// - エラーハンドリング
 func setupConnectionPool(sqlDB *sql.DB, cfg *Config) error {
 	maxIdleConns := defaultMaxIdleConns
 	if cfg.MaxIdleConns > 0 {
@@ -263,7 +312,9 @@ func setupConnectionPool(sqlDB *sql.DB, cfg *Config) error {
 }
 
 // GetDBStats はデータベース接続の統計情報を取得します。
-// この関数は複数のゴルーチンから同時に呼び出しても安全です。
+// この関数は以下の処理を行います：
+// - 統計情報の取得
+// - エラーハンドリング
 func GetDBStats(db *gorm.DB) (*DBStats, error) {
 	sqlDB, err := db.DB()
 	if err != nil {

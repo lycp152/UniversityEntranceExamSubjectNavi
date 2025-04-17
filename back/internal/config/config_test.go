@@ -1,3 +1,8 @@
+// Package config は設定関連のテストを提供します
+// 以下のテストを含みます：
+// - 環境変数の設定と取得
+// - 設定のバリデーション
+// - デフォルト値の適用
 package config
 
 import (
@@ -9,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// テストケースの定数定義
 const (
 	testCaseEnvSet    = "環境変数が設定されている場合"
 	testCaseEnvNotSet = "環境変数が設定されていない場合"
@@ -16,6 +22,12 @@ const (
 	errMsgEnvUnset    = "環境変数の削除に失敗しました: %v"
 )
 
+// TestNew は設定の初期化をテストします
+// 以下のケースをテストします：
+// 1. デフォルト設定での初期化
+// 2. カスタム設定での初期化
+// 3. 無効なポート番号でのエラー
+// 4. 必須環境変数不足でのエラー
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -84,6 +96,11 @@ func TestNew(t *testing.T) {
 	}
 }
 
+// setupTestEnv はテスト環境をセットアップします
+// 以下の処理を行います：
+// 1. 既存の環境変数をクリア
+// 2. 新しい環境変数を設定
+// 3. テスト終了後のクリーンアップを登録
 func setupTestEnv(t *testing.T, envVars map[string]string) {
 	for key := range envVars {
 		if err := os.Unsetenv(key); err != nil {
@@ -101,6 +118,11 @@ func setupTestEnv(t *testing.T, envVars map[string]string) {
 	}
 }
 
+// validateTestResult はテスト結果を検証します
+// 以下の処理を行います：
+// 1. エラーが期待される場合の検証
+// 2. エラーメッセージの内容確認
+// 3. 正常系の場合の設定値検証
 func validateTestResult(t *testing.T, cfg *Config, err error, expectedErr bool, errContains string) {
 	if expectedErr {
 		require.Error(t, err)
@@ -117,6 +139,11 @@ func validateTestResult(t *testing.T, cfg *Config, err error, expectedErr bool, 
 	validateConfig(t, cfg)
 }
 
+// validateConfig は設定値の基本検証を行います
+// 以下の項目を検証します：
+// - ポート番号
+// - 環境
+// - データベース接続情報
 func validateConfig(t *testing.T, cfg *Config) {
 	assert.NotEmpty(t, cfg.Port)
 	assert.NotEmpty(t, cfg.Env)
@@ -126,6 +153,10 @@ func validateConfig(t *testing.T, cfg *Config) {
 	assert.NotEmpty(t, cfg.DBName)
 }
 
+// TestGetEnvOrDefault は環境変数の取得とデフォルト値の適用をテストします
+// 以下のケースをテストします：
+// 1. 環境変数が設定されている場合
+// 2. 環境変数が設定されていない場合
 func TestGetEnvOrDefault(t *testing.T) {
 	t.Parallel()
 
@@ -177,6 +208,11 @@ func TestGetEnvOrDefault(t *testing.T) {
 	}
 }
 
+// TestGetEnvOrDefaultInt は整数型の環境変数取得をテストします
+// 以下のケースをテストします：
+// 1. 環境変数が設定されている場合
+// 2. 環境変数が設定されていない場合
+// 3. 無効な値が設定されている場合
 func TestGetEnvOrDefaultInt(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -231,6 +267,11 @@ func TestGetEnvOrDefaultInt(t *testing.T) {
 	}
 }
 
+// TestGetEnvOrDefaultDuration は時間型の環境変数取得をテストします
+// 以下のケースをテストします：
+// 1. 環境変数が設定されている場合
+// 2. 環境変数が設定されていない場合
+// 3. 無効な値が設定されている場合
 func TestGetEnvOrDefaultDuration(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -285,6 +326,11 @@ func TestGetEnvOrDefaultDuration(t *testing.T) {
 	}
 }
 
+// TestConfigValidate は設定のバリデーションをテストします
+// 以下のケースをテストします：
+// 1. 有効な設定値での検証
+// 2. 無効なポート番号でのエラー
+// 3. 必須項目が不足している場合のエラー
 func TestConfigValidate(t *testing.T) {
 	t.Parallel()
 

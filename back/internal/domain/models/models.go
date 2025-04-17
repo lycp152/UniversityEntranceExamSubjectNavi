@@ -1,6 +1,9 @@
-// Package models は、アプリケーションのドメインモデルを定義します。
-// このパッケージには、データベースのテーブル構造と対応する構造体、
-// およびそれらの操作に必要なメソッドが含まれています。
+// Package models はアプリケーションのドメインモデルを定義します。
+// このパッケージには以下の機能が含まれます：
+// 1. データベースのテーブル構造と対応する構造体
+// 2. バリデーションルールとエラーハンドリング
+// 3. リレーションシップの定義
+// 4. インデックスの定義
 package models
 
 import (
@@ -12,7 +15,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// ValidationRule はバリデーションルールを定義する構造体
+// ValidationRule はバリデーションルールを定義する構造体です
+// 以下のフィールドを含みます：
+// - Field: バリデーション対象のフィールド名
+// - Condition: バリデーション条件を定義する関数
+// - Message: エラーメッセージ
+// - Code: エラーコード
 type ValidationRule struct {
 	Field     string                 // バリデーション対象のフィールド名
 	Condition func(interface{}) bool // バリデーション条件
@@ -20,13 +28,20 @@ type ValidationRule struct {
 	Code      string                 // エラーコード
 }
 
-// ValidationError はバリデーションエラーを表現する構造体
+// ValidationError はバリデーションエラーを表現する構造体です
+// 以下のフィールドを含みます：
+// - Field: エラーが発生したフィールド名
+// - Message: エラーメッセージ
+// - Code: エラーコード
+// - Severity: エラーの重要度
+// - Err: 元のエラー
+// - Details: エラーの詳細情報
 type ValidationError struct {
-	Field    string // エラーが発生したフィールド名
-	Message  string // エラーメッセージ
-	Code     string // エラーコード
-	Severity string // エラーの重要度（error, warning, info）
-	Err      error  // 元のエラー
+	Field    string                 // エラーが発生したフィールド名
+	Message  string                 // エラーメッセージ
+	Code     string                 // エラーコード
+	Severity string                 // エラーの重要度（error, warning, info）
+	Err      error                  // 元のエラー
 	Details  map[string]interface{} // エラーの詳細情報
 }
 
@@ -108,7 +123,15 @@ func (e *ValidationError) Error() string {
 	return fmt.Sprintf("フィールド %s のバリデーションに失敗しました: %s", e.Field, e.Message)
 }
 
-// BaseModel はすべてのモデルに共通する基本フィールドを定義
+// BaseModel はすべてのモデルに共通する基本フィールドを定義します
+// 以下のフィールドを含みます：
+// - ID: 主キー
+// - CreatedAt: 作成日時
+// - UpdatedAt: 更新日時
+// - DeletedAt: 削除日時（ソフトデリート用）
+// - Version: 楽観的ロック用バージョン
+// - CreatedBy: 作成者
+// - UpdatedBy: 更新者
 type BaseModel struct {
 	ID        uint       `json:"id" gorm:"primarykey"`                    // 主キー
 	CreatedAt time.Time  `json:"created_at"`                              // 作成日時
@@ -142,7 +165,11 @@ func (b *BaseModel) BeforeUpdate() error {
 	return nil
 }
 
-// University は大学エンティティを表現する
+// University は大学エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - Name: 大学名
+// - Departments: 学部一覧
 type University struct {
 	BaseModel
 	Name        string       `json:"name"` // 大学名
@@ -186,7 +213,13 @@ func (u *University) BeforeUpdate(_ *gorm.DB) error {
 	return u.Validate()
 }
 
-// Department は学部エンティティを表現する
+// Department は学部エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - UniversityID: 大学ID
+// - Name: 学部名
+// - University: 所属大学
+// - Majors: 学科一覧
 type Department struct {
 	BaseModel
 	UniversityID uint       `json:"university_id"` // 大学ID
@@ -286,7 +319,13 @@ func containsSpecialCharacters(s string) bool {
 	return false
 }
 
-// Major は学科エンティティを表現する
+// Major は学科エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - DepartmentID: 学部ID
+// - Name: 学科名
+// - Department: 所属学部
+// - AdmissionSchedules: 入試日程一覧
 type Major struct {
 	BaseModel
 	DepartmentID      uint              `json:"department_id" gorm:"not null;index:idx_major_dept,type:btree"` // 学部ID
@@ -337,7 +376,15 @@ func (m *Major) Validate() error {
 	return validateRules(m, rules)
 }
 
-// AdmissionSchedule は入試日程エンティティを表現する
+// AdmissionSchedule は入試日程エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - MajorID: 学科ID
+// - Name: 日程名
+// - DisplayOrder: 表示順
+// - Major: 所属学科
+// - AdmissionInfos: 入試情報一覧
+// - TestTypes: 試験種別一覧
 type AdmissionSchedule struct {
 	BaseModel
 	MajorID       uint           `json:"major_id" gorm:"not null;index:idx_schedule_major_year,type:btree"` // 学科ID
@@ -390,7 +437,15 @@ func (a *AdmissionSchedule) Validate() error {
 	return validateRules(a, rules)
 }
 
-// AdmissionInfo は入試情報エンティティを表現する
+// AdmissionInfo は入試情報エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - AdmissionScheduleID: 入試日程ID
+// - Enrollment: 募集人数
+// - AcademicYear: 学年度
+// - Status: ステータス
+// - AdmissionSchedule: 所属入試日程
+// - TestTypes: 試験種別一覧
 type AdmissionInfo struct {
 	BaseModel
 	AdmissionScheduleID uint `json:"admission_schedule_id" gorm:"not null;index:idx_info_schedule_year"` // 入試日程ID
@@ -452,7 +507,13 @@ func (a *AdmissionInfo) Validate() error {
 	return validateRules(a, rules)
 }
 
-// TestType は試験種別エンティティを表現する
+// TestType は試験種別エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - AdmissionScheduleID: 入試日程ID
+// - Name: 試験種別名
+// - AdmissionSchedule: 所属入試日程
+// - Subjects: 科目一覧
 type TestType struct {
 	BaseModel
 	AdmissionScheduleID uint      `json:"admission_schedule_id"` // 入試日程ID
@@ -495,7 +556,15 @@ func (t *TestType) Validate() error {
 	return validateRules(t, rules)
 }
 
-// Subject は科目エンティティを表現する
+// Subject は科目エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - TestTypeID: 試験種別ID
+// - Name: 科目名
+// - Score: 配点
+// - Percentage: 配点比率
+// - DisplayOrder: 表示順
+// - TestType: 所属試験種別
 type Subject struct {
 	BaseModel
 	TestTypeID   uint     `json:"test_type_id" gorm:"not null;index:idx_subject_test_type,type:btree"` // 試験種別ID
@@ -564,7 +633,11 @@ func (s *Subject) Validate() error {
 	return validateRules(s, rules)
 }
 
-// TestEnv はテスト環境の設定を表現する構造体
+// TestEnv はテスト環境の設定を表現する構造体です
+// 以下のフィールドを含みます：
+// - DB: データベース接続
+// - Server: Echoサーバー
+// - TestData: テストデータ
 type TestEnv struct {
 	DB        *gorm.DB     // データベース接続
 	Server    *echo.Echo   // Echoサーバー

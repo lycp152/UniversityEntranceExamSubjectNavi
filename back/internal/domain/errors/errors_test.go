@@ -8,8 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// testOtherError はテストで使用する他のエラーメッセージです。
 const testOtherError = "other error"
 
+// TestDBError はデータベースエラーのテストを実行します。
+// 以下のケースをテストします：
+// 1. エラーの生成と取得
+// 2. エラーメッセージのフォーマット
+// 3. エラーのアンラッピング
+// 4. コンテキスト情報の追加
+// 5. エラー詳細の取得
 func TestDBError(t *testing.T) {
 	t.Parallel()
 
@@ -70,6 +78,13 @@ func TestDBError(t *testing.T) {
 	})
 }
 
+// TestErrorCheckers はエラーチェッカー関数のテストを実行します。
+// 以下のケースをテストします：
+// 1. レコード未検出エラーの判定
+// 2. 一意制約違反エラーの判定
+// 3. バリデーションエラーの判定
+// 4. タイムアウトエラーの判定
+// 5. デッドロックエラーの判定
 func TestErrorCheckers(t *testing.T) {
 	t.Parallel()
 

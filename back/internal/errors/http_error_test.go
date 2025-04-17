@@ -1,3 +1,5 @@
+// Package errors はアプリケーション全体で使用されるエラー型とエラーハンドリング機能のテストを提供します。
+// このパッケージはHTTPError型のテストを実装し、エラーハンドリングの正確性を検証します。
 package errors
 
 import (
@@ -5,15 +7,28 @@ import (
 	"testing"
 )
 
+// テストで使用する定数
 const (
+	// notFoundMessage は404エラーのメッセージを定義します
 	notFoundMessage = "リソースが見つかりません"
-	httpPrefix      = "HTTP 404: "
-	badRequestMsg   = "無効なリクエスト"
+	// httpPrefix はHTTPエラーのプレフィックスを定義します
+	httpPrefix = "HTTP 404: "
+	// badRequestMsg は400エラーのメッセージを定義します
+	badRequestMsg = "無効なリクエスト"
+	// unauthorizedMsg は401エラーのメッセージを定義します
 	unauthorizedMsg = "認証が必要です"
-	forbiddenMsg    = "アクセスが拒否されました"
+	// forbiddenMsg は403エラーのメッセージを定義します
+	forbiddenMsg = "アクセスが拒否されました"
+	// internalServerMsg は500エラーのメッセージを定義します
 	internalServerMsg = "内部サーバーエラー"
 )
 
+// TestHTTPErrorError はHTTPErrorのError()メソッドのテストを実装します
+// 以下のケースをテストします：
+// 1. エラーがない場合
+// 2. 内部エラーがある場合
+// 3. 詳細情報がある場合
+// 4. エラーと詳細情報の両方がある場合
 func TestHTTPErrorError(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -73,6 +88,8 @@ func TestHTTPErrorError(t *testing.T) {
 	}
 }
 
+// TestHTTPErrorUnwrap はHTTPErrorのUnwrap()メソッドのテストを実装します
+// 内部エラーが正しく返されることを確認します
 func TestHTTPErrorUnwrap(t *testing.T) {
 	innerErr := errors.New("内部エラー")
 	err := &HTTPError{
@@ -86,6 +103,8 @@ func TestHTTPErrorUnwrap(t *testing.T) {
 	}
 }
 
+// TestHTTPErrorWithDetails はHTTPErrorのWithDetails()メソッドのテストを実装します
+// 詳細情報が正しく設定されることを確認します
 func TestHTTPErrorWithDetails(t *testing.T) {
 	err := &HTTPError{
 		Code:    404,
@@ -110,6 +129,8 @@ func TestHTTPErrorWithDetails(t *testing.T) {
 	}
 }
 
+// TestNewHTTPError はNewHTTPError()関数のテストを実装します
+// エラーコード、メッセージ、内部エラーが正しく設定されることを確認します
 func TestNewHTTPError(t *testing.T) {
 	innerErr := errors.New("内部エラー")
 	err := NewHTTPError(404, notFoundMessage, innerErr)
@@ -127,6 +148,8 @@ func TestNewHTTPError(t *testing.T) {
 	}
 }
 
+// TestNewBadRequestError はNewBadRequestError()関数のテストを実装します
+// 400エラーが正しく作成されることを確認します
 func TestNewBadRequestError(t *testing.T) {
 	innerErr := errors.New("無効な入力")
 	err := NewBadRequestError(badRequestMsg, innerErr)
@@ -144,6 +167,8 @@ func TestNewBadRequestError(t *testing.T) {
 	}
 }
 
+// TestNewUnauthorizedError はNewUnauthorizedError()関数のテストを実装します
+// 401エラーが正しく作成されることを確認します
 func TestNewUnauthorizedError(t *testing.T) {
 	innerErr := errors.New("認証エラー")
 	err := NewUnauthorizedError(unauthorizedMsg, innerErr)
@@ -161,6 +186,8 @@ func TestNewUnauthorizedError(t *testing.T) {
 	}
 }
 
+// TestNewForbiddenError はNewForbiddenError()関数のテストを実装します
+// 403エラーが正しく作成されることを確認します
 func TestNewForbiddenError(t *testing.T) {
 	innerErr := errors.New("権限エラー")
 	err := NewForbiddenError(forbiddenMsg, innerErr)
@@ -178,6 +205,8 @@ func TestNewForbiddenError(t *testing.T) {
 	}
 }
 
+// TestNewHTTPNotFoundError はNewHTTPNotFoundError()関数のテストを実装します
+// 404エラーが正しく作成されることを確認します
 func TestNewHTTPNotFoundError(t *testing.T) {
 	innerErr := errors.New("リソースが見つかりません")
 	err := NewHTTPNotFoundError(notFoundMessage, innerErr)
@@ -195,6 +224,8 @@ func TestNewHTTPNotFoundError(t *testing.T) {
 	}
 }
 
+// TestNewInternalServerError はNewInternalServerError()関数のテストを実装します
+// 500エラーが正しく作成されることを確認します
 func TestNewInternalServerError(t *testing.T) {
 	innerErr := errors.New("サーバーエラー")
 	err := NewInternalServerError(internalServerMsg, innerErr)

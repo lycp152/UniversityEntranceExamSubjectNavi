@@ -1,3 +1,8 @@
+// Package models はドメインモデルのテストを提供します。
+// このパッケージには以下の機能が含まれます：
+// 1. 各モデルのバリデーションテスト
+// 2. テストヘルパー関数
+// 3. テストデータの作成と管理
 package models
 
 import (
@@ -9,30 +14,46 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// テストで使用する定数
 const (
-	// テスト用の長い文字列
+	// longString はテスト用の長い文字列です。
+	// バリデーションの上限チェックに使用されます。
 	longString = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"
-	// エラーメッセージ
+	// errExpected はエラーが期待される場合のメッセージです。
 	errExpected = "エラーが期待されましたが、発生しませんでした"
+	// errUnexpected は予期しないエラーが発生した場合のメッセージです。
 	errUnexpected = "エラーが発生しました: %v"
 )
 
-// testHelper はテストヘルパー関数を提供する
+// testHelper はテストヘルパー関数を提供する構造体です。
+// 以下の機能を提供します：
+// 1. テストデータの作成
+// 2. テスト環境のセットアップ
+// 3. クリーンアップ処理
 type testHelper struct {
 	t testing.TB
 }
 
-// newTestHelper は新しいテストヘルパーを作成する
+// newTestHelper は新しいテストヘルパーを作成します。
+// 引数：
+//   - t: テストコンテキスト
+// 戻り値：
+//   - *testHelper: 初期化されたテストヘルパー
 func newTestHelper(t testing.TB) *testHelper {
 	helper := &testHelper{t: t}
 	t.Cleanup(func() {
 		// テスト終了時のクリーンアップ処理
+		// 必要に応じてデータベースのクリーンアップなどを実装
 	})
 
 	return helper
 }
 
-// createTestUniversity はテスト用の大学データを作成する
+// createTestUniversity はテスト用の大学データを作成します。
+// 引数：
+//   - name: 大学名
+// 戻り値：
+//   - University: 作成された大学データ
 func (h *testHelper) createTestUniversity(name string) University {
 	return University{
 		BaseModel: BaseModel{
@@ -44,7 +65,12 @@ func (h *testHelper) createTestUniversity(name string) University {
 	}
 }
 
-// createTestDepartment はテスト用の学部データを作成する
+// createTestDepartment はテスト用の学部データを作成します。
+// 引数：
+//   - name: 学部名
+//   - universityID: 大学ID
+// 戻り値：
+//   - Department: 作成された学部データ
 func (h *testHelper) createTestDepartment(name string, universityID uint) Department {
 	return Department{
 		BaseModel: BaseModel{
@@ -57,7 +83,12 @@ func (h *testHelper) createTestDepartment(name string, universityID uint) Depart
 	}
 }
 
-// createTestMajor はテスト用の学科データを作成する
+// createTestMajor はテスト用の学科データを作成します。
+// 引数：
+//   - name: 学科名
+//   - departmentID: 学部ID
+// 戻り値：
+//   - Major: 作成された学科データ
 func (h *testHelper) createTestMajor(name string, departmentID uint) Major {
 	return Major{
 		BaseModel: BaseModel{
@@ -70,7 +101,13 @@ func (h *testHelper) createTestMajor(name string, departmentID uint) Major {
 	}
 }
 
-// createTestAdmissionSchedule はテスト用の入試日程データを作成する
+// createTestAdmissionSchedule はテスト用の入試日程データを作成します。
+// 引数：
+//   - name: 日程名
+//   - majorID: 学科ID
+//   - displayOrder: 表示順
+// 戻り値：
+//   - AdmissionSchedule: 作成された入試日程データ
 func (h *testHelper) createTestAdmissionSchedule(name string, majorID uint, displayOrder int) AdmissionSchedule {
 	return AdmissionSchedule{
 		BaseModel: BaseModel{
@@ -84,7 +121,14 @@ func (h *testHelper) createTestAdmissionSchedule(name string, majorID uint, disp
 	}
 }
 
-// createTestAdmissionInfo はテスト用の入試情報データを作成する
+// createTestAdmissionInfo はテスト用の入試情報データを作成します。
+// 引数：
+//   - scheduleID: 入試日程ID
+//   - enrollment: 募集人数
+//   - academicYear: 学年度
+//   - status: ステータス
+// 戻り値：
+//   - AdmissionInfo: 作成された入試情報データ
 func (h *testHelper) createTestAdmissionInfo(
 	scheduleID uint,
 	enrollment int,
@@ -104,7 +148,12 @@ func (h *testHelper) createTestAdmissionInfo(
 	}
 }
 
-// createTestTestType はテスト用の試験種別データを作成する
+// createTestTestType はテスト用の試験種別データを作成します。
+// 引数：
+//   - name: 試験種別名
+//   - scheduleID: 入試日程ID
+// 戻り値：
+//   - TestType: 作成された試験種別データ
 func (h *testHelper) createTestTestType(name string, scheduleID uint) TestType {
 	return TestType{
 		BaseModel: BaseModel{
@@ -117,7 +166,13 @@ func (h *testHelper) createTestTestType(name string, scheduleID uint) TestType {
 	}
 }
 
-// createTestSubject はテスト用の科目データを作成する
+// createTestSubject はテスト用の科目データを作成します。
+// 引数：
+//   - testTypeID: 試験種別ID
+//   - score: 配点
+//   - percentage: 配点比率
+// 戻り値：
+//   - Subject: 作成された科目データ
 func (h *testHelper) createTestSubject(
 	testTypeID uint,
 	score int,
@@ -137,7 +192,11 @@ func (h *testHelper) createTestSubject(
 	}
 }
 
-// validateAcademicYear は学年度のバリデーションを行う
+// validateAcademicYear は学年度のバリデーションを行います。
+// 引数：
+//   - info: 入試情報
+// 戻り値：
+//   - error: バリデーションエラー
 func validateAcademicYear(info *AdmissionInfo) error {
 	if info.AcademicYear < 2000 || info.AcademicYear > 2100 {
 		return errors.ErrInvalidAcademicYear
@@ -146,7 +205,11 @@ func validateAcademicYear(info *AdmissionInfo) error {
 	return nil
 }
 
-// TestAcademicYear は学年度のバリデーションテストを実行する
+// TestAcademicYear は学年度のバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な学年度（範囲内）
+// 2. 学年度の範囲外（過去）
+// 3. 学年度の範囲外（未来）
 func TestAcademicYear(t *testing.T) {
 	t.Parallel() // テストの並列実行を有効化
 
@@ -192,7 +255,12 @@ func TestAcademicYear(t *testing.T) {
 	}
 }
 
-// TestUniversityValidation は大学モデルのバリデーションテストを実行する
+// TestUniversityValidation は大学モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な大学名
+// 2. 空の大学名
+// 3. 長すぎる大学名
+// 4. 特殊文字を含む大学名
 func TestUniversityValidation(t *testing.T) {
 	t.Parallel()
 
@@ -240,7 +308,12 @@ func TestUniversityValidation(t *testing.T) {
 	}
 }
 
-// TestDepartmentValidation は学部モデルのバリデーションテストを実行する
+// TestDepartmentValidation は学部モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な学部名（日本語）
+// 2. 空の学部名
+// 3. 無効な大学ID
+// 4. 長すぎる学部名
 func TestDepartmentValidation(t *testing.T) {
 	t.Parallel()
 
@@ -288,7 +361,12 @@ func TestDepartmentValidation(t *testing.T) {
 	}
 }
 
-// TestMajorValidation は学科モデルのバリデーションテストを実行する
+// TestMajorValidation は学科モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な学科名（日本語）
+// 2. 空の学科名
+// 3. 無効な学部ID
+// 4. 長すぎる学科名
 func TestMajorValidation(t *testing.T) {
 	t.Parallel()
 
@@ -336,7 +414,12 @@ func TestMajorValidation(t *testing.T) {
 	}
 }
 
-// TestAdmissionScheduleValidation は入試日程モデルのバリデーションテストを実行する
+// TestAdmissionScheduleValidation は入試日程モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な入試日程（前期）
+// 2. 無効な日程名
+// 3. 無効な表示順
+// 4. 無効な学科ID
 func TestAdmissionScheduleValidation(t *testing.T) {
 	t.Parallel()
 
@@ -384,7 +467,12 @@ func TestAdmissionScheduleValidation(t *testing.T) {
 	}
 }
 
-// TestAdmissionInfoValidation は入試情報モデルのバリデーションテストを実行する
+// TestAdmissionInfoValidation は入試情報モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な入試情報
+// 2. 無効な募集人数
+// 3. 無効なステータス
+// 4. 無効な入試日程ID
 func TestAdmissionInfoValidation(t *testing.T) {
 	t.Parallel()
 
@@ -432,7 +520,11 @@ func TestAdmissionInfoValidation(t *testing.T) {
 	}
 }
 
-// TestTestTypeValidation は試験種別モデルのバリデーションテストを実行する
+// TestTestTypeValidation は試験種別モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な試験種別（共通）
+// 2. 無効な試験種別名
+// 3. 無効な入試日程ID
 func TestTestTypeValidation(t *testing.T) {
 	t.Parallel()
 
@@ -475,7 +567,12 @@ func TestTestTypeValidation(t *testing.T) {
 	}
 }
 
-// TestSubjectValidation は科目モデルのバリデーションテストを実行する
+// TestSubjectValidation は科目モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な科目
+// 2. 無効な配点
+// 3. 無効な配点比率
+// 4. 無効な試験種別ID
 func TestSubjectValidation(t *testing.T) {
 	t.Parallel()
 
@@ -523,7 +620,10 @@ func TestSubjectValidation(t *testing.T) {
 	}
 }
 
-// TestBaseModelValidation は基本モデルのバリデーションテストを実行する
+// TestBaseModelValidation は基本モデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常な基本モデル
+// 2. 無効なバージョン
 func TestBaseModelValidation(t *testing.T) {
 	t.Parallel()
 
@@ -563,7 +663,9 @@ func TestBaseModelValidation(t *testing.T) {
 	}
 }
 
-// TestBaseModelBeforeUpdate は基本モデルの更新前フックのテストを実行する
+// TestBaseModelBeforeUpdate は基本モデルの更新前フックのテストを実行します。
+// 以下のケースをテストします：
+// 1. バージョンの更新
 func TestBaseModelBeforeUpdate(t *testing.T) {
 	t.Parallel()
 

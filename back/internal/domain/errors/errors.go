@@ -1,4 +1,9 @@
 // Package errors は、アプリケーション全体で使用するエラー定義を提供します。
+// このパッケージには以下の機能が含まれます：
+// 1. エラーコードの定義と管理
+// 2. データベースエラーの詳細な情報保持
+// 3. エラーチェッカー関数
+// 4. エラー詳細情報の取得
 package errors
 
 import (
@@ -9,47 +14,59 @@ import (
 	"time"
 )
 
-// Code はエラーコードを表す型
+// Code はエラーコードを表す型です。
+// アプリケーション全体で一貫したエラーコードを使用するために定義されています。
 type Code string
 
 // エラーコードの定義
+// 各エラーコードは特定のエラー状況を表し、エラーハンドリングに使用されます。
 const (
-	CodeNotFound        Code = "NOT_FOUND"
-	CodeDuplicateKey    Code = "DUPLICATE_KEY"
+	// CodeNotFound はレコードが見つからない場合のエラーコードです。
+	CodeNotFound Code = "NOT_FOUND"
+	// CodeDuplicateKey は一意制約違反が発生した場合のエラーコードです。
+	CodeDuplicateKey Code = "DUPLICATE_KEY"
+	// CodeValidationError はバリデーションに失敗した場合のエラーコードです。
 	CodeValidationError Code = "VALIDATION_ERROR"
-	CodeDatabaseError   Code = "DATABASE_ERROR"
-	CodeInvalidYear     Code = "INVALID_YEAR"
-	CodeTimeout         Code = "TIMEOUT"
-	CodeDeadlock        Code = "DEADLOCK"
-	CodeCustom          Code = "CUSTOM_ERROR"
+	// CodeDatabaseError はその他のデータベースエラーのエラーコードです。
+	CodeDatabaseError Code = "DATABASE_ERROR"
+	// CodeInvalidYear は学年度が不正な場合のエラーコードです。
+	CodeInvalidYear Code = "INVALID_YEAR"
+	// CodeTimeout は操作がタイムアウトした場合のエラーコードです。
+	CodeTimeout Code = "TIMEOUT"
+	// CodeDeadlock はデッドロックが発生した場合のエラーコードです。
+	CodeDeadlock Code = "DEADLOCK"
+	// CodeCustom はカスタムエラーのエラーコードです。
+	CodeCustom Code = "CUSTOM_ERROR"
 )
 
 // データベース操作で発生する一般的なエラー
 var (
-	// ErrRecordNotFound はレコードが存在しない場合のエラー
+	// ErrRecordNotFound はレコードが存在しない場合のエラーです。
 	ErrRecordNotFound = errors.New("レコードが見つかりません")
-	// ErrDuplicateKey は一意制約違反が発生した場合のエラー
+	// ErrDuplicateKey は一意制約違反が発生した場合のエラーです。
 	ErrDuplicateKey = errors.New("重複するキーが存在します")
-	// ErrValidationFailed はバリデーションに失敗した場合のエラー
+	// ErrValidationFailed はバリデーションに失敗した場合のエラーです。
 	ErrValidationFailed = errors.New("バリデーションに失敗しました")
-	// ErrDatabaseError はその他のデータベースエラー
+	// ErrDatabaseError はその他のデータベースエラーです。
 	ErrDatabaseError = errors.New("データベースエラーが発生しました")
-	// ErrInvalidAcademicYear は学年度が不正な場合のエラー
+	// ErrInvalidAcademicYear は学年度が不正な場合のエラーです。
 	ErrInvalidAcademicYear = errors.New("学年度は2000年から2100年の間である必要があります")
-	// ErrTimeout は操作がタイムアウトした場合のエラー
+	// ErrTimeout は操作がタイムアウトした場合のエラーです。
 	ErrTimeout = errors.New("操作がタイムアウトしました")
-	// ErrDeadlock はデッドロックが発生した場合のエラー
+	// ErrDeadlock はデッドロックが発生した場合のエラーです。
 	ErrDeadlock = errors.New("デッドロックが発生しました")
 )
 
-// Detail はエラーの詳細情報を保持する構造体
+// Detail はエラーの詳細情報を保持する構造体です。
+// エラーの発生状況をより詳細に把握するために使用されます。
 type Detail struct {
 	Message    string            // エラーメッセージ
 	StackTrace string            // スタックトレース
 	Context    map[string]string // コンテキスト情報
 }
 
-// DatabaseError はデータベース操作の詳細なエラー情報を保持する構造体
+// DatabaseError はデータベース操作の詳細なエラー情報を保持する構造体です。
+// エラーの発生状況を包括的に記録し、デバッグやログ記録に使用されます。
 type DatabaseError struct {
 	Err       error      // 元のエラー
 	Code      Code       // エラーコード
@@ -59,7 +76,8 @@ type DatabaseError struct {
 	Details   Detail     // 追加の詳細情報
 }
 
-// Error はDatabaseErrorの文字列表現を返す
+// Error はDatabaseErrorの文字列表現を返します。
+// エラーの詳細情報を人間が読みやすい形式で表示します。
 func (e *DatabaseError) Error() string {
 	var contextStr string
 
@@ -76,12 +94,21 @@ func (e *DatabaseError) Error() string {
 		e.Table, e.Operation, e.Err, e.Code, e.Timestamp.Format(time.RFC3339), e.Details.Message, contextStr)
 }
 
-// Unwrap は元のエラーを返す
+// Unwrap は元のエラーを返します。
+// errors.Unwrap関数と互換性があります。
 func (e *DatabaseError) Unwrap() error {
 	return e.Err
 }
 
-// NewDatabaseError は新しいDatabaseErrorインスタンスを作成する
+// NewDatabaseError は新しいDatabaseErrorインスタンスを作成します。
+// 引数：
+//   - err: 元のエラー
+//   - code: エラーコード
+//   - operation: 実行された操作
+//   - table: 操作対象のテーブル
+//   - details: 追加の詳細情報（オプション）
+// 戻り値：
+//   - *DatabaseError: 作成されたDatabaseErrorインスタンス
 func NewDatabaseError(err error, code Code, operation, table string, details ...string) *DatabaseError {
 	var detail string
 	if len(details) > 0 {
@@ -125,13 +152,22 @@ func NewDatabaseError(err error, code Code, operation, table string, details ...
 	}
 }
 
-// WithContext はエラーにコンテキスト情報を追加する
+// WithContext はエラーにコンテキスト情報を追加します。
+// 引数：
+//   - key: コンテキストのキー
+//   - value: コンテキストの値
+// 戻り値：
+//   - *DatabaseError: コンテキストが追加されたDatabaseErrorインスタンス
 func (e *DatabaseError) WithContext(key, value string) *DatabaseError {
 	e.Details.Context[key] = value
 	return e
 }
 
-// IsNotFound はエラーがレコード未検出エラーかどうかを判定する
+// IsNotFound はエラーがレコード未検出エラーかどうかを判定します。
+// 引数：
+//   - err: 判定対象のエラー
+// 戻り値：
+//   - bool: レコード未検出エラーの場合はtrue、それ以外はfalse
 func IsNotFound(err error) bool {
 	var dbErr *DatabaseError
 	if errors.As(err, &dbErr) {
@@ -141,7 +177,11 @@ func IsNotFound(err error) bool {
 	return errors.Is(err, ErrRecordNotFound)
 }
 
-// IsDuplicateKey はエラーが一意制約違反エラーかどうかを判定する
+// IsDuplicateKey はエラーが一意制約違反エラーかどうかを判定します。
+// 引数：
+//   - err: 判定対象のエラー
+// 戻り値：
+//   - bool: 一意制約違反エラーの場合はtrue、それ以外はfalse
 func IsDuplicateKey(err error) bool {
 	var dbErr *DatabaseError
 	if errors.As(err, &dbErr) {
@@ -151,7 +191,11 @@ func IsDuplicateKey(err error) bool {
 	return errors.Is(err, ErrDuplicateKey)
 }
 
-// IsValidationError はエラーがバリデーションエラーかどうかを判定する
+// IsValidationError はエラーがバリデーションエラーかどうかを判定します。
+// 引数：
+//   - err: 判定対象のエラー
+// 戻り値：
+//   - bool: バリデーションエラーの場合はtrue、それ以外はfalse
 func IsValidationError(err error) bool {
 	var dbErr *DatabaseError
 	if errors.As(err, &dbErr) {
@@ -161,7 +205,11 @@ func IsValidationError(err error) bool {
 	return errors.Is(err, ErrValidationFailed)
 }
 
-// IsTimeout はエラーがタイムアウトエラーかどうかを判定する
+// IsTimeout はエラーがタイムアウトエラーかどうかを判定します。
+// 引数：
+//   - err: 判定対象のエラー
+// 戻り値：
+//   - bool: タイムアウトエラーの場合はtrue、それ以外はfalse
 func IsTimeout(err error) bool {
 	var dbErr *DatabaseError
 	if errors.As(err, &dbErr) {
@@ -171,7 +219,11 @@ func IsTimeout(err error) bool {
 	return errors.Is(err, ErrTimeout)
 }
 
-// IsDeadlock はエラーがデッドロックエラーかどうかを判定する
+// IsDeadlock はエラーがデッドロックエラーかどうかを判定します。
+// 引数：
+//   - err: 判定対象のエラー
+// 戻り値：
+//   - bool: デッドロックエラーの場合はtrue、それ以外はfalse
 func IsDeadlock(err error) bool {
 	var dbErr *DatabaseError
 	if errors.As(err, &dbErr) {
@@ -181,7 +233,12 @@ func IsDeadlock(err error) bool {
 	return errors.Is(err, ErrDeadlock)
 }
 
-// GetErrorDetails はエラーの詳細情報を取得する
+// GetErrorDetails はエラーの詳細情報を取得します。
+// 引数：
+//   - err: 詳細情報を取得するエラー
+// 戻り値：
+//   - Detail: エラーの詳細情報
+//   - bool: 詳細情報が取得できた場合はtrue、それ以外はfalse
 func GetErrorDetails(err error) (Detail, bool) {
 	var dbErr *DatabaseError
 	if errors.As(err, &dbErr) {

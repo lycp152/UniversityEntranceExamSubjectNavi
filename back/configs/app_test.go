@@ -1,3 +1,9 @@
+// Package configs はアプリケーションの設定管理を提供します。
+// このパッケージは以下の機能を提供します：
+// - 設定ファイルの読み込みと解析
+// - 環境変数の展開と管理
+// - 設定値の検証
+// - セキュリティ設定の管理
 package configs
 
 import (
@@ -15,7 +21,11 @@ const configFile = "app.yaml"
 const errMsgReadConfig = "設定ファイルの読み込みに失敗しました: %v"
 const errMsgParseConfig = "設定の解析に失敗しました: %v"
 
-// 環境変数の展開を行う関数
+// expandEnvVars は環境変数の展開を行います。
+// この関数は以下の形式の環境変数をサポートします：
+// - ${VAR:-default} 形式（デフォルト値付き）
+// - $VAR 形式（シンプル）
+// 戻り値: 展開された環境変数の値
 func expandEnvVars(value string) string {
 	if strings.HasPrefix(value, "${") {
 		return expandDefaultEnvVar(value)
@@ -28,7 +38,12 @@ func expandEnvVars(value string) string {
 	return value
 }
 
-// ${VAR:-default} 形式の環境変数を展開
+// expandDefaultEnvVar は ${VAR:-default} 形式の環境変数を展開します。
+// この関数は以下の処理を行います：
+// - デフォルト値の有無の確認
+// - 環境変数の存在確認
+// - デフォルト値の返却
+// 戻り値: 展開された環境変数の値
 func expandDefaultEnvVar(value string) string {
 	if !strings.Contains(value, ":-") {
 		return expandSimpleEnvVar(value)
@@ -46,7 +61,11 @@ func expandDefaultEnvVar(value string) string {
 	return parts[1]
 }
 
-// $VAR 形式の環境変数を展開
+// expandSimpleEnvVar は $VAR 形式の環境変数を展開します。
+// この関数は以下の処理を行います：
+// - 環境変数の存在確認
+// - 環境変数の値の返却
+// 戻り値: 展開された環境変数の値
 func expandSimpleEnvVar(value string) string {
 	if strings.HasPrefix(value, "${") {
 		varName := value[2 : len(value)-1]
@@ -62,7 +81,12 @@ func expandSimpleEnvVar(value string) string {
 	return value
 }
 
-// 環境変数の管理
+// manageEnvVars は環境変数の管理を行います。
+// この関数は以下の処理を行います：
+// - 環境変数のバックアップ
+// - 環境変数の設定
+// - クリーンアップ関数の返却
+// 戻り値: クリーンアップ関数とバックアップされた環境変数
 func manageEnvVars(envVars map[string]string) (func(), map[string]string) {
 	envBackup := backupEnvVars(envVars)
 	setEnvVars(envVars)
@@ -98,7 +122,11 @@ func restoreEnvVars(envBackup map[string]string) {
 	}
 }
 
-// 設定の検証
+// validateConfig は設定値の検証を行います。
+// この関数は以下の検証を行います：
+// - サーバー設定の検証
+// - データベース設定の検証
+// - セキュリティ設定の検証
 func validateConfig(t *testing.T, config map[string]interface{}) {
 	validateServerConfig(t, config)
 	validateDBConfig(t, config)
@@ -127,6 +155,12 @@ func validateSecurityConfig(t *testing.T, config map[string]interface{}) {
 	}
 }
 
+// TestAppConfig はアプリケーション設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - デフォルト設定の検証
+// - データベース設定の検証
+// - セキュリティ設定の検証
+// - デフォルト値の検証
 func TestAppConfig(t *testing.T) {
 	configData, err := os.ReadFile(configFile)
 
@@ -181,6 +215,10 @@ func TestAppConfig(t *testing.T) {
 	}
 }
 
+// TestConfigTimeouts はタイムアウト設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - サーバータイムアウト値の検証
+// - シャットダウンタイムアウト値の検証
 func TestConfigTimeouts(t *testing.T) {
 	configData, err := os.ReadFile(configFile)
 
@@ -206,6 +244,12 @@ func TestConfigTimeouts(t *testing.T) {
 	assert.True(t, shutdownTimeout > 0)
 }
 
+// TestConfigSecurity はセキュリティ設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - セキュリティヘッダーの検証
+// - X-Frame-Optionsの検証
+// - X-Content-Type-Optionsの検証
+// - X-XSS-Protectionの検証
 func TestConfigSecurity(t *testing.T) {
 	configData, err := os.ReadFile(configFile)
 

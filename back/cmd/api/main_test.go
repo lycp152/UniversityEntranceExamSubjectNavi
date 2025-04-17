@@ -1,4 +1,9 @@
 // Package main はアプリケーションのエントリーポイントを提供します。
+// このパッケージは以下の機能を提供します：
+// - アプリケーションの初期化
+// - 環境変数の設定
+// - データベース接続の確立
+// - ヘルスチェックの実装
 package main
 
 import (
@@ -25,7 +30,11 @@ const (
 	dbConnectionErrorMsg = "データベース接続の確立に失敗しました: %v"
 )
 
-// setupTestLogger はテスト用のロガーをセットアップします
+// setupTestLogger はテスト用のロガーをセットアップします。
+// この関数は以下の処理を行います：
+// - テスト用のログディレクトリの作成
+// - ロガーの設定
+// - ロガーの初期化
 func setupTestLogger(t *testing.T) {
 	t.Helper()
 
@@ -44,7 +53,11 @@ func setupTestLogger(t *testing.T) {
 	}
 }
 
-// setupTestEnv は環境変数を設定し、クリーンアップ関数を返します
+// setupTestEnv は環境変数を設定し、クリーンアップ関数を返します。
+// この関数は以下の処理を行います：
+// - 環境変数の設定
+// - クリーンアップ関数の登録
+// - エラーハンドリング
 func setupTestEnv(t *testing.T, envVars map[string]string) {
 	t.Helper()
 
@@ -61,7 +74,11 @@ func setupTestEnv(t *testing.T, envVars map[string]string) {
 	}
 }
 
-// checkEnvError はエラーの期待値と実際の値を検証します
+// checkEnvError はエラーの期待値と実際の値を検証します。
+// この関数は以下の検証を行います：
+// - エラーの有無の確認
+// - エラーメッセージの内容確認
+// - 予期しないエラーの検出
 func checkEnvError(t *testing.T, err error, expectedErr bool, errContains string) {
 	t.Helper()
 
@@ -76,7 +93,11 @@ func checkEnvError(t *testing.T, err error, expectedErr bool, errContains string
 	}
 }
 
-// TestSetupEnvironment は環境変数の設定をテストします
+// TestSetupEnvironment は環境変数の設定をテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：全ての必須環境変数が設定されている場合
+// - 異常系：必須環境変数が不足している場合
+// - 異常系：必須環境変数が空の場合
 func TestSetupEnvironment(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -129,7 +150,12 @@ func TestSetupEnvironment(t *testing.T) {
 	}
 }
 
-// dbTestCase はデータベーステストのケースを定義する構造体です
+// dbTestCase はデータベーステストのケースを定義する構造体です。
+// この構造体は以下の情報を保持します：
+// - テストケースの名前
+// - データベースのセットアップ関数
+// - 期待される結果
+// - テストケースの説明
 type dbTestCase struct {
 	name        string           // テストケースの名前
 	setupDB     func(t *testing.T) *gorm.DB // データベースのセットアップ関数
@@ -137,7 +163,10 @@ type dbTestCase struct {
 	description string           // テストケースの説明
 }
 
-// TestCheckDBHealth はデータベースの健全性チェックをテストします
+// TestCheckDBHealth はデータベースの健全性チェックをテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：データベース接続が正常な場合
+// - 異常系：データベース接続が切断されている場合
 func TestCheckDBHealth(t *testing.T) {
 	setupTestLogger(t)
 
@@ -208,7 +237,10 @@ func TestCheckDBHealth(t *testing.T) {
 	}
 }
 
-// TestCheckMemoryHealth はメモリ使用量のチェックをテストします
+// TestCheckMemoryHealth はメモリ使用量のチェックをテストします。
+// このテストは以下のケースを検証します：
+// - アプリケーション起動直後のメモリ使用量
+// - メモリ使用量の閾値チェック
 func TestCheckMemoryHealth(t *testing.T) {
 	setupTestLogger(t)
 
@@ -217,7 +249,11 @@ func TestCheckMemoryHealth(t *testing.T) {
 	assert.True(t, result, "アプリケーション起動直後のメモリ使用量は1GB以下であるべきです")
 }
 
-// TestMain はmain関数のテストを行います
+// TestMain はmain関数のテストを行います。
+// このテストは以下のケースを検証します：
+// - ヘルスチェックの設定
+// - メトリクスの設定
+// - メモリヘルスチェック
 func TestMain(t *testing.T) {
 	setupTestLogger(t)
 

@@ -1,3 +1,8 @@
+// Package applogger はアプリケーションのログメッセージをテストするパッケージです。
+// このパッケージは以下の機能をテストします：
+// - ログメッセージの定義
+// - 環境変数の設定
+// - メッセージの検証
 package applogger
 
 import (
@@ -10,6 +15,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// setupEnv はテスト用の環境変数を設定します。
+// この関数は以下の処理を行います：
+// - カレントディレクトリの確認
+// - 環境変数ファイルの読み込み
+// - テスト用の環境変数の設定
 func setupEnv() error {
 	// カレントディレクトリを確認
 	wd, err := os.Getwd()
@@ -83,6 +93,11 @@ func setupEnv() error {
 	return nil
 }
 
+// TestMain はテストのメインエントリーポイントです。
+// この関数は以下の処理を行います：
+// - 環境変数の設定
+// - テストの実行
+// - 終了コードの返却
 func TestMain(m *testing.M) {
 	// 環境変数の設定
 	if err := setupEnv(); err != nil {
@@ -94,6 +109,11 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+// TestLogMessages はログメッセージのテストを行います。
+// このテストは以下の項目を検証します：
+// - 各ログメッセージの存在
+// - メッセージの内容
+// - 環境変数の設定
 func TestLogMessages(t *testing.T) {
 	t.Parallel()
 

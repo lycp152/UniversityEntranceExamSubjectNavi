@@ -1,3 +1,10 @@
+// Package applogger はアプリケーションのロギング機能をテストするパッケージです。
+// このパッケージは以下の機能をテストします：
+// - ログ設定の初期化
+// - ログレベルの制御
+// - ログローテーション
+// - アクセスログ
+//
 //nolint:gosec
 package applogger
 
@@ -20,7 +27,10 @@ const (
 	infoLogFile = "info.log"
 )
 
-// setupTestLogger はテスト用のロガー環境をセットアップします
+// setupTestLogger はテスト用のロガー環境をセットアップします。
+// この関数は以下の処理を行います：
+// - 一時ディレクトリの作成
+// - クリーンアップ関数の提供
 func setupTestLogger(t *testing.T) (string, func()) {
 	t.Helper()
 
@@ -34,6 +44,11 @@ func setupTestLogger(t *testing.T) (string, func()) {
 	}
 }
 
+// TestDefaultConfig はデフォルト設定のテストを行います。
+// このテストは以下の項目を検証します：
+// - ログディレクトリの設定
+// - ログレベルの設定
+// - ログファイルの設定
 func TestDefaultConfig(t *testing.T) {
 	t.Parallel()
 
@@ -46,6 +61,11 @@ func TestDefaultConfig(t *testing.T) {
 	assert.True(t, cfg.Compress)
 }
 
+// TestInitLoggers はロガーの初期化テストを行います。
+// このテストは以下の項目を検証します：
+// - 基本的なログ設定
+// - ログファイルの作成
+// - ログレベルの動作
 func TestInitLoggers(t *testing.T) {
 	tempDir, cleanup := setupTestLogger(t)
 	defer cleanup()
@@ -73,6 +93,10 @@ func TestInitLoggers(t *testing.T) {
 	})
 }
 
+// TestInitLoggersErrorCases はロガー初期化のエラーケースをテストします。
+// このテストは以下の項目を検証します：
+// - 読み取り専用ディレクトリでの初期化
+// - エラーメッセージの確認
 func TestInitLoggersErrorCases(t *testing.T) {
 	tempDir, cleanup := setupTestLogger(t)
 	defer cleanup()
@@ -97,6 +121,11 @@ func TestInitLoggersErrorCases(t *testing.T) {
 	})
 }
 
+// TestAccessLogMiddleware はアクセスログミドルウェアのテストを行います。
+// このテストは以下の項目を検証します：
+// - ミドルウェアの動作
+// - ログの記録
+// - HTTPステータスコード
 func TestAccessLogMiddleware(t *testing.T) {
 	t.Run("アクセスログの記録", func(t *testing.T) {
 		InitTestLogger()
@@ -116,6 +145,10 @@ func TestAccessLogMiddleware(t *testing.T) {
 	})
 }
 
+// TestLogLevels はログレベルのテストを行います。
+// このテストは以下の項目を検証します：
+// - ログレベルのフィルタリング
+// - 各レベルのログ出力
 func TestLogLevels(t *testing.T) {
 	tempDir, cleanup := setupTestLogger(t)
 	defer cleanup()
@@ -140,6 +173,11 @@ func TestLogLevels(t *testing.T) {
 	})
 }
 
+// TestLogRotation はログローテーションのテストを行います。
+// このテストは以下の項目を検証します：
+// - ログファイルのサイズ制限
+// - ログファイルのバックアップ
+// - ログファイルの圧縮
 func TestLogRotation(t *testing.T) {
 	tempDir, cleanup := setupTestLogger(t)
 	defer cleanup()

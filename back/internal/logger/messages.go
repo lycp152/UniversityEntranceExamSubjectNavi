@@ -1,10 +1,19 @@
 // Package applogger はアプリケーションのログメッセージを管理します。
-// 環境変数からログメッセージを取得し、各操作の成功時に使用するメッセージを定義します。
+// このパッケージは以下の機能を提供します：
+// - 環境変数からのメッセージ取得
+// - デフォルト値の提供
+// - カテゴリ別のメッセージ管理
 package applogger
 
 import "os"
 
 // ログメッセージ定数
+// 以下のカテゴリのメッセージを管理します：
+// - 大学関連
+// - 学部関連
+// - 科目関連
+// - 学科関連
+// - 募集情報関連
 var (
 	// 大学関連のログメッセージ
 	LogGetUniversitiesSuccess = getEnvOrDefault("LOG_GET_UNIVERSITIES_SUCCESS", "大学一覧の取得に成功しました")
@@ -42,7 +51,11 @@ var (
 	LogGetCSRFTokenSuccess = getEnvOrDefault("LOG_GET_CSRF_TOKEN_SUCCESS", "CSRFトークンの取得に成功しました")
 )
 
-// getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します
+// getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の提供
+// - 値の検証
 func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

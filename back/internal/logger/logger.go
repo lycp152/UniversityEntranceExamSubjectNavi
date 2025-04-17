@@ -267,13 +267,12 @@ func AccessLogMiddleware() echo.MiddlewareFunc {
 // InitTestLogger はテスト用のロガーを初期化します
 func InitTestLogger() {
 	// テスト用のロガー設定
-	infoLogger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+	handler := slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
-	}))
-	errorLogger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
-	accessLogger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
+	})
+
+	// ロガーの初期化をスレッドセーフに行う
+	infoLogger = slog.New(handler)
+	errorLogger = slog.New(handler)
+	accessLogger = slog.New(handler)
 }

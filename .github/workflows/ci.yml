@@ -143,7 +143,9 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:8080
         run: |
           cd front
-          yarn test:coverage
+          yarn install --frozen-lockfile
+          export PATH=$PATH:$(pwd)/node_modules/.bin
+          yarn vitest run --coverage
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5

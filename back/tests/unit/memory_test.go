@@ -19,7 +19,7 @@ func TestMemory(t *testing.T) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(t, 1000)
+	users := testutils.CreateTestUsers(t, 1000)
 
 	// メモリ使用量の初期値を取得
 	var m1, m2 runtime.MemStats
@@ -63,7 +63,7 @@ func TestMemoryLeak(t *testing.T) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(t, 100)
+	users := testutils.CreateTestUsers(t, 100)
 
 	// メモリ使用量の初期値を取得
 	var m1, m2 runtime.MemStats

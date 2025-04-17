@@ -20,9 +20,9 @@ const (
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -43,9 +43,9 @@ func BenchmarkUserRepository(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -65,7 +65,7 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(b, b.N)
+	users := testutils.CreateTestUsers(b, b.N)
 
 	b.ResetTimer()
 
@@ -94,7 +94,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(b, 1000)
+	users := testutils.CreateTestUsers(b, 1000)
 
 	b.ResetTimer()
 
@@ -116,9 +116,9 @@ func BenchmarkResponseTime(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -165,9 +165,9 @@ func BenchmarkCachePerformance(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	// キャッシュのウォームアップ

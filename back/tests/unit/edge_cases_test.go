@@ -20,8 +20,8 @@ func TestEdgeCases(t *testing.T) {
 			name: "空のユーザー名",
 			user: models.User{
 				Name:     "",
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
@@ -29,25 +29,25 @@ func TestEdgeCases(t *testing.T) {
 			name: "最大長のユーザー名",
 			user: models.User{
 				Name:     strings.Repeat("あ", 255),
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
 		{
 			name: "無効なメールアドレス形式",
 			user: models.User{
-				Name:     testUserName,
+				Name:     testutils.TestUserName,
 				Email:    "invalid-email",
-				Password: testUserPassword,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
 		{
 			name: "短すぎるパスワード",
 			user: models.User{
-				Name:     testUserName,
-				Email:    testUserEmail,
+				Name:     testutils.TestUserName,
+				Email:    testutils.TestUserEmail,
 				Password: "pass",
 			},
 			wantErr: true,
@@ -56,8 +56,8 @@ func TestEdgeCases(t *testing.T) {
 			name: "特殊文字を含むユーザー名",
 			user: models.User{
 				Name:     "テスト!@#$%^&*()ユーザー",
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
@@ -89,7 +89,7 @@ func TestConcurrentAccess(t *testing.T) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(t, 100)
+	users := testutils.CreateTestUsers(t, 100)
 
 	var wg sync.WaitGroup
 
@@ -125,9 +125,9 @@ func TestDatabaseErrorHandling(t *testing.T) {
 	db.SetError("データベース接続エラー")
 
 	user := &models.User{
-		Name:     testUserName,
+		Name:     testutils.TestUserName,
 		Email:    "error@example.com", // エラーを発生させるための特別なメールアドレス
-		Password: testUserPassword,
+		Password: testutils.TestUserPassword,
 	}
 
 	err := repo.Create(user)

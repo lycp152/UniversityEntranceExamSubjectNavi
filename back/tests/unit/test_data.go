@@ -1,6 +1,9 @@
 package unit
 
-import "university-exam-api/tests/unit/models"
+import (
+	"university-exam-api/tests/testutils"
+	"university-exam-api/tests/unit/models"
+)
 
 // TestData はテストデータを保持する構造体です
 type TestData struct {
@@ -12,9 +15,9 @@ func NewTestData() *TestData {
 	return &TestData{
 		Users: []*models.User{
 			{
-				Name:     testUserName,
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Name:     testutils.TestUserName,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 		},
 	}
@@ -24,9 +27,9 @@ func NewTestData() *TestData {
 func (td *TestData) Reset() {
 	td.Users = []*models.User{
 		{
-			Name:     testUserName,
-			Email:    testUserEmail,
-			Password: testUserPassword,
+			Name:     testutils.TestUserName,
+			Email:    testutils.TestUserEmail,
+			Password: testutils.TestUserPassword,
 		},
 	}
 }

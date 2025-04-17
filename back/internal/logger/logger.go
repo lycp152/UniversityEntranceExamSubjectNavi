@@ -60,7 +60,7 @@ var (
 	errorLogger  *slog.Logger   // エラーログ用のロガー
 	accessLogger *slog.Logger   // アクセスログ用のロガー
 	config       Config         // 現在のロガー設定
-	initOnce     sync.Once      // 初期化を一度だけ行うためのOnce
+	initTestOnce sync.Once     // テストロガーの初期化を一度だけ実行するためのOnceオブジェクト
 )
 
 // InitLoggers はロガーを初期化します。
@@ -268,7 +268,7 @@ func AccessLogMiddleware() echo.MiddlewareFunc {
 
 // InitTestLogger はテスト用のロガーを初期化します
 func InitTestLogger() {
-	initOnce.Do(func() {
+	initTestOnce.Do(func() {
 		// テスト用のロガー設定
 		handler := slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
 			Level: slog.LevelDebug,

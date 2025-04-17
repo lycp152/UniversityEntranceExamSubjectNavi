@@ -25,7 +25,6 @@ type MockDB struct {
 	errorMsg      string
 	inTransaction bool
 	pendingUsers  map[int]*User
-	lastInsertID  int64
 }
 
 // NewMockDB は新しいモックデータベースを作成します
@@ -122,13 +121,8 @@ func (m *MockDB) checkDuplicateEmail(email string) error {
 	return nil
 }
 
-// createUser は新しいユーザーを作成します
 func (m *MockDB) createUser(args []interface{}) *User {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	m.nextID++
-	m.lastInsertID = int64(m.nextID)
 
 	return &User{
 		ID:       m.nextID,
@@ -212,10 +206,7 @@ func (r *Result) LastInsertId() (int64, error) {
 		return 0, errors.New(r.db.errorMsg)
 	}
 
-	r.db.mu.Lock()
-	defer r.db.mu.Unlock()
-
-	return r.db.lastInsertID, nil
+	return int64(r.db.nextID), nil
 }
 
 // RowsAffected は影響を受けた行数を返します

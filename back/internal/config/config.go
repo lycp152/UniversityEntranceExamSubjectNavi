@@ -159,16 +159,12 @@ func New() (*Config, error) {
 // defaultValue: デフォルト値
 // 戻り値: 環境変数の値またはデフォルト値
 func getEnvOrDefault(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists && value != "" {
-		return value
+	value, exists := os.LookupEnv(key)
+	if !exists || value == "" {
+		return defaultValue
 	}
 
-	// 必須環境変数の場合は空文字列を返す
-	if key == "DB_HOST" || key == "DB_PORT" || key == "DB_USER" || key == "DB_NAME" {
-		return ""
-	}
-
-	return defaultValue
+	return value
 }
 
 // getEnvOrDefaultInt は環境変数の値を整数として取得し、値が存在しない場合はデフォルト値を返します。
@@ -176,13 +172,17 @@ func getEnvOrDefault(key, defaultValue string) string {
 // defaultValue: デフォルト値
 // 戻り値: 環境変数の値またはデフォルト値
 func getEnvOrDefaultInt(key string, defaultValue int) int {
-	if value, exists := os.LookupEnv(key); exists && value != "" {
-		if intValue, err := strconv.Atoi(value); err == nil {
-			return intValue
-		}
+	value, exists := os.LookupEnv(key)
+	if !exists || value == "" {
+		return defaultValue
 	}
 
-	return defaultValue
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+
+	return intValue
 }
 
 // getEnvOrDefaultDuration は環境変数の値を時間として取得し、値が存在しない場合はデフォルト値を返します。
@@ -190,11 +190,15 @@ func getEnvOrDefaultInt(key string, defaultValue int) int {
 // defaultValue: デフォルト値
 // 戻り値: 環境変数の値またはデフォルト値
 func getEnvOrDefaultDuration(key string, defaultValue time.Duration) time.Duration {
-	if value, exists := os.LookupEnv(key); exists {
-		if duration, err := time.ParseDuration(value); err == nil {
-			return duration
-		}
+	value, exists := os.LookupEnv(key)
+	if !exists || value == "" {
+		return defaultValue
 	}
 
-	return defaultValue
+	duration, err := time.ParseDuration(value)
+	if err != nil {
+		return defaultValue
+	}
+
+	return duration
 }

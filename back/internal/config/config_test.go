@@ -17,8 +17,6 @@ const (
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name        string
 		envVars     map[string]string
@@ -35,7 +33,6 @@ func TestNew(t *testing.T) {
 				"DB_USER":  "postgres",
 				"DB_NAME":  "postgres",
 			},
-			expectedErr: false,
 		},
 		{
 			name: "正常系: カスタム設定",
@@ -53,7 +50,6 @@ func TestNew(t *testing.T) {
 				"DB_CONN_MAX_LIFETIME": "2h",
 				"DB_CONN_MAX_IDLE_TIME": "1h",
 			},
-			expectedErr: false,
 		},
 		{
 			name: "異常系: 無効なポート番号",
@@ -71,7 +67,6 @@ func TestNew(t *testing.T) {
 			name: "異常系: 必須環境変数が不足",
 			envVars: map[string]string{
 				"PORT": "8080",
-				// DB_HOSTが不足
 			},
 			expectedErr: true,
 			errContains: "DBHost: データベースホストが設定されていません",
@@ -81,30 +76,21 @@ func TestNew(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			setupEnvVars(t, tt.envVars)
+			setupTestEnv(t, tt.envVars)
 
 			cfg, err := New()
-
-			if tt.expectedErr {
-				require.Error(t, err)
-
-				if tt.errContains != "" {
-					assert.Contains(t, err.Error(), tt.errContains)
-				}
-
-				return
-			}
-
-			require.NoError(t, err)
-			require.NotNil(t, cfg)
-			validateConfig(t, cfg)
+			validateTestResult(t, cfg, err, tt.expectedErr, tt.errContains)
 		})
 	}
 }
 
-func setupEnvVars(t *testing.T, envVars map[string]string) {
+func setupTestEnv(t *testing.T, envVars map[string]string) {
+	for key := range envVars {
+		if err := os.Unsetenv(key); err != nil {
+			t.Errorf(errMsgEnvUnset, err)
+		}
+	}
+
 	for key, value := range envVars {
 		require.NoError(t, os.Setenv(key, value))
 		t.Cleanup(func() {
@@ -113,6 +99,22 @@ func setupEnvVars(t *testing.T, envVars map[string]string) {
 			}
 		})
 	}
+}
+
+func validateTestResult(t *testing.T, cfg *Config, err error, expectedErr bool, errContains string) {
+	if expectedErr {
+		require.Error(t, err)
+
+		if errContains != "" {
+			assert.Contains(t, err.Error(), errContains)
+		}
+
+		return
+	}
+
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
+	validateConfig(t, cfg)
 }
 
 func validateConfig(t *testing.T, cfg *Config) {
@@ -171,8 +173,6 @@ func TestGetEnvOrDefault(t *testing.T) {
 }
 
 func TestGetEnvOrDefaultInt(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name         string
 		key          string
@@ -182,21 +182,21 @@ func TestGetEnvOrDefaultInt(t *testing.T) {
 	}{
 		{
 			name:         "環境変数が設定されている場合",
-			key:          "TEST_KEY",
+			key:          "TEST_KEY_INT",
 			defaultValue: 10,
 			envValue:     "20",
 			expected:     20,
 		},
 		{
 			name:         "環境変数が設定されていない場合",
-			key:          "TEST_KEY",
+			key:          "TEST_KEY_INT_NOT_SET",
 			defaultValue: 10,
 			envValue:     "",
 			expected:     10,
 		},
 		{
 			name:         testCaseInvalid,
-			key:          "TEST_KEY",
+			key:          "TEST_KEY_INT_INVALID",
 			defaultValue: 10,
 			envValue:     "invalid",
 			expected:     10,
@@ -206,7 +206,10 @@ func TestGetEnvOrDefaultInt(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			// 環境変数を確実にクリア
+			if err := os.Unsetenv(tt.key); err != nil {
+				t.Errorf(errMsgEnvUnset, err)
+			}
 
 			if tt.envValue != "" {
 				require.NoError(t, os.Setenv(tt.key, tt.envValue))
@@ -224,8 +227,6 @@ func TestGetEnvOrDefaultInt(t *testing.T) {
 }
 
 func TestGetEnvOrDefaultDuration(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name         string
 		key          string
@@ -235,21 +236,21 @@ func TestGetEnvOrDefaultDuration(t *testing.T) {
 	}{
 		{
 			name:         testCaseEnvSet,
-			key:          "TEST_KEY",
+			key:          "TEST_KEY_DURATION_SET",
 			defaultValue: time.Hour,
 			envValue:     "2h",
 			expected:     2 * time.Hour,
 		},
 		{
 			name:         testCaseEnvNotSet,
-			key:          "TEST_KEY",
+			key:          "TEST_KEY_DURATION_NOT_SET",
 			defaultValue: time.Hour,
 			envValue:     "",
 			expected:     time.Hour,
 		},
 		{
 			name:         testCaseInvalid,
-			key:          "TEST_KEY",
+			key:          "TEST_KEY_DURATION_INVALID",
 			defaultValue: time.Hour,
 			envValue:     "invalid",
 			expected:     time.Hour,
@@ -259,7 +260,10 @@ func TestGetEnvOrDefaultDuration(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			// 環境変数を確実にクリア
+			if err := os.Unsetenv(tt.key); err != nil {
+				t.Errorf(errMsgEnvUnset, err)
+			}
 
 			if tt.envValue != "" {
 				require.NoError(t, os.Setenv(tt.key, tt.envValue))

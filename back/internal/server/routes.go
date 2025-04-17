@@ -1,5 +1,10 @@
 // Package server はHTTPサーバーのルーティング設定を提供します。
-// APIエンドポイントの定義、リクエストハンドラーの設定、ミドルウェアの適用などの機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - APIエンドポイントの定義
+// - リクエストハンドラーの設定
+// - ミドルウェアの適用
+// - エラーハンドリング
+// - セキュリティ設定
 package server
 
 import (
@@ -47,7 +52,10 @@ type ErrorResponse struct {
 }
 
 // Routes はルーティングの設定を管理する構造体です。
-// Echoインスタンス、データベース接続、アプリケーション設定を保持します。
+// この構造体は以下の設定を管理します：
+// - Echoインスタンス
+// - データベース接続
+// - アプリケーション設定
 type Routes struct {
 	echo *echo.Echo
 	db   *gorm.DB
@@ -55,10 +63,10 @@ type Routes struct {
 }
 
 // NewRoutes は新しいルーティングインスタンスを作成します。
-// e: Echoインスタンス
-// db: データベース接続
-// cfg: アプリケーション設定
-// 戻り値: 新しいRoutesインスタンス
+// この関数は以下の処理を行います：
+// - Echoインスタンスの設定
+// - データベース接続の設定
+// - アプリケーション設定の設定
 func NewRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) *Routes {
 	return &Routes{
 		echo: e,
@@ -68,6 +76,10 @@ func NewRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) *Routes {
 }
 
 // validatePathParams はパスパラメータのバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 大学IDの検証
+// - 学部IDの検証
+// - 科目IDの検証
 func validatePathParams(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		universityID := c.Param("universityID")
@@ -100,6 +112,10 @@ func validatePathParams(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // validateRequestBody はリクエストボディのバリデーションを行います。
+// この関数は以下の処理を行います：
+// - Content-Typeの検証
+// - リクエストボディのサイズチェック
+// - JSONバリデーション
 func validateRequestBody(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if c.Request().ContentLength == 0 {
@@ -136,8 +152,11 @@ func validateRequestBody(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // Setup はルーティングを設定します。
-// リポジトリとハンドラーの初期化、APIエンドポイントの定義を行います。
-// エラーが発生した場合は、エラーメッセージを返します。
+// この関数は以下の処理を行います：
+// - リポジトリの初期化
+// - ハンドラーの初期化
+// - ミドルウェアの設定
+// - APIエンドポイントの定義
 func (r *Routes) Setup() error {
 	// リポジトリの初期化
 	universityRepo := repositories.NewUniversityRepository(r.db)

@@ -1,3 +1,9 @@
+// Package middleware はアプリケーションのミドルウェアのテストを提供します。
+// このパッケージは以下の機能を提供します：
+// - セキュリティ設定のテスト
+// - レート制限のテスト
+// - CORS設定のテスト
+// - リクエスト検証のテスト
 package middleware
 
 import (
@@ -15,6 +21,9 @@ const (
 	defaultOrigin      = "http://localhost:3000"
 )
 
+// TestNewSecurityConfig はセキュリティ設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - デフォルト設定の検証
 func TestNewSecurityConfig(t *testing.T) {
 	t.Parallel()
 
@@ -47,6 +56,10 @@ func TestNewSecurityConfig(t *testing.T) {
 	}
 }
 
+// TestSecurityMiddleware はセキュリティミドルウェアのテストを行います。
+// このテストは以下のケースを検証します：
+// - デフォルト設定でのミドルウェア生成
+// - カスタム設定でのミドルウェア生成
 func TestSecurityMiddleware(t *testing.T) {
 	t.Parallel()
 
@@ -85,6 +98,11 @@ func TestSecurityMiddleware(t *testing.T) {
 	}
 }
 
+// TestRequestValidationMiddleware はリクエスト検証ミドルウェアのテストを行います。
+// このテストは以下のケースを検証します：
+// - 有効なJSONリクエスト
+// - 無効なContent-Type
+// - リクエストサイズ超過
 func TestRequestValidationMiddleware(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -164,6 +182,9 @@ func TestRequestValidationMiddleware(t *testing.T) {
 	}
 }
 
+// TestRateLimiter はレートリミッターのテストを行います。
+// このテストは以下のケースを検証します：
+// - レート制限を超えるリクエスト
 func TestRateLimiter(t *testing.T) {
 	config := NewSecurityConfig()
 	middleware := SecurityMiddleware(config)
@@ -194,6 +215,10 @@ func TestRateLimiter(t *testing.T) {
 	}
 }
 
+// TestCORS はCORS設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - 許可されたオリジンからのリクエスト
+// - CORSヘッダーの設定
 func TestCORS(t *testing.T) {
 	config := NewSecurityConfig()
 	middleware := SecurityMiddleware(config)

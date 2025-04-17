@@ -1,3 +1,8 @@
+// Package middleware はアプリケーションのミドルウェアのテストを提供します。
+// このパッケージは以下のテストを提供します：
+// - レート制限設定のデフォルト値
+// - 環境変数からの設定読み込み
+// - 設定値の検証
 package middleware
 
 import (
@@ -8,6 +13,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestDefaultTestConfig はデフォルト設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - 総リクエスト数のデフォルト値
+// - 時間枠のデフォルト値
+// - 最大リクエスト数のデフォルト値
+// - クールダウン時間のデフォルト値
+// - 並行リクエスト数のデフォルト値
 func TestDefaultTestConfig(t *testing.T) {
 	config := DefaultTestConfig()
 
@@ -18,6 +30,10 @@ func TestDefaultTestConfig(t *testing.T) {
 	assert.Equal(t, DefaultTestNumGoroutines, config.TestNumGoroutines)
 }
 
+// setupEnvVars はテスト用の環境変数を設定します。
+// この関数は以下の処理を行います：
+// 1. 環境変数の設定
+// 2. エラーハンドリング
 func setupEnvVars(t *testing.T, envVars map[string]string) {
 	for key, value := range envVars {
 		if err := os.Setenv(key, value); err != nil {
@@ -26,6 +42,10 @@ func setupEnvVars(t *testing.T, envVars map[string]string) {
 	}
 }
 
+// clearEnvVars はテスト用の環境変数をクリアします。
+// この関数は以下の処理を行います：
+// 1. 環境変数のクリア
+// 2. エラーハンドリング
 func clearEnvVars(t *testing.T, envVars map[string]string) {
 	for key := range envVars {
 		if err := os.Unsetenv(key); err != nil {
@@ -34,6 +54,11 @@ func clearEnvVars(t *testing.T, envVars map[string]string) {
 	}
 }
 
+// TestLoadTestConfig は環境変数からの設定読み込みをテストします。
+// このテストは以下のケースを検証します：
+// - デフォルト設定の使用
+// - 環境変数からの設定読み込み
+// - 無効な環境変数の値
 func TestLoadTestConfig(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -102,6 +127,14 @@ func TestLoadTestConfig(t *testing.T) {
 	}
 }
 
+// TestValidateConfig は設定値の検証をテストします。
+// このテストは以下のケースを検証します：
+// - 有効な設定
+// - 無効な総リクエスト数
+// - 無効な時間枠
+// - 無効な最大リクエスト数
+// - 無効なクールダウン時間
+// - 無効な並行リクエスト数
 func TestValidateConfig(t *testing.T) {
 	tests := []struct {
 		name          string

@@ -1,3 +1,8 @@
+// Package server はHTTPサーバーのテストを提供します。
+// このパッケージは以下の機能のテストを提供します：
+// - サーバーの初期化
+// - ルーティングの設定
+// - グレースフルシャットダウン
 package server
 
 import (
@@ -13,11 +18,19 @@ import (
 	"gorm.io/gorm"
 )
 
+// setupTestLogger はテスト用のロガーを初期化します。
+// この関数は以下の処理を行います：
+// - テストロガーの初期化
+// - ログレベルの設定
 func setupTestLogger(t *testing.T) {
 	t.Helper()
 	applogger.InitTestLogger()
 }
 
+// TestNew はNew関数のテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常な初期化
+// - インスタンスのプロパティ
 func TestNew(t *testing.T) {
 	t.Parallel()
 	setupTestLogger(t)
@@ -33,6 +46,11 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, cfg, s.cfg)
 }
 
+// TestStart はStart関数のテストを行います。
+// このテストは以下のケースを検証します：
+// - サーバーの起動
+// - コンテキストのキャンセル
+// - グレースフルシャットダウン
 func TestStart(t *testing.T) {
 	t.Parallel()
 	setupTestLogger(t)
@@ -50,6 +68,11 @@ func TestStart(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// TestSetupRoutes はSetupRoutes関数のテストを行います。
+// このテストは以下のケースを検証します：
+// - ルーティングの設定
+// - データベース接続
+// - エンドポイントの定義
 func TestSetupRoutes(t *testing.T) {
 	t.Parallel()
 	setupTestLogger(t)
@@ -69,6 +92,11 @@ func TestSetupRoutes(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// TestServerShutdown はサーバーのシャットダウン処理のテストを行います。
+// このテストは以下のケースを検証します：
+// - グレースフルシャットダウン
+// - リソースの解放
+// - エラーハンドリング
 func TestServerShutdown(t *testing.T) {
 	t.Parallel()
 	setupTestLogger(t)

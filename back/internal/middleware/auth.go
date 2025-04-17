@@ -1,5 +1,8 @@
-// Package middleware はアプリケーションのミドルウェアを提供します
-// 認証、CSRF保護、ログ記録などの共通機能を実装しています
+// Package middleware はアプリケーションのミドルウェアを提供します。
+// このパッケージは以下の機能を提供します：
+// - JWTトークンによる認証
+// - ロールベースのアクセス制御
+// - 公開パスの管理
 package middleware
 
 import (
@@ -24,7 +27,10 @@ const (
 	MinSecretLength = 32
 )
 
-// AuthError は認証関連のエラーを表します
+// AuthError は認証関連のエラーを表します。
+// この構造体は以下の情報を保持します：
+// - エラーコード
+// - エラーメッセージ
 type AuthError struct {
 	Code    int
 	Message string
@@ -34,7 +40,11 @@ func (e *AuthError) Error() string {
 	return e.Message
 }
 
-// validateAuthHeader はAuthorizationヘッダーを検証します
+// validateAuthHeader はAuthorizationヘッダーを検証します。
+// この関数は以下の処理を行います：
+// - ヘッダーの存在確認
+// - Bearerトークンの形式確認
+// - トークンの抽出
 func validateAuthHeader(auth string) (string, error) {
 	if auth == "" {
 		return "", &AuthError{
@@ -53,7 +63,11 @@ func validateAuthHeader(auth string) (string, error) {
 	return strings.TrimPrefix(auth, BearerTokenPrefix), nil
 }
 
-// handleAuthError は認証エラーを処理します
+// handleAuthError は認証エラーを処理します。
+// この関数は以下の処理を行います：
+// - エラータイプの判定
+// - 適切なレスポンスの生成
+// - エラーメッセージの設定
 func handleAuthError(c echo.Context, err error) error {
 	if authErr, ok := err.(*AuthError); ok {
 		return c.JSON(authErr.Code, map[string]string{"error": authErr.Message})
@@ -62,7 +76,11 @@ func handleAuthError(c echo.Context, err error) error {
 	return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
 }
 
-// AuthMiddleware は認証を行うミドルウェアです
+// AuthMiddleware は認証を行うミドルウェアです。
+// このミドルウェアは以下の処理を行います：
+// - 公開パスの確認
+// - トークンの検証
+// - ユーザー情報の取得
 func AuthMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -87,7 +105,11 @@ func AuthMiddleware() echo.MiddlewareFunc {
 	}
 }
 
-// validateToken はトークンの署名と有効性を検証します
+// validateToken はトークンの署名と有効性を検証します。
+// この関数は以下の処理を行います：
+// - シークレットの検証
+// - トークンの署名確認
+// - 有効期限の確認
 func validateToken(token string) (*jwt.Token, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
@@ -131,7 +153,11 @@ func validateToken(token string) (*jwt.Token, error) {
 	return parsedToken, nil
 }
 
-// validateClaims はトークンのクレームを検証します
+// validateClaims はトークンのクレームを検証します。
+// この関数は以下の処理を行います：
+// - 有効期限の確認
+// - 必須クレームの確認
+// - ユーザー情報の抽出
 func validateClaims(claims jwt.MapClaims) (map[string]string, error) {
 	// 有効期限のチェック
 	exp, ok := claims["exp"].(float64)
@@ -173,7 +199,11 @@ func validateClaims(claims jwt.MapClaims) (map[string]string, error) {
 	}, nil
 }
 
-// validateAndGetUser はトークンを検証し、ユーザー情報を取得します
+// validateAndGetUser はトークンを検証し、ユーザー情報を取得します。
+// この関数は以下の処理を行います：
+// - トークンの検証
+// - クレームの検証
+// - ユーザー情報の返却
 func validateAndGetUser(token string) (map[string]string, error) {
 	parsedToken, err := validateToken(token)
 	if err != nil {
@@ -191,7 +221,11 @@ func validateAndGetUser(token string) (map[string]string, error) {
 	return validateClaims(claims)
 }
 
-// AuthorizeRole は指定されたロールを持つユーザーのみアクセスを許可します
+// AuthorizeRole は指定されたロールを持つユーザーのみアクセスを許可します。
+// このミドルウェアは以下の処理を行います：
+// - ユーザー情報の確認
+// - ロールの確認
+// - アクセス権限の判定
 func AuthorizeRole(roles ...string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -216,7 +250,11 @@ func AuthorizeRole(roles ...string) echo.MiddlewareFunc {
 	}
 }
 
-// isPublicPath は認証が不要なパスかどうかを判定します
+// isPublicPath は認証が不要なパスかどうかを判定します。
+// この関数は以下の処理を行います：
+// - パスの比較
+// - 公開パスの判定
+// - サブパスの確認
 func isPublicPath(path string) bool {
 	publicPaths := []string{
 		"/api/universities",
@@ -231,7 +269,11 @@ func isPublicPath(path string) bool {
 	return false
 }
 
-// getUserRole はユーザー情報からロールを取得します
+// getUserRole はユーザー情報からロールを取得します。
+// この関数は以下の処理を行います：
+// - ユーザー情報の型確認
+// - ロールの抽出
+// - デフォルト値の返却
 func getUserRole(user interface{}) string {
 	userMap, ok := user.(map[string]string)
 	if !ok {
@@ -246,7 +288,11 @@ func getUserRole(user interface{}) string {
 	return role
 }
 
-// hasRole は指定されたロールを持っているかどうかを確認します
+// hasRole は指定されたロールを持っているかどうかを確認します。
+// この関数は以下の処理を行います：
+// - ロールの比較
+// - 権限の確認
+// - 結果の返却
 func hasRole(userRole string, allowedRoles []string) bool {
 	for _, role := range allowedRoles {
 		if userRole == role {

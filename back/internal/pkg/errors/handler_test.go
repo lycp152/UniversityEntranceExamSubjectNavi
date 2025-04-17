@@ -1,3 +1,8 @@
+// Package errors はエラーハンドラーのテストを提供します。
+// このパッケージは以下のテストを提供します：
+// - エラーラップのテスト
+// - アプリケーションエラーのテスト
+// - エラー文字列表現のテスト
 package errors
 
 import (
@@ -7,6 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestWrapError はエラーラップのテストを行います。
+// このテストは以下のケースを検証します：
+// - 基本的なエラーラップ
+// - nilエラーの処理
+// - コードのみ指定の場合
 func TestWrapError(t *testing.T) {
 	t.Parallel()
 
@@ -65,6 +75,10 @@ func TestWrapError(t *testing.T) {
 	}
 }
 
+// TestNewAppError はアプリケーションエラーのテストを行います。
+// このテストは以下のケースを検証します：
+// - 基本的なエラー作成
+// - 空のメッセージの場合
 func TestNewAppError(t *testing.T) {
 	t.Parallel()
 
@@ -98,6 +112,10 @@ func TestNewAppError(t *testing.T) {
 	}
 }
 
+// TestAppErrorError はエラー文字列表現のテストを行います。
+// このテストは以下のケースを検証します：
+// - コードとメッセージありの場合
+// - メッセージなしの場合
 func TestAppErrorError(t *testing.T) {
 	t.Parallel()
 

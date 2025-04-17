@@ -1,5 +1,9 @@
 // Package repositories はデータベースのテストヘルパーを提供します。
-// テスト用のデータベース設定、セットアップ、クリーンアップなどの機能を含みます。
+// このパッケージは以下の機能を提供します：
+// - テスト用データベースの設定
+// - テストデータの構築
+// - テストデータのクリーンアップ
+// - 環境変数の管理
 package repositories
 
 import (
@@ -13,7 +17,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// TestDBConfig はテスト用データベースの設定を保持します
+// TestDBConfig はテスト用データベースの設定を保持します。
+// この構造体は以下の設定を管理します：
+// - ホスト名
+// - ユーザー名
+// - パスワード
+// - データベース名
+// - ポート番号
+// - スキーマ名
 type TestDBConfig struct {
 	Host     string
 	User     string
@@ -23,7 +34,11 @@ type TestDBConfig struct {
 	Schema   string
 }
 
-// DefaultTestDBConfig はデフォルトのテスト用データベース設定を返します
+// DefaultTestDBConfig はデフォルトのテスト用データベース設定を返します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の設定
+// - 設定オブジェクトの生成
 func DefaultTestDBConfig() *TestDBConfig {
 	return &TestDBConfig{
 		Host:     getEnvOrDefault("TEST_DB_HOST", "localhost"),
@@ -35,7 +50,11 @@ func DefaultTestDBConfig() *TestDBConfig {
 	}
 }
 
-// getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します
+// getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の設定
+// - 値の返却
 func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -44,7 +63,12 @@ func getEnvOrDefault(key, defaultValue string) string {
 	return defaultValue
 }
 
-// SetupTestDB はテスト用のデータベース接続を作成します
+// SetupTestDB はテスト用のデータベース接続を作成します。
+// この関数は以下の処理を行います：
+// - データベース接続の初期化
+// - スキーマの設定
+// - マイグレーションの実行
+// - クリーンアップの登録
 func SetupTestDB(t *testing.T, config *TestDBConfig) *gorm.DB {
 	t.Helper()
 
@@ -99,12 +123,20 @@ func SetupTestDB(t *testing.T, config *TestDBConfig) *gorm.DB {
 	return db
 }
 
-// TestUniversityBuilder はテスト用の大学データを構築するビルダーです
+// TestUniversityBuilder はテスト用の大学データを構築するビルダーです。
+// この構造体は以下の機能を提供します：
+// - 大学データの構築
+// - 学部データの追加
+// - データの生成
 type TestUniversityBuilder struct {
 	university *models.University
 }
 
-// NewTestUniversityBuilder は新しいTestUniversityBuilderを作成します
+// NewTestUniversityBuilder は新しいTestUniversityBuilderを作成します。
+// この関数は以下の処理を行います：
+// - ビルダーの初期化
+// - デフォルト値の設定
+// - ビルダーの返却
 func NewTestUniversityBuilder() *TestUniversityBuilder {
 	return &TestUniversityBuilder{
 		university: &models.University{
@@ -115,14 +147,21 @@ func NewTestUniversityBuilder() *TestUniversityBuilder {
 	}
 }
 
-// WithName は大学名を設定します
+// WithName は大学名を設定します。
+// この関数は以下の処理を行います：
+// - 大学名の設定
+// - ビルダーの返却
 func (b *TestUniversityBuilder) WithName(name string) *TestUniversityBuilder {
 	b.university.Name = name
 
 	return b
 }
 
-// WithDepartment は学部を追加します
+// WithDepartment は学部を追加します。
+// この関数は以下の処理を行います：
+// - 学部データの作成
+// - 学部の追加
+// - ビルダーの返却
 func (b *TestUniversityBuilder) WithDepartment(name string) *TestUniversityBuilder {
 	department := models.Department{
 		BaseModel: models.BaseModel{
@@ -135,12 +174,19 @@ func (b *TestUniversityBuilder) WithDepartment(name string) *TestUniversityBuild
 	return b
 }
 
-// Build は構築した大学データを返します
+// Build は構築した大学データを返します。
+// この関数は以下の処理を行います：
+// - 大学データの生成
+// - データの返却
 func (b *TestUniversityBuilder) Build() *models.University {
 	return b.university
 }
 
-// CreateTestUniversity はテスト用の大学データを作成します
+// CreateTestUniversity はテスト用の大学データを作成します。
+// この関数は以下の処理を行います：
+// - 大学データの作成
+// - エラーハンドリング
+// - データの返却
 func CreateTestUniversity(db *gorm.DB, builder *TestUniversityBuilder) (*models.University, error) {
 	if builder == nil {
 		builder = NewTestUniversityBuilder()
@@ -154,7 +200,10 @@ func CreateTestUniversity(db *gorm.DB, builder *TestUniversityBuilder) (*models.
 	return university, nil
 }
 
-// CleanupTestData はテストデータをクリーンアップします
+// CleanupTestData はテストデータをクリーンアップします。
+// この関数は以下の処理を行います：
+// - テストデータの削除
+// - エラーハンドリング
 func CleanupTestData(db *gorm.DB) error {
 	return db.Exec("TRUNCATE TABLE universities CASCADE").Error
 }

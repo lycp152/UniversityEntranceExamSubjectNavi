@@ -1,3 +1,9 @@
+// Package repositories はデータベースのバリデーション機能のテストを提供します。
+// このパッケージは以下の機能のテストを提供します：
+// - 入力値の検証
+// - バリデーションルールの管理
+// - エラーハンドリング
+// - キャッシュの管理
 package repositories
 
 import (
@@ -11,6 +17,11 @@ const (
 	errValidation = "バリデーションエラー"
 )
 
+// TestValidateName は名前のバリデーション機能をテストします。
+// このテストは以下のケースを検証します：
+// - 正常な名前
+// - 空の名前
+// - 長すぎる名前
 func TestValidateName(t *testing.T) {
 	t.Parallel()
 
@@ -54,6 +65,11 @@ func TestValidateName(t *testing.T) {
 	}
 }
 
+// TestValidateUniversity は大学のバリデーション機能をテストします。
+// このテストは以下のケースを検証します：
+// - 正常な大学データ
+// - nilの大学データ
+// - 空の大学名
 func TestValidateUniversity(t *testing.T) {
 	t.Parallel()
 
@@ -116,6 +132,10 @@ func TestValidateUniversity(t *testing.T) {
 	}
 }
 
+// TestValidateWithRules はバリデーションルールの適用をテストします。
+// このテストは以下のケースを検証します：
+// - 正常なバリデーション
+// - バリデーションエラー
 func TestValidateWithRules(t *testing.T) {
 	t.Parallel()
 
@@ -175,6 +195,10 @@ func TestValidateWithRules(t *testing.T) {
 	}
 }
 
+// TestGetValidationRules はバリデーションルールの取得をテストします。
+// このテストは以下のケースを検証します：
+// - ルールの存在確認
+// - ルールの取得
 func TestGetValidationRules(t *testing.T) {
 	t.Parallel()
 

@@ -1,4 +1,8 @@
-// Package middleware はアプリケーションのミドルウェアのテストを提供します
+// Package middleware はアプリケーションのミドルウェアのテストを提供します。
+// このパッケージは以下のテストを提供します：
+// - 認証ヘッダーの検証
+// - トークンの検証
+// - ロールベースのアクセス制御
 package middleware
 
 import (
@@ -13,7 +17,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestValidateAuthHeader は認証ヘッダーの検証をテストします
+// TestValidateAuthHeader は認証ヘッダーの検証をテストします。
+// このテストは以下のケースを検証します：
+// - 正常なBearerトークン
+// - 空のヘッダー
+// - 不正なプレフィックス
 func TestValidateAuthHeader(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -62,7 +70,11 @@ func TestValidateAuthHeader(t *testing.T) {
 	}
 }
 
-// TestValidateToken はトークンの検証をテストします
+// TestValidateToken はトークンの検証をテストします。
+// このテストは以下のケースを検証します：
+// - 有効なトークン
+// - 無効なトークン
+// - 期限切れのトークン
 func TestValidateToken(t *testing.T) {
 	// テスト用のJWTシークレットを設定
 	err := os.Setenv("JWT_SECRET", "test_secret_that_is_long_enough_for_jwt")
@@ -121,7 +133,11 @@ func TestValidateToken(t *testing.T) {
 	}
 }
 
-// TestAuthorizeRole はロールベースの認可をテストします
+// TestAuthorizeRole はロールベースの認可をテストします。
+// このテストは以下のケースを検証します：
+// - 許可されたロール
+// - 許可されていないロール
+// - ユーザー情報なし
 func TestAuthorizeRole(t *testing.T) {
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -184,7 +200,12 @@ func TestAuthorizeRole(t *testing.T) {
 	}
 }
 
-// TestIsPublicPath は公開パスの判定をテストします
+// TestIsPublicPath は公開パスの判定をテストします。
+// このテストは以下のケースを検証します：
+// - 公開パス
+// - 公開パスのサブパス
+// - 非公開パス
+// - CSRFトークン取得パス
 func TestIsPublicPath(t *testing.T) {
 	tests := []struct {
 		name string

@@ -1,3 +1,11 @@
+// Package middleware はアプリケーションのミドルウェアのテストを提供します。
+// このパッケージは以下のテストを提供します：
+// - サニタイザーエラーのテスト
+// - デフォルト設定のテスト
+// - 文字列サニタイズのテスト
+// - データサニタイズのテスト
+// - リクエストプロセッサーのテスト
+// - ミドルウェアのテスト
 package middleware
 
 import (
@@ -21,6 +29,12 @@ const (
 )
 
 // テストヘルパー関数
+// setupEchoContext はテスト用のEchoコンテキストをセットアップします。
+// この関数は以下の処理を行います：
+// 1. Echoインスタンスの作成
+// 2. リクエストの作成
+// 3. コンテンツタイプの設定
+// 4. レスポンスレコーダーの作成
 func setupEchoContext(t *testing.T, method, target string, body io.Reader) (echo.Context, *httptest.ResponseRecorder) {
 	t.Helper()
 
@@ -33,6 +47,10 @@ func setupEchoContext(t *testing.T, method, target string, body io.Reader) (echo
 	return e.NewContext(req, rec), rec
 }
 
+// TestSanitizerError はサニタイザーエラーのテストを行います。
+// このテストは以下のケースを検証します：
+// - 基本的なエラーケース
+// - エラーメッセージなしのケース
 func TestSanitizerError(t *testing.T) {
 	t.Parallel()
 
@@ -73,6 +91,10 @@ func TestSanitizerError(t *testing.T) {
 	}
 }
 
+// TestDefaultConfig はデフォルト設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - ポリシーがnilでないこと
+// - フィールドが空であること
 func TestDefaultConfig(t *testing.T) {
 	t.Parallel()
 
@@ -81,6 +103,14 @@ func TestDefaultConfig(t *testing.T) {
 	assert.Empty(t, config.Fields, "フィールドは空であるべきです")
 }
 
+// TestSanitizeString は文字列サニタイズのテストを行います。
+// このテストは以下のケースを検証します：
+// - 空文字列
+// - 通常の文字列
+// - HTMLタグを含む文字列
+// - 制御文字を含む文字列
+// - 全角スペースを含む文字列
+// - 複数の制御文字とスペース
 func TestSanitizeString(t *testing.T) {
 	t.Parallel()
 
@@ -133,6 +163,13 @@ func TestSanitizeString(t *testing.T) {
 	}
 }
 
+// TestSanitizeData はデータサニタイズのテストを行います。
+// このテストは以下のケースを検証します：
+// - 空のデータ
+// - 指定フィールドのサニタイズ
+// - 全フィールドのサニタイズ
+// - ネストされたデータのサニタイズ
+// - 配列を含むデータのサニタイズ
 func TestSanitizeData(t *testing.T) {
 	t.Parallel()
 
@@ -218,6 +255,13 @@ func TestSanitizeData(t *testing.T) {
 	}
 }
 
+// TestRequestProcessor はリクエストプロセッサーのテストを行います。
+// このテストは以下のケースを検証します：
+// - HTMLタグを含むリクエスト
+// - 通常のリクエスト
+// - 不正なJSON
+// - バッファサイズ超過
+// - ボディの書き込み
 func TestRequestProcessor(t *testing.T) {
 	t.Parallel()
 
@@ -289,6 +333,11 @@ func TestRequestProcessor(t *testing.T) {
 	})
 }
 
+// TestSanitizerMiddleware はミドルウェアのテストを行います。
+// このテストは以下のケースを検証します：
+// - HTMLタグを含むリクエスト
+// - 通常のリクエスト
+// - 不正なJSON
 func TestSanitizerMiddleware(t *testing.T) {
 	t.Parallel()
 

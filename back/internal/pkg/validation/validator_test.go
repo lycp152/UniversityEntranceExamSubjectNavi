@@ -1,3 +1,8 @@
+// Package validation は入力値のバリデーション機能のテストを提供します。
+// このパッケージは以下のテストを提供します：
+// - IDの検証テスト
+// - 文字列から数値への変換テスト
+// - エラーハンドリングテスト
 package validation
 
 import (
@@ -10,11 +15,20 @@ const (
 	errInvalidID = "IDの形式が不正です"
 )
 
+// TestMain はテストの初期化を行います。
+// この関数は以下の処理を行います：
+// - テストロガーの初期化
+// - テストの実行
 func TestMain(m *testing.M) {
 	applogger.InitTestLogger()
 	m.Run()
 }
 
+// TestParseID は文字列IDの変換テストを行います。
+// このテストは以下のケースを検証します：
+// - 正常なIDの変換
+// - 不正なIDの変換
+// - エラーハンドリング
 func TestParseID(t *testing.T) {
 	t.Parallel()
 
@@ -72,6 +86,11 @@ func TestParseID(t *testing.T) {
 	}
 }
 
+// TestValidateUniversityID は大学IDのバリデーションテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常な大学ID
+// - 不正な大学ID
+// - エラーハンドリング
 func TestValidateUniversityID(t *testing.T) {
 	t.Parallel()
 
@@ -115,6 +134,11 @@ func TestValidateUniversityID(t *testing.T) {
 	}
 }
 
+// TestValidateDepartmentID は学部IDのバリデーションテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常な学部ID
+// - 不正な学部ID
+// - エラーハンドリング
 func TestValidateDepartmentID(t *testing.T) {
 	t.Parallel()
 
@@ -158,6 +182,11 @@ func TestValidateDepartmentID(t *testing.T) {
 	}
 }
 
+// TestValidateSubjectID は科目IDのバリデーションテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常な科目ID
+// - 不正な科目ID
+// - エラーハンドリング
 func TestValidateSubjectID(t *testing.T) {
 	t.Parallel()
 
@@ -201,6 +230,11 @@ func TestValidateSubjectID(t *testing.T) {
 	}
 }
 
+// TestValidateScheduleID はスケジュールIDのバリデーションテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常なスケジュールID
+// - 不正なスケジュールID
+// - エラーハンドリング
 func TestValidateScheduleID(t *testing.T) {
 	t.Parallel()
 
@@ -244,6 +278,11 @@ func TestValidateScheduleID(t *testing.T) {
 	}
 }
 
+// TestValidateMajorID は学科IDのバリデーションテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常な学科ID
+// - 不正な学科ID
+// - エラーハンドリング
 func TestValidateMajorID(t *testing.T) {
 	t.Parallel()
 
@@ -287,6 +326,11 @@ func TestValidateMajorID(t *testing.T) {
 	}
 }
 
+// TestValidateAdmissionInfoID は募集情報IDのバリデーションテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常な募集情報ID
+// - 不正な募集情報ID
+// - エラーハンドリング
 func TestValidateAdmissionInfoID(t *testing.T) {
 	t.Parallel()
 

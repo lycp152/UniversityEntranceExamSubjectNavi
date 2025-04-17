@@ -1,3 +1,9 @@
+// Package server はHTTPサーバーのルーティング設定のテストを提供します。
+// このパッケージは以下の機能のテストを提供します：
+// - ルーティングの初期化
+// - パスパラメータのバリデーション
+// - リクエストボディのバリデーション
+// - ルーティングのセットアップ
 package server
 
 import (
@@ -13,7 +19,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// TestNewRoutes はNewRoutes関数のテストを行います
+// TestNewRoutes はNewRoutes関数のテストを行います。
+// このテストは以下のケースを検証します：
+// - 正常な初期化
+// - インスタンスのプロパティ
 func TestNewRoutes(t *testing.T) {
 	t.Parallel()
 
@@ -29,7 +38,12 @@ func TestNewRoutes(t *testing.T) {
 	assert.Equal(t, cfg, routes.cfg)
 }
 
-// TestValidatePathParams はパスパラメータのバリデーションのテストを行います
+// TestValidatePathParams はパスパラメータのバリデーションのテストを行います。
+// このテストは以下のケースを検証します：
+// - 有効なパスパラメータ
+// - 無効な大学ID
+// - 無効な学部ID
+// - 無効な科目ID
 func TestValidatePathParams(t *testing.T) {
 	t.Parallel()
 
@@ -113,7 +127,11 @@ func TestValidatePathParams(t *testing.T) {
 	}
 }
 
-// TestValidateRequestBody はリクエストボディのバリデーションのテストを行います
+// TestValidateRequestBody はリクエストボディのバリデーションのテストを行います。
+// このテストは以下のケースを検証します：
+// - 有効なリクエスト
+// - 無効なContent-Type
+// - リクエストボディが大きすぎる
 func TestValidateRequestBody(t *testing.T) {
 	t.Parallel()
 
@@ -182,7 +200,10 @@ func TestValidateRequestBody(t *testing.T) {
 	}
 }
 
-// TestSetup はルーティングのセットアップのテストを行います
+// TestSetup はルーティングのセットアップのテストを行います。
+// このテストは以下のケースを検証します：
+// - ミドルウェアの設定
+// - エラーハンドラーの設定
 func TestSetup(t *testing.T) {
 	t.Parallel()
 

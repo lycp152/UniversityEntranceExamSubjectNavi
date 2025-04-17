@@ -1,5 +1,11 @@
-//go:generate mockgen -source=university_repository.go -destination=mocks/mock_university_repository.go
-
+// Package repositories はデータベースのリポジトリ機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - 大学データの管理
+// - 学部データの管理
+// - 科目データの管理
+// - 学科データの管理
+// - 入試情報の管理
+// - キャッシュの管理
 package repositories
 
 import (
@@ -31,49 +37,79 @@ const (
 	errSearchFailed = "検索中にエラーが発生しました: %w"
 )
 
-// IUniversityFinder は大学の検索に関するインターフェースを定義します
+// IUniversityFinder は大学の検索に関するインターフェースを定義します。
+// このインターフェースは以下の機能を提供します：
+// - 全大学の取得
+// - IDによる大学の取得
+// - 検索クエリによる大学の取得
 type IUniversityFinder interface {
 	FindAll(ctx context.Context) ([]models.University, error)
 	FindByID(id uint) (*models.University, error)
 	Search(query string) ([]models.University, error)
 }
 
-// IUniversityManager は大学の管理に関するインターフェースを定義します
+// IUniversityManager は大学の管理に関するインターフェースを定義します。
+// このインターフェースは以下の機能を提供します：
+// - 大学の作成
+// - 大学の更新
+// - 大学の削除
 type IUniversityManager interface {
 	Create(university *models.University) error
 	Update(university *models.University) error
 	Delete(id uint) error
 }
 
-// IDepartmentManager は学部の管理に関するインターフェースを定義します
+// IDepartmentManager は学部の管理に関するインターフェースを定義します。
+// このインターフェースは以下の機能を提供します：
+// - 学部の作成
+// - 学部の更新
+// - 学部の削除
 type IDepartmentManager interface {
 	CreateDepartment(department *models.Department) error
 	UpdateDepartment(department *models.Department) error
 	DeleteDepartment(id uint) error
 }
 
-// ISubjectManager は科目の管理に関するインターフェースを定義します
+// ISubjectManager は科目の管理に関するインターフェースを定義します。
+// このインターフェースは以下の機能を提供します：
+// - 科目の作成
+// - 科目の更新
+// - 科目の削除
 type ISubjectManager interface {
 	CreateSubject(subject *models.Subject) error
 	UpdateSubject(subject *models.Subject) error
 	DeleteSubject(id uint) error
 }
 
-// IMajorManager は学科の管理に関するインターフェースを定義します
+// IMajorManager は学科の管理に関するインターフェースを定義します。
+// このインターフェースは以下の機能を提供します：
+// - 学科の作成
+// - 学科の更新
+// - 学科の削除
 type IMajorManager interface {
 	CreateMajor(major *models.Major) error
 	UpdateMajor(major *models.Major) error
 	DeleteMajor(id uint) error
 }
 
-// IAdmissionInfoManager は入試情報の管理に関するインターフェースを定義します
+// IAdmissionInfoManager は入試情報の管理に関するインターフェースを定義します。
+// このインターフェースは以下の機能を提供します：
+// - 入試情報の作成
+// - 入試情報の更新
+// - 入試情報の削除
 type IAdmissionInfoManager interface {
 	CreateAdmissionInfo(info *models.AdmissionInfo) error
 	DeleteAdmissionInfo(id uint) error
 	UpdateAdmissionInfo(info *models.AdmissionInfo) error
 }
 
-// IUniversityRepository は大学リポジトリのメインインターフェースを定義します
+// IUniversityRepository は大学リポジトリのメインインターフェースを定義します。
+// このインターフェースは以下の機能を提供します：
+// - 大学の検索と管理
+// - 学部の検索と管理
+// - 科目の検索と管理
+// - 学科の検索と管理
+// - 入試情報の検索と管理
 type IUniversityRepository interface {
 	IUniversityFinder
 	IUniversityManager
@@ -89,13 +125,21 @@ type IUniversityRepository interface {
 	UpdateAdmissionSchedule(schedule *models.AdmissionSchedule) error
 }
 
-// UniversityRepository 実装
+// UniversityRepository は大学リポジトリの実装です。
+// この構造体は以下の機能を提供します：
+// - データベース接続の管理
+// - キャッシュの管理
+// - トランザクションの管理
 type universityRepository struct {
 	db    *gorm.DB
 	cache *cache.Manager
 }
 
-// NewUniversityRepository はリポジトリのインスタンスを生成します
+// NewUniversityRepository はリポジトリのインスタンスを生成します。
+// この関数は以下の処理を行います：
+// - データベース接続の初期化
+// - キャッシュマネージャーの初期化
+// - リポジトリの生成
 func NewUniversityRepository(db *gorm.DB) IUniversityRepository {
 	// コネクションプールの設定
 	sqlDB, err := db.DB()
@@ -114,7 +158,11 @@ func NewUniversityRepository(db *gorm.DB) IUniversityRepository {
 	}
 }
 
-// applyPreloads はプリロードを最適化して適用します
+// applyPreloads はプリロードを最適化して適用します。
+// この関数は以下の処理を行います：
+// - 必要なカラムの選択
+// - JOINの最適化
+// - ソート順の設定
 func (r *universityRepository) applyPreloads(query *gorm.DB) *gorm.DB {
 	if query == nil {
 		return nil
@@ -160,7 +208,11 @@ func (r *universityRepository) applyPreloads(query *gorm.DB) *gorm.DB {
 		})
 }
 
-// FindAll は全ての大学を取得します
+// FindAll は全ての大学を取得します。
+// この関数は以下の処理を行います：
+// - キャッシュのチェック
+// - データベースからの取得
+// - キャッシュへの保存
 func (r *universityRepository) FindAll(ctx context.Context) ([]models.University, error) {
 	if cached, found := r.cache.GetFromCache(cache.CacheKeyAllUniversities); found {
 		applogger.Info(context.Background(), "キャッシュから全大学データを取得しました")
@@ -208,6 +260,11 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 	return universities, nil
 }
 
+// getUniversityFromCache はキャッシュから大学データを取得します。
+// この関数は以下の処理を行います：
+// - キャッシュキーの生成
+// - キャッシュのチェック
+// - データの返却
 func (r *universityRepository) getUniversityFromCache(id uint) (*models.University, bool) {
 	cacheKey := fmt.Sprintf(cache.CacheKeyUniversityFormat, id)
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
@@ -221,6 +278,11 @@ func (r *universityRepository) getUniversityFromCache(id uint) (*models.Universi
 	return nil, false
 }
 
+// getUniversityFromDB はデータベースから大学データを取得します。
+// この関数は以下の処理を行います：
+// - データベースクエリの実行
+// - エラーハンドリング
+// - データの返却
 func (r *universityRepository) getUniversityFromDB(id uint) (*models.University, error) {
 	var university models.University
 	if err := r.applyPreloads(r.db).First(&university, id).Error; err != nil {
@@ -230,6 +292,11 @@ func (r *universityRepository) getUniversityFromDB(id uint) (*models.University,
 	return &university, nil
 }
 
+// FindByID はIDで大学を取得します。
+// この関数は以下の処理を行います：
+// - キャッシュのチェック
+// - データベースからの取得
+// - キャッシュへの保存
 func (r *universityRepository) FindByID(id uint) (*models.University, error) {
 	if university, found := r.getUniversityFromCache(id); found {
 		return university, nil
@@ -247,7 +314,12 @@ func (r *universityRepository) FindByID(id uint) (*models.University, error) {
 	return university, nil
 }
 
-// Search は大学を検索します
+// Search は大学を検索します。
+// この関数は以下の処理を行います：
+// - 検索クエリの検証
+// - キャッシュのチェック
+// - データベースからの取得
+// - キャッシュへの保存
 func (r *universityRepository) Search(query string) ([]models.University, error) {
 	if query == "" {
 		return nil, appErrors.NewInvalidInputError("query", errEmptyQuery, nil)
@@ -362,7 +434,11 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 	return &subject, nil
 }
 
-// sanitizeName は大学名をサニタイズします
+// sanitizeName は大学名をサニタイズします。
+// この関数は以下の処理を行います：
+// - HTMLタグの除去
+// - 制御文字の除去
+// - スペースの正規化
 func sanitizeName(name string) string {
 	// HTMLタグを除去（bluemondayを使用）
 	p := bluemonday.UGCPolicy()
@@ -389,7 +465,12 @@ func sanitizeName(name string) string {
 	return name
 }
 
-// Create は新しい大学を作成します
+// Create は新しい大学を作成します。
+// この関数は以下の処理を行います：
+// - データの検証
+// - データのサニタイズ
+// - トランザクションの実行
+// - キャッシュのクリア
 func (r *universityRepository) Create(university *models.University) error {
 	if err := r.validateUniversity(university); err != nil {
 		return err
@@ -421,7 +502,11 @@ func (r *universityRepository) Create(university *models.University) error {
 	return nil
 }
 
-// Update は既存の大学を更新します
+// Update は既存の大学を更新します。
+// この関数は以下の処理を行います：
+// - データのサニタイズ
+// - トランザクションの実行
+// - キャッシュのクリア
 func (r *universityRepository) Update(university *models.University) error {
 	// 大学名をサニタイズ
 	university.Name = sanitizeName(university.Name)
@@ -453,7 +538,10 @@ func (r *universityRepository) Update(university *models.University) error {
 	return nil
 }
 
-// Delete は大学を削除します
+// Delete は大学を削除します。
+// この関数は以下の処理を行います：
+// - トランザクションの実行
+// - キャッシュのクリア
 func (r *universityRepository) Delete(id uint) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Unscoped().Delete(&models.University{}, id).Error; err != nil {
@@ -520,7 +608,10 @@ func (r *universityRepository) CreateSubject(subject *models.Subject) error {
 	return nil
 }
 
-// calculateTotalScore は総得点を計算します
+// calculateTotalScore は総得点を計算します。
+// この関数は以下の処理を行います：
+// - 科目のスコアの合計
+// - 総得点の返却
 func (r *universityRepository) calculateTotalScore(subjects []models.Subject) float64 {
 	var total float64
 	for _, s := range subjects {
@@ -530,7 +621,10 @@ func (r *universityRepository) calculateTotalScore(subjects []models.Subject) fl
 	return total
 }
 
-// updatePercentages はパーセンテージを更新します
+// updatePercentages はパーセンテージを更新します。
+// この関数は以下の処理を行います：
+// - 各科目のパーセンテージの計算
+// - パーセンテージの更新
 func (r *universityRepository) updatePercentages(subjects []models.Subject, totalScore float64) {
 	if totalScore > 0 {
 		for i := range subjects {
@@ -539,7 +633,10 @@ func (r *universityRepository) updatePercentages(subjects []models.Subject, tota
 	}
 }
 
-// saveSubjectWithScores は科目とスコアを保存します
+// saveSubjectWithScores は科目とスコアを保存します。
+// この関数は以下の処理を行います：
+// - 科目データの更新
+// - エラーハンドリング
 func (r *universityRepository) saveSubjectWithScores(tx *gorm.DB, subject models.Subject) error {
 	if err := tx.Model(&models.Subject{}).Where("id = ?", subject.ID).Updates(map[string]interface{}{
 		"test_type_id":   subject.TestTypeID,
@@ -554,7 +651,11 @@ func (r *universityRepository) saveSubjectWithScores(tx *gorm.DB, subject models
 	return nil
 }
 
-// updateSubjectScores は科目のスコアを更新します
+// updateSubjectScores は科目のスコアを更新します。
+// この関数は以下の処理を行います：
+// - 総得点の計算
+// - パーセンテージの更新
+// - 科目データの保存
 func (r *universityRepository) updateSubjectScores(tx *gorm.DB, subjects []models.Subject) error {
 	totalScore := r.calculateTotalScore(subjects)
 	r.updatePercentages(subjects, totalScore)
@@ -568,7 +669,10 @@ func (r *universityRepository) updateSubjectScores(tx *gorm.DB, subjects []model
 	return nil
 }
 
-// processBatch は科目のバッチを処理します
+// processBatch は科目のバッチを処理します。
+// この関数は以下の処理を行います：
+// - バッチデータの処理
+// - エラーハンドリング
 func (r *universityRepository) processBatch(tx *gorm.DB, batch []models.Subject, testTypeID uint) error {
 	for _, subject := range batch {
 		subject.TestTypeID = testTypeID
@@ -580,7 +684,11 @@ func (r *universityRepository) processBatch(tx *gorm.DB, batch []models.Subject,
 	return nil
 }
 
-// UpdateSubjectsBatch は科目のバッチ更新を行います
+// UpdateSubjectsBatch は科目のバッチ更新を行います。
+// この関数は以下の処理を行います：
+// - バッチサイズの設定
+// - バッチ処理の実行
+// - スコアの再計算
 func (r *universityRepository) UpdateSubjectsBatch(testTypeID uint, subjects []models.Subject) error {
 	applogger.Info(context.Background(), "バッチ更新開始: testTypeID=%d, 科目数=%d", testTypeID, len(subjects))
 
@@ -603,7 +711,11 @@ func (r *universityRepository) UpdateSubjectsBatch(testTypeID uint, subjects []m
 	})
 }
 
-// recalculateScores はスコアとパーセンテージを再計算します
+// recalculateScores はスコアとパーセンテージを再計算します。
+// この関数は以下の処理を行います：
+// - 科目データの取得
+// - 総得点の計算
+// - パーセンテージの更新
 func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) error {
 	var subjects []models.Subject
 	if err := tx.Where(testTypeIDQuery, testTypeID).Find(&subjects).Error; err != nil {
@@ -630,7 +742,11 @@ func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) e
 	return nil
 }
 
-// getExistingSubjects は既存の科目を取得します
+// getExistingSubjects は既存の科目を取得します。
+// この関数は以下の処理を行います：
+// - 科目データの取得
+// - ソート順の設定
+// - データの返却
 func (r *universityRepository) getExistingSubjects(tx *gorm.DB, testTypeID uint) ([]models.Subject, error) {
 	var subjects []models.Subject
 	if err := tx.Where(testTypeIDQuery, testTypeID).
@@ -642,6 +758,11 @@ func (r *universityRepository) getExistingSubjects(tx *gorm.DB, testTypeID uint)
 	return subjects, nil
 }
 
+// updateSubjectInList は科目リストを更新します。
+// この関数は以下の処理を行います：
+// - 科目の検索
+// - 表示順の保持
+// - リストの更新
 func (r *universityRepository) updateSubjectInList(
 	allSubjects []models.Subject,
 	subject *models.Subject,
@@ -658,7 +779,12 @@ func (r *universityRepository) updateSubjectInList(
 	return allSubjects
 }
 
-// UpdateSubject は科目を更新します
+// UpdateSubject は科目を更新します。
+// この関数は以下の処理を行います：
+// - 既存科目の取得
+// - 科目リストの更新
+// - スコアの更新
+// - キャッシュのクリア
 func (r *universityRepository) UpdateSubject(subject *models.Subject) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		allSubjects, err := r.getExistingSubjects(tx, subject.TestTypeID)
@@ -685,7 +811,10 @@ func (r *universityRepository) UpdateSubject(subject *models.Subject) error {
 	return nil
 }
 
-// DeleteSubject は科目を削除します
+// DeleteSubject は科目を削除します。
+// この関数は以下の処理を行います：
+// - 科目の削除
+// - エラーハンドリング
 func (r *universityRepository) DeleteSubject(id uint) error {
 	if err := r.db.Delete(&models.Subject{}, id).Error; err != nil {
 		return err
@@ -694,7 +823,10 @@ func (r *universityRepository) DeleteSubject(id uint) error {
 	return nil
 }
 
-// UpdateMajor は既存の学科を更新します
+// UpdateMajor は既存の学科を更新します。
+// この関数は以下の処理を行います：
+// - トランザクションの実行
+// - キャッシュのクリア
 func (r *universityRepository) UpdateMajor(major *models.Major) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(major).Error; err != nil {
@@ -714,7 +846,10 @@ func (r *universityRepository) UpdateMajor(major *models.Major) error {
 	return nil
 }
 
-// UpdateAdmissionSchedule は既存の入試スケジュールを更新します
+// UpdateAdmissionSchedule は既存の入試スケジュールを更新します。
+// この関数は以下の処理を行います：
+// - トランザクションの実行
+// - キャッシュのクリア
 func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.AdmissionSchedule) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(schedule).Error; err != nil {
@@ -734,7 +869,10 @@ func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.Admissio
 	return nil
 }
 
-// UpdateAdmissionInfo は既存の入試情報を更新します
+// UpdateAdmissionInfo は既存の入試情報を更新します。
+// この関数は以下の処理を行います：
+// - トランザクションの実行
+// - キャッシュのクリア
 func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(info).Error; err != nil {
@@ -754,6 +892,11 @@ func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) e
 	return nil
 }
 
+// FindMajor は学科を取得します。
+// この関数は以下の処理を行います：
+// - キャッシュのチェック
+// - データベースからの取得
+// - キャッシュへの保存
 func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Major, error) {
 	cacheKey := fmt.Sprintf("majors:%d:%d", departmentID, majorID)
 
@@ -785,7 +928,10 @@ func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Ma
 	return &major, nil
 }
 
-// CreateMajor は新しい学科を作成します
+// CreateMajor は新しい学科を作成します。
+// この関数は以下の処理を行います：
+// - 学科の作成
+// - エラーハンドリング
 func (r *universityRepository) CreateMajor(major *models.Major) error {
 	if err := r.db.Create(major).Error; err != nil {
 		return appErrors.NewDatabaseError("CreateMajor", err, nil)
@@ -794,7 +940,10 @@ func (r *universityRepository) CreateMajor(major *models.Major) error {
 	return nil
 }
 
-// DeleteMajor は学科を削除します
+// DeleteMajor は学科を削除します。
+// この関数は以下の処理を行います：
+// - 学科の削除
+// - エラーハンドリング
 func (r *universityRepository) DeleteMajor(id uint) error {
 	if err := r.db.Delete(&models.Major{}, id).Error; err != nil {
 		return appErrors.NewDatabaseError("DeleteMajor", err, nil)
@@ -803,6 +952,11 @@ func (r *universityRepository) DeleteMajor(id uint) error {
 	return nil
 }
 
+// FindAdmissionInfo は入試情報を取得します。
+// この関数は以下の処理を行います：
+// - キャッシュのチェック
+// - データベースからの取得
+// - キャッシュへの保存
 func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*models.AdmissionInfo, error) {
 	cacheKey := fmt.Sprintf("admission_infos:%d:%d", scheduleID, infoID)
 
@@ -834,7 +988,10 @@ func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*mode
 	return &info, nil
 }
 
-// CreateAdmissionInfo は新しい募集情報を作成します
+// CreateAdmissionInfo は新しい募集情報を作成します。
+// この関数は以下の処理を行います：
+// - 募集情報の作成
+// - エラーハンドリング
 func (r *universityRepository) CreateAdmissionInfo(info *models.AdmissionInfo) error {
 	if err := r.db.Create(info).Error; err != nil {
 		return appErrors.NewDatabaseError("CreateAdmissionInfo", err, nil)
@@ -843,7 +1000,10 @@ func (r *universityRepository) CreateAdmissionInfo(info *models.AdmissionInfo) e
 	return nil
 }
 
-// DeleteAdmissionInfo は募集情報を削除します
+// DeleteAdmissionInfo は募集情報を削除します。
+// この関数は以下の処理を行います：
+// - 募集情報の削除
+// - エラーハンドリング
 func (r *universityRepository) DeleteAdmissionInfo(id uint) error {
 	if err := r.db.Delete(&models.AdmissionInfo{}, id).Error; err != nil {
 		return appErrors.NewDatabaseError("DeleteAdmissionInfo", err, nil)

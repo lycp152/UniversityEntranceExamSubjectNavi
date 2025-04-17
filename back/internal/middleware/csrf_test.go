@@ -1,3 +1,8 @@
+// Package middleware はアプリケーションのミドルウェアのテストを提供します。
+// このパッケージは以下のテストを提供します：
+// - CSRFトークンの長さと有効期限の設定
+// - リクエストトークンの検証
+// - CSRFミドルウェアの動作確認
 package middleware
 
 import (
@@ -18,6 +23,11 @@ const (
 	errEnvSetFailed = "環境変数の設定に失敗しました: %v"
 )
 
+// TestGetTokenLength はCSRFトークンの長さの設定をテストします。
+// このテストは以下のケースを検証します：
+// - デフォルト値の使用
+// - 有効な値の使用
+// - 最小値未満の値の処理
 func TestGetTokenLength(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -53,6 +63,11 @@ func TestGetTokenLength(t *testing.T) {
 	}
 }
 
+// TestGetTokenExpiration はCSRFトークンの有効期限の設定をテストします。
+// このテストは以下のケースを検証します：
+// - デフォルト値の使用
+// - 有効な値の使用
+// - 最小値未満の値の処理
 func TestGetTokenExpiration(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -88,6 +103,11 @@ func TestGetTokenExpiration(t *testing.T) {
 	}
 }
 
+// TestValidateRequestToken はリクエストトークンの検証をテストします。
+// このテストは以下のケースを検証します：
+// - トークンが存在しない場合
+// - 無効なトークンの場合
+// - 有効なトークンの場合
 func TestValidateRequestToken(t *testing.T) {
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodPost, "/", nil)
@@ -137,6 +157,11 @@ func TestValidateRequestToken(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// TestGenerateCSRFToken はCSRFトークンの生成をテストします。
+// このテストは以下のケースを検証します：
+// - トークンの生成
+// - トークンの一意性
+// - エラーハンドリング
 func TestGenerateCSRFToken(t *testing.T) {
 	token1, err1 := generateCSRFToken()
 	assert.NoError(t, err1)
@@ -150,6 +175,13 @@ func TestGenerateCSRFToken(t *testing.T) {
 	assert.NotEqual(t, token1, token2)
 }
 
+// TestValidateCSRFToken はCSRFトークンの検証をテストします。
+// このテストは以下のケースを検証します：
+// - テスト用トークンの場合
+// - 有効なトークンの場合
+// - 無効なトークンの場合
+// - 有効期限切れのトークンの場合
+// - トークンストアが空の場合
 func TestValidateCSRFToken(t *testing.T) {
 	// テスト開始時にトークンストアをクリア
 	tokenStore.Lock()
@@ -194,6 +226,12 @@ func TestValidateCSRFToken(t *testing.T) {
 	assert.False(t, validateCSRFToken(token))
 }
 
+// TestCSRFMiddleware はCSRFミドルウェアの動作をテストします。
+// このテストは以下のケースを検証します：
+// - GETリクエストの場合
+// - POSTリクエスト（トークンなし）の場合
+// - POSTリクエスト（有効なトークン）の場合
+// - POSTリクエスト（無効なトークン）の場合
 func TestCSRFMiddleware(t *testing.T) {
 	e := echo.New()
 	handler := CSRFMiddleware()(func(c echo.Context) error {

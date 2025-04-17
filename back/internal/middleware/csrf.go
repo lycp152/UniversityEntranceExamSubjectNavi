@@ -1,3 +1,8 @@
+// Package middleware はアプリケーションのミドルウェアを提供します。
+// このパッケージは以下の機能を提供します：
+// - CSRFトークンの生成と検証
+// - トークンの有効期限管理
+// - セキュアなトークンストアの実装
 package middleware
 
 import (
@@ -44,7 +49,10 @@ var (
 	}
 )
 
-// getTokenLength は環境変数からトークン長を取得します
+// getTokenLength は環境変数からトークン長を取得します。
+// 以下の優先順位で値を決定します：
+// 1. 環境変数CSRF_TOKEN_LENGTHの値（有効な場合）
+// 2. デフォルト値（DefaultTokenLength）
 func getTokenLength() int {
 	length := os.Getenv("CSRF_TOKEN_LENGTH")
 	if length == "" {
@@ -59,7 +67,10 @@ func getTokenLength() int {
 	return n
 }
 
-// getTokenExpiration は環境変数からトークンの有効期限を取得します
+// getTokenExpiration は環境変数からトークンの有効期限を取得します。
+// 以下の優先順位で値を決定します：
+// 1. 環境変数CSRF_TOKEN_EXPIRATIONの値（有効な場合）
+// 2. デフォルト値（DefaultTokenExpiration）
 func getTokenExpiration() time.Duration {
 	expiration := os.Getenv("CSRF_TOKEN_EXPIRATION")
 	if expiration == "" {
@@ -79,7 +90,11 @@ func getTokenExpiration() time.Duration {
 	return duration
 }
 
-// validateRequestToken はリクエストトークンを検証します
+// validateRequestToken はリクエストトークンを検証します。
+// 以下の検証を行います：
+// 1. トークンの存在確認
+// 2. トークンの有効性確認
+// 3. エラーメッセージの生成
 func validateRequestToken(c echo.Context) error {
 	requestToken := c.Request().Header.Get(CSRFTokenHeader)
 	if requestToken == "" {
@@ -99,7 +114,11 @@ func validateRequestToken(c echo.Context) error {
 	return nil
 }
 
-// CSRFMiddleware はCSRF保護を行うミドルウェアです
+// CSRFMiddleware はCSRF保護を行うミドルウェアです。
+// 以下の処理を行います：
+// 1. GETリクエストの場合、新しいトークンを生成
+// 2. その他のリクエストの場合、トークンの検証
+// 3. トークンの更新とレスポンスヘッダーの設定
 func CSRFMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -145,7 +164,11 @@ func CSRFMiddleware() echo.MiddlewareFunc {
 	}
 }
 
-// generateCSRFToken はCSRFトークンを生成します
+// generateCSRFToken はCSRFトークンを生成します。
+// 以下の処理を行います：
+// 1. ランダムバイトの生成
+// 2. Base64エンコーディング
+// 3. エラーハンドリング
 func generateCSRFToken() (string, error) {
 	b := make([]byte, CSRFTokenLength)
 	if _, err := rand.Read(b); err != nil {
@@ -155,7 +178,12 @@ func generateCSRFToken() (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-// validateCSRFToken はCSRFトークンを検証します
+// validateCSRFToken はCSRFトークンを検証します。
+// 以下の検証を行います：
+// 1. テスト用トークンの確認
+// 2. トークンの存在確認
+// 3. 有効期限の確認
+// 4. 期限切れトークンの削除
 func validateCSRFToken(token string) bool {
 	// テスト用のトークンを許可
 	testToken := os.Getenv("TEST_CSRF_TOKEN")
@@ -183,7 +211,11 @@ func validateCSRFToken(token string) bool {
 	return true
 }
 
-// RefreshCSRFToken は新しいCSRFトークンを生成して返します
+// RefreshCSRFToken は新しいCSRFトークンを生成して返します。
+// 以下の処理を行います：
+// 1. トークンの生成
+// 2. トークンストアの更新
+// 3. レスポンスヘッダーの設定
 func RefreshCSRFToken(c echo.Context) error {
 	token, err := generateCSRFToken()
 	if err != nil {
@@ -203,7 +235,11 @@ func RefreshCSRFToken(c echo.Context) error {
 	})
 }
 
-// ConfigureCSRF はCSRF保護を設定します
+// ConfigureCSRF はCSRF保護を設定します。
+// 以下の設定を行います：
+// 1. トークンの検索方法
+// 2. クッキーの設定
+// 3. セキュリティオプション
 func ConfigureCSRF() echo.MiddlewareFunc {
 	return echomiddleware.CSRFWithConfig(echomiddleware.CSRFConfig{
 		TokenLookup:    "header:X-CSRF-Token",
@@ -214,7 +250,10 @@ func ConfigureCSRF() echo.MiddlewareFunc {
 	})
 }
 
-// CSRFTokenHandler はCSRFトークンを生成して返すハンドラーです
+// CSRFTokenHandler はCSRFトークンを生成して返すハンドラーです。
+// 以下の処理を行います：
+// 1. トークンの取得
+// 2. JSONレスポンスの生成
 func CSRFTokenHandler(c echo.Context) error {
 	token := c.Get("csrf").(string)
 

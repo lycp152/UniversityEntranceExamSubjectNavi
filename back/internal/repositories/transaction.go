@@ -1,3 +1,9 @@
+// Package repositories はデータベースのトランザクション機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - トランザクションの管理
+// - リトライポリシーの実装
+// - セーブポイントの管理
+// - エラーハンドリング
 package repositories
 
 import (
@@ -35,7 +41,13 @@ const (
 	errSavepoint = "セーブポイントの設定に失敗しました: %w"
 )
 
-// TransactionOption はトランザクションのオプションを定義します
+// TransactionOption はトランザクションのオプションを定義します。
+// この構造体は以下の設定を管理します：
+// - 分離レベル
+// - タイムアウト
+// - リトライポリシー
+// - 読み取り専用フラグ
+// - 監視機能
 type TransactionOption struct {
 	Isolation   sql.IsolationLevel
 	Timeout     time.Duration
@@ -45,7 +57,11 @@ type TransactionOption struct {
 	Monitor     func(startTime time.Time, err error)
 }
 
-// getEnvOrDefaultDuration は環境変数を取得し、存在しない場合はデフォルト値を返します
+// getEnvOrDefaultDuration は環境変数を取得し、存在しない場合はデフォルト値を返します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の設定
+// - 値の返却
 func getEnvOrDefaultDuration(key string, defaultValue time.Duration) time.Duration {
 	value := os.Getenv(key)
 	if value == "" {
@@ -59,7 +75,11 @@ func getEnvOrDefaultDuration(key string, defaultValue time.Duration) time.Durati
 	return defaultValue
 }
 
-// getEnvOrDefaultFloat は環境変数を取得し、存在しない場合はデフォルト値を返します
+// getEnvOrDefaultFloat は環境変数を取得し、存在しない場合はデフォルト値を返します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の設定
+// - 値の返却
 func getEnvOrDefaultFloat(key string, defaultValue float64) float64 {
 	value := os.Getenv(key)
 	if value == "" {
@@ -73,7 +93,11 @@ func getEnvOrDefaultFloat(key string, defaultValue float64) float64 {
 	return defaultValue
 }
 
-// getEnvOrDefaultBool は環境変数を取得し、存在しない場合はデフォルト値を返します
+// getEnvOrDefaultBool は環境変数を取得し、存在しない場合はデフォルト値を返します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の設定
+// - 値の返却
 func getEnvOrDefaultBool(key string, defaultValue bool) bool {
 	value := os.Getenv(key)
 	if value == "" {
@@ -87,7 +111,11 @@ func getEnvOrDefaultBool(key string, defaultValue bool) bool {
 	return defaultValue
 }
 
-// DefaultTransactionOption はデフォルトのトランザクションオプションを返します
+// DefaultTransactionOption はデフォルトのトランザクションオプションを返します。
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の設定
+// - オプションの生成
 func DefaultTransactionOption() *TransactionOption {
 	return &TransactionOption{
 		Isolation: sql.LevelReadCommitted,
@@ -112,12 +140,21 @@ func DefaultTransactionOption() *TransactionOption {
 	}
 }
 
-// Transaction はトランザクション内でリポジトリの操作を実行します
+// Transaction はトランザクション内でリポジトリの操作を実行します。
+// この関数は以下の処理を行います：
+// - デフォルトオプションの設定
+// - トランザクションの実行
+// - エラーハンドリング
 func (r *universityRepository) Transaction(fn func(repo IUniversityRepository) error) error {
 	return r.TransactionWithOption(fn, DefaultTransactionOption())
 }
 
-// TransactionWithOption は指定されたオプションでトランザクションを実行します
+// TransactionWithOption は指定されたオプションでトランザクションを実行します。
+// この関数は以下の処理を行います：
+// - コンテキストの設定
+// - トランザクションの実行
+// - リトライの実行
+// - エラーハンドリング
 func (r *universityRepository) TransactionWithOption(
 	fn func(repo IUniversityRepository) error,
 	opt *TransactionOption,
@@ -150,7 +187,11 @@ func (r *universityRepository) TransactionWithOption(
 	})
 }
 
-// handleTransactionError はトランザクションエラーの処理を行います
+// handleTransactionError はトランザクションエラーの処理を行います。
+// この関数は以下の処理を行います：
+// - 実行時間の計測
+// - エラーの種類の判定
+// - エラーの処理
 func (r *universityRepository) handleTransactionError(err error, startTime time.Time) error {
 	elapsedTime := time.Since(startTime)
 	applogger.Error(context.Background(), "トランザクション実行時間: %v, エラー: %v", elapsedTime, err)
@@ -167,7 +208,11 @@ func (r *universityRepository) handleTransactionError(err error, startTime time.
 	return backoff.Permanent(fmt.Errorf("トランザクションが失敗しました: %w", err))
 }
 
-// isRetryableError はリトライ可能なエラーかどうかを判定します
+// isRetryableError はリトライ可能なエラーかどうかを判定します。
+// この関数は以下の処理を行います：
+// - エラーメッセージの解析
+// - リトライ可能なエラーの判定
+// - 結果の返却
 func (r *universityRepository) isRetryableError(err error) bool {
 	if err == nil {
 		return false
@@ -192,7 +237,10 @@ func (r *universityRepository) isRetryableError(err error) bool {
 	return false
 }
 
-// Savepoint はトランザクション内でセーブポイントを作成します
+// Savepoint はトランザクション内でセーブポイントを作成します。
+// この関数は以下の処理を行います：
+// - セーブポイントの作成
+// - エラーハンドリング
 func (r *universityRepository) Savepoint(tx *gorm.DB, name string) error {
 	if err := tx.Exec(fmt.Sprintf("SAVEPOINT %s", name)).Error; err != nil {
 		return fmt.Errorf(errSavepoint, err)
@@ -201,7 +249,10 @@ func (r *universityRepository) Savepoint(tx *gorm.DB, name string) error {
 	return nil
 }
 
-// RollbackTo は指定されたセーブポイントまでロールバックします
+// RollbackTo は指定されたセーブポイントまでロールバックします。
+// この関数は以下の処理を行います：
+// - セーブポイントへのロールバック
+// - エラーハンドリング
 func (r *universityRepository) RollbackTo(tx *gorm.DB, name string) error {
 	if err := tx.Exec(fmt.Sprintf("ROLLBACK TO SAVEPOINT %s", name)).Error; err != nil {
 		return fmt.Errorf("セーブポイントへのロールバックに失敗しました: %w", err)
@@ -210,7 +261,10 @@ func (r *universityRepository) RollbackTo(tx *gorm.DB, name string) error {
 	return nil
 }
 
-// WithTx はトランザクション用のリポジトリインスタンスを返します
+// WithTx はトランザクション用のリポジトリインスタンスを返します。
+// この関数は以下の処理を行います：
+// - トランザクションの設定
+// - リポジトリの生成
 func (r *universityRepository) WithTx(tx *gorm.DB) IUniversityRepository {
 	return &universityRepository{
 		db:    tx,

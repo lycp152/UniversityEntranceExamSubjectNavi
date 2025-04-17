@@ -17,6 +17,13 @@ const (
 	errDBClose = "データベースのクローズに失敗しました: %v"
 )
 
+// テスト用の定数をインポート
+var (
+	_ = testUserName
+	_ = testUserEmail
+	_ = testUserPassword
+)
+
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{

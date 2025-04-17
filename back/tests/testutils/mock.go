@@ -3,6 +3,7 @@ package testutils
 import (
 	"errors"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -20,7 +21,7 @@ type User struct {
 type MockDB struct {
 	mu            sync.Mutex
 	users         map[int]*User
-	nextID        int
+	nextID        int64
 	shouldError   bool
 	errorMsg      string
 	inTransaction bool
@@ -97,9 +98,9 @@ func (m *MockDB) handleUserInsert(args []interface{}) (*Result, error) {
 
 	user := m.createUser(args)
 	if m.inTransaction {
-		m.pendingUsers[m.nextID] = user
+		m.pendingUsers[int(m.nextID)] = user
 	} else {
-		m.users[m.nextID] = user
+		m.users[int(m.nextID)] = user
 	}
 
 	return &Result{db: m}, nil
@@ -122,10 +123,10 @@ func (m *MockDB) checkDuplicateEmail(email string) error {
 }
 
 func (m *MockDB) createUser(args []interface{}) *User {
-	m.nextID++
+	id := atomic.AddInt64(&m.nextID, 1)
 
 	return &User{
-		ID:       m.nextID,
+		ID:       int(id),
 		Name:     args[0].(string),
 		Email:    args[1].(string),
 		Password: args[2].(string),
@@ -206,7 +207,7 @@ func (r *Result) LastInsertId() (int64, error) {
 		return 0, errors.New(r.db.errorMsg)
 	}
 
-	return int64(r.db.nextID), nil
+	return r.db.nextID, nil
 }
 
 // RowsAffected は影響を受けた行数を返します

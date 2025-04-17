@@ -12,12 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testUserName     = "テストユーザー"
-	testUserEmail    = "test@example.com"
-	testUserPassword = "password123"
-)
-
 // TestUserValidation はユーザー検証のテストケースです
 func TestUserValidation(t *testing.T) {
 	t.Parallel()

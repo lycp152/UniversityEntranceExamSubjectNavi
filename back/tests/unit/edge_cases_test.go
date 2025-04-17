@@ -20,8 +20,8 @@ func TestEdgeCases(t *testing.T) {
 			name: "空のユーザー名",
 			user: models.User{
 				Name:     "",
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 			wantErr: true,
 		},
@@ -29,25 +29,25 @@ func TestEdgeCases(t *testing.T) {
 			name: "最大長のユーザー名",
 			user: models.User{
 				Name:     strings.Repeat("あ", 255),
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 			wantErr: false,
 		},
 		{
 			name: "無効なメールアドレス形式",
 			user: models.User{
-				Name:     TestUserName,
+				Name:     testUserName,
 				Email:    "invalid-email",
-				Password: TestUserPassword,
+				Password: testUserPassword,
 			},
 			wantErr: true,
 		},
 		{
 			name: "短すぎるパスワード",
 			user: models.User{
-				Name:     TestUserName,
-				Email:    TestUserEmail,
+				Name:     testUserName,
+				Email:    testUserEmail,
 				Password: "pass",
 			},
 			wantErr: true,
@@ -56,8 +56,8 @@ func TestEdgeCases(t *testing.T) {
 			name: "特殊文字を含むユーザー名",
 			user: models.User{
 				Name:     "テスト!@#$%^&*()ユーザー",
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 			wantErr: false,
 		},
@@ -125,9 +125,9 @@ func TestDatabaseErrorHandling(t *testing.T) {
 	db.SetError("データベース接続エラー")
 
 	user := &models.User{
-		Name:     TestUserName,
+		Name:     testUserName,
 		Email:    "error@example.com", // エラーを発生させるための特別なメールアドレス
-		Password: TestUserPassword,
+		Password: testUserPassword,
 	}
 
 	err := repo.Create(user)

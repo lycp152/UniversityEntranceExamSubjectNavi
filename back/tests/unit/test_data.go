@@ -12,9 +12,9 @@ func NewTestData() *TestData {
 	return &TestData{
 		Users: []*models.User{
 			{
-				Name:     TestUserName,
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Name:     testUserName,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 		},
 	}
@@ -24,9 +24,9 @@ func NewTestData() *TestData {
 func (td *TestData) Reset() {
 	td.Users = []*models.User{
 		{
-			Name:     TestUserName,
-			Email:    TestUserEmail,
-			Password: TestUserPassword,
+			Name:     testUserName,
+			Email:    testUserEmail,
+			Password: testUserPassword,
 		},
 	}
 }

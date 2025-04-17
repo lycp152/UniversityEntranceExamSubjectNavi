@@ -16,8 +16,8 @@ func TestSecurityValidation(t *testing.T) {
 			name: "XSS攻撃の検出",
 			user: models.User{
 				Name:     "<script>alert('xss')</script>",
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 			wantErr: true,
 		},
@@ -25,8 +25,8 @@ func TestSecurityValidation(t *testing.T) {
 			name: "SQLインジェクション攻撃の検出",
 			user: models.User{
 				Name:     "test'; DROP TABLE users; --",
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 			wantErr: true,
 		},
@@ -34,8 +34,8 @@ func TestSecurityValidation(t *testing.T) {
 			name: "長すぎる入力の検出",
 			user: models.User{
 				Name:     string(make([]byte, 1001)), // 1001バイトの文字列
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 			wantErr: true,
 		},
@@ -43,8 +43,8 @@ func TestSecurityValidation(t *testing.T) {
 			name: "特殊文字の検出",
 			user: models.User{
 				Name:     "テスト\u0000ユーザー", // NULL文字を含む
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testUserEmail,
+				Password: testUserPassword,
 			},
 			wantErr: true,
 		},

@@ -17,19 +17,12 @@ const (
 	errDBClose = "データベースのクローズに失敗しました: %v"
 )
 
-// テスト用の定数をインポート
-var (
-	_ = TestUserName
-	_ = TestUserEmail
-	_ = TestUserPassword
-)
-
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{
-		Name:     TestUserName,
-		Email:    TestUserEmail,
-		Password: TestUserPassword,
+		Name:     testUserName,
+		Email:    testUserEmail,
+		Password: testUserPassword,
 	}
 
 	b.ResetTimer()
@@ -50,9 +43,9 @@ func BenchmarkUserRepository(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     TestUserName,
-		Email:    TestUserEmail,
-		Password: TestUserPassword,
+		Name:     testUserName,
+		Email:    testUserEmail,
+		Password: testUserPassword,
 	}
 
 	b.ResetTimer()
@@ -123,9 +116,9 @@ func BenchmarkResponseTime(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     "テストユーザー",
-		Email:    "test@example.com",
-		Password: "password123",
+		Name:     testUserName,
+		Email:    testUserEmail,
+		Password: testUserPassword,
 	}
 
 	b.ResetTimer()
@@ -172,9 +165,9 @@ func BenchmarkCachePerformance(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     "テストユーザー",
-		Email:    "test@example.com",
-		Password: "password123",
+		Name:     testUserName,
+		Email:    testUserEmail,
+		Password: testUserPassword,
 	}
 
 	// キャッシュのウォームアップ

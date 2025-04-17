@@ -8,6 +8,12 @@ import (
 	"university-exam-api/tests/unit/models"
 )
 
+const (
+	testUserName     = "テストユーザー"
+	testUserEmail    = "test@example.com"
+	testUserPassword = "password123"
+)
+
 // createTestUser はテスト用のユーザーを作成するヘルパー関数です
 func createTestUser(t testing.TB, name, email, password string) *models.User {
 	t.Helper()
@@ -28,9 +34,9 @@ func createTestUsers(t testing.TB, count int) []*models.User {
 	for i := 0; i < count; i++ {
 		email := fmt.Sprintf("test%d@example.com", i)
 		users[i] = createTestUser(t,
-			TestUserName,
+			testUserName,
 			email,
-			TestUserPassword,
+			testUserPassword,
 		)
 	}
 

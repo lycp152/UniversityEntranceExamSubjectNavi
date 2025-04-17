@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -59,6 +60,7 @@ var (
 	errorLogger  *slog.Logger   // エラーログ用のロガー
 	accessLogger *slog.Logger   // アクセスログ用のロガー
 	config       Config         // 現在のロガー設定
+	initOnce     sync.Once      // 初期化を一度だけ行うためのOnce
 )
 
 // InitLoggers はロガーを初期化します。
@@ -266,13 +268,15 @@ func AccessLogMiddleware() echo.MiddlewareFunc {
 
 // InitTestLogger はテスト用のロガーを初期化します
 func InitTestLogger() {
-	// テスト用のロガー設定
-	handler := slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	})
+	initOnce.Do(func() {
+		// テスト用のロガー設定
+		handler := slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		})
 
-	// ロガーの初期化をスレッドセーフに行う
-	infoLogger = slog.New(handler)
-	errorLogger = slog.New(handler)
-	accessLogger = slog.New(handler)
+		// ロガーの初期化をスレッドセーフに行う
+		infoLogger = slog.New(handler)
+		errorLogger = slog.New(handler)
+		accessLogger = slog.New(handler)
+	})
 }

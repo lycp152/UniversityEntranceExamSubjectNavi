@@ -207,7 +207,7 @@ func (r *Result) LastInsertId() (int64, error) {
 		return 0, errors.New(r.db.errorMsg)
 	}
 
-	return r.db.nextID, nil
+	return atomic.LoadInt64(&r.db.nextID), nil
 }
 
 // RowsAffected は影響を受けた行数を返します

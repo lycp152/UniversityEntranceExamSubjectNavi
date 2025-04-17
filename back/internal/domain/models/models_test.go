@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 	"time"
+	"university-exam-api/internal/domain/errors"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -139,7 +140,7 @@ func (h *testHelper) createTestSubject(
 // validateAcademicYear は学年度のバリデーションを行う
 func validateAcademicYear(info *AdmissionInfo) error {
 	if info.AcademicYear < 2000 || info.AcademicYear > 2100 {
-		return ErrInvalidAcademicYear
+		return errors.ErrInvalidAcademicYear
 	}
 
 	return nil
@@ -183,7 +184,7 @@ func TestAcademicYear(t *testing.T) {
 
 			if tt.wantErr {
 				assert.Error(t, err, errExpected)
-				assert.ErrorIs(t, err, ErrInvalidAcademicYear, "期待されたエラー型ではありません")
+				assert.ErrorIs(t, err, errors.ErrInvalidAcademicYear, "期待されたエラー型ではありません")
 			} else {
 				assert.NoError(t, err, errUnexpected, err)
 			}

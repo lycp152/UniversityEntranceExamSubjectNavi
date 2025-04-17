@@ -1,4 +1,4 @@
-package models
+package errors
 
 import (
 	"errors"
@@ -20,7 +20,7 @@ func TestDBError(t *testing.T) {
 	t.Run("正常系: DBErrorの生成と取得", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
+		dbErr := NewDatabaseError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		assert.NotNil(t, dbErr)
 		assert.Equal(t, originalErr, dbErr.Err)
 		assert.Equal(t, CodeNotFound, dbErr.Code)
@@ -34,7 +34,7 @@ func TestDBError(t *testing.T) {
 	t.Run("正常系: エラーメッセージのフォーマット", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
+		dbErr := NewDatabaseError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		expected := "users テーブルでの SELECT 操作中にエラーが発生しました: original error " +
 			"(エラーコード: NOT_FOUND, 時刻: " + dbErr.Timestamp.Format(time.RFC3339) + ", 詳細: 詳細情報)"
 		assert.Equal(t, expected, dbErr.Error())
@@ -43,14 +43,14 @@ func TestDBError(t *testing.T) {
 	t.Run("正常系: Unwrapの動作確認", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
+		dbErr := NewDatabaseError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		assert.Equal(t, originalErr, dbErr.Unwrap())
 	})
 
 	t.Run("正常系: コンテキスト情報の追加", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
+		dbErr := NewDatabaseError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		dbErr = dbErr.WithContext("key1", "value1")
 		dbErr = dbErr.WithContext("key2", "value2")
 
@@ -61,7 +61,7 @@ func TestDBError(t *testing.T) {
 	t.Run("正常系: エラー詳細の取得", func(t *testing.T) {
 		t.Parallel()
 
-		dbErr := NewDBError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
+		dbErr := NewDatabaseError(originalErr, CodeNotFound, "SELECT", "users", errorDetails)
 		details, ok := GetErrorDetails(dbErr)
 		assert.True(t, ok)
 		assert.Equal(t, errorDetails, details.Message)
@@ -81,7 +81,7 @@ func TestErrorCheckers(t *testing.T) {
 	}{
 		{
 			name:     "IsNotFound - DBErrorの場合",
-			err:      NewDBError(ErrRecordNotFound, CodeNotFound, "SELECT", "users"),
+			err:      NewDatabaseError(ErrRecordNotFound, CodeNotFound, "SELECT", "users"),
 			checker:  IsNotFound,
 			expected: true,
 		},
@@ -99,7 +99,7 @@ func TestErrorCheckers(t *testing.T) {
 		},
 		{
 			name:     "IsDuplicateKey - DBErrorの場合",
-			err:      NewDBError(ErrDuplicateKey, CodeDuplicateKey, "INSERT", "users"),
+			err:      NewDatabaseError(ErrDuplicateKey, CodeDuplicateKey, "INSERT", "users"),
 			checker:  IsDuplicateKey,
 			expected: true,
 		},
@@ -117,7 +117,7 @@ func TestErrorCheckers(t *testing.T) {
 		},
 		{
 			name:     "IsValidationError - DBErrorの場合",
-			err:      NewDBError(ErrValidationFailed, CodeValidationError, "UPDATE", "users"),
+			err:      NewDatabaseError(ErrValidationFailed, CodeValidationError, "UPDATE", "users"),
 			checker:  IsValidationError,
 			expected: true,
 		},
@@ -135,7 +135,7 @@ func TestErrorCheckers(t *testing.T) {
 		},
 		{
 			name:     "IsTimeout - DBErrorの場合",
-			err:      NewDBError(ErrTimeout, CodeTimeout, "SELECT", "users"),
+			err:      NewDatabaseError(ErrTimeout, CodeTimeout, "SELECT", "users"),
 			checker:  IsTimeout,
 			expected: true,
 		},
@@ -153,7 +153,7 @@ func TestErrorCheckers(t *testing.T) {
 		},
 		{
 			name:     "IsDeadlock - DBErrorの場合",
-			err:      NewDBError(ErrDeadlock, CodeDeadlock, "UPDATE", "users"),
+			err:      NewDatabaseError(ErrDeadlock, CodeDeadlock, "UPDATE", "users"),
 			checker:  IsDeadlock,
 			expected: true,
 		},

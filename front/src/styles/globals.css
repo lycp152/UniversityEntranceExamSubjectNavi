@@ -12,9 +12,7 @@
  * @see {@link ./error.ts} エラー関連スタイル
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 @layer utilities {
   .text-balance {

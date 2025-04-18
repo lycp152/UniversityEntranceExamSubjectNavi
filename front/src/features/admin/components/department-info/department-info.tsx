@@ -76,7 +76,7 @@ export const DepartmentInfo = ({
     };
 
   return (
-    <div className="px-2 border-l border-gray-200 min-w-[125px]">
+    <div className="px-2 border-l border-gray-300 min-w-[125px]">
       {isEditing ? (
         <>
           <input

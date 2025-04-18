@@ -23,7 +23,7 @@ export default function Header() {
   return (
     <header
       role="banner"
-      className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm"
+      className="sticky top-0 z-50 w-full bg-white border-b border-gray-300 shadow-sm"
       aria-label="サイトヘッダー"
     >
       <nav className="w-full" role="navigation" aria-label="メインナビゲーション">

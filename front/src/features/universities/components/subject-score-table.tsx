@@ -27,17 +27,21 @@ const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {
       {/* テーブルのタイトル */}
       <h2 className="text-lg font-semibold mb-2">{tableLabels.title}</h2>
       <div className="overflow-x-auto w-full">
-        <table className="w-full border-collapse py-4 border">
+        <table className="w-full border-collapse py-4 border border-gray-300">
           <thead>
             <tr>
               {/* ヘッダー行: 項目名と科目名を表示 */}
-              <th className={tableStyles.headerCell}>{tableLabels.header.item}</th>
+              <th className={`${tableStyles.headerCell} border-b border-gray-300`}>
+                {tableLabels.header.item}
+              </th>
               {Object.keys(subjects).map(subject => (
-                <th key={subject} className={tableStyles.headerCell}>
+                <th key={subject} className={`${tableStyles.headerCell} border-b border-gray-300`}>
                   {subject}
                 </th>
               ))}
-              <th className={tableStyles.headerCell}>{tableLabels.header.total}</th>
+              <th className={`${tableStyles.headerCell} border-b border-gray-300`}>
+                {tableLabels.header.total}
+              </th>
             </tr>
           </thead>
           <tbody>

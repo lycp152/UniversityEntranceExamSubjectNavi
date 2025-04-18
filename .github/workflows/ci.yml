@@ -31,8 +31,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "yarn"
-          cache-dependency-path: front/yarn.lock
+          cache: "pnpm"
+          cache-dependency-path: front/pnpm-lock.yaml
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -44,15 +44,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Cache Yarn
+      - name: Cache pnpm
         uses: actions/cache@v4
         with:
           path: |
             front/node_modules
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('front/yarn.lock') }}
+            ~/.cache/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: |
@@ -60,7 +60,7 @@ jobs:
           go mod download
           go mod verify
           cd ../front
-          yarn install --frozen-lockfile
+          pnpm install
 
       - name: Install golangci-lint
         uses: golangci/golangci-lint-action@v7.0.0
@@ -79,8 +79,8 @@ jobs:
           cd back
           golangci-lint run ./...
           cd ../front
-          yarn lint
-          yarn type-check
+          pnpm lint
+          pnpm type-check
 
   test:
     needs: lint
@@ -109,8 +109,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "yarn"
-          cache-dependency-path: front/yarn.lock
+          cache: "pnpm"
+          cache-dependency-path: front/pnpm-lock.yaml
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -143,9 +143,9 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:8080/api
         run: |
           cd front
-          yarn install --frozen-lockfile
+          pnpm install
           export PATH=$PATH:$(pwd)/node_modules/.bin
-          yarn vitest run --coverage
+          pnpm vitest run --coverage
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5

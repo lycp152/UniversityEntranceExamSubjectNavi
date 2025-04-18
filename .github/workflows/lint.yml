@@ -34,19 +34,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "yarn"
-          cache-dependency-path: front/yarn.lock
+          cache: "pnpm"
+          cache-dependency-path: front/pnpm-lock.yaml
 
       - name: Install Frontend Dependencies
         run: |
           cd front
-          yarn install --frozen-lockfile
+          pnpm install --frozen-lockfile
 
       - name: Lint and Type Check Frontend
         run: |
           cd front
-          yarn lint
-          yarn type-check
+          pnpm lint
+          pnpm type-check
 
       # Dependency Checkの実行
       - name: Run Dependency Check

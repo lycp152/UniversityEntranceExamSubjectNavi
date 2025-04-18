@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--max-old-space-size=4096' next dev --turbopack",
-    "dev:clean": "rm -rf .next && rm -rf node_modules/.cache && yarn dev",
+    "dev:clean": "rm -rf .next && rm -rf node_modules/.cache && pnpm dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

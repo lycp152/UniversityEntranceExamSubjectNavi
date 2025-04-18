@@ -76,19 +76,19 @@ logs: ## コンテナのログを表示
 # フロントエンド関連
 .PHONY: front-install
 front-install: ## フロントエンドの依存関係をインストール
-	cd front && yarn install
+	cd front && pnpm install
 
 .PHONY: front-build
 front-build: ## フロントエンドをビルド
-	cd front && yarn build
+	cd front && pnpm build
 
 .PHONY: front-test
 front-test: ## フロントエンドのテストを実行
-	cd front && yarn test
+	cd front && pnpm test
 
 .PHONY: front-lint
 front-lint: ## フロントエンドのリントを実行
-	cd front && yarn lint
+	cd front && pnpm lint
 
 # バックエンド関連
 .PHONY: back-install

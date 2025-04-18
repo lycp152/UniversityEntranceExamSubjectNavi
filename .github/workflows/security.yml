@@ -10,7 +10,7 @@ on:
       - "**.ts"
       - "**.tsx"
       - "**/package.json"
-      - "**/yarn.lock"
+      - "**/pnpm-lock.yaml"
       - "**/go.mod"
       - "**/go.sum"
   pull_request:

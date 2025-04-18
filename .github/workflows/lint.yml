@@ -34,7 +34,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: false
+          cache: "pnpm"
+          cache-dependency-path: front/pnpm-lock.yaml
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3

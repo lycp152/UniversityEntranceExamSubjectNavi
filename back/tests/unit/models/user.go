@@ -1,5 +1,8 @@
 // Package models はテストで使用するモデルを提供します。
-// ユーザー情報の構造体とそのバリデーション機能を含みます。
+// このパッケージは以下の機能を提供します：
+// - ユーザー情報の構造体定義
+// - ユーザー情報のバリデーション
+// - セキュリティチェック機能
 package models
 
 import (
@@ -7,11 +10,17 @@ import (
 	"strings"
 )
 
+// errInvalidChars は無効な文字が含まれている場合のエラーメッセージです
 const (
 	errInvalidChars = "名前に無効な文字が含まれています"
 )
 
 // User はユーザー情報を表す構造体です
+// この構造体は以下の情報を保持します：
+// - ユーザーID
+// - ユーザー名
+// - メールアドレス
+// - パスワード（JSONシリアライズ時は除外）
 type User struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -20,6 +29,15 @@ type User struct {
 }
 
 // Validate はユーザー情報のバリデーションを行います
+// この関数は以下のチェックを行います：
+// - 名前の必須チェック
+// - 名前の長さチェック（UTF-8文字列として）
+// - メールアドレスの必須チェック
+// - メールアドレスの形式チェック
+// - パスワードの長さチェック
+// - XSS攻撃の可能性チェック
+// - SQLインジェクションの可能性チェック
+// - 特殊文字のチェック
 func (u *User) Validate() error {
 	// 基本的なバリデーション
 	if u.Name == "" {
@@ -59,12 +77,19 @@ func (u *User) Validate() error {
 }
 
 // isValidEmail はメールアドレスの形式を検証します
+// この関数は以下のチェックを行います：
+// - @記号の存在チェック
+// - ドメイン部分の存在チェック
 func isValidEmail(email string) bool {
 	// 簡易的なメールアドレス検証
 	return strings.Contains(email, "@") && strings.Contains(email, ".")
 }
 
 // containsXSS はXSS攻撃の可能性がある文字列を検出します
+// この関数は以下のパターンをチェックします：
+// - <script>タグ
+// - javascript:プロトコル
+// - イベントハンドラ属性
 func containsXSS(s string) bool {
 	dangerousPatterns := []string{
 		"<script>", "</script>", "javascript:", "onerror=", "onclick=", "onload=", "onmouseover=",
@@ -80,6 +105,11 @@ func containsXSS(s string) bool {
 }
 
 // containsSQLInjection はSQLインジェクションの可能性がある文字列を検出します
+// この関数は以下のパターンをチェックします：
+// - シングルクォート
+// - ダブルクォート
+// - SQLコメント
+// - SQLキーワード
 func containsSQLInjection(s string) bool {
 	dangerousPatterns := []string{
 		"'", "\"", ";", "--", "/*", "*/", "UNION", "SELECT", "INSERT", "UPDATE", "DELETE", "DROP",
@@ -95,6 +125,9 @@ func containsSQLInjection(s string) bool {
 }
 
 // containsSpecialChars は制御文字や特殊文字を検出します
+// この関数は以下の文字をチェックします：
+// - ASCII制御文字（0-31）
+// - DEL文字（127）
 func containsSpecialChars(s string) bool {
 	for _, r := range s {
 		if r < 32 || r == 127 { // 制御文字のみをチェック

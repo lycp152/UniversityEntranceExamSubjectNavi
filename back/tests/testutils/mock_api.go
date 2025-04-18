@@ -4,7 +4,6 @@
 // - HTTPリクエスト/レスポンスのモック
 // - スレッドセーフなAPI操作
 // - JSONレスポンスの生成
-
 package testutils
 
 import (

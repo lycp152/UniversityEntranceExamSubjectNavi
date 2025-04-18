@@ -1,3 +1,8 @@
+// Package unit はユニットテストと負荷テストを提供します。
+// このパッケージは以下の機能を提供します：
+// - 大量のデータ処理のテスト
+// - 並行処理のパフォーマンステスト
+// - データベースの負荷テスト
 package unit
 
 import (
@@ -10,7 +15,12 @@ import (
 	"university-exam-api/tests/unit/repositories"
 )
 
-// TestLoad は負荷テストのテストケースです
+// TestLoad は大量のデータ処理のパフォーマンスをテストします
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 1000ユーザーの作成
+// - 処理時間の測定
+// - パフォーマンスの検証
 func TestLoad(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -50,7 +60,12 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-// TestConcurrentLoad は並行アクセスのテストケースです
+// TestConcurrentLoad は並行処理のパフォーマンスをテストします
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 100ユーザーの並行作成
+// - 処理時間の測定
+// - 並行処理のパフォーマンス検証
 func TestConcurrentLoad(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {

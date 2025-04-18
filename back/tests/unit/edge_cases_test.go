@@ -1,3 +1,8 @@
+// Package unit はユニットテストとエッジケースのテストを提供します。
+// このパッケージは以下の機能を提供します：
+// - ユーザー入力のエッジケーステスト
+// - 並行アクセスのテスト
+// - データベースエラーハンドリングのテスト
 package unit
 
 import (
@@ -9,7 +14,13 @@ import (
 	"university-exam-api/tests/unit/repositories"
 )
 
-// TestEdgeCases はエッジケースのテストケースです
+// TestEdgeCases はユーザー入力のエッジケースをテストします
+// この関数は以下のケースをテストします：
+// - 空のユーザー名
+// - 最大長のユーザー名
+// - 無効なメールアドレス形式
+// - 短すぎるパスワード
+// - 特殊文字を含むユーザー名
 func TestEdgeCases(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -79,7 +90,12 @@ func TestEdgeCases(t *testing.T) {
 	}
 }
 
-// TestConcurrentAccess は並行アクセスのテストケースです
+// TestConcurrentAccess は並行アクセスのテストを行います
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 複数のテストユーザーの作成
+// - 並行処理でのユーザー作成
+// - エラーハンドリング
 func TestConcurrentAccess(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -110,7 +126,12 @@ func TestConcurrentAccess(t *testing.T) {
 	wg.Wait()
 }
 
-// TestDatabaseErrorHandling はデータベースエラーハンドリングのテストケースです
+// TestDatabaseErrorHandling はデータベースエラーハンドリングをテストします
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - エラーのシミュレーション
+// - エラー発生時の動作確認
+// - エラークリア後の動作確認
 func TestDatabaseErrorHandling(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {

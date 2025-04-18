@@ -47,7 +47,6 @@ services:
     environment:
       <<: *backend-variables
     volumes:
-      - ../../../back:/app
       - backend_cache:/go/pkg/mod
       - ../../../deployments/docker/development/.env.development:/app/.env
     ports:

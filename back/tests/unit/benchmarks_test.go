@@ -1,6 +1,10 @@
 // Package unit はユニットテストとベンチマークテストを提供します。
-// パフォーマンス測定、並行処理、メモリ使用量、データベース接続などの
-// ベンチマークテストを含みます。
+// このパッケージは以下の機能を提供します：
+// - パフォーマンス測定
+// - 並行処理のテスト
+// - メモリ使用量の測定
+// - データベース接続のテスト
+// - キャッシュパフォーマンスの測定
 package unit
 
 import (
@@ -18,6 +22,10 @@ const (
 )
 
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - テストユーザーの作成
+// - バリデーションの実行
+// - 実行時間の測定
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{
 		Name:     testutils.TestUserName,
@@ -33,6 +41,11 @@ func BenchmarkUserValidation(b *testing.B) {
 }
 
 // BenchmarkUserRepository はユーザーリポジトリのパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - リポジトリの初期化
+// - ユーザー作成の実行
+// - 実行時間の測定
 func BenchmarkUserRepository(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -56,6 +69,11 @@ func BenchmarkUserRepository(b *testing.B) {
 }
 
 // BenchmarkConcurrentUserCreation は並行ユーザー作成のパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - テストユーザーの作成
+// - 並行処理でのユーザー作成
+// - 実行時間の測定
 func BenchmarkConcurrentUserCreation(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -85,6 +103,10 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 }
 
 // BenchmarkMemoryUsage はメモリ使用量を測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 大量のテストユーザーの作成
+// - メモリ使用量の測定
 func BenchmarkMemoryUsage(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -106,6 +128,11 @@ func BenchmarkMemoryUsage(b *testing.B) {
 }
 
 // BenchmarkResponseTime はAPIレスポンス時間を測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - テストユーザーの作成
+// - レスポンス時間の測定
+// - タイムアウトチェック
 func BenchmarkResponseTime(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -136,6 +163,10 @@ func BenchmarkResponseTime(b *testing.B) {
 }
 
 // BenchmarkDatabaseConnection はデータベース接続のパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 接続の確立
+// - 接続時間の測定
 func BenchmarkDatabaseConnection(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -155,6 +186,10 @@ func BenchmarkDatabaseConnection(b *testing.B) {
 }
 
 // BenchmarkCachePerformance はキャッシュのパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - キャッシュのウォームアップ
+// - キャッシュアクセスの測定
 func BenchmarkCachePerformance(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {

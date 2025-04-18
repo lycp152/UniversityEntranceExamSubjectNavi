@@ -1,5 +1,10 @@
 // Package repositories はユニットテスト用のモックリポジトリを提供します。
-// テストデータの作成、検索、更新、削除などの操作をシミュレートします。
+// このパッケージは以下の機能を提供します：
+// - テストデータの作成
+// - テストデータの検索
+// - テストデータの更新
+// - テストデータの削除
+// - トランザクション管理
 package repositories
 
 import (
@@ -8,11 +13,19 @@ import (
 )
 
 // UserRepository はユーザー情報を操作するリポジトリです
+// この構造体は以下の機能を提供します：
+// - ユーザー情報の永続化
+// - ユーザー情報の検索
+// - ユーザー情報の更新
+// - ユーザー情報の削除
 type UserRepository struct {
 	db *testutils.MockDB
 }
 
 // NewUserRepository は新しいユーザーリポジトリを作成します
+// この関数は以下の処理を行います：
+// - モックデータベースの設定
+// - リポジトリインスタンスの生成
 func NewUserRepository(db *testutils.MockDB) *UserRepository {
 	return &UserRepository{
 		db: db,
@@ -20,6 +33,10 @@ func NewUserRepository(db *testutils.MockDB) *UserRepository {
 }
 
 // Create は新しいユーザーを作成します
+// この関数は以下の処理を行います：
+// - ユーザー情報のバリデーション
+// - データベースへのユーザー情報の保存
+// - 生成されたIDの取得
 func (r *UserRepository) Create(user *models.User) error {
 	// バリデーション
 	if err := user.Validate(); err != nil {
@@ -49,6 +66,10 @@ func (r *UserRepository) Create(user *models.User) error {
 }
 
 // FindByID はIDでユーザーを検索します
+// この関数は以下の処理を行います：
+// - データベースからのユーザー情報の取得
+// - 取得した情報の構造体へのマッピング
+// - エラーチェック
 func (r *UserRepository) FindByID(id int) (*models.User, error) {
 	// ユーザーの検索
 	row := r.db.QueryRow("SELECT id, name, email, password FROM users WHERE id = ?", id)

@@ -3,7 +3,6 @@
 // - テストデータの生成
 // - アサーション関数
 // - テスト条件の待機
-
 package testutils
 
 import (

@@ -56,10 +56,9 @@ jobs:
             ${{ runner.os }}-pnpm-
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
-          run_install: false
+        run: |
+          npm install -g pnpm@10
+          pnpm --version
 
       - name: Install dependencies
         run: |

@@ -49,8 +49,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            front/node_modules
             ~/.cache/pnpm
+            front/node_modules
           key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
@@ -59,6 +59,7 @@ jobs:
         run: |
           npm install -g pnpm@10
           pnpm --version
+          which pnpm
 
       - name: Install dependencies
         run: |

@@ -41,6 +41,17 @@ jobs:
         run: |
           npm install -g pnpm@10
           pnpm --version
+          which pnpm
+
+      - name: Cache pnpm
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pnpm
+            front/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install Frontend Dependencies
         run: |

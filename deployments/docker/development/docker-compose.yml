@@ -1,7 +1,11 @@
+# 共通の環境変数定義
+# タイムゾーンと環境設定
 x-common-variables: &common-variables
   TZ: Asia/Tokyo
   NODE_ENV: development
 
+# バックエンド固有の環境変数定義
+# データベース接続情報とアプリケーション設定
 x-backend-variables: &backend-variables
   <<: *common-variables
   DB_HOST: postgres
@@ -16,6 +20,8 @@ x-backend-variables: &backend-variables
   DB_CONNECTION_TIMEOUT: 10
 
 services:
+  # PostgreSQLデータベースサービス
+  # データの永続化とヘルスチェックを実装
   postgres:
     image: postgres:16-alpine
     environment:
@@ -35,6 +41,8 @@ services:
     networks:
       - app-network
 
+  # バックエンドサービス
+  # Goアプリケーションの実行環境
   backend:
     build:
       context: ../../../back
@@ -59,6 +67,8 @@ services:
              go run migrations/seeds/main.go &&
              go run cmd/api/main.go"
 
+  # フロントエンドサービス
+  # Next.jsアプリケーションの実行環境
   frontend:
     build:
       context: ../../../front
@@ -77,11 +87,13 @@ services:
       - app-network
     restart: unless-stopped
 
+# 永続化ボリュームの定義
 volumes:
-  postgres_data:
-  backend_cache:
-  frontend_node_modules:
+  postgres_data: # データベースのデータ永続化
+  backend_cache: # Goモジュールのキャッシュ
+  frontend_node_modules: # Node.jsモジュールのキャッシュ
 
+# アプリケーション用ネットワークの定義
 networks:
   app-network:
     driver: bridge

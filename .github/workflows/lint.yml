@@ -38,7 +38,10 @@ jobs:
           cache-dependency-path: front/pnpm-lock.yaml
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+          run_install: false
 
       - name: Install Frontend Dependencies
         run: |

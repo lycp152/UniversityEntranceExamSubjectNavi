@@ -54,13 +54,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Install dependencies
         run: |
           cd back
           go mod download
           go mod verify
           cd ../front
-          pnpm install
+          pnpm install --frozen-lockfile
 
       - name: Install golangci-lint
         uses: golangci/golangci-lint-action@v7.0.0

@@ -140,7 +140,7 @@ jobs:
 
       - name: Run frontend tests
         env:
-          NEXT_PUBLIC_API_URL: http://localhost:8080
+          NEXT_PUBLIC_API_URL: http://localhost:8080/api
         run: |
           cd front
           yarn install --frozen-lockfile

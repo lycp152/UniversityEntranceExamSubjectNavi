@@ -40,6 +40,7 @@ jobs:
       - name: Install pnpm
         run: |
           npm install -g pnpm@10
+          echo "::add-path::$(npm root -g)/pnpm/bin"
           pnpm --version
           which pnpm
 

@@ -27,7 +27,8 @@ jobs:
         with:
           go-version: "1.24.2"
           check-latest: true
-          cache: false
+          cache: true
+          cache-dependency-path: back/go.sum
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -43,7 +44,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-          fail-on-cache-miss: false
 
       - name: Cache Yarn
         uses: actions/cache@v4
@@ -106,6 +106,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
+          cache: true
+          cache-dependency-path: back/go.sum
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -181,6 +183,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
+          cache: true
+          cache-dependency-path: back/go.sum
 
       - name: Run performance tests
         run: |
@@ -207,6 +211,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
+          cache: true
+          cache-dependency-path: back/go.sum
 
       - name: Run security tests
         run: |

@@ -263,8 +263,6 @@ func TestSanitizeData(t *testing.T) {
 // - バッファサイズ超過
 // - ボディの書き込み
 func TestRequestProcessor(t *testing.T) {
-	t.Parallel()
-
 	policy := bluemonday.UGCPolicy()
 	processor := newRequestProcessor(policy, []string{"name"})
 
@@ -301,7 +299,6 @@ func TestRequestProcessor(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			c, _ := setupEchoContext(t, http.MethodPost, "/", bytes.NewBufferString(tt.body))
 
 			data, err := processor.ReadBody(c)
@@ -316,8 +313,6 @@ func TestRequestProcessor(t *testing.T) {
 	}
 
 	t.Run("WriteBody", func(t *testing.T) {
-		t.Parallel()
-
 		data := map[string]interface{}{
 			"name": "テスト",
 		}

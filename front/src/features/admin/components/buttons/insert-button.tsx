@@ -4,6 +4,7 @@
  * このコンポーネントは、大学リストの特定の位置に新しい大学情報を
  * 挿入するためのボタンを提供します。
  */
+import { Button } from '@/components/ui/button';
 
 /**
  * InsertUniversityButtonコンポーネントのプロパティ
@@ -29,19 +30,19 @@ export const InsertUniversityButton: React.FC<InsertUniversityButtonProps> = ({
   isOnly = false,
 }) => {
   return (
-    <div className={`relative flex justify-center items-center ${isOnly ? 'py-8' : ''}`}>
+    <div className={`relative flex justify-center items-center  ${isOnly ? 'py-8' : ''}`}>
       {!isOnly && (
         <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-300 dark:border-gray-600" />
       )}
-      <button
-        type="button"
+      <Button
+        variant="default"
         onClick={() => onInsert(index)}
-        className="relative z-10 inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+        className="relative z-10 text-sm font-medium"
         aria-label="ここに追加"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 mr-2"
+          className="h-5 w-5"
           viewBox="0 0 20 20"
           fill="currentColor"
         >
@@ -52,7 +53,7 @@ export const InsertUniversityButton: React.FC<InsertUniversityButtonProps> = ({
           />
         </svg>
         ここに追加
-      </button>
+      </Button>
     </div>
   );
 };

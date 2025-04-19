@@ -3,6 +3,8 @@ import { AcademicField } from '@/features/search/components/filters/academic-fie
 import { Schedule } from '@/features/search/components/filters/schedule';
 import { Classification } from '@/features/search/components/filters/classification';
 import { SectionTitle } from '@/features/search/components/section-title';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 /**
  * 詳細検索コンポーネントのプロパティ定義
@@ -71,16 +73,17 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
 }) => {
   return (
     <div className="mt-4">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         className="flex items-center cursor-pointer focus:outline-none"
         onClick={onToggleExpanded}
         aria-expanded={isExpanded}
         aria-controls="detail-search-content"
       >
         <SectionTitle>詳細条件</SectionTitle>
-        <span className="ml-2 text-gray-600">{isExpanded ? '▲' : '▼'}</span>
-      </button>
+        <span className="text-gray-600">{isExpanded ? '▲' : '▼'}</span>
+      </Button>
       {isExpanded && (
         <div id="detail-search-content" className="mt-4">
           <div className="mb-4">
@@ -97,14 +100,10 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
           <div className="mt-4">
             <Classification selectedItems={classification} setSelectedItems={setClassification} />
           </div>
-          <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={onToggleExpanded}
-              className="text-blue-600 hover:text-blue-700 py-2 px-4 rounded flex items-center focus:outline-none"
-            >
-              <span className="mr-2">×</span> 詳細条件を閉じる
-            </button>
+          <div className="flex justify-center">
+            <Button type="button" variant="ghost" onClick={onToggleExpanded} className="text-lg">
+              <X /> 詳細条件を閉じる
+            </Button>
           </div>
         </div>
       )}

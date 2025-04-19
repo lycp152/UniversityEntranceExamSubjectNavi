@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { SubjectListProps } from '../types/types';
 import { SubjectCard } from './subject-card';
+import { Button } from '@/components/ui/button';
 
 /**
  * 科目リストコンポーネント
@@ -64,8 +65,9 @@ export const SubjectList = ({
         />
       ))}
       {isEditing && onAddSubject && (
-        <button
+        <Button
           onClick={() => onAddSubject(type)}
+          variant="outline"
           className="border border-dashed border-gray-300 rounded-lg h-16 w-[60px] flex flex-col items-center justify-center hover:bg-gray-50 transition-colors group"
           aria-label="科目を追加"
         >
@@ -82,7 +84,7 @@ export const SubjectList = ({
             />
           </svg>
           <span className="text-xs text-gray-400 group-hover:text-gray-500 mt-1">追加</span>
-        </button>
+        </Button>
       )}
     </div>
   );

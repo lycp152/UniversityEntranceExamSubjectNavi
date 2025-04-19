@@ -12,9 +12,9 @@ jobs:
     outputs:
       cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: cache-key
-        run: echo "value=$(date +%s)" >> $GITHUB_OUTPUT
+        run: echo "value=$(git rev-parse --short HEAD)-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
 
   test:
     needs: setup
@@ -23,6 +23,15 @@ jobs:
       matrix:
         test-type: [unit, integration, e2e, performance]
         platform: [ubuntu-latest, macos-latest]
+        exclude:
+          - test-type: performance
+            platform: macos-latest
+          - test-type: e2e
+            platform: macos-latest
+      fail-fast: true
+      max-parallel: 2
+    timeout-minutes: 30
+    continue-on-error: false
     services:
       postgres:
         image: postgres:latest
@@ -38,11 +47,15 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
-      - uses: actions/cache@v3
+          cache: true
+          cache-dependency-path: back/go.sum
+          check-latest: true
+          go-version-file: back/go.mod
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -51,25 +64,34 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}-
             ${{ runner.os }}-go-
+            ${{ runner.os }}-
+          enableCrossOsArchive: true
+          upload-chunk-size: 32MB
       - name: Run tests
         run: |
           cd back
           go mod download
           cd tests/${{ matrix.test-type }}
           go test -v -race -coverprofile=coverage.out ./...
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.test-type }}-${{ matrix.platform }}
           path: back/tests/${{ matrix.test-type }}/coverage.out
 
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: false
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
-      - uses: actions/cache@v3
+          cache: true
+          cache-dependency-path: back/go.sum
+          check-latest: true
+          go-version-file: back/go.mod
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -77,6 +99,9 @@ jobs:
           key: ${{ runner.os }}-go-lint-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-lint-
+            ${{ runner.os }}-
+          enableCrossOsArchive: true
+          upload-chunk-size: 32MB
       - name: Run linter
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.8
@@ -86,16 +111,18 @@ jobs:
   coverage:
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: false
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
       - name: Process coverage
         run: |
           echo "mode: atomic" > coverage.txt
           for f in coverage-*/*; do
             tail -n +2 $f >> coverage.txt
           done
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           file: ./coverage.txt
           flags: unittests

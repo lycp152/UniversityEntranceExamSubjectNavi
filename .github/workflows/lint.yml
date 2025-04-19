@@ -21,6 +21,17 @@ jobs:
           cache: true
           cache-dependency-path: back/go.sum
 
+      # Goのキャッシュ設定
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       # golangci-lintのセットアップと実行
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -61,7 +72,7 @@ jobs:
       - name: Install Frontend Dependencies
         run: |
           cd front
-          pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile --prefer-offline
 
       - name: Lint and Type Check Frontend
         run: |
@@ -83,3 +94,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: dependency-check-report.sarif
+          category: "dependency-check"

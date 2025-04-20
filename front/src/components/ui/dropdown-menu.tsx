@@ -1,3 +1,30 @@
+/**
+ * ドロップダウンメニューコンポーネントライブラリ
+ *
+ * @module dropdown-menu
+ * @description
+ * Radix UIのDropdownMenuを基にした、アクセシブルなドロップダウンメニューコンポーネント群です。
+ * WAI-ARIAに準拠し、キーボード操作やスクリーンリーダーに対応しています。
+ *
+ * @example
+ * ```tsx
+ * <DropdownMenu>
+ *   <DropdownMenuTrigger>メニューを開く</DropdownMenuTrigger>
+ *   <DropdownMenuContent>
+ *     <DropdownMenuItem>アイテム1</DropdownMenuItem>
+ *     <DropdownMenuSeparator />
+ *     <DropdownMenuItem>アイテム2</DropdownMenuItem>
+ *   </DropdownMenuContent>
+ * </DropdownMenu>
+ * ```
+ *
+ * @accessibility
+ * - キーボード操作: Tab, Space, Enter, Escape, 矢印キー
+ * - WAI-ARIA: menu, menuitem, menuitemcheckbox, menuitemradio
+ * - フォーカス管理: 自動フォーカストラップ
+ * - アニメーション: prefers-reduced-motion対応
+ */
+
 'use client';
 
 import * as React from 'react';
@@ -6,24 +33,40 @@ import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react';
 
 import { cn } from '@/styles/tailwind-utils';
 
+/**
+ * ドロップダウンメニューのルートコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Root>} props - Radix UIのDropdownMenu.Rootのプロパティ
+ */
 function DropdownMenu({
   ...props
 }: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Root>>) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
 }
 
+/**
+ * ドロップダウンメニューのポータルコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Portal>} props - ポータルのプロパティ
+ */
 function DropdownMenuPortal({
   ...props
 }: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Portal>>) {
   return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
+/**
+ * ドロップダウンメニューのトリガーコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>} props - トリガーのプロパティ
+ */
 function DropdownMenuTrigger({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
   return <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />;
 }
 
+/**
+ * ドロップダウンメニューのコンテンツコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Content>} props - コンテンツのプロパティ
+ */
 function DropdownMenuContent({
   className,
   sideOffset = 4,
@@ -44,10 +87,18 @@ function DropdownMenuContent({
   );
 }
 
+/**
+ * ドロップダウンメニューのグループコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Group>} props - グループのプロパティ
+ */
 function DropdownMenuGroup({ ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Group>) {
   return <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />;
 }
 
+/**
+ * ドロップダウンメニューの項目コンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Item> & { inset?: boolean; variant?: 'default' | 'destructive'; }} props - 項目のプロパティ
+ */
 function DropdownMenuItem({
   className,
   inset,
@@ -71,6 +122,10 @@ function DropdownMenuItem({
   );
 }
 
+/**
+ * ドロップダウンメニューのチェックボックス項目コンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>} props - チェックボックス項目のプロパティ
+ */
 function DropdownMenuCheckboxItem({
   className,
   children,
@@ -97,12 +152,20 @@ function DropdownMenuCheckboxItem({
   );
 }
 
+/**
+ * ドロップダウンメニューのラジオグループコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>} props - ラジオグループのプロパティ
+ */
 function DropdownMenuRadioGroup({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
   return <DropdownMenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />;
 }
 
+/**
+ * ドロップダウンメニューのラジオ項目コンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>} props - ラジオ項目のプロパティ
+ */
 function DropdownMenuRadioItem({
   className,
   children,
@@ -127,6 +190,10 @@ function DropdownMenuRadioItem({
   );
 }
 
+/**
+ * ドロップダウンメニューのラベルコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Label> & { inset?: boolean }} props - ラベルのプロパティ
+ */
 function DropdownMenuLabel({
   className,
   inset,
@@ -144,6 +211,10 @@ function DropdownMenuLabel({
   );
 }
 
+/**
+ * ドロップダウンメニューの区切り線コンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Separator>} props - 区切り線のプロパティ
+ */
 function DropdownMenuSeparator({
   className,
   ...props
@@ -157,6 +228,10 @@ function DropdownMenuSeparator({
   );
 }
 
+/**
+ * ドロップダウンメニューのショートカットコンポーネント
+ * @param {React.ComponentProps<'span'>} props - ショートカットのプロパティ
+ */
 function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
@@ -167,12 +242,20 @@ function DropdownMenuShortcut({ className, ...props }: React.ComponentProps<'spa
   );
 }
 
+/**
+ * ドロップダウンメニューのサブメニューコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.Sub>} props - サブメニューのプロパティ
+ */
 function DropdownMenuSub({
   ...props
 }: Readonly<React.ComponentProps<typeof DropdownMenuPrimitive.Sub>>) {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />;
 }
 
+/**
+ * ドロップダウンメニューのサブメニュートリガーコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean }} props - サブメニュートリガーのプロパティ
+ */
 function DropdownMenuSubTrigger({
   className,
   inset,
@@ -197,6 +280,10 @@ function DropdownMenuSubTrigger({
   );
 }
 
+/**
+ * ドロップダウンメニューのサブメニューコンテンツコンポーネント
+ * @param {React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>} props - サブメニューコンテンツのプロパティ
+ */
 function DropdownMenuSubContent({
   className,
   ...props

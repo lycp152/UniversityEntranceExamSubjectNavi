@@ -12,7 +12,7 @@ import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { ReactNode } from 'react';
 import Header from '@/components/layouts/header';
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/providers/theme/theme-provider';
 // Interフォントの設定
 const inter = Inter({ subsets: ['latin'] });
 

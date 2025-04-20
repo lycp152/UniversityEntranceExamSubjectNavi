@@ -1,3 +1,23 @@
+/**
+ * テーマ切り替えコンポーネント
+ *
+ * @module mode-toggle
+ * @description
+ * ライト、ダーク、システムテーマを切り替えるためのドロップダウンメニューコンポーネントです。
+ * next-themesを使用してテーマの状態を管理し、アニメーション付きのアイコンで現在のテーマを表示します。
+ *
+ * @example
+ * ```tsx
+ * <ModeToggle />
+ * ```
+ *
+ * @accessibility
+ * - スクリーンリーダー対応: アイコンボタンにsr-onlyラベルを使用
+ * - キーボード操作: Tab、Space、Enter、Escape
+ * - アニメーション: prefers-reduced-motion対応のトランジション
+ * - ハイコントラスト: システムの設定に応じたテーマ切り替え
+ */
+
 'use client';
 
 import * as React from 'react';
@@ -12,6 +32,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+/**
+ * テーマ切り替えボタンコンポーネント
+ * @returns {JSX.Element} テーマ切り替えドロップダウンメニュー
+ *
+ * @description
+ * - ライトモード: 太陽アイコンを表示
+ * - ダークモード: 月アイコンを表示
+ * - システムモード: システム設定に追従
+ *
+ * アイコンは滑らかなアニメーションで切り替わり、
+ * ユーザーの操作に視覚的なフィードバックを提供します。
+ */
 export function ModeToggle() {
   const { setTheme } = useTheme();
 

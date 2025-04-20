@@ -9,7 +9,7 @@
 import { Metadata } from 'next';
 import { Suspense, ReactElement } from 'react';
 import { AdminPage } from '@/features/admin/components/page';
-import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
+import { LoadingSpinner } from '@/components/ui/feedback/spinner';
 
 // ページのメタデータ設定
 export const metadata: Metadata = {

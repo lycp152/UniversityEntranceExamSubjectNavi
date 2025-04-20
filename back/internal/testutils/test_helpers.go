@@ -1,5 +1,10 @@
 // Package testutils はテストユーティリティを提供します。
-// テストヘルパー関数、テストケースの定義、テストデータの管理などの機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - テストヘルパー関数
+// - テストケースの定義
+// - テストデータの管理
+// - セキュリティテスト
+// - キャッシュテスト
 package testutils
 
 import (
@@ -60,6 +65,10 @@ var (
 )
 
 // generateRandomToken はランダムなCSRFトークンを生成します
+// この関数は以下の処理を行います：
+// - ランダムなバイト列の生成
+// - Base64エンコーディング
+// - フォールバック値の提供
 func generateRandomToken() string {
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
@@ -70,6 +79,9 @@ func generateRandomToken() string {
 }
 
 // getEnvOrDefault は環境変数の値を取得し、設定されていない場合はデフォルト値を返します
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の提供
 func getEnvOrDefault(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -136,6 +148,10 @@ const (
 )
 
 // TestData はテストデータの構造を定義します
+// この構造体は以下のデータを保持します：
+// - 大学情報
+// - 学部情報
+// - 科目情報
 type TestData struct {
 	Universities []models.University `json:"universities"`
 	Departments  []models.Department `json:"departments"`
@@ -143,6 +159,10 @@ type TestData struct {
 }
 
 // TestError はテスト関連のエラーを表現する構造体
+// この構造体は以下の情報を保持します：
+// - エラーコード
+// - エラーメッセージ
+// - 追加の属性情報
 type TestError struct {
 	Code    string      // エラーコード
 	Message string      // エラーメッセージ
@@ -150,6 +170,9 @@ type TestError struct {
 }
 
 // Error はTestErrorの文字列表現を返す
+// この関数は以下の処理を行います：
+// - エラー情報のフォーマット
+// - 属性情報の追加
 func (e *TestError) Error() string {
 	if len(e.Attrs) > 0 {
 		attrs := make([]string, len(e.Attrs))
@@ -164,6 +187,12 @@ func (e *TestError) Error() string {
 }
 
 // TestConfig はテスト設定を保持する構造体
+// この構造体は以下の設定を保持します：
+// - ログレベル
+// - ログディレクトリ
+// - キャッシュタイムアウト
+// - ログハンドラー
+// - テストデータパス
 type TestConfig struct {
 	LogLevel     slog.Level
 	LogDir       string
@@ -173,6 +202,9 @@ type TestConfig struct {
 }
 
 // DefaultTestConfig はデフォルトのテスト設定を返す
+// この関数は以下の処理を行います：
+// - デフォルト値の設定
+// - 設定の初期化
 func DefaultTestConfig() *TestConfig {
 	return &TestConfig{
 		LogLevel:     slog.LevelInfo,
@@ -183,6 +215,10 @@ func DefaultTestConfig() *TestConfig {
 }
 
 // TestHelper はテストヘルパーを提供する構造体
+// この構造体は以下の機能を提供します：
+// - テストの実行
+// - ログの管理
+// - データベースの操作
 type TestHelper struct {
 	t       *testing.T
 	e       *echo.Echo
@@ -193,6 +229,10 @@ type TestHelper struct {
 }
 
 // NewTestHelper は新しいテストヘルパーを作成
+// この関数は以下の処理を行います：
+// - 設定の初期化
+// - ログの設定
+// - テストサーバーのセットアップ
 func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 	t.Helper()
 
@@ -248,6 +288,10 @@ func NewTestHelper(t *testing.T, opts ...func(*TestConfig)) *TestHelper {
 }
 
 // Cleanup はテストのクリーンアップを実行します
+// この関数は以下の処理を行います：
+// - データベースのクリーンアップ
+// - リソースの解放
+// - ログの記録
 func (h *TestHelper) Cleanup() {
 	h.t.Helper()
 	h.logger.Info("テストのクリーンアップを開始します")
@@ -264,6 +308,10 @@ func (h *TestHelper) Cleanup() {
 }
 
 // LoadTestData はテストデータを読み込みます
+// この関数は以下の処理を行います：
+// - ファイルの読み込み
+// - データのパース
+// - エラーハンドリング
 func (h *TestHelper) LoadTestData() TestData {
 	h.t.Helper()
 	h.logger.Info("テストデータの読み込みを開始します",
@@ -299,6 +347,10 @@ func (h *TestHelper) LoadTestData() TestData {
 }
 
 // CreateTestContext はテストコンテキストを作成します
+// この関数は以下の処理を行います：
+// - リクエストの作成
+// - ヘッダーの設定
+// - コンテキストの初期化
 func (h *TestHelper) CreateTestContext(
 	method, path string,
 	body interface{},
@@ -329,6 +381,9 @@ func (h *TestHelper) CreateTestContext(
 }
 
 // AssertStatusCode はステータスコードを検証します
+// この関数は以下の処理を行います：
+// - ステータスコードの比較
+// - エラーメッセージの生成
 func (h *TestHelper) AssertStatusCode(got, want int) {
 	h.t.Helper()
 
@@ -338,6 +393,10 @@ func (h *TestHelper) AssertStatusCode(got, want int) {
 }
 
 // AssertJSONResponse はJSONレスポンスを検証します
+// この関数は以下の処理を行います：
+// - レスポンスのパース
+// - データの比較
+// - エラーハンドリング
 func (h *TestHelper) AssertJSONResponse(rec *httptest.ResponseRecorder, want interface{}) {
 	h.t.Helper()
 
@@ -352,6 +411,10 @@ func (h *TestHelper) AssertJSONResponse(rec *httptest.ResponseRecorder, want int
 }
 
 // AssertErrorResponse はエラーレスポンスを検証します
+// この関数は以下の処理を行います：
+// - ステータスコードの検証
+// - エラーメッセージの検証
+// - レスポンスのパース
 func (h *TestHelper) AssertErrorResponse(rec *httptest.ResponseRecorder, wantStatus int, wantMessage string) {
 	h.t.Helper()
 
@@ -368,6 +431,9 @@ func (h *TestHelper) AssertErrorResponse(rec *httptest.ResponseRecorder, wantSta
 }
 
 // AssertValidationError はバリデーションエラーを検証
+// この関数は以下の処理を行います：
+// - エラーレスポンスの検証
+// - メッセージの比較
 func (h *TestHelper) AssertValidationError(rec *httptest.ResponseRecorder, _ string, expectedError string) {
 	h.t.Helper()
 
@@ -382,6 +448,9 @@ func (h *TestHelper) AssertValidationError(rec *httptest.ResponseRecorder, _ str
 }
 
 // AssertXSSEscaped はXSSペイロードが適切にエスケープされていることを確認
+// この関数は以下の処理を行います：
+// - 危険なパターンの検出
+// - エスケープの検証
 func (h *TestHelper) AssertXSSEscaped(s string) {
 	h.t.Helper()
 
@@ -397,6 +466,9 @@ func (h *TestHelper) AssertXSSEscaped(s string) {
 }
 
 // AssertSpecialCharsSanitized は特殊文字が適切にサニタイズされていることを確認
+// この関数は以下の処理を行います：
+// - 制御文字の検出
+// - HTMLタグの検出
 func (h *TestHelper) AssertSpecialCharsSanitized(s string) {
 	h.t.Helper()
 
@@ -417,7 +489,10 @@ func (h *TestHelper) AssertSpecialCharsSanitized(s string) {
 }
 
 // TestMain はテストの初期化を行います。
-// テスト実行前にロガーを初期化し、テスト環境の設定を行います。
+// この関数は以下の処理を行います：
+// - ログディレクトリの作成
+// - ロガーの初期化
+// - キャッシュの設定
 func TestMain(m *testing.M) {
 	// ログディレクトリの作成
 	logDir := filepath.Join("logs", "tests")
@@ -448,14 +523,10 @@ func TestMain(m *testing.M) {
 }
 
 // SetupTestHandler はテスト用のEchoインスタンスとハンドラーを作成します。
-// テスト用のデータベース接続を設定し、リポジトリとハンドラーを初期化します。
-//
-// 引数:
-//   - middlewares: 適用するミドルウェア（オプション）
-//
-// 戻り値:
-//   - *echo.Echo: テスト用のEchoインスタンス
-//   - *UniversityHandler: テスト対象のハンドラー
+// この関数は以下の処理を行います：
+// - データベース接続の設定
+// - リポジトリの初期化
+// - ハンドラーの作成
 func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *university.Handler) {
 	e := echo.New()
 	for _, m := range middlewares {
@@ -470,6 +541,13 @@ func SetupTestHandler(middlewares ...echo.MiddlewareFunc) (*echo.Echo, *universi
 }
 
 // RequestConfig はテストリクエストの設定を保持します。
+// この構造体は以下の設定を保持します：
+// - HTTPメソッド
+// - パス
+// - リクエストボディ
+// - タイムアウト
+// - ヘッダー
+// - クエリパラメータ
 type RequestConfig struct {
 	Method      string
 	Path        string
@@ -480,16 +558,10 @@ type RequestConfig struct {
 }
 
 // ExecuteRequest はテストリクエストを実行し、レスポンスを返します。
-// 指定されたHTTPメソッドとパスでリクエストを作成し、ハンドラーを実行します。
-//
-// 引数:
-//   - e: Echoインスタンス
-//   - config: リクエストの設定
-//   - handler: 実行するハンドラー関数
-//
-// 戻り値:
-//   - *httptest.ResponseRecorder: レスポンスレコーダー
-//   - error: リクエストの実行中に発生したエラー
+// この関数は以下の処理を行います：
+// - リクエストの作成
+// - ハンドラーの実行
+// - レスポンスの返却
 func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc) (*httptest.ResponseRecorder, error) {
 	var reqBody []byte
 
@@ -537,20 +609,17 @@ func ExecuteRequest(e *echo.Echo, config RequestConfig, handler echo.HandlerFunc
 }
 
 // ParseResponse はレスポンスボディを指定された型にパースします。
-// パースに失敗した場合はエラーを返します。
-//
-// 引数:
-//   - rec: レスポンスレコーダー
-//   - v: パース結果を格納する変数へのポインタ
-//
-// 戻り値:
-//   - error: パースに失敗した場合のエラー
+// この関数は以下の処理を行います：
+// - レスポンスのデコード
+// - エラーハンドリング
 func ParseResponse(rec *httptest.ResponseRecorder, v interface{}) error {
 	return json.NewDecoder(rec.Body).Decode(v)
 }
 
 // validateErrorResponse はエラーレスポンスを検証します。
-// 期待されるステータスコードとエラーメッセージと実際のレスポンスを比較します。
+// この関数は以下の処理を行います：
+// - ステータスコードの検証
+// - エラーメッセージの検証
 func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantStatus int, wantError string) {
 	t.Helper()
 
@@ -574,6 +643,10 @@ func validateErrorResponse(t testing.TB, rec *httptest.ResponseRecorder, wantSta
 }
 
 // SetupTestServer はテストサーバーをセットアップします
+// この関数は以下の処理を行います：
+// - ログの設定
+// - データベースの初期化
+// - ミドルウェアの設定
 func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.Handler, *gorm.DB, error) {
 	t.Helper()
 
@@ -631,6 +704,10 @@ func SetupTestServer(t *testing.T, config *TestConfig) (*echo.Echo, *university.
 }
 
 // cleanupDatabase はデータベースをクリーンアップします
+// この関数は以下の処理を行います：
+// - 制約の遅延
+// - テーブルのクリーンアップ
+// - 制約の即時適用
 func cleanupDatabase(db *gorm.DB) error {
 	if err := db.Exec("SET CONSTRAINTS ALL DEFERRED").Error; err != nil {
 		return err
@@ -651,6 +728,8 @@ func cleanupDatabase(db *gorm.DB) error {
 }
 
 // WithLogLevel はログレベルを設定するオプション関数です
+// この関数は以下の処理を行います：
+// - ログレベルの設定
 func WithLogLevel(level slog.Level) func(*TestConfig) {
 	return func(c *TestConfig) {
 		c.LogLevel = level
@@ -658,6 +737,8 @@ func WithLogLevel(level slog.Level) func(*TestConfig) {
 }
 
 // WithCacheTimeout はキャッシュのタイムアウトを設定するオプション関数です
+// この関数は以下の処理を行います：
+// - キャッシュタイムアウトの設定
 func WithCacheTimeout(timeout time.Duration) func(*TestConfig) {
 	return func(c *TestConfig) {
 		c.CacheTimeout = timeout
@@ -665,6 +746,9 @@ func WithCacheTimeout(timeout time.Duration) func(*TestConfig) {
 }
 
 // ValidateResponse はレスポンスの基本検証を行います
+// この関数は以下の処理を行います：
+// - エラーレスポンスの検証
+// - ステータスコードの検証
 func ValidateResponse(t *testing.T, rec *httptest.ResponseRecorder, tc TestCase) {
 	t.Helper()
 
@@ -679,7 +763,14 @@ func ValidateResponse(t *testing.T, rec *httptest.ResponseRecorder, tc TestCase)
 }
 
 // TestCase はテストケースの基本構造を定義します
-// この構造体はすべてのテストケースで共通して使用される基本情報を保持します
+// この構造体は以下の情報を保持します：
+// - テストケース名
+// - セットアップ関数
+// - 期待されるステータスコード
+// - 期待されるエラーメッセージ
+// - 検索クエリ
+// - 待機時間
+// - 期待される件数
 type TestCase struct {
 	Name       string                                    // テストケースの名前
 	Setup      func(*testing.T, *echo.Echo, *university.Handler) // テストケースのセットアップ関数
@@ -691,7 +782,12 @@ type TestCase struct {
 }
 
 // cacheTestCase はキャッシュ関連のテストケースを定義します
-// この構造体はキャッシュ関連のテストケースで使用される情報を保持します
+// この構造体は以下の情報を保持します：
+// - テストケース
+// - 検索クエリ
+// - 待機時間
+// - 期待される件数
+// - 初期キャッシュ状態
 type cacheTestCase struct {
 	TestCase
 	query      string                                    // 検索クエリ
@@ -701,7 +797,10 @@ type cacheTestCase struct {
 }
 
 // validateCacheResponse はキャッシュテストのレスポンスを検証します
-// この関数はキャッシュテストのレスポンスに対して詳細な検証を行います
+// この関数は以下の処理を行います：
+// - ステータスコードの検証
+// - レスポンスのパース
+// - 件数の検証
 func validateCacheResponse(t *testing.T, rec *httptest.ResponseRecorder, tt TestCase) {
 	if rec.Code != tt.WantStatus {
 		t.Errorf("ステータスコードが期待値と異なります: got = %d, want = %d", rec.Code, tt.WantStatus)

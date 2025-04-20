@@ -1,12 +1,26 @@
-FROM golang:1.22.0-alpine
+# 開発環境用のDockerfile
+# Go 1.24.2を使用したAlpineベースのイメージ
+FROM golang:1.24.2-alpine
 
+# 作業ディレクトリの設定
 WORKDIR /app
 
-RUN apk add --no-cache git make tzdata
+# 開発に必要なツールのインストール
+# - git: バージョン管理
+# - make: ビルドツール
+# - tzdata: タイムゾーン設定
+# - curl: 依存関係のダウンロード
+RUN apk add --no-cache curl git make tzdata
 
+# 依存関係ファイルのコピーとダウンロード
+# キャッシュを効率的に利用するため、依存関係を先にコピー
 COPY go.mod go.sum ./
 RUN go mod download
 
+# アプリケーションコードのコピー
 COPY . .
 
+# 開発サーバーの起動
+# メモリ使用量を最適化するため、GCの設定を追加
+ENV GOGC=50
 CMD ["make", "run"]

@@ -1,0 +1,8 @@
+# pnpmワークスペース設定
+# このファイルはpnpmのワークスペース機能を設定します
+# onlyBuiltDependencies: ビルドが必要な依存関係を指定
+# これらのパッケージは常にビルドされ、キャッシュされません
+onlyBuiltDependencies:
+  - cypress # E2Eテストフレームワーク
+  - esbuild # 高速なJavaScriptバンドラー
+  - sharp # 画像処理ライブラリ

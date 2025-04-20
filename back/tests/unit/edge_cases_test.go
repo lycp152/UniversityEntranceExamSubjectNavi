@@ -1,3 +1,8 @@
+// Package unit はユニットテストとエッジケースのテストを提供します。
+// このパッケージは以下の機能を提供します：
+// - ユーザー入力のエッジケーステスト
+// - 並行アクセスのテスト
+// - データベースエラーハンドリングのテスト
 package unit
 
 import (
@@ -9,7 +14,13 @@ import (
 	"university-exam-api/tests/unit/repositories"
 )
 
-// TestEdgeCases はエッジケースのテストケースです
+// TestEdgeCases はユーザー入力のエッジケースをテストします
+// この関数は以下のケースをテストします：
+// - 空のユーザー名
+// - 最大長のユーザー名
+// - 無効なメールアドレス形式
+// - 短すぎるパスワード
+// - 特殊文字を含むユーザー名
 func TestEdgeCases(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -20,8 +31,8 @@ func TestEdgeCases(t *testing.T) {
 			name: "空のユーザー名",
 			user: models.User{
 				Name:     "",
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
@@ -29,25 +40,25 @@ func TestEdgeCases(t *testing.T) {
 			name: "最大長のユーザー名",
 			user: models.User{
 				Name:     strings.Repeat("あ", 255),
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
 		{
 			name: "無効なメールアドレス形式",
 			user: models.User{
-				Name:     TestUserName,
+				Name:     testutils.TestUserName,
 				Email:    "invalid-email",
-				Password: TestUserPassword,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
 		{
 			name: "短すぎるパスワード",
 			user: models.User{
-				Name:     TestUserName,
-				Email:    TestUserEmail,
+				Name:     testutils.TestUserName,
+				Email:    testutils.TestUserEmail,
 				Password: "pass",
 			},
 			wantErr: true,
@@ -56,8 +67,8 @@ func TestEdgeCases(t *testing.T) {
 			name: "特殊文字を含むユーザー名",
 			user: models.User{
 				Name:     "テスト!@#$%^&*()ユーザー",
-				Email:    TestUserEmail,
-				Password: TestUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
@@ -79,7 +90,12 @@ func TestEdgeCases(t *testing.T) {
 	}
 }
 
-// TestConcurrentAccess は並行アクセスのテストケースです
+// TestConcurrentAccess は並行アクセスのテストを行います
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 複数のテストユーザーの作成
+// - 並行処理でのユーザー作成
+// - エラーハンドリング
 func TestConcurrentAccess(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -89,7 +105,7 @@ func TestConcurrentAccess(t *testing.T) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(t, 100)
+	users := testutils.CreateTestUsers(t, 100)
 
 	var wg sync.WaitGroup
 
@@ -110,7 +126,12 @@ func TestConcurrentAccess(t *testing.T) {
 	wg.Wait()
 }
 
-// TestDatabaseErrorHandling はデータベースエラーハンドリングのテストケースです
+// TestDatabaseErrorHandling はデータベースエラーハンドリングをテストします
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - エラーのシミュレーション
+// - エラー発生時の動作確認
+// - エラークリア後の動作確認
 func TestDatabaseErrorHandling(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -125,9 +146,9 @@ func TestDatabaseErrorHandling(t *testing.T) {
 	db.SetError("データベース接続エラー")
 
 	user := &models.User{
-		Name:     TestUserName,
+		Name:     testutils.TestUserName,
 		Email:    "error@example.com", // エラーを発生させるための特別なメールアドレス
-		Password: TestUserPassword,
+		Password: testutils.TestUserPassword,
 	}
 
 	err := repo.Create(user)

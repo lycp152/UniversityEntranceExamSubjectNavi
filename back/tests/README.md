@@ -7,6 +7,14 @@
 - 個々のコンポーネントの動作を検証
 - `tests/unit` ディレクトリに配置
 - 命名規則: `*_test.go`
+- 主なテストファイル:
+  - `benchmarks_test.go`: パフォーマンステスト
+  - `edge_cases_test.go`: 境界値テスト
+  - `example_test.go`: サンプルテスト
+  - `load_test.go`: 負荷テスト
+  - `memory_test.go`: メモリ使用量テスト
+  - `user_test.go`: ユーザー関連テスト
+  - `vulnerability_test.go`: セキュリティテスト
 
 ### 統合テスト
 
@@ -37,12 +45,38 @@ make test-e2e
 
 # カバレッジレポートを生成
 make test-coverage
+
+# 特定のテストファイルを実行
+go test ./tests/unit/benchmarks_test.go
+go test ./tests/unit/edge_cases_test.go
+go test ./tests/unit/example_test.go
+go test ./tests/unit/load_test.go
+go test ./tests/unit/memory_test.go
+go test ./tests/unit/user_test.go
+go test ./tests/unit/vulnerability_test.go
 ```
 
 ## テストデータ
 
 テストデータは `test_data.go` で管理されています。
 必要に応じて `NewTestData()` を使用して新しいテストデータを作成できます。
+
+### テストデータの構造
+
+```go
+type TestData struct {
+    Users []*User
+    // その他のテストデータ
+}
+```
+
+### テストデータの使用方法
+
+```go
+data := NewTestData()
+// テストデータの操作
+data.Reset() // テストデータのリセット
+```
 
 ## テストヘルパー
 
@@ -52,6 +86,7 @@ make test-coverage
 - `createTestUsers`: 複数のテストユーザーを作成
 - `assertUserEqual`: ユーザー情報の比較
 - `waitForCondition`: 条件待機
+- `mock_db.go`: モックデータベースの実装
 
 ## ベンチマークテスト
 
@@ -59,7 +94,11 @@ make test-coverage
 以下のコマンドで実行できます：
 
 ```bash
+# すべてのベンチマークを実行
 go test -bench=. ./tests/unit/...
+
+# 特定のベンチマークを実行
+go test -bench=BenchmarkUserCreation ./tests/unit/benchmarks_test.go
 ```
 
 ## カバレッジ
@@ -68,5 +107,28 @@ go test -bench=. ./tests/unit/...
 HTML 形式のレポートを確認するには：
 
 ```bash
+# カバレッジレポートの生成
+make test-coverage
+
+# レポートの表示
 open coverage/coverage.html
 ```
+
+## セキュリティテスト
+
+セキュリティテストは `vulnerability_test.go` で定義されています。
+以下の項目をテストします：
+
+- SQL インジェクション対策
+- XSS 対策
+- タイミング攻撃対策
+- 入力値の検証
+
+## メモリテスト
+
+メモリテストは `memory_test.go` で定義されています。
+以下の項目をテストします：
+
+- メモリ使用量の測定
+- メモリリークの検出
+- ガベージコレクションの動作確認

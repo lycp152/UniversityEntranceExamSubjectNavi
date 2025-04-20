@@ -1,6 +1,8 @@
 // Package testutils はテストユーティリティを提供します。
-// テストデータの生成、モックオブジェクトの作成、テスト環境の設定などの
-// テスト支援機能を含みます。
+// このパッケージは以下の機能を提供します：
+// - テスト設定の管理
+// - 環境変数の取得とデフォルト値の設定
+// - テスト環境の設定
 package testutils
 
 import (
@@ -9,6 +11,9 @@ import (
 )
 
 // TestConfig はテスト用の設定を保持する構造体です
+// この構造体は以下の情報を保持します：
+// - データベース接続情報
+// - テスト環境の設定
 type TestConfig struct {
 	DBHost     string
 	DBPort     string
@@ -18,6 +23,10 @@ type TestConfig struct {
 }
 
 // LoadTestConfig はテスト用の設定を読み込みます
+// この関数は以下の処理を行います：
+// - 環境変数からの設定読み込み
+// - デフォルト値の設定
+// - 設定オブジェクトの生成
 func LoadTestConfig(t *testing.T) *TestConfig {
 	t.Helper()
 
@@ -34,6 +43,10 @@ func LoadTestConfig(t *testing.T) *TestConfig {
 }
 
 // getEnvOrDefault は環境変数を取得し、存在しない場合はデフォルト値を返します
+// この関数は以下の処理を行います：
+// - 環境変数の取得
+// - デフォルト値の設定
+// - 値の返却
 func getEnvOrDefault(t *testing.T, key, defaultValue string) string {
 	t.Helper()
 

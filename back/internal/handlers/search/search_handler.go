@@ -1,5 +1,9 @@
 // Package search は検索関連のHTTPリクエストを処理するパッケージです。
-// このパッケージは、大学の検索機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - 大学の検索機能
+// - 検索クエリのバリデーション
+// - エラーハンドリング
+// - ログ記録
 package search
 
 import (
@@ -9,7 +13,6 @@ import (
 	"time"
 	applogger "university-exam-api/internal/logger"
 	errorHandler "university-exam-api/internal/pkg/errors"
-	"university-exam-api/internal/pkg/logging"
 	"university-exam-api/internal/repositories"
 
 	"github.com/labstack/echo/v4"
@@ -19,13 +22,21 @@ const (
 	maxQueryLength = 100
 )
 
-// Handler は検索関連のHTTPリクエストを処理
+// Handler は検索関連のHTTPリクエストを処理する構造体です。
+// この構造体は以下の機能を提供します：
+// - リポジトリとの連携
+// - リクエストタイムアウトの管理
+// - エラーハンドリング
 type Handler struct {
 	repo    repositories.IUniversityRepository
 	timeout time.Duration
 }
 
-// NewSearchHandler は新しいHandlerインスタンスを生成
+// NewSearchHandler は新しいHandlerインスタンスを生成します。
+// この関数は以下の処理を行います：
+// - リポジトリの初期化
+// - タイムアウトの設定
+// - ハンドラーの初期化
 func NewSearchHandler(repo repositories.IUniversityRepository, timeout time.Duration) *Handler {
 	return &Handler{
 		repo:    repo,
@@ -33,7 +44,12 @@ func NewSearchHandler(repo repositories.IUniversityRepository, timeout time.Dura
 	}
 }
 
-// validateSearchQuery は検索クエリのバリデーションを共通化
+// validateSearchQuery は検索クエリのバリデーションを共通化します。
+// この関数は以下の処理を行います：
+// - クエリの空白除去
+// - 必須チェック
+// - 文字数制限の検証
+// - 不正文字の検証
 func (h *Handler) validateSearchQuery(query string) error {
 	query = strings.TrimSpace(query)
 
@@ -52,7 +68,12 @@ func (h *Handler) validateSearchQuery(query string) error {
 	return nil
 }
 
-// SearchUniversities は大学を検索
+// SearchUniversities は大学を検索します。
+// この関数は以下の処理を行います：
+// - 検索クエリの取得とバリデーション
+// - データベースからの検索
+// - 検索結果の整形
+// - エラーハンドリング
 func (h *Handler) SearchUniversities(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)
 	defer cancel()
@@ -72,7 +93,7 @@ func (h *Handler) SearchUniversities(c echo.Context) error {
 		return errorHandler.HandleError(c, err)
 	}
 
-	applogger.Info(ctx, logging.LogSearchUniversitiesSuccess, query, len(universities))
+	applogger.Info(ctx, applogger.LogSearchUniversitiesSuccess, query, len(universities))
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"data": universities,

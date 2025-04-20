@@ -1,7 +1,8 @@
 'use client';
 import { useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Card } from '@/components/ui/cards';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { searchUniversities } from '@/features/search/api/actions';
 import { SectionTitle } from '@/features/search/components/section-title';
 import { SearchFormState, searchFormSchema } from '@/features/search/types/search-form';
@@ -75,7 +76,7 @@ export default function SearchForm() {
             type="text"
             id="keyword"
             name="keyword"
-            className="w-full border border-gray-300 p-2"
+            className="w-full border border-gray-300 dark:border-gray-700 p-2"
             placeholder="例：北海道大学 工学部（空白で全てから検索します）"
           />
           {state?.errors?.keyword && (
@@ -96,10 +97,10 @@ export default function SearchForm() {
           onToggleExpanded={() => setIsExpanded(prev => !prev)}
         />
 
-        <div className="mt-4">
-          <button type="submit" className="bg-blue-600 text-white py-2 px-4" disabled={pending}>
+        <div className="mt-3">
+          <Button type="submit" variant="default" disabled={pending}>
             {pending ? '検索中...' : '検索'}
-          </button>
+          </Button>
         </div>
 
         {state?.message && <p className="mt-2 text-sm text-gray-600">{state.message}</p>}

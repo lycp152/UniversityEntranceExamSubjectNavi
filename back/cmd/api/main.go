@@ -9,17 +9,17 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 	"university-exam-api/internal/config"
-	"university-exam-api/internal/database"
+	"university-exam-api/internal/infrastructure/database"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/server"
 
 	"runtime"
 
-	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/gorm"
@@ -39,18 +39,7 @@ type DB struct {
 	*gorm.DB
 }
 
-// setupEnvironment は環境変数の読み込みと検証を行います。
-// 開発環境の場合は.envファイルから環境変数を読み込みます。
-// cfg: アプリケーション設定
-// 戻り値: エラー情報
-func setupEnvironment(ctx context.Context, cfg *config.Config) error {
-	if cfg.Env == "development" {
-		if err := godotenv.Load(); err != nil {
-			applogger.Warn(ctx, "警告: .envファイルが見つかりません: %v", err)
-		}
-	}
-
-	// 必須環境変数の検証
+func validateEnvVars() error {
 	requiredVars := []string{
 		"DB_HOST",
 		"DB_PORT",
@@ -59,13 +48,43 @@ func setupEnvironment(ctx context.Context, cfg *config.Config) error {
 		"DB_NAME",
 	}
 
+	var missingVars []string
+
+	var emptyVars []string
+
 	for _, envVar := range requiredVars {
-		if os.Getenv(envVar) == "" {
-			return fmt.Errorf("必須環境変数 %s が設定されていません", envVar)
+		value, exists := os.LookupEnv(envVar)
+		if !exists {
+			missingVars = append(missingVars, envVar)
+		} else if strings.TrimSpace(value) == "" {
+			emptyVars = append(emptyVars, envVar)
 		}
 	}
 
+	if len(missingVars) > 0 || len(emptyVars) > 0 {
+		var errMsg strings.Builder
+		if len(missingVars) > 0 {
+			errMsg.WriteString("以下の必須環境変数が設定されていません: ")
+			errMsg.WriteString(strings.Join(missingVars, ", "))
+		}
+
+		if len(emptyVars) > 0 {
+			if errMsg.Len() > 0 {
+				errMsg.WriteString("\n")
+			}
+
+			errMsg.WriteString("以下の必須環境変数が空です: ")
+			errMsg.WriteString(strings.Join(emptyVars, ", "))
+		}
+
+		return fmt.Errorf("%s", errMsg.String())
+	}
+
 	return nil
+}
+
+func setupEnvironment(_ context.Context, _ *config.Config) error {
+	return validateEnvVars()
 }
 
 // checkDBHealth はデータベースの健全性をチェックします
@@ -245,7 +264,7 @@ func main() {
 	}
 
 	// データベース接続の確立
-	db, cleanup, err := database.Setup(ctx, cfg)
+	db, err := database.NewDB()
 	if err != nil {
 		applogger.Error(ctx, "データベース接続の確立に失敗しました: %v", err)
 		log.Printf("データベース接続の確立に失敗しました: %v", err)
@@ -253,7 +272,12 @@ func main() {
 
 		return
 	}
-	defer cleanup()
+
+	defer func() {
+		if err := database.CloseDB(db); err != nil {
+			applogger.Error(ctx, "データベース接続のクローズに失敗しました: %v", err)
+		}
+	}()
 
 	// データベース接続プールの設定
 	sqlDB, err := db.DB()

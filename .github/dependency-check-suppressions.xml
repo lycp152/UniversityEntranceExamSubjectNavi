@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- 例：特定の脆弱性を抑制する場合 -->
+    <!--
+    <suppress>
+        <notes><![CDATA[特定の脆弱性を抑制する理由]]></notes>
+        <cve>CVE-XXXX-XXXX</cve>
+    </suppress>
+    -->
+</suppressions>

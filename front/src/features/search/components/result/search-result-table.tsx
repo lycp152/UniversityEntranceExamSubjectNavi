@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card } from '@/components/ui/cards';
+import { Card } from '@/components/ui/card';
 import { ErrorMessage } from '@/components/errors/error-message';
-import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
+import { LoadingSpinner } from '@/components/ui/feedback/spinner';
 import type { UISubject } from '@/types/university-subjects';
 import { transformUniversityData } from '@/features/search/utils/university-data-transformer';
 
@@ -43,7 +43,7 @@ const SearchResultTable = () => {
 
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/universities`);
         const responseData = await response.json();
-        const data = responseData.data || responseData;
+        const data = responseData.data ?? responseData;
 
         if (!Array.isArray(data)) {
           console.error('Data is not an array:', typeof data, data);
@@ -107,21 +107,31 @@ const SearchResultTable = () => {
     <Card className="p-4">
       <h2 className="text-xl font-bold mb-4">{title}</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border">
+        <table className="min-w-full border border-gray-300 dark:border-gray-700">
           <thead>
             <tr>
-              <th className="py-2 px-4 border-b text-left whitespace-nowrap">大学名</th>
-              <th className="py-2 px-4 border-b text-left whitespace-nowrap">学部</th>
-              <th className="py-2 px-4 border-b text-left whitespace-nowrap">学科</th>
-              <th className="py-2 px-4 border-b text-left whitespace-nowrap">日程</th>
-              <th className="py-2 px-4 border-b text-left whitespace-nowrap">募集人員</th>
+              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
+                大学名
+              </th>
+              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
+                学部
+              </th>
+              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
+                学科
+              </th>
+              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
+                日程
+              </th>
+              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
+                募集人員
+              </th>
             </tr>
           </thead>
           <tbody>
             {subjects.map((subject: UISubject) => (
               <tr
                 key={`${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`}
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={() =>
                   handleRowClick(
                     subject.examInfo.academicYear,
@@ -132,13 +142,19 @@ const SearchResultTable = () => {
                   )
                 }
               >
-                <td className="py-2 px-4 border-b whitespace-nowrap">{subject.university.name}</td>
-                <td className="py-2 px-4 border-b whitespace-nowrap">{subject.department.name}</td>
-                <td className="py-2 px-4 border-b whitespace-nowrap">{subject.major.name}</td>
-                <td className="py-2 px-4 border-b whitespace-nowrap">
+                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
+                  {subject.university.name}
+                </td>
+                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
+                  {subject.department.name}
+                </td>
+                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
+                  {subject.major.name}
+                </td>
+                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
                   {subject.admissionSchedule.name}
                 </td>
-                <td className="py-2 px-4 border-b whitespace-nowrap">
+                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
                   {subject.examInfo.enrollment} 名
                 </td>
               </tr>

@@ -34,7 +34,7 @@ const EditScore = ({ score, onScoreChange }: EditScoreProps) => {
       type="number"
       value={score}
       onChange={handleInputChange}
-      className="text-xs font-semibold text-gray-900 w-[50px] text-center bg-white border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+      className="text-xs font-semibold text-gray-900 dark:text-gray-100 w-[50px] text-center border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
       min="0"
     />
   );
@@ -46,10 +46,8 @@ const EditScore = ({ score, onScoreChange }: EditScoreProps) => {
  */
 const ViewScore = ({ score, percentage }: ViewScoreProps) => (
   <>
-    <div className="text-xs font-semibold text-gray-900 whitespace-nowrap text-center w-[50px]">
-      {score}点
-    </div>
-    <div className="text-[10px] text-gray-500 whitespace-nowrap text-center w-[50px]">
+    <div className="text-xs font-semibold whitespace-nowrap text-center w-[50px]">{score}点</div>
+    <div className="text-[10px] text-gray-500 dark:text-gray-300 whitespace-nowrap text-center w-[50px]">
       ({percentage.toFixed(1)}%)
     </div>
   </>

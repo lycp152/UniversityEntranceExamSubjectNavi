@@ -1,3 +1,8 @@
+// Package unit はユニットテストとメモリテストを提供します。
+// このパッケージは以下の機能を提供します：
+// - メモリ使用量の測定
+// - メモリリークの検出
+// - ガベージコレクションのテスト
 package unit
 
 import (
@@ -10,6 +15,11 @@ import (
 )
 
 // TestMemory はメモリ使用量のテストケースです
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 1000ユーザーの作成
+// - メモリ使用量の測定
+// - 期待値との比較
 func TestMemory(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -19,7 +29,7 @@ func TestMemory(t *testing.T) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(t, 1000)
+	users := testutils.CreateTestUsers(t, 1000)
 
 	// メモリ使用量の初期値を取得
 	var m1, m2 runtime.MemStats
@@ -54,6 +64,11 @@ func TestMemory(t *testing.T) {
 }
 
 // TestMemoryLeak はメモリリークのテストケースです
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - ユーザーの作成と削除を繰り返し
+// - メモリリークの検出
+// - 期待値との比較
 func TestMemoryLeak(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -63,7 +78,7 @@ func TestMemoryLeak(t *testing.T) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(t, 100)
+	users := testutils.CreateTestUsers(t, 100)
 
 	// メモリ使用量の初期値を取得
 	var m1, m2 runtime.MemStats

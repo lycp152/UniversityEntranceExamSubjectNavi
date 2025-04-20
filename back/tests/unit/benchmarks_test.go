@@ -1,6 +1,10 @@
 // Package unit はユニットテストとベンチマークテストを提供します。
-// パフォーマンス測定、並行処理、メモリ使用量、データベース接続などの
-// ベンチマークテストを含みます。
+// このパッケージは以下の機能を提供します：
+// - パフォーマンス測定
+// - 並行処理のテスト
+// - メモリ使用量の測定
+// - データベース接続のテスト
+// - キャッシュパフォーマンスの測定
 package unit
 
 import (
@@ -18,11 +22,15 @@ const (
 )
 
 // BenchmarkUserValidation はユーザー検証のパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - テストユーザーの作成
+// - バリデーションの実行
+// - 実行時間の測定
 func BenchmarkUserValidation(b *testing.B) {
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -33,6 +41,11 @@ func BenchmarkUserValidation(b *testing.B) {
 }
 
 // BenchmarkUserRepository はユーザーリポジトリのパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - リポジトリの初期化
+// - ユーザー作成の実行
+// - 実行時間の測定
 func BenchmarkUserRepository(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -43,9 +56,9 @@ func BenchmarkUserRepository(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -55,7 +68,12 @@ func BenchmarkUserRepository(b *testing.B) {
 	}
 }
 
-// BenchmarkConcurrentUserCreation は並行処理でのユーザー作成のパフォーマンスを測定します
+// BenchmarkConcurrentUserCreation は並行ユーザー作成のパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - テストユーザーの作成
+// - 並行処理でのユーザー作成
+// - 実行時間の測定
 func BenchmarkConcurrentUserCreation(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -65,28 +83,30 @@ func BenchmarkConcurrentUserCreation(b *testing.B) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(b, 100)
+	users := testutils.CreateTestUsers(b, b.N)
 
 	b.ResetTimer()
 
+	var wg sync.WaitGroup
 	for i := 0; i < b.N; i++ {
-		var wg sync.WaitGroup
+		wg.Add(1)
 
-		wg.Add(len(users))
+		user := users[i]
+		go func() {
+			defer wg.Done()
 
-		for _, user := range users {
-			go func(u *models.User) {
-				defer wg.Done()
-
-				_ = repo.Create(u)
-			}(user)
-		}
-
-		wg.Wait()
+			_ = repo.Create(user)
+		}()
 	}
+
+	wg.Wait()
 }
 
 // BenchmarkMemoryUsage はメモリ使用量を測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 大量のテストユーザーの作成
+// - メモリ使用量の測定
 func BenchmarkMemoryUsage(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -96,7 +116,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(b, 1000)
+	users := testutils.CreateTestUsers(b, 1000)
 
 	b.ResetTimer()
 
@@ -108,6 +128,11 @@ func BenchmarkMemoryUsage(b *testing.B) {
 }
 
 // BenchmarkResponseTime はAPIレスポンス時間を測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - テストユーザーの作成
+// - レスポンス時間の測定
+// - タイムアウトチェック
 func BenchmarkResponseTime(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -118,9 +143,9 @@ func BenchmarkResponseTime(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     "テストユーザー",
-		Email:    "test@example.com",
-		Password: "password123",
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	b.ResetTimer()
@@ -138,6 +163,10 @@ func BenchmarkResponseTime(b *testing.B) {
 }
 
 // BenchmarkDatabaseConnection はデータベース接続のパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - 接続の確立
+// - 接続時間の測定
 func BenchmarkDatabaseConnection(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -157,6 +186,10 @@ func BenchmarkDatabaseConnection(b *testing.B) {
 }
 
 // BenchmarkCachePerformance はキャッシュのパフォーマンスを測定します
+// この関数は以下の処理を行います：
+// - モックデータベースの作成
+// - キャッシュのウォームアップ
+// - キャッシュアクセスの測定
 func BenchmarkCachePerformance(b *testing.B) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -167,9 +200,9 @@ func BenchmarkCachePerformance(b *testing.B) {
 
 	repo := repositories.NewUserRepository(db)
 	user := &models.User{
-		Name:     "テストユーザー",
-		Email:    "test@example.com",
-		Password: "password123",
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	// キャッシュのウォームアップ

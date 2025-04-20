@@ -1,3 +1,9 @@
+// Package unit はユニットテストを提供します。
+// このパッケージは以下の機能を提供します：
+// - ユーザー検証のテスト
+// - ユーザーリポジトリのテスト
+// - 並行処理のテスト
+// - トランザクションのテスト
 package unit
 
 import (
@@ -12,13 +18,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testUserName     = "テストユーザー"
-	testUserEmail    = "test@example.com"
-	testUserPassword = "password123"
-)
-
 // TestUserValidation はユーザー検証のテストケースです
+// この関数は以下のテストケースを実行します：
+// - 正常系: 有効なユーザー
+// - 異常系: 無効なメールアドレス
+// - 異常系: 短すぎるパスワード
+// - エッジケース: 最大長の名前
+// - エッジケース: 空の名前
+// - エッジケース: 特殊文字を含む名前
+// - エッジケース: 国際化ドメイン名
 func TestUserValidation(t *testing.T) {
 	t.Parallel()
 
@@ -30,26 +38,26 @@ func TestUserValidation(t *testing.T) {
 		{
 			name: "正常系: 有効なユーザー",
 			user: models.User{
-				Name:     testUserName,
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Name:     testutils.TestUserName,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
 		{
 			name: "異常系: 無効なメールアドレス",
 			user: models.User{
-				Name:     testUserName,
+				Name:     testutils.TestUserName,
 				Email:    "invalid-email",
-				Password: testUserPassword,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
 		{
 			name: "異常系: 短すぎるパスワード",
 			user: models.User{
-				Name:     testUserName,
-				Email:    testUserEmail,
+				Name:     testutils.TestUserName,
+				Email:    testutils.TestUserEmail,
 				Password: "pass",
 			},
 			wantErr: true,
@@ -59,8 +67,8 @@ func TestUserValidation(t *testing.T) {
 			name: "エッジケース: 最大長の名前",
 			user: models.User{
 				Name:     strings.Repeat("a", 255),
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
@@ -68,8 +76,8 @@ func TestUserValidation(t *testing.T) {
 			name: "エッジケース: 空の名前",
 			user: models.User{
 				Name:     "",
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
@@ -77,17 +85,17 @@ func TestUserValidation(t *testing.T) {
 			name: "エッジケース: 特殊文字を含む名前",
 			user: models.User{
 				Name:     "テスト!@#$%^&*()",
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
 		{
 			name: "エッジケース: 国際化ドメイン名",
 			user: models.User{
-				Name:     testUserName,
+				Name:     testutils.TestUserName,
 				Email:    "test@例え.テスト",
-				Password: testUserPassword,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
@@ -109,6 +117,10 @@ func TestUserValidation(t *testing.T) {
 }
 
 // TestUserRepository はユーザーリポジトリのテストケースです
+// この関数は以下のテストケースを実行します：
+// - 正常系: ユーザーの作成
+// - 異常系: 重複するメールアドレス
+// - 異常系: データベース接続エラー
 func TestUserRepository(t *testing.T) {
 	db := testutils.NewMockDB()
 	defer func() {
@@ -127,9 +139,9 @@ func TestUserRepository(t *testing.T) {
 		{
 			name: "正常系: ユーザーの作成",
 			user: models.User{
-				Name:     testUserName,
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Name:     testutils.TestUserName,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: false,
 		},
@@ -137,18 +149,18 @@ func TestUserRepository(t *testing.T) {
 		{
 			name: "異常系: 重複するメールアドレス",
 			user: models.User{
-				Name:     testUserName,
-				Email:    testUserEmail,
-				Password: testUserPassword,
+				Name:     testutils.TestUserName,
+				Email:    testutils.TestUserEmail,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
 		{
 			name: "異常系: データベース接続エラー",
 			user: models.User{
-				Name:     testUserName,
+				Name:     testutils.TestUserName,
 				Email:    "error@example.com",
-				Password: testUserPassword,
+				Password: testutils.TestUserPassword,
 			},
 			wantErr: true,
 		},
@@ -167,6 +179,9 @@ func TestUserRepository(t *testing.T) {
 }
 
 // TestUserRepositoryConcurrent は並行処理のテストケースです
+// この関数は以下の処理をテストします：
+// - 複数のゴルーチンによる同時ユーザー作成
+// - データベースの並行処理の安全性
 func TestUserRepositoryConcurrent(t *testing.T) {
 	t.Parallel()
 
@@ -178,7 +193,7 @@ func TestUserRepositoryConcurrent(t *testing.T) {
 	}()
 
 	repo := repositories.NewUserRepository(db)
-	users := createTestUsers(t, 100)
+	users := testutils.CreateTestUsers(t, 100)
 
 	var wg sync.WaitGroup
 
@@ -198,6 +213,10 @@ func TestUserRepositoryConcurrent(t *testing.T) {
 }
 
 // TestUserRepositoryTransaction はトランザクションのテストケースです
+// この関数は以下の処理をテストします：
+// - トランザクションの開始とロールバック
+// - トランザクション内でのユーザー作成
+// - ロールバック後のデータ整合性
 func TestUserRepositoryTransaction(t *testing.T) {
 	// モックDBの作成
 	db := testutils.NewMockDB()
@@ -211,9 +230,9 @@ func TestUserRepositoryTransaction(t *testing.T) {
 
 	// テストユーザーの作成
 	user := &models.User{
-		Name:     testUserName,
-		Email:    testUserEmail,
-		Password: testUserPassword,
+		Name:     testutils.TestUserName,
+		Email:    testutils.TestUserEmail,
+		Password: testutils.TestUserPassword,
 	}
 
 	// ユーザーの作成

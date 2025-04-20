@@ -1,5 +1,9 @@
 // Package admissionschedule は入試日程関連のHTTPリクエストを処理するハンドラーを提供します。
-// 入試日程の取得、作成、更新、削除のエンドポイントを実装しています。
+// このパッケージは以下の機能を提供します：
+// - 入試日程の取得、作成、更新、削除
+// - リクエストのバリデーション
+// - エラーハンドリング
+// - パフォーマンスメトリクスの収集
 package admissionschedule
 
 import (
@@ -16,7 +20,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Handler は入試日程関連のHTTPリクエストを処理
+// Handler は入試日程関連のHTTPリクエストを処理する構造体です。
+// この構造体は以下の機能を提供します：
+// - リポジトリとの連携
+// - リクエストタイムアウトの管理
+// - パフォーマンスメトリクスの収集
 type Handler struct {
 	repo            repositories.IUniversityRepository
 	timeout         time.Duration
@@ -25,7 +33,11 @@ type Handler struct {
 	dbDuration      *prometheus.HistogramVec
 }
 
-// NewHandler は新しいHandlerインスタンスを生成
+// NewHandler は新しいHandlerインスタンスを生成します。
+// この関数は以下の処理を行います：
+// - リポジトリの初期化
+// - タイムアウトの設定
+// - メトリクスの初期化と登録
 func NewHandler(
 	repo repositories.IUniversityRepository,
 	timeout time.Duration,
@@ -59,7 +71,11 @@ func NewHandler(
 	}
 }
 
-// bindRequest はリクエストボディのバインディングを共通化
+// bindRequest はリクエストボディのバインディングを共通化します。
+// この関数は以下の処理を行います：
+// - リクエストボディのバインディング
+// - エラーログの記録
+// - バリデーションエラーの生成
 func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interface{}) error {
 	if err := c.Bind(data); err != nil {
 		applogger.Error(ctx, errors.MsgBindRequestFailed, err)
@@ -69,7 +85,11 @@ func (h *Handler) bindRequest(ctx context.Context, c echo.Context, data interfac
 	return nil
 }
 
-// validateMajorAndScheduleID は学科IDとスケジュールIDのバリデーションを共通化
+// validateMajorAndScheduleID は学科IDとスケジュールIDのバリデーションを共通化します。
+// この関数は以下の処理を行います：
+// - 学科IDの検証
+// - スケジュールIDの検証
+// - エラーハンドリング
 func (h *Handler) validateMajorAndScheduleID(ctx context.Context, c echo.Context) (uint, uint, error) {
 	majorID, err := validation.ValidateMajorID(ctx, c.Param("majorId"))
 	if err != nil {
@@ -84,7 +104,13 @@ func (h *Handler) validateMajorAndScheduleID(ctx context.Context, c echo.Context
 	return majorID, scheduleID, nil
 }
 
-// UpdateAdmissionSchedule は入試日程を更新します
+// UpdateAdmissionSchedule は入試日程を更新します。
+// この関数は以下の処理を行います：
+// - パラメータの検証
+// - リクエストのバリデーション
+// - データベースの更新
+// - パフォーマンスメトリクスの収集
+// - エラーハンドリング
 func (h *Handler) UpdateAdmissionSchedule(c echo.Context) error {
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(c.Request().Context(), h.timeout)

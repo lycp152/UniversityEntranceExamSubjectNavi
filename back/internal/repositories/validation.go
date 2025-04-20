@@ -1,3 +1,10 @@
+// Package repositories はデータベースのバリデーション機能を提供します。
+// このパッケージは以下の機能を提供します：
+// - 入力値の検証
+// - バリデーションルールの管理
+// - エラーハンドリング
+// - キャッシュの管理
+// - 大学、学部、学科、入試スケジュール、テストタイプ、科目のバリデーション
 package repositories
 
 import (
@@ -24,7 +31,13 @@ const (
 	errPercentageRange = "パーセンテージは0以上100以下である必要があります"
 )
 
-// ValidationRule はバリデーションルールを定義します
+// ValidationRule はバリデーションルールを定義します。
+// この構造体は以下の設定を管理します：
+// - フィールド名
+// - バリデーター関数
+// - エラーメッセージ
+// - エラーコード
+// - 重要度
 type ValidationRule struct {
 	Field     string
 	Validator func(interface{}) error
@@ -33,10 +46,18 @@ type ValidationRule struct {
 	Severity  string
 }
 
-// ValidationRules はバリデーションルールのマップを定義します
+// ValidationRules はバリデーションルールのマップを定義します。
+// この型は以下の機能を提供します：
+// - エンティティごとのルール管理
+// - ルールの検索
+// - ルールの追加
 type ValidationRules map[string][]ValidationRule
 
-// validationCache はバリデーションルールのキャッシュを管理します
+// validationCache はバリデーションルールのキャッシュを管理します。
+// この構造体は以下の機能を提供します：
+// - スレッドセーフなキャッシュ
+// - ルールの取得
+// - ルールの更新
 type validationCache struct {
 	rules ValidationRules
 	mu    sync.RWMutex
@@ -48,7 +69,11 @@ var (
 	}
 )
 
-// validateWithRules は指定されたルールでバリデーションを行います
+// validateWithRules は指定されたルールでバリデーションを行います。
+// この関数は以下の処理を行います：
+// - ルールの適用
+// - エラーの収集
+// - エラーの返却
 func validateWithRules(value interface{}, rules []ValidationRule) error {
 	var validationErrors []error
 
@@ -67,7 +92,11 @@ func validateWithRules(value interface{}, rules []ValidationRule) error {
 	return nil
 }
 
-// getValidationRules はエンティティごとのバリデーションルールを返します
+// getValidationRules はエンティティごとのバリデーションルールを返します。
+// この関数は以下の処理を行います：
+// - キャッシュのチェック
+// - ルールの生成
+// - キャッシュへの保存
 func getValidationRules() ValidationRules {
 	validationCacheInstance.mu.RLock()
 	rules := validationCacheInstance.rules
@@ -83,8 +112,11 @@ func getValidationRules() ValidationRules {
 					{
 						Field: "name",
 						Validator: func(v interface{}) error {
-							name := v.(string)
-							return validateName(name, "大学名")
+							university, ok := v.(*models.University)
+							if !ok {
+								return fmt.Errorf("invalid type: expected *models.University")
+							}
+							return validateName(university.Name, "大学名")
 						},
 						Message: "大学名のバリデーションに失敗しました",
 						Code:    "INVALID_NAME",
@@ -95,8 +127,11 @@ func getValidationRules() ValidationRules {
 					{
 						Field: "name",
 						Validator: func(v interface{}) error {
-							name := v.(string)
-							return validateName(name, "学部名")
+							department, ok := v.(models.Department)
+							if !ok {
+								return fmt.Errorf("invalid type: expected models.Department")
+							}
+							return validateName(department.Name, "学部名")
 						},
 						Message: "学部名のバリデーションに失敗しました",
 						Code:    "INVALID_NAME",
@@ -112,7 +147,11 @@ func getValidationRules() ValidationRules {
 	return rules
 }
 
-// validateName は名前の共通バリデーションを行います
+// validateName は名前の共通バリデーションを行います。
+// この関数は以下の処理を行います：
+// - 長さのチェック
+// - エラーメッセージの生成
+// - 結果の返却
 func validateName(name string, field string) error {
 	name = strings.TrimSpace(name)
 	if len(name) < minNameLength {
@@ -126,25 +165,31 @@ func validateName(name string, field string) error {
 	return nil
 }
 
-// validateUniversity は大学のバリデーションを行います
+// validateUniversity は大学のバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 基本情報の検証
+// - 関連データの検証
+// - エラーの返却
 func (r *universityRepository) validateUniversity(university *models.University) error {
 	if university == nil {
-		return appErrors.NewInvalidInputError("university", "大学データが指定されていません", nil)
+		return appErrors.NewInvalidInputError("university", errEmptyUniversity, nil)
 	}
 
-	rules := getValidationRules()
-	if err := validateWithRules(university, rules["university"]); err != nil {
+	// バージョンチェックを最初に行う
+	if university.Version < 1 {
+		return appErrors.NewInvalidInputError("version", errInvalidVersion, nil)
+	}
+
+	// 名前のバリデーション
+	if err := validateName(university.Name, "大学名"); err != nil {
 		return err
 	}
 
-	if university.Version < 1 {
-		return appErrors.NewInvalidInputError("version", "バージョンは1以上である必要があります", nil)
-	}
-
+	// 学部数のバリデーション
 	if len(university.Departments) > maxDepartmentsPerUniversity {
 		return appErrors.NewInvalidInputError(
 			"departments",
-			fmt.Sprintf("学部数は%d以下である必要があります", maxDepartmentsPerUniversity),
+			fmt.Sprintf(errMaxItems, "学部数", maxDepartmentsPerUniversity),
 			nil,
 		)
 	}
@@ -152,6 +197,11 @@ func (r *universityRepository) validateUniversity(university *models.University)
 	return r.validateUniversityRelations(university)
 }
 
+// validateUniversityRelations は大学の関連データのバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 学部の検証
+// - 重複チェック
+// - エラーの返却
 func (r *universityRepository) validateUniversityRelations(university *models.University) error {
 	departmentNames := make(map[string]bool)
 
@@ -176,6 +226,11 @@ func (r *universityRepository) validateUniversityRelations(university *models.Un
 	return nil
 }
 
+// validateDepartment は学部のバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 基本情報の検証
+// - 学科の検証
+// - エラーの返却
 func (r *universityRepository) validateDepartment(dept models.Department, index int) error {
 	// 学部名のバリデーション
 	if err := validateName(dept.Name, fmt.Sprintf("departments[%d].name", index)); err != nil {
@@ -218,6 +273,11 @@ func (r *universityRepository) validateDepartment(dept models.Department, index 
 	return nil
 }
 
+// validateMajor は学科のバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 基本情報の検証
+// - 入試スケジュールの検証
+// - エラーの返却
 func (r *universityRepository) validateMajor(major models.Major, deptIndex, majorIndex int) error {
 	// 学科名のバリデーション
 	if err := validateName(major.Name, fmt.Sprintf("departments[%d].majors[%d].name", deptIndex, majorIndex)); err != nil {
@@ -243,6 +303,11 @@ func (r *universityRepository) validateMajor(major models.Major, deptIndex, majo
 	return nil
 }
 
+// validateAdmissionSchedule は入試スケジュールのバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 基本情報の検証
+// - テストタイプの検証
+// - エラーの返却
 func (r *universityRepository) validateAdmissionSchedule(
 	schedule models.AdmissionSchedule,
 	deptIndex, majorIndex, scheduleIndex int,
@@ -290,6 +355,11 @@ func (r *universityRepository) validateAdmissionSchedule(
 	return nil
 }
 
+// validateTestType はテストタイプのバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 基本情報の検証
+// - 科目の検証
+// - エラーの返却
 func (r *universityRepository) validateTestType(
 	testType models.TestType,
 	deptIndex, majorIndex, scheduleIndex, testTypeIndex int,
@@ -352,6 +422,11 @@ func (r *universityRepository) validateTestType(
 	return nil
 }
 
+// validateSubject は科目のバリデーションを行います。
+// この関数は以下の処理を行います：
+// - 基本情報の検証
+// - スコアの検証
+// - エラーの返却
 func (r *universityRepository) validateSubject(
 	subject models.Subject,
 	deptIndex, majorIndex, scheduleIndex, testTypeIndex, subjectIndex int,

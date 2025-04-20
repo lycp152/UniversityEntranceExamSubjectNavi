@@ -1,7 +1,28 @@
+// Package errors はアプリケーション全体で使用されるエラー型とエラーハンドリング機能を提供します。
+// このパッケージはHTTPエラー、バリデーションエラー、データベースエラーなどの
+// アプリケーション固有のエラー型を定義します。
 package errors
 
 import (
 	"fmt"
+)
+
+// HTTPステータスコード
+const (
+	StatusBadRequest          = 400
+	StatusUnauthorized        = 401
+	StatusForbidden          = 403
+	StatusNotFound           = 404
+	StatusInternalServerError = 500
+)
+
+// エラーメッセージ
+const (
+	ErrMsgBadRequest          = "無効なリクエスト"
+	ErrMsgUnauthorized        = "認証が必要です"
+	ErrMsgForbidden          = "アクセスが拒否されました"
+	ErrMsgNotFound           = "リソースが見つかりません"
+	ErrMsgInternalServerError = "内部サーバーエラー"
 )
 
 // HTTPError はHTTPエラーを表現する構造体です
@@ -48,25 +69,45 @@ func NewHTTPError(code int, message string, err error) *HTTPError {
 
 // NewBadRequestError は400 Bad Requestエラーを作成します
 func NewBadRequestError(message string, err error) *HTTPError {
-	return NewHTTPError(400, message, err)
+	if message == "" {
+		message = ErrMsgBadRequest
+	}
+
+	return NewHTTPError(StatusBadRequest, message, err)
 }
 
 // NewUnauthorizedError は401 Unauthorizedエラーを作成します
 func NewUnauthorizedError(message string, err error) *HTTPError {
-	return NewHTTPError(401, message, err)
+	if message == "" {
+		message = ErrMsgUnauthorized
+	}
+
+	return NewHTTPError(StatusUnauthorized, message, err)
 }
 
 // NewForbiddenError は403 Forbiddenエラーを作成します
 func NewForbiddenError(message string, err error) *HTTPError {
-	return NewHTTPError(403, message, err)
+	if message == "" {
+		message = ErrMsgForbidden
+	}
+
+	return NewHTTPError(StatusForbidden, message, err)
 }
 
 // NewHTTPNotFoundError は404 Not Foundエラーを作成します
 func NewHTTPNotFoundError(message string, err error) *HTTPError {
-	return NewHTTPError(404, message, err)
+	if message == "" {
+		message = ErrMsgNotFound
+	}
+
+	return NewHTTPError(StatusNotFound, message, err)
 }
 
 // NewInternalServerError は500 Internal Server Errorを作成します
 func NewInternalServerError(message string, err error) *HTTPError {
-	return NewHTTPError(500, message, err)
+	if message == "" {
+		message = ErrMsgInternalServerError
+	}
+
+	return NewHTTPError(StatusInternalServerError, message, err)
 }

@@ -6,12 +6,14 @@ import { EXAM_TYPES } from '@/constants/constraint/exam-types';
  * Tailwind CSSのクラスを使用
  */
 export const tableStyles = {
-  cell: 'border-b p-3',
-  headerCell: 'whitespace-nowrap border-b p-3 text-center bg-gray-50 font-semibold',
-  leftCell: 'border-b p-3 text-left font-semibold pl-4',
-  centerCell: 'border-b p-3 text-center',
-  totalCell: 'border-b p-3 text-center bg-gray-50 font-semibold',
-  row: 'hover:bg-gray-50',
+  cell: 'border-b border-gray-300 p-3',
+  headerCell:
+    'whitespace-nowrap border-b border-gray-300 dark:border-gray-700 p-3 text-center bg-gray-50 dark:bg-gray-900 font-semibold',
+  leftCell: 'border-b border-gray-300 dark:border-gray-700 p-3 text-left font-semibold pl-4',
+  centerCell: 'border-b border-gray-300 dark:border-gray-700 p-3 text-center',
+  totalCell:
+    'border-b border-gray-300 dark:border-gray-700 p-3 text-center bg-gray-50 dark:bg-gray-900 font-semibold',
+  row: 'hover:bg-gray-50 dark:hover:bg-gray-900',
 } as const;
 
 /**

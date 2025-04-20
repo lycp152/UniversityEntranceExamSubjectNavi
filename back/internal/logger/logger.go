@@ -1,13 +1,19 @@
 // Package applogger はアプリケーションのロギング機能を提供します。
-// 構造化ロギング、ログローテーション、複数のログレベルをサポートします。
+// このパッケージは以下の機能を提供します：
+// - 構造化ロギング
+// - ログローテーション
+// - 複数のログレベル
+// - アクセスログ
 package applogger
 
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -15,7 +21,11 @@ import (
 )
 
 // Level はログレベルを表す型です。
-// slog.Levelのエイリアスとして定義されています。
+// この型は以下のレベルをサポートします：
+// - LevelDebug: デバッグ情報
+// - LevelInfo: 通常の情報
+// - LevelWarn: 警告情報
+// - LevelError: エラー情報
 type Level = slog.Level
 
 const (
@@ -30,7 +40,11 @@ const (
 )
 
 // Config はロガーの設定を表す構造体です。
-// ログファイルの保存場所、ログレベル、ローテーション設定などを管理します。
+// この構造体は以下の設定を保持します：
+// - ログディレクトリ
+// - ログレベル
+// - ログファイルの設定
+// - ローテーション設定
 type Config struct {
 	LogDir      string        // ログファイルを保存するディレクトリのパス
 	LogLevel    Level         // ログの出力レベル
@@ -41,7 +55,13 @@ type Config struct {
 }
 
 // DefaultConfig はデフォルトのロガー設定を返します。
-// 開発環境での使用を想定した標準的な設定値が設定されています。
+// この関数は以下の設定を提供します：
+// - ログディレクトリ: "logs"
+// - ログレベル: LevelInfo
+// - 最大サイズ: 100MB
+// - 最大バックアップ: 5
+// - 最大保持日数: 30日
+// - 圧縮: 有効
 func DefaultConfig() Config {
 	return Config{
 		LogDir:      "logs",
@@ -58,11 +78,14 @@ var (
 	errorLogger  *slog.Logger   // エラーログ用のロガー
 	accessLogger *slog.Logger   // アクセスログ用のロガー
 	config       Config         // 現在のロガー設定
+	initTestOnce sync.Once     // テストロガーの初期化を一度だけ実行するためのOnceオブジェクト
 )
 
 // InitLoggers はロガーを初期化します。
-// 指定された設定に基づいて、各ロガー（情報、エラー、アクセス）を初期化します。
-// ログディレクトリが存在しない場合は作成します。
+// この関数は以下の処理を行います：
+// - ログディレクトリの作成
+// - 各ロガーの初期化
+// - エラーハンドリング
 //
 // 引数:
 //   - cfg: ロガーの設定
@@ -94,7 +117,10 @@ func InitLoggers(cfg Config) error {
 }
 
 // initInfoLogger は情報ログ用のロガーを初期化します。
-// JSON形式でログを出力し、ログローテーションをサポートします。
+// この関数は以下の処理を行います：
+// - ログファイルの設定
+// - ローテーションの設定
+// - JSONハンドラーの設定
 //
 // 戻り値:
 //   - error: 初期化に失敗した場合のエラー
@@ -125,7 +151,10 @@ func initInfoLogger() error {
 }
 
 // initErrorLogger はエラーログ用のロガーを初期化します。
-// JSON形式でログを出力し、ログローテーションをサポートします。
+// この関数は以下の処理を行います：
+// - ログファイルの設定
+// - ローテーションの設定
+// - JSONハンドラーの設定
 //
 // 戻り値:
 //   - error: 初期化に失敗した場合のエラー
@@ -156,7 +185,10 @@ func initErrorLogger() error {
 }
 
 // initAccessLogger はアクセスログ用のロガーを初期化します。
-// JSON形式でログを出力し、ログローテーションをサポートします。
+// この関数は以下の処理を行います：
+// - ログファイルの設定
+// - ローテーションの設定
+// - JSONハンドラーの設定
 //
 // 戻り値:
 //   - error: 初期化に失敗した場合のエラー
@@ -187,7 +219,10 @@ func initAccessLogger() error {
 }
 
 // Debug はデバッグレベルのログを記録します。
-// 開発時のデバッグ情報を記録するために使用します。
+// この関数は以下の処理を行います：
+// - コンテキストの取得
+// - ログメッセージの記録
+// - 追加引数の処理
 //
 // 引数:
 //   - ctx: コンテキスト
@@ -198,7 +233,10 @@ func Debug(ctx context.Context, msg string, args ...any) {
 }
 
 // Info は情報レベルのログを記録します。
-// 通常の操作情報を記録するために使用します。
+// この関数は以下の処理を行います：
+// - コンテキストの取得
+// - ログメッセージの記録
+// - 追加引数の処理
 //
 // 引数:
 //   - ctx: コンテキスト
@@ -209,7 +247,10 @@ func Info(ctx context.Context, msg string, args ...any) {
 }
 
 // Warn は警告レベルのログを記録します。
-// 注意が必要な状況を記録するために使用します。
+// この関数は以下の処理を行います：
+// - コンテキストの取得
+// - ログメッセージの記録
+// - 追加引数の処理
 //
 // 引数:
 //   - ctx: コンテキスト
@@ -220,7 +261,10 @@ func Warn(ctx context.Context, msg string, args ...any) {
 }
 
 // Error はエラーレベルのログを記録します。
-// エラーが発生した状況を記録するために使用します。
+// この関数は以下の処理を行います：
+// - コンテキストの取得
+// - ログメッセージの記録
+// - 追加引数の処理
 //
 // 引数:
 //   - ctx: コンテキスト
@@ -230,8 +274,11 @@ func Error(ctx context.Context, msg string, args ...any) {
 	errorLogger.ErrorContext(ctx, msg, args...)
 }
 
-// AccessLogMiddleware はHTTPリクエストのアクセスログを記録するミドルウェアを返します。
-// リクエストの詳細情報（メソッド、URI、ステータスコードなど）を記録します。
+// AccessLogMiddleware はアクセスログを記録するミドルウェアを返します。
+// この関数は以下の処理を行います：
+// - リクエスト情報の取得
+// - レスポンス情報の取得
+// - アクセスログの記録
 //
 // 戻り値:
 //   - echo.MiddlewareFunc: Echoフレームワーク用のミドルウェア関数
@@ -261,4 +308,23 @@ func AccessLogMiddleware() echo.MiddlewareFunc {
 			return err
 		}
 	}
+}
+
+// InitTestLogger はテスト用のロガーを初期化します。
+// この関数は以下の処理を行います：
+// - テスト用ハンドラーの設定
+// - ロガーの初期化
+// - スレッドセーフな初期化
+func InitTestLogger() {
+	initTestOnce.Do(func() {
+		// テスト用のロガー設定
+		handler := slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		})
+
+		// ロガーの初期化をスレッドセーフに行う
+		infoLogger = slog.New(handler)
+		errorLogger = slog.New(handler)
+		accessLogger = slog.New(handler)
+	})
 }

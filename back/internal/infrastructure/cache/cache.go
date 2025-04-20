@@ -1,5 +1,11 @@
 // Package cache はキャッシュ機能を提供するパッケージです。
 // このパッケージは、アプリケーション全体で使用されるキャッシュの実装を提供します。
+// 主な機能：
+// - キーバリューストアの実装
+// - トランザクションのサポート
+// - パフォーマンスメトリクスの収集
+// - メモリ管理
+// - スレッドセーフな操作
 package cache
 
 import (
@@ -14,7 +20,13 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 )
 
-// Interface はキャッシュのインターフェースを定義します
+// Interface はキャッシュのインターフェースを定義します。
+// このインターフェースは以下の操作を提供します：
+// - キャッシュへのデータの保存
+// - キャッシュからのデータの取得
+// - キャッシュのクリア
+// - トランザクションの管理
+// - パフォーマンスメトリクスの取得
 type Interface interface {
 	Set(key string, value interface{}, duration time.Duration) error
 	Get(key string) (interface{}, bool, error)
@@ -29,7 +41,12 @@ type Interface interface {
 	GetPerformanceMetrics() (*PerformanceMetrics, error)
 }
 
-// cacheItem はキャッシュアイテムを表します
+// cacheItem はキャッシュアイテムを表します。
+// この構造体は以下の情報を保持します：
+// - キャッシュされた値
+// - 有効期限
+// - 作成日時
+// - アクセス回数
 type cacheItem struct {
 	value      interface{}
 	expiration time.Time
@@ -37,7 +54,15 @@ type cacheItem struct {
 	accessCount int64
 }
 
-// PerformanceMetrics はキャッシュのパフォーマンスメトリクスを表します
+// PerformanceMetrics はキャッシュのパフォーマンスメトリクスを表します。
+// この構造体は以下のメトリクスを保持します：
+// - ヒット率
+// - 平均レイテンシ
+// - 総アイテム数
+// - メモリ使用量
+// - 削除されたアイテム数
+// - トランザクション数
+// - 失敗した操作数
 type PerformanceMetrics struct {
 	HitRate           float64
 	AverageLatency    time.Duration
@@ -48,7 +73,13 @@ type PerformanceMetrics struct {
 	FailedOperations  int64
 }
 
-// Stats はキャッシュの統計情報を保持します
+// Stats はキャッシュの統計情報を保持します。
+// この構造体は以下の統計情報を保持します：
+// - ヒット数
+// - ミス数
+// - 削除されたアイテム数
+// - メモリ使用量
+// - アイテム数
 type Stats struct {
 	Hits        int64
 	Misses      int64
@@ -66,9 +97,17 @@ const (
 	ErrCacheFull = "キャッシュが最大サイズに達しました"
 	ErrTransactionInProgress = "トランザクションが既に進行中です"
 	ErrNoTransaction = "アクティブなトランザクションがありません"
+	ErrInvalidOperation = "無効な操作が実行されました"
+	ErrMemoryLimitExceeded = "メモリ制限を超えました"
 )
 
-// Cache はキャッシュの実装を提供します
+// Cache はキャッシュの実装を提供します。
+// この構造体は以下の機能を提供します：
+// - アイテムの保存と取得
+// - トランザクションの管理
+// - 統計情報の収集
+// - メモリ管理
+// - クリーンアップ処理
 type Cache struct {
 	items       map[string]cacheItem
 	mu          sync.RWMutex
@@ -84,7 +123,11 @@ type Cache struct {
 	transaction  *Transaction
 }
 
-// Transaction はキャッシュのトランザクションを表します
+// Transaction はキャッシュのトランザクションを表します。
+// この構造体は以下の機能を提供します：
+// - トランザクション内のアイテムの管理
+// - トランザクションのコミットとロールバック
+// - スレッドセーフな操作
 type Transaction struct {
 	items map[string]cacheItem
 	mu    sync.RWMutex
@@ -103,7 +146,11 @@ func NewTransaction() *Transaction {
 	}
 }
 
-// GetInstance はキャッシュのシングルトンインスタンスを返します
+// GetInstance はキャッシュのシングルトンインスタンスを返します。
+// この関数は以下の処理を行います：
+// - キャッシュインスタンスの初期化
+// - クリーンアップ処理の開始
+// - スレッドセーフな初期化の保証
 func GetInstance() Interface {
 	once.Do(func() {
 		instance = &Cache{
@@ -117,7 +164,12 @@ func GetInstance() Interface {
 	return instance
 }
 
-// Set はキャッシュにアイテムを保存します
+// Set はキャッシュにアイテムを保存します。
+// この関数は以下の処理を行います：
+// - 入力値の検証
+// - メモリ使用量のチェック
+// - トランザクションのサポート
+// - エラーハンドリング
 func (c *Cache) Set(key string, value interface{}, duration time.Duration) error {
 	if key == "" {
 		return appErrors.NewInvalidInputError("key", ErrEmptyKey, nil)
@@ -175,13 +227,37 @@ func (c *Cache) Set(key string, value interface{}, duration time.Duration) error
 	return nil
 }
 
-// calculateItemSize はアイテムのサイズを計算します
+// calculateItemSize はアイテムのサイズを計算します。
+// この関数は以下の処理を行います：
+// - 型に応じたサイズ計算
+// - メモリ使用量の推定
+// - 複雑な型のサイズ計算
 func calculateItemSize(value interface{}) int64 {
-	// 簡易的なサイズ計算
-	return int64(unsafe.Sizeof(value))
+	// より正確なサイズ計算
+	switch v := value.(type) {
+	case string:
+		return int64(len(v))
+	case []byte:
+		return int64(len(v))
+	case int, int8, int16, int32, int64:
+		return 8
+	case uint, uint8, uint16, uint32, uint64:
+		return 8
+	case float32, float64:
+		return 8
+	case bool:
+		return 1
+	default:
+		// 複雑な型の場合は概算値を使用
+		return int64(unsafe.Sizeof(value))
+	}
 }
 
-// evictItems は古いアイテムを削除してメモリを解放します
+// evictItems は古いアイテムを削除してメモリを解放します。
+// この関数は以下の処理を行います：
+// - 期限切れアイテムの検出
+// - アクセス頻度の低いアイテムの削除
+// - メモリ使用量の最適化
 func (c *Cache) evictItems() {
 	now := time.Now()
 	for key, item := range c.items {
@@ -193,7 +269,12 @@ func (c *Cache) evictItems() {
 	}
 }
 
-// Get はキャッシュからアイテムを取得します
+// Get はキャッシュからアイテムを取得します。
+// この関数は以下の処理を行います：
+// - キーの検証
+// - トランザクションのサポート
+// - ヒット率の更新
+// - アクセス回数の更新
 func (c *Cache) Get(key string) (interface{}, bool, error) {
 	if key == "" {
 		return nil, false, appErrors.NewInvalidInputError("key", ErrEmptyKey, nil)
@@ -234,7 +315,11 @@ func (c *Cache) Get(key string) (interface{}, bool, error) {
 	return item.value, true, nil
 }
 
-// Delete はキャッシュからアイテムを削除します
+// Delete はキャッシュからアイテムを削除します。
+// この関数は以下の処理を行います：
+// - キーの検証
+// - アイテムの削除
+// - メモリ使用量の更新
 func (c *Cache) Delete(key string) error {
 	if key == "" {
 		return appErrors.NewInvalidInputError("key", ErrEmptyKey, nil)
@@ -249,7 +334,11 @@ func (c *Cache) Delete(key string) error {
 	return nil
 }
 
-// cleanup は期限切れのアイテムを削除します
+// cleanup は期限切れのアイテムを削除します。
+// この関数は以下の処理を行います：
+// - 期限切れアイテムの検出
+// - アイテムの削除
+// - ログの記録
 func (c *Cache) cleanup() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -263,7 +352,11 @@ func (c *Cache) cleanup() {
 	}
 }
 
-// startCleanup は定期的なクリーンアップを開始します
+// startCleanup は定期的なクリーンアップを開始します。
+// この関数は以下の処理を行います：
+// - タイマーの設定
+// - 定期的なクリーンアップの実行
+// - リソースの解放
 func (c *Cache) startCleanup() {
 	ticker := time.NewTicker(cleanupInterval)
 	for range ticker.C {
@@ -271,7 +364,11 @@ func (c *Cache) startCleanup() {
 	}
 }
 
-// GetStats はキャッシュの統計情報を返します
+// GetStats はキャッシュの統計情報を返します。
+// この関数は以下の処理を行います：
+// - ヒット数の取得
+// - ミス数の取得
+// - スレッドセーフな操作
 func (c *Cache) GetStats() (hits, misses int64, err error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -279,7 +376,11 @@ func (c *Cache) GetStats() (hits, misses int64, err error) {
 	return c.stats.Hits, c.stats.Misses, nil
 }
 
-// GetHitRate はキャッシュのヒット率を返します
+// GetHitRate はキャッシュのヒット率を返します。
+// この関数は以下の処理を行います：
+// - 統計情報の取得
+// - ヒット率の計算
+// - エラーハンドリング
 func (c *Cache) GetHitRate() (float64, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -293,7 +394,11 @@ func (c *Cache) GetHitRate() (float64, error) {
 	return float64(c.stats.Hits) / float64(total) * 100, nil
 }
 
-// ClearAll はキャッシュの全アイテムを削除します
+// ClearAll はキャッシュの全アイテムを削除します。
+// この関数は以下の処理を行います：
+// - キャッシュのクリア
+// - 統計情報のリセット
+// - メモリ使用量のリセット
 func (c *Cache) ClearAll() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -318,7 +423,12 @@ const (
 	cacheCleanupInterval = 10 * time.Minute
 )
 
-// Manager はキャッシュ管理を担当します
+// Manager はキャッシュ管理を担当します。
+// この構造体は以下の機能を提供します：
+// - キャッシュの初期化と管理
+// - キャッシュのクリア
+// - 統計情報の収集
+// - スレッドセーフな操作
 type Manager struct {
 	cache *gocache.Cache
 	mutex *sync.RWMutex
@@ -421,7 +531,11 @@ func (cm *Manager) GetHitRate() float64 {
 	return float64(cm.stats.Hits) / float64(total) * 100
 }
 
-// StartTransaction はトランザクションを開始します
+// StartTransaction はトランザクションを開始します。
+// この関数は以下の処理を行います：
+// - トランザクションの初期化
+// - 重複開始の防止
+// - エラーハンドリング
 func (c *Cache) StartTransaction() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -436,7 +550,11 @@ func (c *Cache) StartTransaction() error {
 	return nil
 }
 
-// CommitTransaction はトランザクションをコミットします
+// CommitTransaction はトランザクションをコミットします。
+// この関数は以下の処理を行います：
+// - トランザクションの検証
+// - アイテムのコミット
+// - メモリ使用量のチェック
 func (c *Cache) CommitTransaction() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -445,11 +563,22 @@ func (c *Cache) CommitTransaction() error {
 		return appErrors.NewSystemError(ErrNoTransaction, nil, nil)
 	}
 
-	c.transaction.mu.Lock()
-	defer c.transaction.mu.Unlock()
-
+	// トランザクションのアイテムをメインキャッシュに移動
 	for key, item := range c.transaction.items {
+		// メモリ使用量のチェック
+		itemSize := calculateItemSize(item.value)
+		if c.currentSize+itemSize > c.maxSize {
+			c.evictItems()
+
+			if c.currentSize+itemSize > c.maxSize {
+				c.transaction = nil
+				return appErrors.NewSystemError(ErrCacheFull, nil, nil)
+			}
+		}
+
 		c.items[key] = item
+		c.currentSize += itemSize
+		c.stats.ItemCount++
 	}
 
 	c.transaction = nil
@@ -457,7 +586,11 @@ func (c *Cache) CommitTransaction() error {
 	return nil
 }
 
-// RollbackTransaction はトランザクションをロールバックします
+// RollbackTransaction はトランザクションをロールバックします。
+// この関数は以下の処理を行います：
+// - トランザクションの検証
+// - トランザクションの破棄
+// - リソースの解放
 func (c *Cache) RollbackTransaction() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -471,7 +604,11 @@ func (c *Cache) RollbackTransaction() error {
 	return nil
 }
 
-// GetPerformanceMetrics はキャッシュのパフォーマンスメトリクスを返します
+// GetPerformanceMetrics はキャッシュのパフォーマンスメトリクスを返します。
+// この関数は以下の処理を行います：
+// - メトリクスの収集
+// - 統計情報の計算
+// - スレッドセーフな操作
 func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -506,7 +643,11 @@ func (c *Cache) GetPerformanceMetrics() (*PerformanceMetrics, error) {
 	}, nil
 }
 
-// RecordLatency は操作のレイテンシを記録します
+// RecordLatency は操作のレイテンシを記録します。
+// この関数は以下の処理を行います：
+// - レイテンシの記録
+// - 履歴の管理
+// - スレッドセーフな操作
 func (c *Cache) RecordLatency(_ string, duration time.Duration) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()

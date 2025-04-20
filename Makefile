@@ -7,6 +7,8 @@ CURRENT_TIME := $(shell date "+%Y%m%d_%H%M%S")
 # 環境変数ファイルのパス
 ENV_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV)
 ENV_EXAMPLE_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV).example
+TEST_ENV_FILE = back/tests/testdata/.env
+TEST_ENV_EXAMPLE_FILE = back/tests/testdata/.env.example
 
 # 基本コマンド
 .PHONY: help
@@ -74,19 +76,19 @@ logs: ## コンテナのログを表示
 # フロントエンド関連
 .PHONY: front-install
 front-install: ## フロントエンドの依存関係をインストール
-	cd front && yarn install
+	cd front && pnpm install
 
 .PHONY: front-build
 front-build: ## フロントエンドをビルド
-	cd front && yarn build
+	cd front && pnpm build
 
 .PHONY: front-test
 front-test: ## フロントエンドのテストを実行
-	cd front && yarn test
+	cd front && pnpm test
 
 .PHONY: front-lint
 front-lint: ## フロントエンドのリントを実行
-	cd front && yarn lint
+	cd front && pnpm lint
 
 # バックエンド関連
 .PHONY: back-install
@@ -218,6 +220,12 @@ init: ## 環境変数ファイルを初期化
 		echo "✅ 環境変数ファイルを作成しました: $(ENV_FILE)"; \
 	else \
 		echo "✅ 環境変数ファイルは既に存在します: $(ENV_FILE)"; \
+	fi
+	@if [ ! -f $(TEST_ENV_FILE) ]; then \
+		cp $(TEST_ENV_EXAMPLE_FILE) $(TEST_ENV_FILE); \
+		echo "✅ テスト用環境変数ファイルを作成しました: $(TEST_ENV_FILE)"; \
+	else \
+		echo "✅ テスト用環境変数ファイルは既に存在します: $(TEST_ENV_FILE)"; \
 	fi
 
 .PHONY: release

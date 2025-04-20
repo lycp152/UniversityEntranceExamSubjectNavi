@@ -67,7 +67,7 @@ describe('Example Test Suite', () => {
       // NODE_ENVは常に設定されているはず
       expect(process.env.NODE_ENV).toBeDefined();
 
-      // NEXT_PUBLIC_API_URLが.env.developmentの値と一致することを確認
+      // NEXT_PUBLIC_API_URLが.env.testの値と一致することを確認
       expect(process.env.NEXT_PUBLIC_API_URL).toBe('http://localhost:8080/api');
     });
   });

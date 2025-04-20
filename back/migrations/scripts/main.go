@@ -1,5 +1,9 @@
 // Package main はデータベースのマイグレーションスクリプトを提供します。
-// このスクリプトは、データベースのテーブルを再作成し、必要なスキーマを適用します。
+// このスクリプトは以下の機能を提供します：
+// - データベースのテーブル再作成
+// - スキーマの適用
+// - 環境変数の検証
+// - エラーハンドリング
 package main
 
 import (
@@ -16,6 +20,9 @@ import (
 )
 
 // validateEnv は必要な環境変数が設定されているか確認します
+// この関数は以下の処理を行います：
+// - 必須環境変数の検証
+// - エラーメッセージの生成
 func validateEnv() error {
 	requiredEnvVars := []string{
 		"DB_HOST",
@@ -35,6 +42,9 @@ func validateEnv() error {
 }
 
 // handleMigrationError はマイグレーションエラーを処理します
+// この関数は以下の処理を行います：
+// - トランザクションのロールバック
+// - エラーログの出力
 func handleMigrationError(_ context.Context, tx *gorm.DB, err error, message string) {
 	if err := tx.Rollback().Error; err != nil {
 		log.Printf("警告: ロールバックに失敗しました: %v", err)
@@ -44,6 +54,10 @@ func handleMigrationError(_ context.Context, tx *gorm.DB, err error, message str
 }
 
 // setupEnvironment は環境変数を設定します
+// この関数は以下の処理を行います：
+// - .envファイルの読み込み
+// - デフォルト値の設定
+// - 環境変数の検証
 func setupEnvironment() error {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("警告: .envファイルが見つかりません")
@@ -78,6 +92,10 @@ func setupEnvironment() error {
 }
 
 // connectToDatabase はデータベースに接続し、接続を返します
+// この関数は以下の処理を行います：
+// - データベース接続の確立
+// - 接続プールの設定
+// - クリーンアップ関数の提供
 func connectToDatabase() (*gorm.DB, func()) {
 	db, err := database.NewDB()
 	if err != nil {
@@ -109,6 +127,11 @@ func connectToDatabase() (*gorm.DB, func()) {
 }
 
 // migrateDatabase はデータベースのテーブルを削除し、新たに作成します
+// この関数は以下の処理を行います：
+// - トランザクションの開始
+// - テーブルの削除
+// - スキーマの適用
+// - トランザクションのコミット
 func migrateDatabase(ctx context.Context, db *gorm.DB) {
 	tx := db.WithContext(ctx).Begin()
 	if tx.Error != nil {

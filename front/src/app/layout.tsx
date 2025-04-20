@@ -12,7 +12,7 @@ import { Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { ReactNode } from 'react';
 import Header from '@/components/layouts/header';
-
+import { ThemeProvider } from '@/components/theme-provider';
 // Interフォントの設定
 const inter = Inter({ subsets: ['latin'] });
 
@@ -52,10 +52,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <body suppressHydrationWarning className={inter.className}>
-        <Header />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

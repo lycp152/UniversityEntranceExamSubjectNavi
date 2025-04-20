@@ -1,5 +1,8 @@
-// Package middleware はアプリケーションのミドルウェアを提供します
-// 認証、CSRF保護、ログ記録などの共通機能を実装しています
+// Package middleware はアプリケーションのミドルウェアを提供します。
+// このパッケージは以下の機能を提供します：
+// - JWTトークンによる認証
+// - ロールベースのアクセス制御
+// - 公開パスの管理
 package middleware
 
 import (
@@ -7,69 +10,239 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
-// validateAuthHeader はAuthorizationヘッダーを検証します
-func validateAuthHeader(auth string) (string, error) {
-	if auth == "" {
-		return "", fmt.Errorf("認証が必要です")
-	}
+const (
+	// BearerTokenPrefix はBearerトークンのプレフィックスです
+	BearerTokenPrefix = "Bearer "
+	// TokenExpiration はトークンの有効期限です
+	TokenExpiration = 24 * time.Hour
+	// RefreshTokenExpiration はリフレッシュトークンの有効期限です
+	RefreshTokenExpiration = 7 * 24 * time.Hour
+	// MinSecretLength はJWTシークレットの最小長です
+	MinSecretLength = 32
+)
 
-	parts := strings.Split(auth, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", fmt.Errorf("不正な認証トークンです")
-	}
-
-	return parts[1], nil
+// AuthError は認証関連のエラーを表します。
+// この構造体は以下の情報を保持します：
+// - エラーコード
+// - エラーメッセージ
+type AuthError struct {
+	Code    int
+	Message string
 }
 
-// AuthMiddleware は認証を行うミドルウェアです
+func (e *AuthError) Error() string {
+	return e.Message
+}
+
+// validateAuthHeader はAuthorizationヘッダーを検証します。
+// この関数は以下の処理を行います：
+// - ヘッダーの存在確認
+// - Bearerトークンの形式確認
+// - トークンの抽出
+func validateAuthHeader(auth string) (string, error) {
+	if auth == "" {
+		return "", &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "認証が必要です",
+		}
+	}
+
+	if !strings.HasPrefix(auth, BearerTokenPrefix) {
+		return "", &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "不正な認証トークンです",
+		}
+	}
+
+	return strings.TrimPrefix(auth, BearerTokenPrefix), nil
+}
+
+// handleAuthError は認証エラーを処理します。
+// この関数は以下の処理を行います：
+// - エラータイプの判定
+// - 適切なレスポンスの生成
+// - エラーメッセージの設定
+func handleAuthError(c echo.Context, err error) error {
+	if authErr, ok := err.(*AuthError); ok {
+		return c.JSON(authErr.Code, map[string]string{"error": authErr.Message})
+	}
+
+	return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
+}
+
+// AuthMiddleware は認証を行うミドルウェアです。
+// このミドルウェアは以下の処理を行います：
+// - 公開パスの確認
+// - トークンの検証
+// - ユーザー情報の取得
 func AuthMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// 認証が不要なパスをスキップ
 			if isPublicPath(c.Path()) {
 				return next(c)
 			}
 
 			token, err := validateAuthHeader(c.Request().Header.Get("Authorization"))
 			if err != nil {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
+				return handleAuthError(c, err)
 			}
 
-			if !isValidToken(token) {
-				return c.JSON(http.StatusUnauthorized, map[string]string{
-					"error": "認証トークンの有効期限が切れています",
-				})
+			user, err := validateAndGetUser(token)
+			if err != nil {
+				return handleAuthError(c, err)
 			}
 
-			// ユーザー情報をコンテキストに設定
-			c.Set("user", getUserFromToken(token))
+			c.Set("user", user)
 
 			return next(c)
 		}
 	}
 }
 
-// AuthorizeRole は指定されたロールを持つユーザーのみアクセスを許可します
+// validateToken はトークンの署名と有効性を検証します。
+// この関数は以下の処理を行います：
+// - シークレットの検証
+// - トークンの署名確認
+// - 有効期限の確認
+func validateToken(token string) (*jwt.Token, error) {
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		return nil, &AuthError{
+			Code:    http.StatusInternalServerError,
+			Message: "JWTシークレットが設定されていません",
+		}
+	}
+
+	if len(secret) < MinSecretLength {
+		return nil, &AuthError{
+			Code:    http.StatusInternalServerError,
+			Message: "JWTシークレットが短すぎます",
+		}
+	}
+
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, &AuthError{
+				Code:    http.StatusUnauthorized,
+				Message: fmt.Sprintf("予期しない署名方式: %v", t.Header["alg"]),
+			}
+		}
+
+		return []byte(secret), nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}))
+	if err != nil {
+		return nil, &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: fmt.Sprintf("トークンの検証に失敗しました: %v", err),
+		}
+	}
+
+	if !parsedToken.Valid {
+		return nil, &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "無効なトークンです",
+		}
+	}
+
+	return parsedToken, nil
+}
+
+// validateClaims はトークンのクレームを検証します。
+// この関数は以下の処理を行います：
+// - 有効期限の確認
+// - 必須クレームの確認
+// - ユーザー情報の抽出
+func validateClaims(claims jwt.MapClaims) (map[string]string, error) {
+	// 有効期限のチェック
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		return nil, &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "トークンの有効期限が設定されていません",
+		}
+	}
+
+	if time.Unix(int64(exp), 0).Before(time.Now()) {
+		return nil, &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "トークンの有効期限が切れています",
+		}
+	}
+
+	// 必須クレームのチェック
+	sub, ok := claims["sub"].(string)
+	if !ok {
+		return nil, &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "ユーザーIDが設定されていません",
+		}
+	}
+
+	role, ok := claims["role"].(string)
+
+	if !ok {
+		return nil, &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "ユーザーロールが設定されていません",
+		}
+	}
+
+	return map[string]string{
+		"id":   sub,
+		"role": role,
+	}, nil
+}
+
+// validateAndGetUser はトークンを検証し、ユーザー情報を取得します。
+// この関数は以下の処理を行います：
+// - トークンの検証
+// - クレームの検証
+// - ユーザー情報の返却
+func validateAndGetUser(token string) (map[string]string, error) {
+	parsedToken, err := validateToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, &AuthError{
+			Code:    http.StatusUnauthorized,
+			Message: "トークンの形式が不正です",
+		}
+	}
+
+	return validateClaims(claims)
+}
+
+// AuthorizeRole は指定されたロールを持つユーザーのみアクセスを許可します。
+// このミドルウェアは以下の処理を行います：
+// - ユーザー情報の確認
+// - ロールの確認
+// - アクセス権限の判定
 func AuthorizeRole(roles ...string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			user := c.Get("user")
 			if user == nil {
-				return c.JSON(http.StatusForbidden, map[string]string{
-					"error": "この操作を実行する権限がありません",
-				})
+				return &echo.HTTPError{
+					Code:    http.StatusForbidden,
+					Message: "この操作を実行する権限がありません",
+				}
 			}
 
 			userRole := getUserRole(user)
 			if !hasRole(userRole, roles) {
-				return c.JSON(http.StatusForbidden, map[string]string{
-					"error": "この操作を実行する権限がありません",
-				})
+				return &echo.HTTPError{
+					Code:    http.StatusForbidden,
+					Message: "この操作を実行する権限がありません",
+				}
 			}
 
 			return next(c)
@@ -77,7 +250,11 @@ func AuthorizeRole(roles ...string) echo.MiddlewareFunc {
 	}
 }
 
-// isPublicPath は認証が不要なパスかどうかを判定します
+// isPublicPath は認証が不要なパスかどうかを判定します。
+// この関数は以下の処理を行います：
+// - パスの比較
+// - 公開パスの判定
+// - サブパスの確認
 func isPublicPath(path string) bool {
 	publicPaths := []string{
 		"/api/universities",
@@ -92,49 +269,11 @@ func isPublicPath(path string) bool {
 	return false
 }
 
-// isValidToken はトークンが有効かどうかを検証します
-func isValidToken(token string) bool {
-	if token == "" {
-		return false
-	}
-
-	// JWTトークンの検証
-	_, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("予期しない署名方式: %v", t.Header["alg"])
-		}
-
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
-
-	return err == nil
-}
-
-// getUserFromToken はトークンからユーザー情報を取得します
-func getUserFromToken(token string) interface{} {
-	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
-	if err != nil {
-		return nil
-	}
-
-	if !parsedToken.Valid {
-		return nil
-	}
-
-	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil
-	}
-
-	return map[string]string{
-		"id":   claims["sub"].(string),
-		"role": claims["role"].(string),
-	}
-}
-
-// getUserRole はユーザー情報からロールを取得します
+// getUserRole はユーザー情報からロールを取得します。
+// この関数は以下の処理を行います：
+// - ユーザー情報の型確認
+// - ロールの抽出
+// - デフォルト値の返却
 func getUserRole(user interface{}) string {
 	userMap, ok := user.(map[string]string)
 	if !ok {
@@ -149,7 +288,11 @@ func getUserRole(user interface{}) string {
 	return role
 }
 
-// hasRole は指定されたロールを持っているかどうかを確認します
+// hasRole は指定されたロールを持っているかどうかを確認します。
+// この関数は以下の処理を行います：
+// - ロールの比較
+// - 権限の確認
+// - 結果の返却
 func hasRole(userRole string, allowedRoles []string) bool {
 	for _, role := range allowedRoles {
 		if userRole == role {

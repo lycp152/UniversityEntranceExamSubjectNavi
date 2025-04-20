@@ -1,7 +1,7 @@
 'use client';
 import { useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Card } from '@/components/ui/cards';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { searchUniversities } from '@/features/search/api/actions';
 import { SectionTitle } from '@/features/search/components/section-title';
@@ -76,7 +76,7 @@ export default function SearchForm() {
             type="text"
             id="keyword"
             name="keyword"
-            className="w-full border border-gray-300 p-2"
+            className="w-full border border-gray-300 dark:border-gray-700 p-2"
             placeholder="例：北海道大学 工学部（空白で全てから検索します）"
           />
           {state?.errors?.keyword && (

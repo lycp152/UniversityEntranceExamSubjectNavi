@@ -10,7 +10,7 @@ export const checkboxStyles = {
 
   /** グループ関連のスタイル */
   groupContainer: 'mt-2 mb-4',
-  groupLabel: 'block text-gray-700 mb-2',
+  groupLabel: 'block mb-2 text-gray-700 dark:text-gray-300',
   itemsContainer: 'flex flex-wrap ml-2',
 
   /** アイテム関連のスタイル */

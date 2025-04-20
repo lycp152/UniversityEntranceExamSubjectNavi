@@ -9,7 +9,7 @@
  */
 import type { AdminLayoutProps } from '../types/admin-layout';
 import { ErrorMessage } from '@/components/errors/error-message';
-import { LoadingSpinner } from '@/components/ui/feedback/loading-spinner';
+import { LoadingSpinner } from '@/components/ui/feedback/spinner';
 import { EmptyState } from '@/features/admin/components/empty-state';
 
 export function AdminLayout({
@@ -27,12 +27,7 @@ export function AdminLayout({
   if (isEmpty) return <EmptyState />;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-gray-900">大学入試科目ナビ - 管理ページ</h1>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-100 dark:bg-background">
       {successMessage && (
         <div
           className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"

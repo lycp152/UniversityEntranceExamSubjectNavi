@@ -83,25 +83,25 @@ export const DepartmentInfo = ({
             type="text"
             value={university.name}
             onChange={handleChange('universityName')}
-            className="w-[120px] font-semibold text-gray-900 mb-1 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-[120px] font-semibold text-gray-900 dark:text-gray-100 mb-1 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           <div className="flex gap-1 mb-1">
             <input
               type="text"
               value={department.name}
               onChange={handleChange('departmentName')}
-              className="w-[60px] text-sm font-medium text-gray-700 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-[60px] text-sm font-medium text-gray-900 dark:text-gray-100 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <input
               type="text"
               value={major.name}
               onChange={handleChange('majorName')}
-              className="w-[60px] text-sm font-medium text-gray-700 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-[60px] text-sm font-medium text-gray-900 dark:text-gray-100 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
           <div className="flex gap-1">
             <div className="w-[60px]">
-              <label htmlFor="schedule" className="text-xs text-gray-600">
+              <label htmlFor="schedule" className="text-xs text-gray-900 dark:text-gray-100">
                 日程
               </label>
               <div className="flex items-center">
@@ -109,7 +109,7 @@ export const DepartmentInfo = ({
                   id="schedule"
                   value={admissionSchedule.name}
                   onChange={handleChange('schedule')}
-                  className="w-[50px] text-xs text-gray-600 px-1 py-1 border border-blue-300 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-[50px] text-xs text-gray-900 dark:text-gray-100 px-1 py-1 border border-blue-300 dark:border-blue-500 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   {ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES.map(option => (
                     <option key={option} value={option}>
@@ -117,13 +117,13 @@ export const DepartmentInfo = ({
                     </option>
                   ))}
                 </select>
-                <span className="text-xs text-gray-600 px-1 py-1 border border-l-0 border-blue-300 rounded-r bg-gray-50">
+                <span className="text-xs text-gray-900 dark:text-gray-100 px-1 py-1 border border-l-0 border-blue-300 dark:border-blue-500 rounded-r bg-gray-50 dark:bg-gray-800">
                   期
                 </span>
               </div>
             </div>
             <div className="w-[60px]">
-              <label htmlFor="enrollment" className="text-xs text-gray-600">
+              <label htmlFor="enrollment" className="text-xs text-gray-900 dark:text-gray-100">
                 募集人数
               </label>
               <input
@@ -131,7 +131,7 @@ export const DepartmentInfo = ({
                 type="number"
                 value={admissionInfo.enrollment}
                 onChange={handleChange('enrollment')}
-                className="w-full text-xs text-gray-600 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full text-xs text-gray-900 dark:text-gray-100 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                 min="0"
               />
             </div>
@@ -139,14 +139,14 @@ export const DepartmentInfo = ({
         </>
       ) : (
         <>
-          <div className="font-semibold text-gray-900 mb-1 truncate">{university.name}</div>
-          <div className="text-sm font-medium text-gray-700 mb-1 truncate">
+          <div className="font-semibold mb-1 truncate">{university.name}</div>
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1 truncate">
             {department.name} - {major.name}
           </div>
-          <div className="text-xs text-gray-600 truncate">
+          <div className="text-xs truncate text-gray-600 dark:text-gray-300">
             日程: {admissionSchedule.name || '未設定'}
           </div>
-          <div className="text-xs text-gray-600 truncate">
+          <div className="text-xs truncate text-gray-600 dark:text-gray-300">
             募集人数: {admissionInfo.enrollment}人
           </div>
         </>

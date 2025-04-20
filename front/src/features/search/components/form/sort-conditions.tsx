@@ -73,7 +73,7 @@ const Select = ({
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="border border-gray-300 p-2 w-full"
+      className="border border-gray-300 dark:border-gray-700 p-2 w-full"
     >
       <option value="">{placeholder}</option>
       {options.map(option => (

@@ -16,6 +16,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { ModeToggle } from '@/components/ui/mode-toggle';
 
 export default function Header() {
   const pathname = usePathname();
@@ -24,7 +25,7 @@ export default function Header() {
   return (
     <header
       role="banner"
-      className="sticky top-0 z-50 w-full bg-white border-b border-gray-300 shadow-sm"
+      className="sticky top-0 z-50 w-full bg-accent shadow-sm"
       aria-label="サイトヘッダー"
     >
       <nav className="w-full" role="navigation" aria-label="メインナビゲーション">
@@ -37,7 +38,7 @@ export default function Header() {
             aria-label="ホームへ戻る"
             prefetch={!isHome}
           >
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">受験科目navi</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">受験科目navi</h1>
           </Link>
           <div className="flex items-center gap-4">
             <Button asChild variant="default">
@@ -45,6 +46,7 @@ export default function Header() {
                 ログイン・新規登録
               </Link>
             </Button>
+            <ModeToggle />
           </div>
         </div>
       </nav>

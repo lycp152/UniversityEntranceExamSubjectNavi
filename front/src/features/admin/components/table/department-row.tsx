@@ -113,7 +113,7 @@ export const DepartmentRow = ({
   };
 
   return (
-    <div className="px-4 py-3 hover:bg-gray-50 transition-colors">
+    <div className="px-4 py-3 transition-colors">
       <div className="flex items-start min-w-max">
         <div className="flex-shrink-0 pr-4">
           <EditButtons

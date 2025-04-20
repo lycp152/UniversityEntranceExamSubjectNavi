@@ -8,7 +8,7 @@
 import type { University, Department } from '@/features/admin/types/university';
 import type { APITestType } from '@/types/api/api-response-types';
 import { DepartmentRow } from '@/features/admin/components/table/department-row';
-import { Card, CardContent } from '@/components/ui/cards';
+import { Card, CardContent } from '@/components/ui/card';
 
 /**
  * UniversityCardコンポーネントのプロパティ
@@ -79,7 +79,7 @@ export const UniversityCard = ({
   onSubjectNameChange,
 }: UniversityCardProps) => {
   return (
-    <Card className="overflow-hidden bg-white border-gray-100">
+    <Card className="overflow-hidden py-1 hover:bg-gray-50 dark:hover:bg-gray-800">
       <CardContent className="divide-y divide-gray-100 p-0">
         {university.departments?.map(department => (
           <DepartmentRow

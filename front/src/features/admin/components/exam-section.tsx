@@ -57,7 +57,7 @@ export const ExamSection = ({
 
   return (
     <div className="w-full">
-      <div className="text-xs font-medium text-gray-700 mb-2">{type.name}試験</div>
+      <div className="text-xs font-medium mb-2">{type.name}試験</div>
       <SubjectList
         subjects={filteredSubjects}
         type={type}

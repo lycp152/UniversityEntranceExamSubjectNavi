@@ -18,7 +18,7 @@ export const metadata = generateMetadata(
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-100">
+    <main className="min-h-screen bg-gray-100 dark:bg-background">
       <div className="container mx-auto p-4">
         <SearchForm />
         <SearchResultTable />

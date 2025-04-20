@@ -3,7 +3,7 @@
 /**
  * ローディングスピナーコンポーネント
  *
- * @module loading-spinner
+ * @module spinner
  * @description
  * データの読み込み中に表示するフィードバックコンポーネントです。
  * Flowbiteのスピナーコンポーネントを使用しています。

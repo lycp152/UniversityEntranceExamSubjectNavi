@@ -1,5 +1,9 @@
 name: Security Checks
 
+# トリガー設定
+# 1. 毎日0時に定期実行
+# 2. main/developブランチへのプッシュ時に実行（特定のファイル変更時のみ）
+# 3. main/developブランチへのプルリクエスト時に実行
 on:
   schedule:
     - cron: "0 0 * * *" # 毎日実行
@@ -17,13 +21,16 @@ on:
     branches: [main, develop]
 
 jobs:
+  # 依存関係の脆弱性チェック
   dependency-check:
     runs-on: ubuntu-latest
+    # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
     steps:
       - uses: actions/checkout@v4
 
+      # OWASP Dependency-Checkを使用して依存関係の脆弱性をスキャン
       - name: Run OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
         with:
@@ -33,6 +40,7 @@ jobs:
           out: "./dependency-check-report.sarif"
           args: "--suppression ./.github/dependency-check-suppressions.xml"
 
+      # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -40,13 +48,16 @@ jobs:
           checkout_path: ${{ github.workspace }}
           category: "dependency-check"
 
+  # コードの静的解析
   code-scanning:
     runs-on: ubuntu-latest
+    # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
     steps:
       - uses: actions/checkout@v4
 
+      # CodeQLの初期化と設定
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -54,16 +65,20 @@ jobs:
           queries: security-extended,security-and-quality
           tools: latest
 
+      # 自動ビルドの実行
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
 
+      # CodeQL分析の実行
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
           category: "code-scanning"
 
+  # シークレットの漏洩チェック
   secret-scanning:
     runs-on: ubuntu-latest
+    # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
     steps:
@@ -71,12 +86,13 @@ jobs:
         with:
           fetch-depth: 0 # 完全な履歴を取得
 
+      # Gitleaksを使用してシークレットの漏洩をチェック
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           config-path: .gitleaks.toml
-          redact: true
-          verbose: true
-          no-git: false
+          redact: true # 機密情報をマスク
+          verbose: true # 詳細なログを出力
+          no-git: false # Git履歴をチェック

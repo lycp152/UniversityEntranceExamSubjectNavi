@@ -1,10 +1,24 @@
 name: Lint and Type Check
 
+# メインブランチへのプッシュとプルリクエスト時に実行
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+
+# 必要な権限を明示的に設定
+# contents: read - リポジトリの読み取り権限
+# security-events: write - セキュリティスキャン結果のアップロードに必要
+permissions:
+  contents: read
+  security-events: write
+
+# 並行実行の制御
+# 同じブランチやPRでの同時実行を防止
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -95,3 +109,4 @@ jobs:
         with:
           sarif_file: dependency-check-report.sarif
           category: "dependency-check"
+          wait-for-processing: true

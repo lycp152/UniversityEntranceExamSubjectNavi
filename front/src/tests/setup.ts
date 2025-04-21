@@ -8,7 +8,6 @@
  * - テスト後のクリーンアップ処理
  * - カスタムマッチャーの追加
  * - グローバルなテスト設定
- * - 環境変数の読み込み
  *
  * @see {@link ../jest.config.ts} Jestの設定ファイル
  * @see {@link ./example.test.tsx} テストのサンプル
@@ -18,21 +17,6 @@ import '@testing-library/jest-dom';
 import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
-import { loadEnvConfig } from '@next/env';
-
-// テスト環境の環境変数を読み込む
-const projectDir = process.cwd();
-const result = loadEnvConfig(projectDir, true, {
-  info: () => null,
-  error: console.error,
-});
-
-// 環境変数が読み込まれなかった場合は警告を表示
-if (!result.loadedEnvFiles.length) {
-  console.warn(
-    '⚠️ .env.testファイルが読み込まれませんでした。テスト環境の環境変数が正しく設定されているか確認してください。'
-  );
-}
 
 // Vitestのexpectを拡張
 expect.extend(matchers);

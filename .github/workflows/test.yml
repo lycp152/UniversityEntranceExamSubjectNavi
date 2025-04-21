@@ -36,6 +36,32 @@ jobs:
       - id: cache-key
         run: echo "value=$(git rev-parse --short HEAD)-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
 
+  # フロントエンドのテスト
+  frontend-test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Install dependencies
+        run: |
+          cd front
+          pnpm install
+      - name: Generate .env.test file
+        run: |
+          cd front
+          cp .env.test.example .env.test
+      - name: Run frontend tests
+        run: |
+          cd front
+          pnpm test
+
   # 各種テストの実行
   test:
     needs: setup

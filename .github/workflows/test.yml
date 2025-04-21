@@ -40,6 +40,8 @@ jobs:
   frontend-test:
     needs: setup
     runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -60,7 +62,7 @@ jobs:
       - name: Run frontend tests
         run: |
           cd front
-          pnpm test
+          NODE_ENV=test pnpm test
 
   # 各種テストの実行
   test:

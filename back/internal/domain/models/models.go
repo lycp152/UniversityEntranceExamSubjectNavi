@@ -571,7 +571,8 @@ type Subject struct {
 	Name         string   `json:"name" gorm:"not null;index:idx_subject_name,type:btree;size:20;check:name <> ''"` // 科目名
 	Score        int      `json:"score" gorm:"not null;check:score >= 0 AND score <= 1000"` // 配点
 	Percentage   float64  `json:"percentage" gorm:"not null;check:percentage >= 0 AND percentage <= 100"` // 配点比率
-	DisplayOrder int      `json:"display_order" gorm:"not null;default:0;index:idx_subject_display_order,type:btree"` // 表示順
+	DisplayOrder int      `json:"display_order"`
+	_ struct{} `gorm:"not null;default:0;index:idx_subject_display_order,type:btree"` // 表示順
 	_ struct{} `gorm:"check:display_order >= 0 AND display_order <= 999"`
 	TestType     TestType `json:"-" gorm:"foreignKey:TestTypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"` // 所属試験種別
 }

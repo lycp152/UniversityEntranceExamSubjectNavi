@@ -10,7 +10,7 @@
  * - 表示順序の比較
  */
 
-import { SUBJECT_CATEGORIES } from '@/constants/constraint/subject-categories';
+import { SUBJECT_CATEGORIES } from '@/constants/constraint/subjects/subject-categories';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 /**
  * 共通科目かどうかを判定

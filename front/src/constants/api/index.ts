@@ -1,7 +1,7 @@
 /**
  * APIの基本設定とエンドポイント定義
  * バックエンドのAPIエンドポイントと同期を保つ必要があります
- * @see back/internal/api/routes/routes.go
+ * @see back/internal/middleware/auth.go
  */
 
 /** APIのベースURL */
@@ -13,13 +13,13 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
  */
 export const API_ENDPOINTS = {
   /** 大学一覧を取得するエンドポイント */
-  UNIVERSITIES: `${API_BASE_URL}/api/universities`,
+  UNIVERSITIES: `${API_BASE_URL}/universities`,
   /** 学部情報を取得するエンドポイント */
   DEPARTMENTS: (universityId: number, departmentId: number) =>
-    `${API_BASE_URL}/api/universities/${universityId}/departments/${departmentId}`,
+    `${API_BASE_URL}/universities/${universityId}/departments/${departmentId}`,
   /** 科目情報を一括取得するエンドポイント */
   SUBJECTS_BATCH: (universityId: number, departmentId: number) =>
-    `${API_BASE_URL}/api/universities/${universityId}/departments/${departmentId}/subjects/batch`,
+    `${API_BASE_URL}/universities/${universityId}/departments/${departmentId}/subjects/batch`,
 } as const;
 
 /**

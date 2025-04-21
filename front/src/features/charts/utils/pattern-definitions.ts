@@ -7,7 +7,7 @@
  * - SVGパターンの属性設定を制御
  */
 
-import { SUBJECT_CATEGORIES } from '@/constants/constraint/subject-categories';
+import { SUBJECT_CATEGORIES } from '@/constants/constraint/subjects/subject-categories';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 import { PATTERN_CONFIG } from '../constants/pattern-config';
 import { PatternConfig } from '../types/patterns';

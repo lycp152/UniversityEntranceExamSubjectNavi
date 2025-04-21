@@ -12,7 +12,7 @@
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 import { SYSTEM_CONSTANTS } from '@/features/charts/constants/system';
 import type { SubjectScore } from '@/features/charts/types/subject-scores';
-import type { SubjectName } from '@/constants/constraint/subjects';
+import type { SubjectName } from '@/constants/constraint/subjects/subjects';
 
 /** 科目スコアのエラー型 */
 export interface SubjectScoreError {

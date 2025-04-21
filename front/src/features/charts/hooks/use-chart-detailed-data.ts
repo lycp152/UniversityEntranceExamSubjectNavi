@@ -12,7 +12,7 @@
  */
 import { useMemo } from 'react';
 import type { UISubject } from '@/types/university-subjects';
-import { SUBJECTS } from '@/constants/constraint/subjects';
+import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
 import { CHART_ERROR_CODES, CHART_ERROR_MESSAGES } from '@/constants/errors/chart';
 import type { DetailedPieData, ChartResult, ChartError } from '@/types/pie-chart';
 import { createDetailedPieData } from '@/features/charts/lib/chart-data-transformer';

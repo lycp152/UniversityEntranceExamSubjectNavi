@@ -33,8 +33,8 @@ export type ExamTypeId = (typeof EXAM_TYPES)[keyof typeof EXAM_TYPES]['id'];
 export const EXAM_TYPE_CONSTRAINTS = {
   /** 試験区分名の最大長 */
   MAX_NAME_LENGTH: 10,
-  /** 有効な試験区分名の一覧 */
-  VALID_NAMES: ['共通', '二次'] as const,
+  /** 有効な試験区分名の一覧（EXAM_TYPESから動的に取得） */
+  VALID_NAMES: [EXAM_TYPES.COMMON.name, EXAM_TYPES.SECONDARY.name] as const,
 } as const;
 
 /** 試験区分名の型定義 */

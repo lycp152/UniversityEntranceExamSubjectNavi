@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { SubjectCategory } from '@/constants/constraint/subject-categories';
+import { SubjectCategory } from '@/constants/constraint/subjects/subject-categories';
 
 /**
  * パターン関連の型定義

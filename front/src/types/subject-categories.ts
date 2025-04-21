@@ -9,7 +9,7 @@
  * - カテゴリの色設定の型定義
  */
 
-import type { SubjectCategory } from '@/constants/constraint/subject-categories';
+import type { SubjectCategory } from '@/constants/constraint/subjects/subject-categories';
 
 /** 科目カテゴリの表示用型 */
 export interface SubjectCategoryWithColor {

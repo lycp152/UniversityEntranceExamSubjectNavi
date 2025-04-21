@@ -14,7 +14,7 @@
  */
 
 import { BaseModel } from '@/types/base-model';
-import type { SubjectName } from '@/constants/constraint/subjects';
+import type { SubjectName } from '@/constants/constraint/subjects/subjects';
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
 import type {
   AdmissionScheduleName,

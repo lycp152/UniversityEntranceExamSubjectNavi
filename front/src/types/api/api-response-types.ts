@@ -18,50 +18,35 @@ import {
   TestType,
   Subject,
 } from './api-schemas';
+import { BaseModel } from './base-types';
+import { HttpResponse } from './http-types';
 
 /**
  * 大学一覧取得APIのレスポンス型
  */
-export interface GetUniversitiesResponse {
-  /** 大学情報の配列 */
-  universities: APIUniversity[];
-  /** 総件数 */
-  total: number;
-  /** 現在のページ番号 */
-  page: number;
-  /** 1ページあたりの件数 */
-  limit: number;
-}
-
-/** APIレスポンスの基本型定義 */
-export interface BaseModel {
-  /** エンティティの一意の識別子 */
-  id: number;
-  /** レコードの作成日時 */
-  created_at?: string;
-  /** レコードの更新日時 */
-  updated_at?: string;
-  /** レコードの削除日時 */
-  deleted_at?: string | null;
-  /** レコードのバージョン（楽観的ロック用） */
-  version: number;
-  /** レコードの作成者ID */
-  created_by: string;
-  /** レコードの更新者ID */
-  updated_by: string;
-}
+export interface GetUniversitiesResponse
+  extends HttpResponse<{
+    /** 大学情報の配列 */
+    universities: University[];
+    /** 総件数 */
+    total: number;
+    /** 現在のページ番号 */
+    page: number;
+    /** 1ページあたりの件数 */
+    limit: number;
+  }> {}
 
 /** 大学情報のAPIレスポンス型 */
-export type APIUniversity = University;
+export type APIUniversity = University & BaseModel;
 /** 学部情報のAPIレスポンス型 */
-export type APIDepartment = Department;
+export type APIDepartment = Department & BaseModel;
 /** 学科情報のAPIレスポンス型 */
-export type APIMajor = Major;
+export type APIMajor = Major & BaseModel;
 /** 入試スケジュールのAPIレスポンス型 */
-export type APIAdmissionSchedule = AdmissionSchedule;
+export type APIAdmissionSchedule = AdmissionSchedule & BaseModel;
 /** 入試情報のAPIレスポンス型 */
-export type APIAdmissionInfo = AdmissionInfo;
+export type APIAdmissionInfo = AdmissionInfo & BaseModel;
 /** 試験種別のAPIレスポンス型 */
-export type APITestType = TestType;
+export type APITestType = TestType & BaseModel;
 /** 科目情報のAPIレスポンス型 */
-export type APISubject = Subject;
+export type APISubject = Subject & BaseModel;

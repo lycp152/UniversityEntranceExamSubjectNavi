@@ -209,6 +209,7 @@ export class ApiClient {
         status: processedResponse.status,
         httpStatus: processedResponse.status,
         headers,
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       clearTimeout(timeoutId);

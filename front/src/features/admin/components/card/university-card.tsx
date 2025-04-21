@@ -79,7 +79,7 @@ export const UniversityCard = ({
   onSubjectNameChange,
 }: UniversityCardProps) => {
   return (
-    <Card className="overflow-hidden py-1 hover:bg-gray-50 dark:hover:bg-gray-800">
+    <Card className="overflow-hidden py-1 hover:bg-gray-50 dark:hover:bg-gray-900">
       <CardContent className="divide-y divide-gray-100 p-0">
         {university.departments?.map(department => (
           <DepartmentRow

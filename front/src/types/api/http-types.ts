@@ -13,7 +13,7 @@
 import { ValidationErrors } from './base-types';
 
 /** HTTPメソッドの型定義 */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
 
 /** HTTPリクエストの設定型定義 */
 export interface HttpRequestConfig {
@@ -25,6 +25,10 @@ export interface HttpRequestConfig {
   body?: BodyInit | null;
   /** リクエストのキャンセル信号 */
   signal?: AbortSignal;
+  /** リクエストのタイムアウト時間（ミリ秒） */
+  timeout?: number;
+  /** リクエストの再試行回数 */
+  retryCount?: number;
 }
 
 /**
@@ -42,7 +46,14 @@ export interface HttpResponse<T> {
   httpStatus: number;
   /** レスポンスヘッダー */
   headers?: Record<string, string>;
+  /** レスポンスのタイムスタンプ */
+  timestamp: string;
 }
+
+/**
+ * HTTPエラーの重要度の型定義
+ */
+export type ErrorSeverity = 'error' | 'warning' | 'info';
 
 /**
  * HTTPエラーレスポンスの共通型定義
@@ -54,8 +65,30 @@ export interface HttpError {
   message: string;
   /** HTTPステータスコード */
   status: number;
+  /** エラーの重要度 */
+  severity: ErrorSeverity;
   /** バリデーションエラー情報 */
   validationErrors?: ValidationErrors;
   /** エラー詳細情報 */
   details?: Record<string, unknown>;
+  /** エラーのタイムスタンプ */
+  timestamp: string;
+  /** エラーのスタックトレース */
+  stack?: string;
+}
+
+/**
+ * HTTPリクエストの進捗状況を表す型定義
+ */
+export interface HttpProgress {
+  /** 進捗率（0-100） */
+  progress: number;
+  /** 転送済みバイト数 */
+  loaded: number;
+  /** 合計バイト数 */
+  total: number;
+  /** 転送速度（バイト/秒） */
+  speed: number;
+  /** 推定残り時間（秒） */
+  estimatedTime: number;
 }

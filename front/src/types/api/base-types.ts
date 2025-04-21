@@ -15,7 +15,7 @@
  */
 export interface BaseModel {
   /** エンティティの一意の識別子 */
-  id: number;
+  id: number; // uintに相当
   /** レコードの作成日時 */
   created_at: string;
   /** レコードの更新日時 */
@@ -42,6 +42,10 @@ export interface ValidationError {
   code: string;
   /** エラーの重要度 */
   severity: 'error' | 'warning' | 'info';
+  /** 元のエラー */
+  err?: Error;
+  /** エラーの詳細情報 */
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -65,3 +69,23 @@ export interface ValidationRule<T> {
   /** エラーコード */
   code: string;
 }
+
+/**
+ * 共通のバリデーションルール
+ */
+export const commonValidationRules = {
+  /** エンティティの一意の識別子 */
+  id: (value: number) => value > 0,
+  /** レコードの作成日時 */
+  created_at: (value: string) => !isNaN(Date.parse(value)),
+  /** レコードの更新日時 */
+  updated_at: (value: string) => !isNaN(Date.parse(value)),
+  /** レコードの削除日時 */
+  deleted_at: (value: string | null) => value === null || !isNaN(Date.parse(value)),
+  /** レコードのバージョン */
+  version: (value: number) => value > 0,
+  /** レコードの作成者ID */
+  created_by: (value: string) => value.length > 0 && value.length <= 100,
+  /** レコードの更新者ID */
+  updated_by: (value: string) => value.length > 0 && value.length <= 100,
+};

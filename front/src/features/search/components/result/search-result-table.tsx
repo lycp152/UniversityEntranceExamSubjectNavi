@@ -131,7 +131,7 @@ const SearchResultTable = () => {
             {subjects.map((subject: UISubject) => (
               <tr
                 key={`${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`}
-                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
                 onClick={() =>
                   handleRowClick(
                     subject.examInfo.academicYear,

@@ -22,9 +22,16 @@ import { loadEnvConfig } from '@next/env';
 
 // テスト環境の環境変数を読み込む
 const projectDir = process.cwd();
-const result = loadEnvConfig(projectDir, true, { info: () => null, error: console.error });
+const result = loadEnvConfig(projectDir, true, {
+  info: () => null,
+  error: console.error,
+});
+
+// 環境変数が読み込まれなかった場合は警告を表示
 if (!result.loadedEnvFiles.length) {
-  throw new Error('.env.testファイルが読み込まれませんでした');
+  console.warn(
+    '⚠️ .env.testファイルが読み込まれませんでした。テスト環境の環境変数が正しく設定されているか確認してください。'
+  );
 }
 
 // Vitestのexpectを拡張

@@ -59,10 +59,16 @@ jobs:
         run: |
           cd front
           cp .env.test.example .env.test
+          echo "NODE_ENV=test" >> .env.test
+          echo "TEST_TIMEOUT=5000" >> .env.test
+          echo "NEXT_PUBLIC_API_URL=http://localhost:8080/api" >> .env.test
+          echo "NEXT_PUBLIC_AUTH_TOKEN_KEY=test_auth_token" >> .env.test
+          echo "NEXT_PUBLIC_AUTH_TOKEN_PREFIX=Bearer" >> .env.test
+          echo "NEXT_PUBLIC_AUTH_TOKEN_EXPIRE=3600" >> .env.test
       - name: Run frontend tests
         run: |
           cd front
-          NODE_ENV=test pnpm test
+          NODE_ENV=test TEST_TIMEOUT=5000 NEXT_PUBLIC_API_URL=http://localhost:8080/api NEXT_PUBLIC_AUTH_TOKEN_KEY=test_auth_token NEXT_PUBLIC_AUTH_TOKEN_PREFIX=Bearer NEXT_PUBLIC_AUTH_TOKEN_EXPIRE=3600 pnpm test
 
   # 各種テストの実行
   test:

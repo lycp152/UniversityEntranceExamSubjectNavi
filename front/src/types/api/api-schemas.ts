@@ -15,8 +15,6 @@ import { validationMessages } from '@/lib/validation/validation-messages';
 export const commonValidationRules = {
   /** エンティティの一意の識別子 */
   id: z.number().min(1),
-  /** 名称（1-100文字） */
-  name: z.string().min(1).max(100),
   /** レコードの作成日時 */
   created_at: z.string().datetime(),
   /** レコードの更新日時 */
@@ -32,14 +30,14 @@ export const commonValidationRules = {
 };
 
 /** 科目情報のスキーマ */
-export const SubjectSchema = z.object({
+export const SubjectSchema: z.ZodType = z.object({
   ...commonValidationRules,
   /** 関連するテストタイプのID */
   test_type_id: z.number().min(1),
   /** 科目名 */
-  name: z.string().min(1).max(100),
+  name: z.string().min(1).max(50),
   /** 科目の得点 */
-  score: z.number().min(0),
+  score: z.number().min(0).max(1000),
   /** 科目の得点率（0-100%） */
   percentage: z.number().min(0).max(100),
   /** UI表示時の順序 */
@@ -47,12 +45,12 @@ export const SubjectSchema = z.object({
 });
 
 /** 試験種別のスキーマ */
-export const TestTypeSchema = z.object({
+export const TestTypeSchema: z.ZodType = z.object({
   ...commonValidationRules,
   /** 関連する入試スケジュールのID */
   admission_schedule_id: z.number().min(1),
   /** 試験種別名 */
-  name: z.string().min(1).max(100),
+  name: z.enum(['共通', '二次']),
   /** 関連する科目情報の配列 */
   subjects: z.array(SubjectSchema),
 });
@@ -63,9 +61,9 @@ export const AdmissionScheduleSchema: z.ZodType = z.object({
   /** 関連する学科のID */
   major_id: z.number().min(1),
   /** 入試スケジュール名 */
-  name: z.string().min(1).max(100),
+  name: z.enum(['前期', '中期', '後期']),
   /** UI表示時の順序 */
-  display_order: z.number().min(0),
+  display_order: z.number().min(0).max(3),
   /** 関連する試験種別の配列 */
   test_types: z.array(TestTypeSchema),
   /** 関連する入試情報の配列 */
@@ -90,29 +88,29 @@ export const AdmissionInfoSchema: z.ZodType = z.object({
 });
 
 /** 学科情報のスキーマ */
-export const MajorSchema = z.object({
+export const MajorSchema: z.ZodType = z.object({
   ...commonValidationRules,
   /** 関連する学部のID */
   department_id: z.number().min(1),
   /** 学科名 */
-  name: z.string().min(1).max(100),
+  name: z.string().min(1).max(50),
   /** 関連する入試スケジュールの配列 */
   admission_schedules: z.array(AdmissionScheduleSchema),
 });
 
 /** 学部情報のスキーマ */
-export const DepartmentSchema = z.object({
+export const DepartmentSchema: z.ZodType = z.object({
   ...commonValidationRules,
   /** 関連する大学のID */
   university_id: z.number().min(1),
   /** 学部名 */
   name: z.string().min(1).max(100),
-  /** 関連する学科情報の配列（オプション） */
-  majors: z.array(MajorSchema).optional(),
+  /** 関連する学科情報の配列 */
+  majors: z.array(MajorSchema),
 });
 
 /** 大学情報のスキーマ */
-export const UniversitySchema = z.object({
+export const UniversitySchema: z.ZodType = z.object({
   ...commonValidationRules,
   /** 大学名 */
   name: z.string().min(1).max(100),

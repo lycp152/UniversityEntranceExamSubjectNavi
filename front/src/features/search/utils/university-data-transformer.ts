@@ -84,7 +84,7 @@ const processMajor = (
   if (!major.admission_schedules?.length) {
     return [];
   }
-  return major.admission_schedules.flatMap(schedule =>
+  return major.admission_schedules.flatMap((schedule: APIAdmissionSchedule) =>
     processSchedule(schedule, apiUniversity, department, major)
   );
 };
@@ -103,7 +103,9 @@ const processDepartment = (
   if (!department?.majors) {
     return [];
   }
-  return department.majors.flatMap(major => processMajor(major, apiUniversity, department));
+  return department.majors.flatMap((major: APIMajor) =>
+    processMajor(major, apiUniversity, department)
+  );
 };
 
 /**
@@ -121,8 +123,8 @@ export const transformUniversityData = (universities: APIUniversity[]): UISubjec
     }
 
     apiUniversity.departments
-      .flatMap(department => processDepartment(department, apiUniversity))
-      .forEach(subject => {
+      .flatMap((department: APIDepartment) => processDepartment(department, apiUniversity))
+      .forEach((subject: UISubject) => {
         const key = `${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`;
         if (!subjectsMap.has(key)) {
           subjectsMap.set(key, subject);

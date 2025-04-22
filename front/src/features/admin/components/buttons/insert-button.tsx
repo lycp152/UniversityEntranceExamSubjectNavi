@@ -32,7 +32,10 @@ export const InsertUniversityButton: React.FC<InsertUniversityButtonProps> = ({
   return (
     <div className={`relative flex justify-center items-center  ${isOnly ? 'py-8' : ''}`}>
       {!isOnly && (
-        <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-300 dark:border-gray-600" />
+        <div
+          data-testid="divider"
+          className="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-300 dark:border-gray-600"
+        />
       )}
       <Button
         variant="default"

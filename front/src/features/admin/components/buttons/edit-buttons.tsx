@@ -32,7 +32,8 @@ export const SaveButton = ({ onSave }: SaveButtonProps) => (
   <Button
     variant="ghost"
     onClick={() => window.confirm('変更を保存しますか？') && onSave()}
-    className="rounded-full text-green-600 hover:text-green-800 hover:bg-green-50 p-1.5 [&_svg]:!size-6 size-9"
+    className="rounded-full text-green-600 hover:text-green-800 hover:bg-green-50 dark:text-green-400 p-1.5 [&_svg]:!size-6 size-9"
+    aria-label="保存"
   >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" strokeWidth="3">
       <path
@@ -53,7 +54,8 @@ export const CancelButton = ({ onCancel }: CancelButtonProps) => (
   <Button
     variant="ghost"
     onClick={() => window.confirm('変更は破棄されますが、よろしいですか？') && onCancel()}
-    className="rounded-full text-red-600 hover:text-red-800 hover:bg-red-50 p-1.5 [&_svg]:!size-6 size-9"
+    className="rounded-full text-red-600 hover:text-red-800 hover:bg-red-50 dark:text-red-400 p-1.5 [&_svg]:!size-6 size-9"
+    aria-label="キャンセル"
   >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" strokeWidth="3">
       <path
@@ -74,7 +76,8 @@ const EditButton = ({ onEdit }: { readonly onEdit: () => void }) => (
   <Button
     variant="ghost"
     onClick={onEdit}
-    className="rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1.5 [&_svg]:!size-6 size-9"
+    className="rounded-full text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 p-1.5 [&_svg]:!size-6 size-9"
+    aria-label="編集"
   >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" strokeWidth="3">
       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />

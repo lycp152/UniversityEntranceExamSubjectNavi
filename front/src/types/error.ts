@@ -1,9 +1,14 @@
 /**
- * @fileoverview エラーハンドリング関連の型定義
+ * @fileoverview
+ * エラーカテゴリの型定義
+ * エラーの重要度とカテゴリに関する型定義を管理*
+ * エラーハンドリング関連の型定義
  *
  * @description
- * TypeScriptの型定義ファイルで、エラーハンドリング関連のコンポーネントで使用する
- * インターフェースと型を定義します。
+ * - エラーの重要度の型定義
+ * - エラーのカテゴリの型定義
+ * - TypeScriptの型定義ファイル、エラーハンドリング関連のコンポーネントで使用
+ * - インターフェースと型を定義
  *
  * @example
  * ```tsx
@@ -13,7 +18,28 @@
  *   onError?: (error: Error, errorInfo: ErrorInfo) => void;
  * }
  * ```
+ *
+ * バックエンドのAPIエンドポイントと同期を保つ必要があります
+ * @see back/internal/domain/models/models.go
  */
+
+import { ReactNode, ErrorInfo } from 'react';
+import { errorVariants } from '../styles/error';
+
+/**
+ * エラーの重要度を表す型
+ * - error: 機能に影響する重大なエラー
+ * - warning: 注意が必要だが機能は継続可能な警告
+ */
+export type ErrorSeverity = 'error' | 'warning';
+
+/**
+ * エラーのカテゴリを表す型
+ * - validation: 入力値の検証エラー
+ * - calculation: 計算関連のエラー
+ * - render: 表示関連のエラー
+ */
+export type ErrorCategory = 'validation' | 'calculation' | 'render';
 
 /**
  * ErrorBoundaryコンポーネントのProps型定義
@@ -22,10 +48,6 @@
  * @property {(error: Error, errorInfo: ErrorInfo) => void} [onError] - エラー発生時のコールバック関数
  * @property {() => void} [onReset] - エラー状態リセット時のコールバック関数
  */
-
-import { ReactNode, ErrorInfo } from 'react';
-import { errorVariants } from '../../styles/error';
-
 export interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;

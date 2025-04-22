@@ -18,7 +18,7 @@ import type {
   APIAdmissionInfo,
   APITestType,
   APISubject,
-} from '@/types/api/api-response-types';
+} from '@/types/api/types';
 import type {
   University,
   Department,

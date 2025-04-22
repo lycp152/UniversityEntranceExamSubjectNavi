@@ -7,7 +7,7 @@
  * @returns {JSX.Element} 科目別配点テーブルコンポーネント
  */
 import { FC } from 'react';
-import { UISubject } from '@/types/university-subjects';
+import { UISubject } from '@/types/university-subject';
 import { tableStyles, tableLabels } from '@/features/universities/constants/table-constants';
 import { calculateTotalScores } from '@/features/universities/utils/calculate-scores';
 import TableRow from '@/features/universities/components/table-row';

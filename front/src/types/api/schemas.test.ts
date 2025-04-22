@@ -7,7 +7,7 @@ import {
   MajorSchema,
   DepartmentSchema,
   UniversitySchema,
-} from './api-schemas';
+} from './schemas';
 
 /**
  * スキーマのバリデーションテスト

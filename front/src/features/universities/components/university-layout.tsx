@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { UISubject } from '@/types/university-subjects';
+import { UISubject } from '@/types/university-subject';
 import { ScoreDisplay } from '@/features/charts/components/score-display';
 import UniversityInfo from '@/features/universities/components/university-info';
 import SubjectScoreTable from '@/features/universities/components/subject-score-table';

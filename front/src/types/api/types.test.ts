@@ -1,12 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import {
-  HttpMethod,
-  HttpRequestConfig,
-  HttpResponse,
-  HttpError,
-  ErrorSeverity,
-  HttpProgress,
-} from './http-types';
+import { HttpMethod, HttpRequestConfig, HttpResponse, HttpError, HttpProgress } from './types';
+import { ErrorSeverity } from '@/types/error';
 
 /**
  * HTTP関連の型定義のテスト
@@ -91,17 +85,39 @@ describe('http-types', () => {
       const validError: HttpError = {
         code: 'ERROR_CODE',
         message: 'エラーメッセージ',
-        status: 400,
         severity: 'error',
-        timestamp: new Date().toISOString(),
-        stack: 'Error stack trace',
+        validationErrors: {
+          errors: [
+            {
+              field: 'testField',
+              message: 'バリデーションエラー',
+              code: 'VALIDATION_ERROR',
+              severity: 'error',
+            },
+          ],
+        },
       };
 
       expect(validError).toBeDefined();
       expect(validError.code).toBe('ERROR_CODE');
       expect(validError.message).toBe('エラーメッセージ');
       expect(validError.severity).toBe('error');
-      expect(validError.timestamp).toBeDefined();
+      expect(validError.validationErrors).toBeDefined();
+      expect(validError.validationErrors?.errors).toHaveLength(1);
+    });
+
+    it('バリデーションエラーなしのエラー情報を検証できる', () => {
+      const validError: HttpError = {
+        code: 'ERROR_CODE',
+        message: 'エラーメッセージ',
+        severity: 'error',
+      };
+
+      expect(validError).toBeDefined();
+      expect(validError.code).toBe('ERROR_CODE');
+      expect(validError.message).toBe('エラーメッセージ');
+      expect(validError.severity).toBe('error');
+      expect(validError.validationErrors).toBeUndefined();
     });
   });
 
@@ -110,7 +126,7 @@ describe('http-types', () => {
    */
   describe('ErrorSeverity', () => {
     it('正しい重要度を検証できる', () => {
-      const validSeverities: ErrorSeverity[] = ['error', 'warning', 'info'];
+      const validSeverities: ErrorSeverity[] = ['error', 'warning'];
 
       validSeverities.forEach(severity => {
         expect(severity).toBeDefined();

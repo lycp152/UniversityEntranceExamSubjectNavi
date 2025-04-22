@@ -1,4 +1,4 @@
-import type { APIUniversity, APIDepartment, APIMajor } from '@/types/api/api-response-types';
+import type { APIUniversity, APIDepartment, APIMajor } from '@/types/api/types';
 
 /**
  * 大学、学部、学科の情報を検索するヘルパー関数

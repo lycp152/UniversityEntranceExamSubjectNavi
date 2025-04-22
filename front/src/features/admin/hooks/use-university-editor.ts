@@ -7,7 +7,7 @@ import type {
   Major,
   AdmissionSchedule,
 } from '@/features/admin/types/university';
-import type { APITestType, APISubject } from '@/types/api/api-response-types';
+import type { APITestType, APISubject } from '@/types/api/types';
 import { useUniversityData } from '@/features/admin/hooks/use-university-data';
 import { useSubjectData } from '@/features/admin/hooks/use-subject-data';
 import type { EditMode } from '@/features/admin/types/university-list';

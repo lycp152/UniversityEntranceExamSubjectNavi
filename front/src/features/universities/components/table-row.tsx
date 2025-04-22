@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { UISubject } from '@/types/university-subjects';
+import { UISubject } from '@/types/university-subject';
 import { calculatePercentage } from '@/utils/math/percentage';
 import { tableStyles, tableLabels } from '@/features/universities/constants/table-constants';
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { LoadingSpinner } from '@/components/ui/feedback/spinner';
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 import { transformUniversityData } from '@/features/search/utils/university-data-transformer';
 
 /**

@@ -6,7 +6,7 @@
  * 情報の編集や科目の追加・変更が可能です。
  */
 import type { University, Department } from '@/features/admin/types/university';
-import type { APITestType } from '@/types/api/api-response-types';
+import type { APITestType } from '@/types/api/types';
 import { DepartmentRow } from '@/features/admin/components/table/department-row';
 import { Card, CardContent } from '@/components/ui/card';
 

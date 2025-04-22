@@ -6,7 +6,7 @@
  * @param {UISubject} props.subjectDetail - 表示する科目の詳細情報
  * @returns {JSX.Element} 科目情報を表示するコンポーネント
  */
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 
 const UniversityInfo = ({ subjectDetail }: { subjectDetail: UISubject }) => {
   return (

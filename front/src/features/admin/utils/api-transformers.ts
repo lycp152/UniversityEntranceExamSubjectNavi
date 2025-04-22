@@ -9,7 +9,7 @@
  * - 科目情報の変換処理
  */
 
-import type { APITestType, APISubject, APIUniversity } from '@/types/api/api-response-types';
+import type { APITestType, APISubject, APIUniversity } from '@/types/api/types';
 import type { TestType, Subject, University } from '@/features/admin/types/university';
 import { transformUniversity } from '@/features/admin/utils/university-data-transformer';
 

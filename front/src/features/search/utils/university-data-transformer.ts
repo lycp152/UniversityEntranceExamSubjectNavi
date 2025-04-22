@@ -1,11 +1,11 @@
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 import type {
   APIUniversity,
   APIDepartment,
   APIMajor,
   APIAdmissionSchedule,
   APITestType,
-} from '@/types/api/api-response-types';
+} from '@/types/api/types';
 import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';
 
 /**

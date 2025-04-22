@@ -1,4 +1,4 @@
-import type { ErrorMessageProps } from '@/types/error/types';
+import type { ErrorMessageProps } from '@/types/error';
 
 /**
  * 後ほどhttps://flowbite.com/docs/components/alerts/の

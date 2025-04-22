@@ -1,0 +1,155 @@
+import { describe, it, expect } from 'vitest';
+import type { BaseModel, ValidationError, ValidationErrors, ValidationRule } from './base-model';
+
+/**
+ * BaseModelの型定義のテスト
+ * 型の整合性と型安全性を検証します
+ */
+describe('BaseModelの型定義', () => {
+  it('必須フィールドが正しく定義されている', () => {
+    const model: BaseModel = {
+      id: 1,
+      version: 1,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+      createdBy: 'test-user',
+      updatedBy: 'test-user',
+    };
+
+    expect(model.id).toBe(1);
+    expect(model.version).toBe(1);
+    expect(model.createdAt).toBe('2024-01-01T00:00:00Z');
+    expect(model.updatedAt).toBe('2024-01-01T00:00:00Z');
+    expect(model.createdBy).toBe('test-user');
+    expect(model.updatedBy).toBe('test-user');
+  });
+
+  it('オプショナルフィールドが正しく定義されている', () => {
+    const model: BaseModel = {
+      id: 1,
+      version: 1,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+      deletedAt: null,
+      createdBy: 'test-user',
+      updatedBy: 'test-user',
+    };
+
+    expect(model.deletedAt).toBeNull();
+  });
+
+  it('日時フォーマットが正しい', () => {
+    const model: BaseModel = {
+      id: 1,
+      version: 1,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+      createdBy: 'test-user',
+      updatedBy: 'test-user',
+    };
+
+    // ISO 8601形式の日時フォーマットを検証
+    expect(model.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+    expect(model.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+  });
+});
+
+/**
+ * APIの基本型定義のテスト
+ * 型の整合性と型安全性を確認します
+ */
+describe('APIの基本型定義', () => {
+  describe('ValidationError型の検証', () => {
+    it('必須フィールドが正しく定義されている', () => {
+      const error: ValidationError = {
+        field: 'testField',
+        message: 'テストエラーメッセージ',
+        code: 'TEST_ERROR',
+        severity: 'error',
+      };
+
+      expect(error.field).toBe('testField');
+      expect(error.message).toBe('テストエラーメッセージ');
+      expect(error.code).toBe('TEST_ERROR');
+      expect(error.severity).toBe('error');
+    });
+
+    it('オプショナルフィールドが正しく定義されている', () => {
+      const error: ValidationError = {
+        field: 'testField',
+        message: 'テストエラーメッセージ',
+        code: 'TEST_ERROR',
+        severity: 'error',
+        err: new Error('元のエラー'),
+        details: { additionalInfo: '追加情報' },
+      };
+
+      expect(error.err).toBeInstanceOf(Error);
+      expect(error.details).toEqual({ additionalInfo: '追加情報' });
+    });
+  });
+
+  describe('ValidationErrors型の検証', () => {
+    it('エラー配列が正しく定義されている', () => {
+      const errors: ValidationErrors = {
+        errors: [
+          {
+            field: 'testField1',
+            message: 'テストエラーメッセージ1',
+            code: 'TEST_ERROR_1',
+            severity: 'error',
+          },
+          {
+            field: 'testField2',
+            message: 'テストエラーメッセージ2',
+            code: 'TEST_ERROR_2',
+            severity: 'warning',
+          },
+        ],
+      };
+
+      expect(errors.errors).toHaveLength(2);
+      expect(errors.errors[0].field).toBe('testField1');
+      expect(errors.errors[1].field).toBe('testField2');
+    });
+  });
+
+  describe('ValidationRule型の検証', () => {
+    it('バリデーションルールが正しく定義されている', () => {
+      const rule: ValidationRule<number> = {
+        field: 'testField',
+        condition: value => value > 0,
+        message: '値は0より大きい必要があります',
+        code: 'INVALID_VALUE',
+      };
+
+      expect(rule.field).toBe('testField');
+      expect(rule.condition(1)).toBe(true);
+      expect(rule.condition(-1)).toBe(false);
+      expect(rule.message).toBe('値は0より大きい必要があります');
+      expect(rule.code).toBe('INVALID_VALUE');
+    });
+  });
+
+  describe('BaseModel型の検証', () => {
+    it('BaseModelの必須フィールドが正しく定義されている', () => {
+      const model: BaseModel = {
+        id: 1,
+        version: 1,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        deletedAt: null,
+        createdBy: 'test-user',
+        updatedBy: 'test-user',
+      };
+
+      expect(model.id).toBe(1);
+      expect(model.version).toBe(1);
+      expect(model.createdAt).toBe('2024-01-01T00:00:00Z');
+      expect(model.updatedAt).toBe('2024-01-01T00:00:00Z');
+      expect(model.deletedAt).toBeNull();
+      expect(model.createdBy).toBe('test-user');
+      expect(model.updatedBy).toBe('test-user');
+    });
+  });
+});

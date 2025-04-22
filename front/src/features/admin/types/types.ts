@@ -1,4 +1,4 @@
-import type { APITestType, APISubject } from '@/types/api/api-response-types';
+import type { APITestType, APISubject } from '@/types/api/types';
 
 /**
  * スコア表示コンポーネントのプロパティ型

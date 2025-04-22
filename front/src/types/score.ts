@@ -1,6 +1,8 @@
 /**
  * スコア関連の型定義
  * スコアの計算、検証、表示に関する型定義を管理
+ * バックエンドのAPIエンドポイントと同期を保つ必要があります
+ * @see back/internal/domain/models/models.go
  *
  * @module score
  * @description

@@ -1,5 +1,5 @@
 import { Component, ErrorInfo } from 'react';
-import type { ErrorBoundaryProps, ErrorBoundaryState } from '@/types/error/types';
+import type { ErrorBoundaryProps, ErrorBoundaryState } from '@/types/error';
 import { DefaultErrorFallback } from './error-fallback';
 
 /**

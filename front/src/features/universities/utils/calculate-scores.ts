@@ -1,4 +1,4 @@
-import { UISubject } from '@/types/university-subjects';
+import { UISubject } from '@/types/university-subject';
 
 /**
  * 科目の合計点を計算する関数

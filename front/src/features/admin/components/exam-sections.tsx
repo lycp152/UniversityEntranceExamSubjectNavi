@@ -1,6 +1,6 @@
 import type { ExamSectionsProps } from '@/features/admin/types/exam-sections';
 import { ExamSection } from '@/features/admin/components/exam-section';
-import type { APITestType } from '@/types/api/api-response-types';
+import type { APITestType } from '@/types/api/types';
 
 /**
  * 試験セクション一覧コンポーネント

@@ -10,7 +10,7 @@
  * - 科目名変更ハンドラーの型定義
  */
 
-import type { APIAdmissionInfo, APITestType } from '@/types/api/api-response-types';
+import type { APIAdmissionInfo, APITestType } from '@/types/api/types';
 
 /** 試験セクションのプロパティ型 */
 export interface ExamSectionsProps {

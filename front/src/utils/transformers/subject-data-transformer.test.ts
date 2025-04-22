@@ -19,7 +19,7 @@ import type {
   APIAdmissionInfo,
   APIAdmissionSchedule,
   APITestType,
-} from '@/types/api/api-response-types';
+} from '@/types/api/types';
 
 describe('科目データ変換のテスト', () => {
   const mockTestType: APITestType = {

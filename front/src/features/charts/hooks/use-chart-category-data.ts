@@ -4,7 +4,7 @@
  * エラーハンドリングとメタデータの生成を統合的に管理
  */
 import { useMemo } from 'react';
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
 import type { PieData, ChartResult } from '@/types/pie-chart';
 import { createOuterPieData } from '@/features/charts/lib/chart-data-transformer';

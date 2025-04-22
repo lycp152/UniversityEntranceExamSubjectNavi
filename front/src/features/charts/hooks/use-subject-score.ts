@@ -2,7 +2,7 @@
  * 科目のスコア計算を管理するフック
  * 全体の合計点とカテゴリごとの合計点を計算し、再利用可能な形で提供
  */
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 import type { SubjectCategory } from '@/constants/constraint/subjects/subject-categories';
 
 /**

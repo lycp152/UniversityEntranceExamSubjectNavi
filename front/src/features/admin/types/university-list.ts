@@ -11,7 +11,7 @@
  */
 
 import type { University, Department } from '@/features/admin/types/university';
-import type { APITestType } from '@/types/api/api-response-types';
+import type { APITestType } from '@/types/api/types';
 
 /** 編集モードの状態を管理する型 */
 export interface EditMode {

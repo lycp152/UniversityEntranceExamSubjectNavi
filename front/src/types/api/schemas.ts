@@ -1,8 +1,10 @@
 /**
  * APIスキーマの定義
  * Zodを使用したAPIリクエスト・レスポンスのバリデーションスキーマを定義
+ * バックエンドのAPIエンドポイントと同期を保つ必要があります
+ * @see back/internal/domain/models/models.go
  *
- * @module api-schemas
+ * @module schemas
  * @description
  * - 各エンティティのスキーマ定義
  * - 共通のバリデーションルール

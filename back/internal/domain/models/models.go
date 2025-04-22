@@ -40,7 +40,7 @@ type ValidationError struct {
 	Field    string                 // エラーが発生したフィールド名
 	Message  string                 // エラーメッセージ
 	Code     string                 // エラーコード
-	Severity string                 // エラーの重要度（error, warning, info）
+	Severity string                 // エラーの重要度（error, warning）
 	Err      error                  // 元のエラー
 	Details  map[string]interface{} // エラーの詳細情報
 }

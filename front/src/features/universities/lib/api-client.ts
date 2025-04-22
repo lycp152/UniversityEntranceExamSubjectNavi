@@ -11,7 +11,7 @@
  */
 
 import type { ApiClientConfig } from '@/features/universities/types/api-client-config';
-import type { HttpResponse, HttpRequestConfig } from '@/types/api/http-types';
+import type { HttpResponse, HttpRequestConfig } from '@/types/api/types';
 import { BaseApiError } from '@/lib/api/errors/base';
 import { ENV } from '@/lib/config/env';
 import { ERROR_MESSAGES, API_ERROR_CODES } from '@/constants/errors/domain';

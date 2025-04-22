@@ -11,7 +11,7 @@
  * const { data, errors, hasErrors } = useDetailedData(subjectData, totalScore);
  */
 import { useMemo } from 'react';
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
 import { CHART_ERROR_CODES, CHART_ERROR_MESSAGES } from '@/constants/errors/chart';
 import type { DetailedPieData, ChartResult, ChartError } from '@/types/pie-chart';

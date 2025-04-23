@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   /**
    * エラー状態をリセットし、コンポーネントを再レンダリングします
    */
-  handleRetry() {
+  handleRetry = () => {
     this.setState({
       error: null,
       errorInfo: null,
@@ -63,7 +63,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (this.props.onReset) {
       this.props.onReset();
     }
-  }
+  };
 
   /**
    * コンポーネントをレンダリングします

@@ -21,10 +21,7 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
 
 // メタデータの設定
 export const metadata: Metadata = {
-  title: {
-    default: '大学入試科目ナビ',
-    template: '%s | 大学入試科目ナビ',
-  },
+  title: '大学入試科目ナビ',
   description: '大学受験の科目別配点割合をグラフ化・検索できるサイト',
   keywords: ['大学入試', '受験科目', '配点', '大学受験', '入試情報', '科目検索'],
   authors: [{ name: '大学入試科目ナビ' }],

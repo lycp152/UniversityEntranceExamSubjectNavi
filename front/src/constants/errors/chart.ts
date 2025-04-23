@@ -1,8 +1,10 @@
-import { ErrorSeverity } from '@/types/error/categories';
+import { ErrorSeverity } from '@/types/error';
 
 /**
  * チャート関連のエラーコード定義
  * グラフの描画やデータ処理に関するエラーを定義します
+ * バックエンドの制約値と同期を保つ必要があります
+ * @see back/internal/domain/models/models.go
  */
 export const CHART_ERROR_CODES = {
   /** データ変換エラー */

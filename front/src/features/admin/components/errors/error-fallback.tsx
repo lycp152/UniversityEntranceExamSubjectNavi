@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import type { DefaultErrorFallbackProps } from '@/types/error/types';
+import type { DefaultErrorFallbackProps } from '@/types/error';
 import { fallbackStyles } from '@/styles/error';
 
 /**

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { APITestType, APISubject } from '@/types/api/api-response-types';
+import type { APITestType, APISubject } from '@/types/api/types';
 
 /**
  * 科目データの操作と検証機能を提供するカスタムフック

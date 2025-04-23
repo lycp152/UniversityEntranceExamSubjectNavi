@@ -1,6 +1,6 @@
 'use server';
 
-import { SearchFormSchema } from '@/types/api/api-schemas';
+import { SearchFormSchema } from '@/types/api/schemas';
 import { ERROR_MESSAGES } from '../constants/error-messages';
 import { SearchFormState } from '../types/search-form';
 import { fetchUniversities } from './universities';

@@ -11,7 +11,7 @@
  */
 
 import { z } from 'zod';
-import { UniversitySchema, DepartmentSchema } from '@/types/api/api-schemas';
+import { UniversitySchema, DepartmentSchema } from '@/types/api/schemas';
 
 /** 基本的なレスポンススキーマ */
 export const BaseResponseSchema = z.object({

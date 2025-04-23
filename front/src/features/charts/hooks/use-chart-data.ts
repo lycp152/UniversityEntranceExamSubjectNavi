@@ -3,7 +3,7 @@
  * 詳細データ（個別科目）と集計データ（カテゴリ別）を統合し、エラー情報も含めて返す
  * 各データの生成と集計、エラーハンドリングを一元管理
  */
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 import type { ChartData } from '@/types/pie-chart';
 import { useCalculateScore } from '@/features/charts/hooks/use-subject-score';
 import { useDetailedData } from '@/features/charts/hooks/use-chart-detailed-data';

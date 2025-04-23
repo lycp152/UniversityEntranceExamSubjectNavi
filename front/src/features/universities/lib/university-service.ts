@@ -5,7 +5,7 @@ import type {
   APIDepartment,
   APISubject,
   GetUniversitiesResponse,
-} from '@/types/api/api-response-types';
+} from '@/types/api/types';
 
 /**
  * 大学関連のデータを取得・更新するサービスクラス

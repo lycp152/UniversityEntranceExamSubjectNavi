@@ -17,8 +17,8 @@ import type {
   APIAdmissionInfo,
   APIAdmissionSchedule,
   APITestType,
-} from '@/types/api/api-response-types';
-import type { UISubject } from '@/types/university-subjects';
+} from '@/types/api/types';
+import type { UISubject } from '@/types/university-subject';
 import type { BaseSubjectScore } from '@/types/score';
 
 /**

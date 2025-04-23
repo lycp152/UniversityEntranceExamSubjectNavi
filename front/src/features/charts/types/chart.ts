@@ -8,7 +8,7 @@
 
 import type { Payload } from 'recharts/types/component/DefaultTooltipContent';
 import type { DisplaySubjectScore } from '@/types/score';
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 
 /**
  * チャートコンポーネントのプロパティ型定義

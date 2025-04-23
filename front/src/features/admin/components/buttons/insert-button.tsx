@@ -5,6 +5,7 @@
  * 挿入するためのボタンを提供します。
  */
 import { Button } from '@/components/ui/button';
+import { BaseIcon, type IconProps } from '../icons/base-icon';
 
 /**
  * InsertUniversityButtonコンポーネントのプロパティ
@@ -19,6 +20,19 @@ interface InsertUniversityButtonProps {
 }
 
 /**
+ * プラスアイコンコンポーネント
+ */
+const PlusIcon = ({ className }: IconProps) => (
+  <BaseIcon className={className}>
+    <path
+      fillRule="evenodd"
+      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+      clipRule="evenodd"
+    />
+  </BaseIcon>
+);
+
+/**
  * 大学情報の挿入ボタンコンポーネント
  *
  * 大学リストの特定の位置に新しい大学情報を挿入するためのボタンを表示します。
@@ -30,28 +44,26 @@ export const InsertUniversityButton: React.FC<InsertUniversityButtonProps> = ({
   isOnly = false,
 }) => {
   return (
-    <div className={`relative flex justify-center items-center  ${isOnly ? 'py-8' : ''}`}>
+    <div className={`relative flex justify-center items-center ${isOnly ? 'py-8' : ''}`}>
       {!isOnly && (
-        <div className="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-300 dark:border-gray-600" />
+        <div
+          data-testid="divider"
+          className="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-300 dark:border-gray-600"
+        />
       )}
       <Button
         variant="default"
         onClick={() => onInsert(index)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') {
+            onInsert(index);
+          }
+        }}
         className="relative z-10 text-sm font-medium"
         aria-label="ここに追加"
+        tabIndex={0}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-            clipRule="evenodd"
-          />
-        </svg>
+        <PlusIcon className="h-5 w-5" />
         ここに追加
       </Button>
     </div>

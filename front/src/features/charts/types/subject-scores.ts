@@ -11,8 +11,8 @@
  */
 
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
-import type { SubjectName } from '@/constants/constraint/subjects';
-import type { BaseModel } from '../../../types/base-model';
+import type { SubjectName } from '@/constants/constraint/subjects/subjects';
+import type { BaseModel } from '../../../types/api/base-model';
 
 /** 科目スコアの型 */
 export interface SubjectScore extends BaseModel {

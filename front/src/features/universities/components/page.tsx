@@ -11,9 +11,9 @@
 import { use } from 'react';
 import { notFound } from 'next/navigation';
 import { ErrorMessage } from '@/components/errors/error-message';
-import { LoadingSpinner } from '@/components/ui/feedback/spinner';
+import { Spinner } from '@/components/ui/feedback/spinner';
 import { useUniversityData } from '@/features/universities/hooks/use-university-data';
-import UniversityLayout from '@/features/universities/components/university-layout';
+import UniversityLayout from '@/features/universities/components/layout';
 import { UniversityPageParams } from '@/features/universities/types/params';
 
 interface Props {
@@ -28,7 +28,7 @@ const UniversityPage = ({ params }: Props) => {
 
   // ローディング中はスピナーを表示
   if (loading) {
-    return <LoadingSpinner />;
+    return <Spinner />;
   }
 
   // エラーが発生した場合はエラーメッセージを表示

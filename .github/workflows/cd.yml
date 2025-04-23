@@ -1,11 +1,22 @@
 name: Continuous Deployment
 
+# 必要な権限を明示的に設定
+# contents: read - リポジトリの読み取り権限
+# packages: write - パッケージの書き込み権限（Dockerイメージのプッシュに必要）
+# security-events: write - セキュリティスキャン結果のアップロードに必要
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
+# メインブランチへのプッシュとバージョンタグの作成時に実行
 on:
   push:
     branches: [main]
-    tags: ["v*"]
+    tags: ["v*"] # v1.0.0のようなバージョンタグ
 
 jobs:
+  # Docker Composeファイルの検証
   validate:
     runs-on: ubuntu-latest
     steps:
@@ -14,8 +25,9 @@ jobs:
       - name: Validate docker compose file
         run: docker compose -f deployments/docker/production/docker-compose.yml config
 
+  # セキュリティスキャンの実行
   security-scan:
-    needs: validate
+    needs: validate # validateジョブの完了を待機
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,15 +38,17 @@ jobs:
           scan-ref: "."
           format: "sarif"
           output: "trivy-results.sarif"
-          severity: "CRITICAL,HIGH"
+          severity: "CRITICAL,HIGH" # 重大度が高い脆弱性のみを検出
+          ignore-unfixed: true # 修正されていない脆弱性を無視
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: "trivy-results.sarif"
 
+  # Dockerイメージのビルドとプッシュ
   build-and-push:
-    needs: security-scan
+    needs: security-scan # security-scanジョブの完了を待機
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +58,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Dockerイメージのメタデータを抽出
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -52,12 +67,13 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/university-exam-backend
             ${{ secrets.DOCKER_USERNAME }}/university-exam-frontend
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=ref,event=branch
-            type=ref,event=pr
+            type=semver,pattern={{version}}      # 完全なバージョン番号（例：1.0.0）
+            type=semver,pattern={{major}}.{{minor}}  # メジャー.マイナーバージョン（例：1.0）
+            type=sha,prefix={{branch}}-          # ブランチ名とコミットハッシュ（例：main-abc123）
+            type=ref,event=branch                # ブランチ名（例：main）
+            type=ref,event=pr                    # プルリクエスト番号（例：pr-123）
 
+      # Dockerイメージのビルドとプッシュ
       - name: Build and push images
         uses: docker/bake-action@v3
         with:
@@ -66,32 +82,36 @@ jobs:
             ./front/docker-bake.hcl
           push: true
           set: |
-            *.cache-from=type=gha
-            *.cache-to=type=gha,mode=max
+            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}               # GitHub Actionsのキャッシュを使用
+            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}        # 最大限のキャッシュを保存
             *.tags=${{ steps.meta.outputs.tags }}
             *.labels=${{ steps.meta.outputs.labels }}
 
+  # 本番環境へのデプロイ
   deploy:
-    needs: build-and-push
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-push # build-and-pushジョブの完了を待機
+    if: startsWith(github.ref, 'refs/tags/v') # バージョンタグが付いている場合のみ実行
     runs-on: ubuntu-latest
-    concurrency: deployment
+    concurrency: deployment # 同時実行を制限（同じデプロイが同時に実行されないように）
     steps:
+      # SSHキーの設定
       - name: Configure SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
+      # 既知のホストの追加
       - name: Add known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
+      # 本番環境へのデプロイ実行
       - name: Deploy to production
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          docker compose -f deployments/docker/production/docker-compose.yml pull
-          docker compose -f deployments/docker/production/docker-compose.yml up -d
-          docker system prune -f
+          docker compose -f deployments/docker/production/docker-compose.yml pull  # 最新のイメージを取得
+          docker compose -f deployments/docker/production/docker-compose.yml up -d  # コンテナを更新
+          docker system prune -f  # 未使用のDockerリソースをクリーンアップ

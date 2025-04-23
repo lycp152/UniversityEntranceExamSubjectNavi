@@ -9,6 +9,8 @@ ENV_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV)
 ENV_EXAMPLE_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV).example
 TEST_ENV_FILE = back/tests/testdata/.env
 TEST_ENV_EXAMPLE_FILE = back/tests/testdata/.env.example
+FRONT_TEST_ENV_FILE = front/.env.test
+FRONT_TEST_ENV_EXAMPLE_FILE = front/.env.test.example
 
 # 基本コマンド
 .PHONY: help
@@ -226,6 +228,12 @@ init: ## 環境変数ファイルを初期化
 		echo "✅ テスト用環境変数ファイルを作成しました: $(TEST_ENV_FILE)"; \
 	else \
 		echo "✅ テスト用環境変数ファイルは既に存在します: $(TEST_ENV_FILE)"; \
+	fi
+	@if [ ! -f $(FRONT_TEST_ENV_FILE) ]; then \
+		cp $(FRONT_TEST_ENV_EXAMPLE_FILE) $(FRONT_TEST_ENV_FILE); \
+		echo "✅ フロントエンドのテスト用環境変数ファイルを作成しました: $(FRONT_TEST_ENV_FILE)"; \
+	else \
+		echo "✅ フロントエンドのテスト用環境変数ファイルは既に存在します: $(FRONT_TEST_ENV_FILE)"; \
 	fi
 
 .PHONY: release

@@ -40,7 +40,7 @@ type ValidationError struct {
 	Field    string                 // エラーが発生したフィールド名
 	Message  string                 // エラーメッセージ
 	Code     string                 // エラーコード
-	Severity string                 // エラーの重要度（error, warning, info）
+	Severity string                 // エラーの重要度（error, warning）
 	Err      error                  // 元のエラー
 	Details  map[string]interface{} // エラーの詳細情報
 }
@@ -173,7 +173,7 @@ func (b *BaseModel) BeforeUpdate() error {
 type University struct {
 	BaseModel
 	Name        string       `json:"name"` // 大学名
-	_ struct{} `gorm:"not null;uniqueIndex:idx_university_name;size:100;check:name <> ''"`
+	_ struct{} `gorm:"not null;uniqueIndex:idx_university_name;size:20;check:name <> ''"`
 	Departments []Department `json:"departments"` // 学部一覧
 	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
@@ -189,9 +189,9 @@ func (u *University) Validate() error {
 			Field: "Name",
 			Condition: func(v interface{}) bool {
 				name, ok := v.(string)
-				return ok && name != "" && len(name) <= 100 && !containsSpecialCharacters(name)
+				return ok && name != "" && len(name) <= 20 && !containsSpecialCharacters(name)
 			},
-			Message: "大学名は1-100文字の範囲で、特殊文字を含まない必要があります",
+			Message: "大学名は1-20文字の範囲で、特殊文字を含まない必要があります",
 			Code:    "INVALID_NAME",
 		},
 	}
@@ -225,7 +225,7 @@ type Department struct {
 	UniversityID uint       `json:"university_id"` // 大学ID
 	_ struct{} `gorm:"not null;index:idx_dept_univ_name,type:btree"`
 	Name         string     `json:"name"` // 学部名
-	_ struct{} `gorm:"not null;index:idx_dept_univ_name,type:btree;size:100;check:name <> ''"`
+	_ struct{} `gorm:"not null;index:idx_dept_univ_name,type:btree;size:20;check:name <> ''"`
 	University   University `json:"-"` // 所属大学
 	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Majors       []Major    `json:"majors"` // 学科一覧
@@ -243,9 +243,9 @@ func (d *Department) Validate() error {
 			Field: "Name",
 			Condition: func(v interface{}) bool {
 				name, ok := v.(string)
-				return ok && name != "" && len(name) <= 100 && !containsSpecialCharacters(name)
+				return ok && name != "" && len(name) <= 20 && !containsSpecialCharacters(name)
 			},
-			Message: "学部名は1-100文字の範囲で、特殊文字を含まない必要があります",
+			Message: "学部名は1-20文字の範囲で、特殊文字を含まない必要があります",
 			Code:    "INVALID_NAME",
 		},
 		{
@@ -330,7 +330,7 @@ type Major struct {
 	BaseModel
 	DepartmentID      uint              `json:"department_id" gorm:"not null;index:idx_major_dept,type:btree"` // 学部ID
 	Name             string            `json:"name"` // 学科名
-	_ struct{} `gorm:"not null;index:idx_major_name,type:btree;size:100;check:name <> ''"`
+	_ struct{} `gorm:"not null;index:idx_major_name,type:btree;size:20;check:name <> ''"`
 	Department       Department        `json:"-"` // 所属学部
 	_ struct{} `gorm:"foreignKey:DepartmentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty"` // 入試日程一覧
@@ -357,9 +357,9 @@ func (m *Major) Validate() error {
 			Field: "Name",
 			Condition: func(v interface{}) bool {
 				name, ok := v.(string)
-				return ok && len(name) > 0 && len(name) <= 50
+				return ok && len(name) > 0 && len(name) <= 20
 			},
-			Message: "学科名は1-50文字である必要があります",
+			Message: "学科名は1-20文字である必要があります",
 			Code:    "INVALID_MAJOR_NAME",
 		},
 		{
@@ -571,8 +571,9 @@ type Subject struct {
 	Name         string   `json:"name" gorm:"not null;index:idx_subject_name,type:btree;size:20;check:name <> ''"` // 科目名
 	Score        int      `json:"score" gorm:"not null;check:score >= 0 AND score <= 1000"` // 配点
 	Percentage   float64  `json:"percentage" gorm:"not null;check:percentage >= 0 AND percentage <= 100"` // 配点比率
-	DisplayOrder int      `json:"display_order" gorm:"not null;default:0"` // 表示順
-	_ struct{} `gorm:"index:idx_subject_display_order,type:btree"`
+	DisplayOrder int      `json:"display_order"`
+	_ struct{} `gorm:"not null;default:0;index:idx_subject_display_order,type:btree"` // 表示順
+	_ struct{} `gorm:"check:display_order >= 0 AND display_order <= 999"`
 	TestType     TestType `json:"-" gorm:"foreignKey:TestTypeID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"` // 所属試験種別
 }
 
@@ -596,9 +597,9 @@ func (s *Subject) Validate() error {
 			Field: "Name",
 			Condition: func(v interface{}) bool {
 				name, ok := v.(string)
-				return ok && len(name) > 0 && len(name) <= 50
+				return ok && len(name) > 0 && len(name) <= 20
 			},
-			Message: "科目名は1-50文字である必要があります",
+			Message: "科目名は1-20文字である必要があります",
 			Code:    "INVALID_SUBJECT_NAME",
 		},
 		{

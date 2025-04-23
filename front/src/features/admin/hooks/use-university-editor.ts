@@ -7,11 +7,11 @@ import type {
   Major,
   AdmissionSchedule,
 } from '@/features/admin/types/university';
-import type { APITestType, APISubject } from '@/types/api/api-response-types';
+import type { APITestType, APISubject } from '@/types/api/types';
 import { useUniversityData } from '@/features/admin/hooks/use-university-data';
 import { useSubjectData } from '@/features/admin/hooks/use-subject-data';
 import type { EditMode } from '@/features/admin/types/university-list';
-import type { SubjectName } from '@/constants/constraint/subjects';
+import type { SubjectName } from '@/constants/constraint/subjects/subjects';
 import type { AdmissionScheduleName } from '@/constants/constraint/admission-schedule';
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
 interface BackupState {

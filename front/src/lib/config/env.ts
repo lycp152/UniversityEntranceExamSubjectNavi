@@ -92,7 +92,7 @@ export const ENV = {
     /** APIのベースURL（環境変数から取得） */
     BASE_URL: process.env.NEXT_PUBLIC_BASE_API_URL ?? '',
     /** APIリクエストのタイムアウト時間（ミリ秒） */
-    TIMEOUT: 30000,
+    TIMEOUT: Number(process.env.TEST_TIMEOUT ?? 30000),
     /** React Queryのグローバル設定 */
     QUERY: {
       /** ウィンドウフォーカス時の自動リフェッチを無効化 */
@@ -102,9 +102,10 @@ export const ENV = {
       /** リトライの最大回数 */
       MAX_RETRY_COUNT: 3,
       /** リトライ遅延の最大値（ミリ秒） */
-      MAX_RETRY_DELAY: 30000,
+      MAX_RETRY_DELAY: Number(process.env.TEST_TIMEOUT ?? 30000),
       /** リトライ遅延の計算関数 */
-      getRetryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      getRetryDelay: (attemptIndex: number) =>
+        Math.min(1000 * 2 ** attemptIndex, Number(process.env.TEST_TIMEOUT ?? 30000)),
       /** キャッシュの有効期限（ミリ秒） */
       STALE_TIME: 1000 * 60 * 5, // 5分
       /** キャッシュの保持期間（ミリ秒） */

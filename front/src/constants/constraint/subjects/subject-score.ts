@@ -20,10 +20,14 @@ export const SUBJECT_SCORE_CONSTRAINTS = {
 
   /** スコアの計算制約 */
   CALCULATION_CONSTRAINTS: {
+    /** 合計スコアの制限 */
     MIN_TOTAL_SCORE: 0,
     MAX_TOTAL_SCORE: 1000,
+    /** 合計パーセンテージの制限 */
     MIN_TOTAL_PERCENTAGE: 0,
     MAX_TOTAL_PERCENTAGE: 100,
+    /** 小数点以下の桁数制限 */
+    MAX_DECIMAL_PLACES: 2,
   } as const,
 } as const;
 

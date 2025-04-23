@@ -8,7 +8,7 @@
  * データの読み込み中に表示するフィードバックコンポーネントです。
  * Flowbiteのスピナーコンポーネントを使用しています。
  */
-interface LoadingSpinnerProps {
+interface SpinnerProps {
   /**
    * 表示するメッセージ
    * @default "データを読み込んでいます..."
@@ -26,11 +26,11 @@ interface LoadingSpinnerProps {
   color?: 'blue' | 'gray' | 'green' | 'red' | 'yellow' | 'purple';
 }
 
-export const LoadingSpinner = ({
+export const Spinner = ({
   message = 'データを読み込んでいます...',
   size = 'medium',
   color = 'blue',
-}: LoadingSpinnerProps) => {
+}: SpinnerProps) => {
   const sizeClasses = {
     small: 'w-4 h-4',
     medium: 'w-8 h-8',

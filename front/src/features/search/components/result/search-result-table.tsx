@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ErrorMessage } from '@/components/errors/error-message';
-import { LoadingSpinner } from '@/components/ui/feedback/spinner';
-import type { UISubject } from '@/types/university-subjects';
+import { Spinner } from '@/components/ui/feedback/spinner';
+import type { UISubject } from '@/types/university-subject';
 import { transformUniversityData } from '@/features/search/utils/university-data-transformer';
 
 /**
@@ -87,7 +87,7 @@ const SearchResultTable = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <Spinner />;
   }
 
   if (error) {
@@ -131,7 +131,7 @@ const SearchResultTable = () => {
             {subjects.map((subject: UISubject) => (
               <tr
                 key={`${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`}
-                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
                 onClick={() =>
                   handleRowClick(
                     subject.examInfo.academicYear,

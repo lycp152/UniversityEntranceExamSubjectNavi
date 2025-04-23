@@ -4,7 +4,7 @@
  * チャートの表示に必要な全てのデータ構造とその加工処理を提供
  */
 import { useMemo } from 'react';
-import type { UISubject } from '@/types/university-subjects';
+import type { UISubject } from '@/types/university-subject';
 import type { DisplaySubjectScore } from '@/types/score';
 import { useChartData } from '@/features/charts/hooks/use-chart-data';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';

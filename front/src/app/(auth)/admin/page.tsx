@@ -7,24 +7,21 @@
  * - 非インデックス設定
  */
 import { Metadata } from 'next';
-import { Suspense, ReactElement } from 'react';
 import { AdminPage } from '@/features/admin/components/page';
-import { LoadingSpinner } from '@/components/ui/feedback/spinner';
+import { generateMetadata } from '@/lib/config/metadata';
 
 // ページのメタデータ設定
-export const metadata: Metadata = {
-  title: '管理ページ',
-  description: '大学入試科目ナビの管理ページです。大学・学部の情報を管理できます。',
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
+export const metadata: Metadata = generateMetadata(
+  '管理ページ',
+  '大学入試科目ナビの管理ページです。大学・学部の情報を管理できます。',
+  {
+    robots: {
+      index: false,
+      follow: false,
+    },
+  }
+);
 
-export default function Page(): ReactElement {
-  return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <AdminPage />
-    </Suspense>
-  );
+export default function Page() {
+  return <AdminPage />;
 }

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { UISubject } from '@/types/university-subjects';
+import { UISubject } from '@/types/university-subject';
 import { ScoreDisplay } from '@/features/charts/components/score-display';
 import UniversityInfo from '@/features/universities/components/university-info';
 import SubjectScoreTable from '@/features/universities/components/subject-score-table';
@@ -18,7 +18,7 @@ interface UniversityLayoutProps {
  */
 const UniversityLayout: FC<UniversityLayoutProps> = ({ subject }) => {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8" aria-label="大学科目情報">
       {/* メインコンテンツエリア: 科目情報とスコア表示を横並びに配置 */}
       <div className="flex flex-col lg:flex-row">
         {/* 左側: 科目情報を表示 */}
@@ -34,7 +34,7 @@ const UniversityLayout: FC<UniversityLayoutProps> = ({ subject }) => {
       <div>
         <SubjectScoreTable subjectData={subject} />
       </div>
-    </div>
+    </main>
   );
 };
 

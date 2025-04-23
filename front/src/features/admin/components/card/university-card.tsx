@@ -6,7 +6,7 @@
  * 情報の編集や科目の追加・変更が可能です。
  */
 import type { University, Department } from '@/features/admin/types/university';
-import type { APITestType } from '@/types/api/api-response-types';
+import type { APITestType } from '@/types/api/types';
 import { DepartmentRow } from '@/features/admin/components/table/department-row';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -79,30 +79,32 @@ export const UniversityCard = ({
   onSubjectNameChange,
 }: UniversityCardProps) => {
   return (
-    <Card className="overflow-hidden py-1 hover:bg-gray-50 dark:hover:bg-gray-800">
-      <CardContent className="divide-y divide-gray-100 p-0">
-        {university.departments?.map(department => (
-          <DepartmentRow
-            key={`department-${university.id}-${department.id}`}
-            university={university}
-            department={department}
-            isEditing={
-              editMode?.universityId === university.id &&
-              editMode?.departmentId === department.id &&
-              editMode?.isEditing
-            }
-            onEdit={onEdit}
-            onSave={onSave}
-            onCancel={onCancel}
-            onScoreChange={onScoreChange}
-            onInfoChange={onInfoChange}
-            onAddSubject={type => onAddSubject(university.id, department.id, type)}
-            onSubjectNameChange={(subjectId, name) =>
-              onSubjectNameChange(university.id, department.id, subjectId, name)
-            }
-          />
-        ))}
-      </CardContent>
-    </Card>
+    <article aria-label={`${university.name}の情報`}>
+      <Card className="overflow-hidden py-1 hover:bg-gray-50 dark:hover:bg-gray-900">
+        <CardContent className="divide-y divide-gray-100 p-0">
+          {university.departments?.map(department => (
+            <DepartmentRow
+              key={`department-${university.id}-${department.id}`}
+              university={university}
+              department={department}
+              isEditing={
+                editMode?.universityId === university.id &&
+                editMode?.departmentId === department.id &&
+                editMode?.isEditing
+              }
+              onEdit={onEdit}
+              onSave={onSave}
+              onCancel={onCancel}
+              onScoreChange={onScoreChange}
+              onInfoChange={onInfoChange}
+              onAddSubject={type => onAddSubject(university.id, department.id, type)}
+              onSubjectNameChange={(subjectId, name) =>
+                onSubjectNameChange(university.id, department.id, subjectId, name)
+              }
+            />
+          ))}
+        </CardContent>
+      </Card>
+    </article>
   );
 };

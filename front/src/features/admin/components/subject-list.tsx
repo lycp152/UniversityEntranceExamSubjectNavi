@@ -68,7 +68,7 @@ export const SubjectList = ({
         <Button
           onClick={() => onAddSubject(type)}
           variant="outline"
-          className="border border-dashed border-gray-300 rounded-lg h-16 w-[60px] flex flex-col items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+          className="border border-dashed border-gray-300 rounded-lg h-16 w-[60px] flex flex-col items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group"
           aria-label="科目を追加"
         >
           <svg

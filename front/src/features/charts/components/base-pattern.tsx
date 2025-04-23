@@ -7,7 +7,7 @@
  * - パターンのサイズと配置を制御
  */
 import { FC } from 'react';
-import { SUBJECT_CATEGORIES } from '@/constants/constraint/subject-categories';
+import { SUBJECT_CATEGORIES } from '@/constants/constraint/subjects/subject-categories';
 import { PATTERN_CONFIG } from '@/features/charts/constants/pattern-config';
 import { BasePatternProps } from '../types/patterns';
 import { getSubjectBaseCategory } from '@/features/charts/utils/subject-type-validator';

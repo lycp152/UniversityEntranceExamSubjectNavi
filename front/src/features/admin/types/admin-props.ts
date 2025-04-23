@@ -1,4 +1,4 @@
-import type { APITestType } from '@/types/api/api-response-types';
+import type { APITestType } from '@/types/api/types';
 import type { University, Department } from '@/features/admin/types/university';
 import type { EditMode } from '@/features/admin/types/university-list';
 

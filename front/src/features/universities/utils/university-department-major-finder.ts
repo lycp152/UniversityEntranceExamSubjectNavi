@@ -1,4 +1,4 @@
-import type { APIUniversity, APIDepartment, APIMajor } from '@/types/api/api-response-types';
+import type { APIUniversity, APIDepartment, APIMajor } from '@/types/api/types';
 
 /**
  * 大学、学部、学科の情報を検索するヘルパー関数
@@ -17,14 +17,16 @@ export const findDepartmentAndMajor = (
   majorId: string
 ): { department: APIDepartment; major: APIMajor } | null => {
   // 学部を検索
-  const department = university.departments?.find(d => d.id === parseInt(departmentId, 10));
+  const department = university.departments?.find(
+    (d: APIDepartment) => d.id === parseInt(departmentId, 10)
+  );
 
   if (!department) {
     return null;
   }
 
   // 学科を検索
-  const major = department.majors?.find(m => m.id === parseInt(majorId, 10));
+  const major = department.majors?.find((m: APIMajor) => m.id === parseInt(majorId, 10));
 
   if (!major) {
     return null;

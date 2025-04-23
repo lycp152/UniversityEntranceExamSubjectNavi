@@ -18,7 +18,7 @@ import type {
   APIAdmissionInfo,
   APITestType,
   APISubject,
-} from '@/types/api/api-response-types';
+} from '@/types/api/types';
 import type {
   University,
   Department,
@@ -28,7 +28,7 @@ import type {
   TestType,
   Subject,
 } from '@/features/admin/types/university';
-import type { SubjectName } from '@/constants/constraint/subjects';
+import type { SubjectName } from '@/constants/constraint/subjects/subjects';
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
 import { ADMISSION_INFO_CONSTRAINTS } from '@/constants/constraint/admission-info';
 import type {

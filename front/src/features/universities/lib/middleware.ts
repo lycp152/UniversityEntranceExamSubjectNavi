@@ -1,4 +1,4 @@
-import type { HttpRequestConfig } from '@/types/api/http-types';
+import type { HttpRequestConfig } from '@/types/api/types';
 
 /**
  * APIリクエストの加工処理を定義するインターフェース

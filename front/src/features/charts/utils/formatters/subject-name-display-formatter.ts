@@ -11,7 +11,7 @@
  */
 
 import { TestType } from '@/types/score';
-import { SUBJECTS } from '@/constants/constraint/subjects';
+import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
 import { FORMAT_PATTERNS } from '@/features/charts/constants/format';
 type SubjectNameDisplayMapping = typeof SUBJECTS;
 type SubjectName = keyof SubjectNameDisplayMapping;

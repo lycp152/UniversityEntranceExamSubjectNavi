@@ -3,7 +3,7 @@ import {
   ErrorResponseSchema,
 } from '@/features/search/types/api-response-schemas';
 import { validateApiResponse } from '@/features/search/lib/api-validation';
-import { SearchFormSchema } from '@/types/api/api-schemas';
+import { SearchFormSchema } from '@/types/api/schemas';
 import { z } from 'zod';
 
 /**

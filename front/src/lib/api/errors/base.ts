@@ -26,6 +26,7 @@ export interface ApiErrorDetails {
  * @property {readonly Record<string, unknown>} [details] - 追加のエラー詳細
  * @see {@link ../validation/validation-messages.ts} バリデーションエラーメッセージの定義
  * @see {@link ../config/env.ts} 環境変数の設定と検証
+ * @throws {TypeError} 必須プロパティ（code, message）が欠落している場合
  */
 export class BaseApiError extends Error {
   readonly code: string;
@@ -34,8 +35,15 @@ export class BaseApiError extends Error {
 
   /**
    * @param {ApiErrorDetails} error - エラー詳細情報
+   * @throws {TypeError} 必須プロパティが欠落している場合
    */
   constructor(error: ApiErrorDetails) {
+    if (!error.code) {
+      throw new TypeError('code is required');
+    }
+    if (!error.message) {
+      throw new TypeError('message is required');
+    }
     super(error.message);
     this.name = this.constructor.name;
     this.code = error.code;

@@ -1,6 +1,9 @@
-import type { ErrorMessageProps } from '@/types/error/types';
+import type { ErrorMessageProps } from '@/types/error';
 
 /**
+ * 後ほどhttps://flowbite.com/docs/components/alerts/の
+ * Alerts with icon へ更新
+ *
  * エラーメッセージを表示するコンポーネント
  *
  * @description

@@ -9,7 +9,7 @@
  */
 import type { AdminLayoutProps } from '../types/admin-layout';
 import { ErrorMessage } from '@/components/errors/error-message';
-import { LoadingSpinner } from '@/components/ui/feedback/spinner';
+import { Spinner } from '@/components/ui/feedback/spinner';
 import { EmptyState } from '@/features/admin/components/empty-state';
 
 export function AdminLayout({
@@ -20,7 +20,7 @@ export function AdminLayout({
   successMessage,
 }: Readonly<AdminLayoutProps>) {
   // ローディング状態の場合はローディングスピナーを表示
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <Spinner />;
   // エラー状態の場合はエラーメッセージを表示
   if (error) return <ErrorMessage message={error} />;
   // 空の状態の場合は空の状態メッセージを表示

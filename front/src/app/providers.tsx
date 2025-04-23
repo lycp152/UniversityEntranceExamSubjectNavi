@@ -19,12 +19,16 @@ const queryConfig: QueryClientConfig = {
       gcTime: ENV.API.QUERY.GC_TIME,
       retry: ENV.API.QUERY.DEFAULT_OPTIONS.RETRY,
       refetchOnWindowFocus: ENV.API.QUERY.REFETCH_ON_WINDOW_FOCUS,
-      refetchOnReconnect: ENV.API.QUERY.REFETCH_ON_RECONNECT,
       retryDelay: ENV.API.QUERY.DEFAULT_OPTIONS.RETRY_DELAY,
+      // パフォーマンス最適化のための追加設定
+      refetchOnMount: false,
+      refetchInterval: false,
     },
     mutations: {
       retry: ENV.API.QUERY.MUTATION_OPTIONS.RETRY,
       retryDelay: ENV.API.QUERY.MUTATION_OPTIONS.RETRY_DELAY,
+      // ミューテーションの最適化
+      networkMode: 'offlineFirst',
     },
   },
 };

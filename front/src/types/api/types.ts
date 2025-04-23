@@ -19,7 +19,7 @@
  * - HTTPエラーレスポンスの共通型定義
  */
 
-import { ValidationErrors } from './base-model';
+import { ValidationErrors, BaseModel } from './base-model';
 import { ErrorSeverity } from '@/types/error';
 import {
   University,
@@ -30,7 +30,6 @@ import {
   TestType,
   Subject,
 } from './schemas';
-import { BaseModel } from './base-model';
 
 /**
  * 大学一覧取得APIのレスポンス型

@@ -9,6 +9,3 @@ export const MAJOR_CONSTRAINTS = {
   /** 学科名の最小長（バックエンドと一致） */
   MIN_LENGTH: 1,
 } as const;
-
-/** 学科名の型定義 */
-export type MajorName = string;

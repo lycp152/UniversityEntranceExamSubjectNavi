@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { MAJOR_CONSTRAINTS, MajorName } from './major';
+import { MAJOR_CONSTRAINTS } from './major';
 
 describe('学科名の制約', () => {
   describe('学科名の長さ制約', () => {
@@ -14,13 +14,6 @@ describe('学科名の制約', () => {
 
     it('学科名の最大長が正しいこと', () => {
       expect(MAJOR_CONSTRAINTS.MAX_LENGTH).toBe(20);
-    });
-  });
-
-  describe('学科名の型定義', () => {
-    it('学科名の型が正しいこと', () => {
-      const validName: MajorName = '法律学科';
-      expect(validName).toBe('法律学科');
     });
   });
 });

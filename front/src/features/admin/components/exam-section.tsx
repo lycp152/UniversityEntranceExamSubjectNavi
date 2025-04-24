@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { ExamSectionProps } from '../types/types';
-import { SubjectList } from './subject-list';
+import { SubjectList } from './subject/subject-list';
 
 /**
  * 試験セクションコンポーネント

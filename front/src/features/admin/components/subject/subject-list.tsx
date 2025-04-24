@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react';
-import type { SubjectListProps } from '../types/types';
+import type { SubjectListProps } from '../../types/types';
 import { SubjectCard } from './subject-card';
 import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 /**
  * 科目リストコンポーネント
@@ -68,22 +69,37 @@ export const SubjectList = ({
         <Button
           onClick={() => onAddSubject(type)}
           variant="outline"
-          className="border border-dashed border-gray-300 rounded-lg h-16 w-[60px] flex flex-col items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group"
+          className="
+            flex flex-col items-center justify-center
+            h-16 w-[60px]
+
+            border border-dashed
+            border-gray-300 dark:border-gray-600
+            hover:border-gray-400 dark:hover:border-gray-500
+
+            hover:bg-background
+
+            rounded-lg
+            group
+          "
           aria-label="科目を追加"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-gray-400 group-hover:text-gray-500"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+          <Plus
+            className="
+              h-5 w-5
+              text-gray-400 dark:text-gray-500
+              group-hover:text-gray-500 dark:group-hover:text-gray-400
+            "
+          />
+          <span
+            className="
+            text-xs mt-1
+            text-gray-400 dark:text-gray-500
+            group-hover:text-gray-500 dark:group-hover:text-gray-400
+          "
           >
-            <path
-              fillRule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="text-xs text-gray-400 group-hover:text-gray-500 mt-1">追加</span>
+            追加
+          </span>
         </Button>
       )}
     </div>

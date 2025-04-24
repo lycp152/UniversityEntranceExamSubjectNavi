@@ -4,7 +4,7 @@ import { Schedule } from '@/features/search/components/filters/schedule';
 import { Classification } from '@/features/search/components/filters/classification';
 import { SectionTitle } from '@/features/search/components/section-title';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
 
 /**
  * 詳細検索コンポーネントのプロパティ定義
@@ -82,7 +82,7 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
         aria-controls="detail-search-content"
       >
         <SectionTitle>詳細条件</SectionTitle>
-        <span className="text-gray-600">{isExpanded ? '▲' : '▼'}</span>
+        {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
       </Button>
       {isExpanded && (
         <div id="detail-search-content" className="mt-4">

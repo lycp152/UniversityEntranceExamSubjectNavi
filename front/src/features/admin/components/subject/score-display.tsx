@@ -1,4 +1,4 @@
-import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../types/types';
+import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../../types/types';
 
 /**
  * スコア表示コンポーネント
@@ -48,7 +48,7 @@ const ViewScore = ({ score, percentage }: ViewScoreProps) => (
   <>
     <div className="text-xs font-semibold whitespace-nowrap text-center w-[50px]">{score}点</div>
     <div className="text-[10px] text-gray-500 dark:text-gray-300 whitespace-nowrap text-center w-[50px]">
-      ({percentage.toFixed(1)}%)
+      （{percentage.toFixed(1)}%）
     </div>
   </>
 );

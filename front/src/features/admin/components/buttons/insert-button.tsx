@@ -5,7 +5,7 @@
  * 挿入するためのボタンを提供します。
  */
 import { Button } from '@/components/ui/button';
-import { BaseIcon, type IconProps } from '../icons/base-icon';
+import { Plus } from 'lucide-react';
 
 /**
  * InsertUniversityButtonコンポーネントのプロパティ
@@ -18,19 +18,6 @@ interface InsertUniversityButtonProps {
   /** 単独表示モードかどうか（区切り線の表示を制御） */
   isOnly?: boolean;
 }
-
-/**
- * プラスアイコンコンポーネント
- */
-const PlusIcon = ({ className }: IconProps) => (
-  <BaseIcon className={className}>
-    <path
-      fillRule="evenodd"
-      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-      clipRule="evenodd"
-    />
-  </BaseIcon>
-);
 
 /**
  * 大学情報の挿入ボタンコンポーネント
@@ -63,7 +50,7 @@ export const InsertUniversityButton: React.FC<InsertUniversityButtonProps> = ({
         aria-label="ここに追加"
         tabIndex={0}
       >
-        <PlusIcon className="h-5 w-5" />
+        <Plus className="h-5 w-5" />
         ここに追加
       </Button>
     </div>

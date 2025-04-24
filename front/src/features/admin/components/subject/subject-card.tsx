@@ -1,4 +1,4 @@
-import type { SubjectCardProps } from '../types/types';
+import type { SubjectCardProps } from '../../types/types';
 import { ScoreDisplay } from './score-display';
 
 /**
@@ -32,19 +32,17 @@ export const SubjectCard = ({
   onNameChange,
 }: SubjectCardProps) => {
   return (
-    <div className="border border-gray-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 h-16 flex flex-col w-[60px]">
+    <div className="border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 h-16 flex flex-col w-[60px] shadow-sm hover:shadow-md dark:shadow-gray-800 dark:hover:shadow-gray-700 transition-all duration-200">
       {isEditing ? (
         <input
           type="text"
           value={subject.name}
           onChange={e => onNameChange(e.target.value)}
-          className="text-xs font-medium text-gray-900 dark:text-gray-100 py-1.5 px-1 text-center border-b border-gray-100 dark:border-gray-700 truncate focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="text-xs font-medium text-gray-900 dark:text-gray-100 py-1.5 px-1 text-center truncate focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="科目名"
         />
       ) : (
-        <div className="text-xs font-medium py-1.5 px-1 text-center border-b border-gray-100 dark:border-gray-700 truncate">
-          {subject.name}
-        </div>
+        <div className="text-xs font-medium py-1.5 px-1 text-center truncate">{subject.name}</div>
       )}
       <div className="flex-1 flex items-center justify-center p-1">
         <ScoreDisplay

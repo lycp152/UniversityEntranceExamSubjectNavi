@@ -88,7 +88,7 @@ export const transformMajor = (apiMajor: APIMajor): Major => ({
   id: apiMajor.id,
   name: apiMajor.name,
   departmentId: apiMajor.department_id,
-  admissionSchedules: apiMajor.admission_schedules?.map(transformAdmissionSchedule) || [],
+  admissionSchedules: apiMajor.admission_schedules?.map(transformAdmissionSchedule) ?? [],
   createdAt: formatDate(apiMajor.created_at),
   updatedAt: formatDate(apiMajor.updated_at),
   version: apiMajor.version ?? 1,

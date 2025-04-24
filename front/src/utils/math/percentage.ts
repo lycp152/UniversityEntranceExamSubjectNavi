@@ -32,8 +32,8 @@ export const calculatePercentage = (value: number, total: number): number => {
  */
 export const validatePercentage = (percentage: number): boolean => {
   return (
-    percentage >= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MIN_TOTAL_PERCENTAGE &&
-    percentage <= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MAX_TOTAL_PERCENTAGE
+    percentage >= SUBJECT_SCORE_CONSTRAINTS.MIN_PERCENTAGE &&
+    percentage <= SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE
   );
 };
 
@@ -44,8 +44,7 @@ export const validatePercentage = (percentage: number): boolean => {
  */
 export const validateScore = (score: number): boolean => {
   return (
-    score >= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MIN_TOTAL_SCORE &&
-    score <= SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS.MAX_TOTAL_SCORE
+    score >= SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE && score <= SUBJECT_SCORE_CONSTRAINTS.MAX_SCORE
   );
 };
 

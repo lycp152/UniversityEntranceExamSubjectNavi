@@ -570,7 +570,8 @@ type Subject struct {
 	TestTypeID   uint     `json:"test_type_id" gorm:"not null;index:idx_subject_test_type,type:btree"` // 試験種別ID
 	Name         string   `json:"name" gorm:"not null;index:idx_subject_name,type:btree;size:20;check:name <> ''"` // 科目名
 	Score        int      `json:"score" gorm:"not null;check:score >= 0 AND score <= 1000"` // 配点
-	Percentage   float64  `json:"percentage" gorm:"not null;check:percentage >= 0 AND percentage <= 100"` // 配点比率
+	Percentage   float64  `json:"percentage"` // 配点比率
+	_ struct{} `gorm:"not null;check:percentage >= 0 AND percentage <= 100 AND ROUND(percentage, 2) = percentage"`
 	DisplayOrder int      `json:"display_order"`
 	_ struct{} `gorm:"not null;default:0;index:idx_subject_display_order,type:btree"` // 表示順
 	_ struct{} `gorm:"check:display_order >= 0 AND display_order <= 999"`

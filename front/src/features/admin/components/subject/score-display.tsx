@@ -1,4 +1,7 @@
 import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../../types/types';
+import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/constraint/subjects/subject-score';
+import { Input } from '@/components/ui/input';
+import { useCallback } from 'react';
 
 /**
  * スコア表示コンポーネント
@@ -11,7 +14,7 @@ import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../../ty
  * @features
  * - スコアの表示と編集
  * - パーセンテージの表示
- * - 入力値のバリデーション
+ * - 入力値のバリデーション（0-1000の整数）
  *
  * @example
  * ```tsx
@@ -25,17 +28,46 @@ import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../../ty
  */
 
 const EditScore = ({ score, onScoreChange }: EditScoreProps) => {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onScoreChange(Number(e.target.value));
-  };
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+
+      // 空の入力は0として扱う
+      if (value === '') {
+        onScoreChange(SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE);
+        return;
+      }
+
+      // 数値以外の文字を削除
+      const numericValue = value.replace(/\D/g, '');
+
+      // 数値に変換（先頭の0は自動的に削除される）
+      const parsedValue = parseInt(numericValue, 10);
+
+      // バリデーション: 最小値以上最大値以下の数値
+      if (
+        !isNaN(parsedValue) &&
+        parsedValue >= SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE &&
+        parsedValue <= SUBJECT_SCORE_CONSTRAINTS.MAX_SCORE
+      ) {
+        onScoreChange(parsedValue);
+      }
+    },
+    [onScoreChange]
+  );
 
   return (
-    <input
-      type="number"
+    <Input
       value={score}
       onChange={handleInputChange}
-      className="text-xs font-semibold text-gray-900 dark:text-gray-100 w-[50px] text-center border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-      min="0"
+      className="text-xs w-[50px] h-6 p-0 text-center"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      aria-label="スコア"
+      aria-required="true"
+      aria-invalid={
+        score < SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE || score > SUBJECT_SCORE_CONSTRAINTS.MAX_SCORE
+      }
     />
   );
 };
@@ -46,10 +78,18 @@ const EditScore = ({ score, onScoreChange }: EditScoreProps) => {
  */
 const ViewScore = ({ score, percentage }: ViewScoreProps) => (
   <>
-    <div className="text-xs font-semibold whitespace-nowrap text-center w-[50px]">{score}点</div>
-    <div className="text-[10px] text-gray-500 dark:text-gray-300 whitespace-nowrap text-center w-[50px]">
-      （{percentage.toFixed(1)}%）
-    </div>
+    <output
+      className="text-xs font-semibold whitespace-nowrap text-center w-[50px]"
+      aria-label="スコア"
+    >
+      {score}点
+    </output>
+    <output
+      className="text-[10px] text-gray-500 dark:text-gray-300 whitespace-nowrap text-center w-[50px]"
+      aria-label="パーセンテージ"
+    >
+      ({percentage.toFixed(SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES)}%)
+    </output>
   </>
 );
 
@@ -63,11 +103,14 @@ export const ScoreDisplay = ({
   percentage,
   onScoreChange,
 }: ScoreDisplayProps) => (
-  <div className="flex flex-col h-full justify-center w-full">
+  <fieldset
+    className="flex flex-col h-full justify-center w-full border-0 p-0 m-0"
+    aria-label={isEditing ? 'スコア編集' : 'スコア表示'}
+  >
     {isEditing ? (
       <EditScore score={score} onScoreChange={onScoreChange} />
     ) : (
       <ViewScore score={score} percentage={percentage} />
     )}
-  </div>
+  </fieldset>
 );

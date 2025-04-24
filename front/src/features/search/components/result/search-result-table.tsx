@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { Spinner } from '@/components/ui/feedback/spinner';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { UISubject } from '@/types/university-subject';
 import { transformUniversityData } from '@/features/search/utils/university-data-transformer';
 
@@ -95,12 +96,7 @@ const SearchResultTable = () => {
   }
 
   if (subjects.length === 0) {
-    return (
-      <div className="text-center p-8">
-        <p className="text-xl text-gray-600">データが見つかりませんでした。</p>
-        <p className="mt-2 text-gray-500">現在、データベースに大学情報が登録されていません。</p>
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (

@@ -167,6 +167,13 @@ back-db-restore: ## データベースのバックアップを復元
 	$(DOCKER_COMPOSE) exec -T db psql -U postgres university_exam_db < $(file)
 	@echo "✅ 復元が完了しました"
 
+.PHONY: back-db-clean
+back-db-clean: ## データベースのデータを削除
+	@echo "🗑️  データベースのデータを削除しています..."
+	$(DOCKER_COMPOSE) exec postgres psql -U postgres -d university_exam_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	@echo "✅ データベースのデータが削除されました"
+	@echo "👉 マイグレーションを再実行するには 'make back-migrate' を実行してください"
+
 # デプロイ関連
 .PHONY: deploy-prod
 deploy-prod: ci ## 本番環境にデプロイ

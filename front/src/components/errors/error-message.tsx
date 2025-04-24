@@ -1,14 +1,11 @@
 import type { ErrorMessageProps } from '@/types/error';
 
 /**
- * 後ほどhttps://flowbite.com/docs/components/alerts/の
- * Alerts with icon へ更新
- *
  * エラーメッセージを表示するコンポーネント
  *
  * @description
  * エラーメッセージを視覚的に目立たせるためのコンポーネントです。
- * Tailwind CSSのユーティリティクラスを使用して、一貫性のあるデザインを実現します。
+ * FlowbiteのAlerts with iconデザインを採用しています。
  *
  * @example
  * ```tsx
@@ -20,17 +17,22 @@ import type { ErrorMessageProps } from '@/types/error';
  * @returns {JSX.Element} エラーメッセージコンポーネント
  */
 export const ErrorMessage = ({ message }: ErrorMessageProps) => (
-  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-    <div className="flex items-center">
-      {/* エラーアイコン */}
-      <svg className="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
-        <path
-          fillRule="evenodd"
-          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-          clipRule="evenodd"
-        />
-      </svg>
-      <p className="text-sm text-red-600">{message}</p>
+  <div
+    className="flex items-center p-4 mt-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+    role="alert"
+  >
+    <svg
+      className="flex-shrink-0 inline w-4 h-4 me-3"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      viewBox="0 0 20 20"
+    >
+      <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+    </svg>
+    <span className="sr-only">エラー</span>
+    <div>
+      <span className="font-medium"></span> {message}
     </div>
   </div>
 );

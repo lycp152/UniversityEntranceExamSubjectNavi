@@ -16,6 +16,7 @@ export interface IconProps {
  */
 export const BaseIcon = ({ className, children }: IconProps & { children: React.ReactNode }) => (
   <svg
+    data-testid="base-icon"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 20 20"
     fill="currentColor"

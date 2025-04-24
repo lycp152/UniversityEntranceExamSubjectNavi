@@ -10,7 +10,7 @@
 import type { AdminLayoutProps } from '../types/admin-layout';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { Spinner } from '@/components/ui/feedback/spinner';
-import { EmptyState } from '@/features/admin/components/empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export function AdminLayout({
   children,

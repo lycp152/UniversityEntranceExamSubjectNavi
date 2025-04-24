@@ -1,14 +1,24 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
-import { DepartmentInfo } from './department-info';
+import { DepartmentInfo } from './info';
 import type { DepartmentInfoProps } from '@/features/admin/types/department';
 import { ADMISSION_SCHEDULE_CONSTRAINTS } from '@/constants/constraint/admission-schedule';
 
 /**
- * テスト用の学部情報データを作成します
+ * テスト用の情報データを作成します
  */
 const createTestDepartmentInfo = (): DepartmentInfoProps => {
   return {
+    university: {
+      id: 1,
+      name: 'テスト大学',
+      departments: [],
+      version: 1,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+      createdBy: 'test',
+      updatedBy: 'test',
+    },
     department: {
       id: 1,
       name: '情報学部',
@@ -59,16 +69,6 @@ const createTestDepartmentInfo = (): DepartmentInfoProps => {
           ],
         },
       ],
-    },
-    university: {
-      id: 1,
-      name: 'テスト大学',
-      departments: [],
-      version: 1,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z',
-      createdBy: 'test',
-      updatedBy: 'test',
     },
     isEditing: false,
     onInfoChange: vi.fn(),

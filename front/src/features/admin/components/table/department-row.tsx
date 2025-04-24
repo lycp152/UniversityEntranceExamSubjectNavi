@@ -6,7 +6,7 @@
  */
 import type { DepartmentRowProps } from '@/features/admin/types/university-list';
 import { EditButtons } from '@/features/admin/components/buttons/edit-buttons';
-import { DepartmentInfo } from '@/features/admin/components/department-info/department-info';
+import { DepartmentInfo } from '@/features/admin/components/info/info';
 import { ExamSections } from '@/features/admin/components/exam-sections';
 import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/types';
 

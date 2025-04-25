@@ -1,8 +1,7 @@
-import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../../types/types';
-import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/constraint/subjects/subject-score';
-import { Input } from '@/components/ui/input';
 import { useCallback } from 'react';
-
+import { Input } from '@/components/ui/input';
+import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/constraint/subjects/subject-score';
+import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../../types/types';
 /**
  * スコア表示コンポーネント
  *
@@ -10,11 +9,12 @@ import { useCallback } from 'react';
  * @description
  * 編集モードと表示モードを切り替えてスコアを表示するコンポーネントです。
  * Tailwind CSSのユーティリティクラスを使用して、フォーム要素のスタイリングを実現します。
+ * バックエンドのバリデーションルールと同期を保っています。
  *
  * @features
- * - スコアの表示と編集
- * - パーセンテージの表示
- * - 入力値のバリデーション（0-1000の整数）
+ * - スコアの表示と編集（0-1000の整数）
+ * - パーセンテージの表示（0-100、小数点以下2桁）
+ * - 入力値のバリデーション
  *
  * @example
  * ```tsx
@@ -60,7 +60,7 @@ const EditScore = ({ score, onScoreChange }: EditScoreProps) => {
     <Input
       value={score}
       onChange={handleInputChange}
-      className="text-xs w-[50px] h-6 p-0 text-center"
+      className="text-xs w-[50px] h-6 p-1 text-center"
       inputMode="numeric"
       pattern="[0-9]*"
       aria-label="スコア"

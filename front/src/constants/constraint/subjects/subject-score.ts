@@ -16,10 +16,6 @@ export const SUBJECT_SCORE_CONSTRAINTS = {
   MIN_DISPLAY_ORDER: 0,
   MAX_DISPLAY_ORDER: 999,
 
-  /** 科目名の制約（バックエンドと一致） */
-  MAX_SUBJECT_NAME_LENGTH: 20,
-  SUBJECT_NAME_NOT_EMPTY: true, // バックエンドのcheck:name <> ''と一致
-
   /** 表示用の小数点以下の桁数 */
   DEFAULT_DECIMAL_PLACES: 2,
 } as const;

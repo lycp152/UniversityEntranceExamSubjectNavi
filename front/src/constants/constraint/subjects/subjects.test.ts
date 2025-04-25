@@ -4,8 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { SUBJECTS, SubjectName } from './subjects';
-import { SUBJECT_NAME_CONSTRAINTS, SubjectNameLength } from './subjects';
+import { SUBJECTS, SUBJECT_NAME_CONSTRAINTS, SubjectName, SubjectNameLength } from './subjects';
 
 describe('科目の定義', () => {
   describe('科目名の定義', () => {
@@ -49,12 +48,12 @@ describe('科目の定義', () => {
 
 describe('科目名の制約', () => {
   describe('科目名の長さ制約', () => {
-    it('科目名の最小長が正しいこと', () => {
-      expect(SUBJECT_NAME_CONSTRAINTS.MIN_LENGTH).toBe(1);
-    });
-
     it('科目名の最大長が正しいこと', () => {
       expect(SUBJECT_NAME_CONSTRAINTS.MAX_LENGTH).toBe(20);
+    });
+
+    it('科目名が空でないことが制約されていること', () => {
+      expect(SUBJECT_NAME_CONSTRAINTS.NOT_EMPTY).toBe(true);
     });
   });
 

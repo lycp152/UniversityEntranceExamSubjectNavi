@@ -61,16 +61,6 @@ describe('科目スコアの制約', () => {
     });
   });
 
-  describe('科目名の制約', () => {
-    it('科目名の最大長が正しいこと', () => {
-      expect(SUBJECT_SCORE_CONSTRAINTS.MAX_SUBJECT_NAME_LENGTH).toBe(20);
-    });
-
-    it('科目名が空でないことが制約されていること', () => {
-      expect(SUBJECT_SCORE_CONSTRAINTS.SUBJECT_NAME_NOT_EMPTY).toBe(true);
-    });
-  });
-
   describe('小数点以下の桁数', () => {
     it('デフォルトの小数点以下の桁数が正しいこと', () => {
       expect(SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES).toBe(2);

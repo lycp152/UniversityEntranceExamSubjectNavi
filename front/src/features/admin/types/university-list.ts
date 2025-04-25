@@ -39,8 +39,8 @@ export interface EditButtonsProps {
   onCancel: () => void;
 }
 
-/** 学部行のプロパティ型 */
-export interface DepartmentRowProps {
+/** 行のプロパティ型 */
+export interface RowProps {
   /** 表示・編集対象の大学情報 */
   university: University;
   /** 表示・編集対象の学部情報 */

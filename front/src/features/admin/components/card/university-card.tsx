@@ -91,7 +91,7 @@ const UniversityCardList = ({
  * 大学カードコンポーネント
  *
  * 大学情報をカード形式で表示し、編集機能を提供します。
- * 学部ごとにDepartmentRowコンポーネントを表示します。
+ * 表示単位ごとにRowコンポーネントを表示します。
  */
 export const UniversityCard = (props: UniversityCardProps) => {
   return (

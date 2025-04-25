@@ -1,17 +1,17 @@
 /**
- * 学部行コンポーネント
+ * 行コンポーネント
  *
- * 大学の学部情報を表示するための行コンポーネントです。
+ * 大学の情報を表示するための行コンポーネントです。
  * 学部情報と試験情報を横並びで表示し、編集機能を提供します。
  */
-import type { DepartmentRowProps } from '@/features/admin/types/university-list';
+import type { RowProps } from '@/features/admin/types/university-list';
 import { EditButtons } from '@/features/admin/components/buttons/edit-buttons';
-import { InfoDisplay } from '@/features/admin/components/info/info-display';
+import { BasicInfo } from '@/features/admin/components/basic-info/basic-info';
 import { ExamSections } from '@/features/admin/components/exam/exam-sections';
 import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/types';
 
 /**
- * 学部行コンポーネント
+ * 行コンポーネント
  *
  * @param university - 表示・編集対象の大学情報
  * @param department - 表示・編集対象の学部情報
@@ -35,7 +35,7 @@ export const InfoCombiner = ({
   onInfoChange,
   onAddSubject,
   onSubjectNameChange,
-}: DepartmentRowProps) => {
+}: RowProps) => {
   const major = department.majors[0];
   const admissionSchedule = major?.admissionSchedules?.[0];
   const admissionInfo = admissionSchedule?.admissionInfos?.[0];
@@ -61,8 +61,8 @@ export const InfoCombiner = ({
       id: subject.id,
       test_type_id: testType.id,
       name: subject.name,
-      score: subject.score || 0,
-      percentage: subject.percentage || 0,
+      score: subject.score ?? 0,
+      percentage: subject.percentage ?? 0,
       display_order: subject.displayOrder,
       created_at: subject.createdAt,
       updated_at: subject.updatedAt,
@@ -124,9 +124,12 @@ export const InfoCombiner = ({
           />
         </div>
         <div className="flex-1 flex items-start gap-4">
-          <InfoDisplay
-            department={department}
+          <BasicInfo
             university={university}
+            department={department}
+            major={major}
+            admissionSchedule={admissionSchedule}
+            admissionInfo={admissionInfo}
             isEditing={isEditing}
             onInfoChange={(field, value) =>
               onInfoChange(university.id, department.id, field, value)

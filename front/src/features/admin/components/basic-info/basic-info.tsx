@@ -1,11 +1,11 @@
 /**
- * 情報コンポーネント
+ * 基本情報コンポーネント
  *
- * 大学の情報を表示・編集するためのコンポーネントです。
+ * 大学の基本情報を表示・編集するためのコンポーネントです。
  * 大学名、学部名、学科名、日程、募集人数などの情報を表示し、
  * 編集モード時にはこれらの情報を編集できるようにします。
  */
-import type { DepartmentInfoProps } from '@/features/admin/types/department';
+import type { BasicInfoProps } from '@/features/admin/types/basic-info';
 import { ADMISSION_SCHEDULE_CONSTRAINTS } from '@/constants/constraint/admission-schedule';
 import { Input } from '@/components/ui/input';
 import {
@@ -44,23 +44,25 @@ const validateDisplayOrder = (order: number): boolean => {
 };
 
 /**
- * 学部情報コンポーネント
+ * 基本情報コンポーネント
  *
- * @param department - 表示・編集対象の学部情報
- * @param university - 学部が所属する大学情報
+ * @param university - 表示・編集対象の大学
+ * @param department - 表示・編集対象の学部
+ * @param major - 表示・編集対象の学科
+ * @param admissionSchedule - 表示・編集対象の日程
+ * @param admissionInfo - 表示・編集対象の募集人数
  * @param isEditing - 編集モードの状態
  * @param onInfoChange - 学部情報の変更を処理するハンドラー
  */
-export const InfoDisplay = ({
-  department,
+export const BasicInfo = ({
   university,
+  department,
+  major,
+  admissionSchedule,
+  admissionInfo,
   isEditing,
   onInfoChange,
-}: DepartmentInfoProps) => {
-  const major = department.majors[0];
-  const admissionSchedule = major?.admissionSchedules?.[0];
-  const admissionInfo = admissionSchedule?.admissionInfos?.[0];
-
+}: BasicInfoProps) => {
   if (!major || !admissionSchedule || !admissionInfo) {
     return null;
   }

@@ -86,7 +86,7 @@ describe('BasicInfo', () => {
 
       expect(screen.getByText('テスト大学')).toBeInTheDocument();
       expect(screen.getByText('情報学部 - 情報学科')).toBeInTheDocument();
-      expect(screen.getByText('日程: 前')).toBeInTheDocument();
+      expect(screen.getByText('日程: 前期')).toBeInTheDocument();
       expect(screen.getByText('募集人数: 100人')).toBeInTheDocument();
     });
   });

@@ -7,6 +7,14 @@
  */
 import type { DepartmentInfoProps } from '@/features/admin/types/department';
 import { ADMISSION_SCHEDULE_CONSTRAINTS } from '@/constants/constraint/admission-schedule';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 /**
  * フィールド値の変換関数
@@ -19,9 +27,6 @@ import { ADMISSION_SCHEDULE_CONSTRAINTS } from '@/constants/constraint/admission
 const transformValue = (field: string, value: string): string | number => {
   if (field === 'enrollment') {
     return parseInt(value, 10);
-  }
-  if (field === 'schedule') {
-    return `${value}期`;
   }
   return value;
 };
@@ -46,7 +51,7 @@ const validateDisplayOrder = (order: number): boolean => {
  * @param isEditing - 編集モードの状態
  * @param onInfoChange - 学部情報の変更を処理するハンドラー
  */
-export const DepartmentInfo = ({
+export const InfoDisplay = ({
   department,
   university,
   isEditing,
@@ -79,24 +84,24 @@ export const DepartmentInfo = ({
     <div className="px-2 border-l border-gray-300 min-w-[125px]">
       {isEditing ? (
         <>
-          <input
+          <Input
             type="text"
             value={university.name}
             onChange={handleChange('universityName')}
-            className="w-[120px] font-semibold text-gray-900 dark:text-gray-100 mb-1 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-[120px] p-1 mb-2"
           />
-          <div className="flex gap-1 mb-1">
-            <input
+          <div className="flex gap-1">
+            <Input
               type="text"
               value={department.name}
               onChange={handleChange('departmentName')}
-              className="w-[60px] text-sm font-medium text-gray-900 dark:text-gray-100 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-[60px] p-1"
             />
-            <input
+            <Input
               type="text"
               value={major.name}
               onChange={handleChange('majorName')}
-              className="w-[60px] text-sm font-medium text-gray-900 dark:text-gray-100 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-[60px] p-1"
             />
           </div>
           <div className="flex gap-1">
@@ -105,33 +110,34 @@ export const DepartmentInfo = ({
                 日程
               </label>
               <div className="flex items-center">
-                <select
-                  id="schedule"
+                <Select
                   value={admissionSchedule.name}
-                  onChange={handleChange('schedule')}
-                  className="w-[50px] text-xs text-gray-900 dark:text-gray-100 px-1 py-1 border border-blue-300 dark:border-blue-500 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  onValueChange={value => handleChange('schedule')({ target: { value } } as any)}
                 >
-                  {ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES.map(option => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <span className="text-xs text-gray-900 dark:text-gray-100 px-1 py-1 border border-l-0 border-blue-300 dark:border-blue-500 rounded-r bg-gray-50 dark:bg-gray-800">
-                  期
-                </span>
+                  <SelectTrigger className="w-[50px] text-xs p-1">
+                    <SelectValue>{admissionSchedule.name ?? '選択'}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES.map(option => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-xs">期</span>
               </div>
             </div>
             <div className="w-[60px]">
               <label htmlFor="enrollment" className="text-xs text-gray-900 dark:text-gray-100">
                 募集人数
               </label>
-              <input
+              <Input
                 id="enrollment"
                 type="number"
                 value={admissionInfo.enrollment}
                 onChange={handleChange('enrollment')}
-                className="w-full text-xs text-gray-900 dark:text-gray-100 px-2 py-1 border border-blue-300 dark:border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="p-1"
                 min="0"
               />
             </div>
@@ -144,7 +150,7 @@ export const DepartmentInfo = ({
             {department.name} - {major.name}
           </div>
           <div className="text-xs truncate text-gray-600 dark:text-gray-300">
-            日程: {admissionSchedule.name || '未設定'}
+            日程: {admissionSchedule.name ?? '未設定'}期
           </div>
           <div className="text-xs truncate text-gray-600 dark:text-gray-300">
             募集人数: {admissionInfo.enrollment}人

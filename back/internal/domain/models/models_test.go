@@ -431,8 +431,8 @@ func TestAdmissionScheduleValidation(t *testing.T) {
 		wantErr          bool
 	}{
 		{
-			name:             "正常な入試日程（前期）",
-			admissionSchedule: h.createTestAdmissionSchedule("前期", 1, 1),
+			name:             "正常な入試日程（前）",
+			admissionSchedule: h.createTestAdmissionSchedule("前", 1, 1),
 			wantErr:          false,
 		},
 		{
@@ -442,12 +442,12 @@ func TestAdmissionScheduleValidation(t *testing.T) {
 		},
 		{
 			name:             "無効な表示順",
-			admissionSchedule: h.createTestAdmissionSchedule("前期", 1, -1),
+			admissionSchedule: h.createTestAdmissionSchedule("前", 1, -1),
 			wantErr:          true,
 		},
 		{
 			name:             "無効な学科ID",
-			admissionSchedule: h.createTestAdmissionSchedule("前期", 0, 1),
+			admissionSchedule: h.createTestAdmissionSchedule("前", 0, 1),
 			wantErr:          true,
 		},
 	}

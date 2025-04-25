@@ -357,7 +357,7 @@ func main() {
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									Name:         "前期",
+									Name:         "前",
 									DisplayOrder: 1,
 									AdmissionInfos: []models.AdmissionInfo{
 										{
@@ -424,7 +424,7 @@ func main() {
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									Name:         "後期",
+									Name:         "後",
 									DisplayOrder: 1,
 									AdmissionInfos: []models.AdmissionInfo{
 										{

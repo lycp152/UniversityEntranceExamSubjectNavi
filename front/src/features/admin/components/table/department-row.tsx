@@ -6,7 +6,7 @@
  */
 import type { DepartmentRowProps } from '@/features/admin/types/university-list';
 import { EditButtons } from '@/features/admin/components/buttons/edit-buttons';
-import { DepartmentInfo } from '@/features/admin/components/info/info';
+import { InfoDisplay } from '@/features/admin/components/info/info-display';
 import { ExamSections } from '@/features/admin/components/exam-sections';
 import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/types';
 
@@ -124,7 +124,7 @@ export const DepartmentRow = ({
           />
         </div>
         <div className="flex-1 flex items-start gap-4">
-          <DepartmentInfo
+          <InfoDisplay
             department={department}
             university={university}
             isEditing={isEditing}

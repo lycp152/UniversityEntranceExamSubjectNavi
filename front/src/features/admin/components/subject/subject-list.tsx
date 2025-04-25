@@ -55,9 +55,9 @@ export const SubjectList = ({
 
   return (
     <div className="flex gap-1">
-      {sortedSubjects.map(subject => (
+      {sortedSubjects.map((subject, index) => (
         <SubjectCard
-          key={subject.id}
+          key={`${subject.id}-${index}`}
           subject={subject}
           isEditing={isEditing}
           editValue={editValues[subject.id] ?? subject.score ?? 0}

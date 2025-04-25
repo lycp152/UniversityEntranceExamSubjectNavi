@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { ExamSectionProps } from '../types/types';
-import { SubjectList } from './subject/subject-list';
+import type { ExamSectionProps } from '../../types/types';
+import { SubjectList } from '../subject/subject-list';
+import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 
 /**
  * 試験セクションコンポーネント
@@ -55,9 +56,16 @@ export const ExamSection = ({
     [subjects, type.id]
   );
 
+  // 試験種別に応じた正式名称を取得
+  const formalName = useMemo(() => {
+    if (type.name === EXAM_TYPES.COMMON.name) return EXAM_TYPES.COMMON.formalName;
+    if (type.name === EXAM_TYPES.SECONDARY.name) return EXAM_TYPES.SECONDARY.formalName;
+    return type.name;
+  }, [type.name]);
+
   return (
     <div className="w-full">
-      <div className="text-xs font-medium mb-2">{type.name}試験</div>
+      <div className="text-xs font-medium mb-2">{formalName}</div>
       <SubjectList
         subjects={filteredSubjects}
         type={type}

@@ -7,7 +7,7 @@
 import type { DepartmentRowProps } from '@/features/admin/types/university-list';
 import { EditButtons } from '@/features/admin/components/buttons/edit-buttons';
 import { InfoDisplay } from '@/features/admin/components/info/info-display';
-import { ExamSections } from '@/features/admin/components/exam-sections';
+import { ExamSections } from '@/features/admin/components/exam/exam-sections';
 import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/types';
 
 /**
@@ -24,7 +24,7 @@ import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/type
  * @param onAddSubject - 科目追加時のハンドラー
  * @param onSubjectNameChange - 科目名変更時のハンドラー
  */
-export const DepartmentRow = ({
+export const InfoCombiner = ({
   university,
   department,
   isEditing,

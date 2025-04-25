@@ -7,7 +7,7 @@
  */
 import { useMemo } from 'react';
 import type { University } from '@/features/admin/types/university';
-import { DepartmentRow } from '@/features/admin/components/table/department-row';
+import { InfoCombiner } from '@/features/admin/components/card/info-combiner';
 import { Card, CardContent } from '@/components/ui/card';
 import type { UniversityListProps, EditMode } from '@/features/admin/types/university-list';
 
@@ -32,12 +32,12 @@ interface UniversityCardProps
 }
 
 /**
- * 学部行リストコンポーネント
+ * 大学カードリストコンポーネント
  *
- * 大学の学部情報をリスト形式で表示します。
+ * 大学のカードをリスト形式で表示します。
  * 編集モードの状態に応じて、各学部の編集状態を管理します。
  */
-const DepartmentList = ({
+const UniversityCardList = ({
   university,
   editMode,
   onEdit,
@@ -48,11 +48,11 @@ const DepartmentList = ({
   onAddSubject,
   onSubjectNameChange,
 }: UniversityCardProps) => {
-  const departments = useMemo(
+  const infoItems = useMemo(
     () =>
       university.departments?.map(department => (
-        <DepartmentRow
-          key={`department-${university.id}-${department.id}`}
+        <InfoCombiner
+          key={`infoItems-${university.id}-${department.id}`}
           university={university}
           department={department}
           isEditing={
@@ -84,7 +84,7 @@ const DepartmentList = ({
     ]
   );
 
-  return <>{departments}</>;
+  return <>{infoItems}</>;
 };
 
 /**
@@ -98,7 +98,7 @@ export const UniversityCard = (props: UniversityCardProps) => {
     <article aria-label={`${props.university.name}の情報`}>
       <Card className="overflow-hidden py-1 hover:bg-gray-50 dark:hover:bg-gray-900">
         <CardContent className="divide-y divide-gray-100 p-0">
-          <DepartmentList {...props} />
+          <UniversityCardList {...props} />
         </CardContent>
       </Card>
     </article>

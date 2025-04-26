@@ -5,7 +5,6 @@
  * 文字列の配列をチェックボックスアイテムとして表示し、選択状態を管理します。
  */
 import BaseCheckboxGroup from './base-checkbox-group';
-import { checkboxStyles } from './checkbox-styles';
 import {
   BaseCheckboxGroupProps,
   DEFAULT_GET_ITEM_KEY,
@@ -46,7 +45,7 @@ const SimpleCheckboxGroup: React.FC<SimpleCheckboxGroupProps> = ({
       renderItems={({ items, selectedItems, handleItemChange }) =>
         renderCheckboxItems(items, selectedItems, handleItemChange, getItemKey)
       }
-      className={checkboxStyles.categoryItemsContainer}
+      className="ml-4"
     />
   );
 };

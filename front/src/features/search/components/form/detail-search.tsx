@@ -89,11 +89,11 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
           <div className="mb-4">
             <Region selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
           </div>
-          <div className="flex space-x-4">
-            <div className="flex-1">
+          <div className="flex flex-wrap space-x-4">
+            <div className="flex-1 min-w-[300px]">
               <AcademicField selectedItems={academicField} setSelectedItems={setAcademicField} />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-[300px]">
               <Schedule selectedItems={schedule} setSelectedItems={setSchedule} />
             </div>
           </div>

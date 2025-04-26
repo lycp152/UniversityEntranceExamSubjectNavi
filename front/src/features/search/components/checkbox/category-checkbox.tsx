@@ -4,7 +4,6 @@
  * このコンポーネントは、カテゴリ内のアイテムをグループ化して表示します。
  * カテゴリ全体の選択/解除と、個別のアイテムの選択/解除をサポートします。
  */
-import { checkboxStyles } from './checkbox-styles';
 import CheckboxGroupLayout from './checkbox-group-layout';
 import {
   calculateCheckboxState,
@@ -68,8 +67,8 @@ const CategoryCheckbox = <T,>({
       allChecked={allChecked}
       isIndeterminate={isIndeterminate}
       onAllChange={createCheckboxChangeHandler(handleCategoryChange)}
-      containerClassName={checkboxStyles.itemContainer}
-      className={checkboxStyles.categoryItemsContainer}
+      containerClassName="flex-1 min-w-[200px]"
+      className="ml-4"
     >
       {renderCheckboxItems(categoryItems, selectedItems, onItemChange, getItemKey, itemLabel)}
     </CheckboxGroupLayout>

@@ -59,7 +59,7 @@ interface DetailSearchProps {
  * />
  * ```
  */
-const DetailSearch: React.FC<DetailSearchProps> = ({
+const DetailSearch = ({
   selectedItems,
   setSelectedItems,
   academicField,
@@ -70,7 +70,7 @@ const DetailSearch: React.FC<DetailSearchProps> = ({
   setClassification,
   isExpanded,
   onToggleExpanded,
-}) => {
+}: DetailSearchProps) => {
   return (
     <div className="mt-4">
       <Button

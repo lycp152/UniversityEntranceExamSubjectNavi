@@ -37,23 +37,24 @@ interface BaseCheckboxProps {
  * @param indeterminate - チェックボックスの中間状態（一部選択）
  * @param value - チェックボックスの値
  */
-const BaseCheckbox: React.FC<BaseCheckboxProps> = ({
+const BaseCheckbox = ({
   checked,
   onChange,
   label,
   className = '',
   indeterminate = false,
   value,
-}) => {
+}: BaseCheckboxProps) => {
   return (
-    <label className={`flex items-center gap-2 pl-2${className}`}>
+    <label className={cn('flex items-center gap-2 pl-2', className)}>
       <CheckboxPrimitive.Root
         data-slot="checkbox"
+        data-indeterminate={indeterminate}
         className={cn(
           'peer border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
-          className
+          indeterminate && 'bg-primary text-primary-foreground dark:bg-primary border-primary'
         )}
-        checked={checked}
+        checked={indeterminate || checked}
         onCheckedChange={checked => {
           onChange({
             target: { checked: checked as boolean, value },

@@ -35,7 +35,7 @@ interface CheckboxGroupLayoutProps {
  * @param children - 子要素
  * @param className - コンテナに適用する追加のCSSクラス
  */
-const CheckboxGroupLayout: React.FC<CheckboxGroupLayoutProps> = ({
+const CheckboxGroupLayout = ({
   label,
   allChecked,
   isIndeterminate,
@@ -43,7 +43,7 @@ const CheckboxGroupLayout: React.FC<CheckboxGroupLayoutProps> = ({
   children,
   className = '',
   containerClassName = '',
-}) => {
+}: CheckboxGroupLayoutProps) => {
   return (
     <div className={`mt-2 mb-4 ${containerClassName}`}>
       <label className="block mb-2 text-gray-700 dark:text-gray-300">{label}</label>

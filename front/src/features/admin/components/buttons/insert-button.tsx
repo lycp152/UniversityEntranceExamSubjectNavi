@@ -25,11 +25,11 @@ interface InsertUniversityButtonProps {
  * 大学リストの特定の位置に新しい大学情報を挿入するためのボタンを表示します。
  * 必要に応じて区切り線も表示します。
  */
-export const InsertUniversityButton: React.FC<InsertUniversityButtonProps> = ({
+export const InsertUniversityButton = ({
   onInsert,
   index,
   isOnly = false,
-}) => {
+}: InsertUniversityButtonProps) => {
   return (
     <div className={`relative flex justify-center items-center ${isOnly ? 'py-8' : ''}`}>
       {!isOnly && (

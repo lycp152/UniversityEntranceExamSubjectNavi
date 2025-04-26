@@ -40,12 +40,12 @@ interface GenericFilterProps extends FilterCheckboxProps {
  * @param {GenericFilterProps} props - コンポーネントのプロパティ
  * @returns {JSX.Element} 汎用フィルターコンポーネント
  */
-export const GenericFilter: React.FC<GenericFilterProps> = ({
+export const GenericFilter = ({
   items,
   selectedItems,
   setSelectedItems,
   label,
-}) => (
+}: GenericFilterProps) => (
   <GenericCheckboxGroup
     items={items}
     selectedItems={selectedItems}

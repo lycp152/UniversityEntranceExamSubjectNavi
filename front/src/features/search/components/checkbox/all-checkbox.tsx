@@ -28,12 +28,7 @@ interface AllCheckboxProps {
  * @param onChange - チェックボックスの状態が変更されたときに呼び出される関数
  * @param label - チェックボックスのラベル
  */
-const AllCheckbox: React.FC<AllCheckboxProps> = ({
-  allChecked,
-  indeterminate,
-  onChange,
-  label,
-}) => {
+const AllCheckbox = ({ allChecked, indeterminate, onChange, label }: AllCheckboxProps) => {
   return (
     <BaseCheckbox
       checked={allChecked}

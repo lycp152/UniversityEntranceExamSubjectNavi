@@ -28,13 +28,13 @@ interface SimpleCheckboxGroupProps extends BaseCheckboxGroupProps<string> {
  * @param label - チェックボックスグループのラベル
  * @param getItemKey - アイテムのキーを取得する関数
  */
-const SimpleCheckboxGroup: React.FC<SimpleCheckboxGroupProps> = ({
+const SimpleCheckboxGroup = ({
   items,
   selectedItems,
   setSelectedItems,
   label,
   getItemKey = DEFAULT_GET_ITEM_KEY,
-}) => {
+}: SimpleCheckboxGroupProps) => {
   return (
     <BaseCheckboxGroup
       items={items}

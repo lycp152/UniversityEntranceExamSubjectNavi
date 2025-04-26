@@ -40,7 +40,7 @@ import { FilterProps } from '../../types/filter';
  * @param {FilterProps} props - コンポーネントのプロパティ
  * @returns {JSX.Element} フィルターコンポーネント
  */
-export const Filter: React.FC<FilterProps> = ({ config, ...props }) => {
+export const Filter = ({ config, ...props }: FilterProps) => {
   if (config.isCategory) {
     return (
       <CategoryFilter

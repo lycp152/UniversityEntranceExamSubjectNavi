@@ -26,6 +26,4 @@ const config = {
  * />
  * ```
  */
-export const Schedule: React.FC<FilterCheckboxProps> = props => (
-  <Filter config={config} {...props} />
-);
+export const Schedule = (props: FilterCheckboxProps) => <Filter config={config} {...props} />;

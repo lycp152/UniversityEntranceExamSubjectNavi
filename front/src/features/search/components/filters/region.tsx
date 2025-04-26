@@ -26,4 +26,4 @@ const config = {
  * />
  * ```
  */
-export const Region: React.FC<FilterCheckboxProps> = props => <Filter config={config} {...props} />;
+export const Region = (props: FilterCheckboxProps) => <Filter config={config} {...props} />;

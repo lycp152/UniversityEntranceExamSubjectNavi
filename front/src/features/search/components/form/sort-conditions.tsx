@@ -56,6 +56,7 @@ const sortOptions = {
  * @param {string[]} props.options - 選択肢の配列
  * @param {(value: string) => void} props.onChange - 選択値が変更されたときに呼び出される関数
  * @param {string} props.placeholder - プレースホルダーテキスト
+ * @param {string} props.id - セレクトボックスの一意のID
  * @returns {JSX.Element} セレクトボックスコンポーネント
  */
 const Select = ({
@@ -63,17 +64,21 @@ const Select = ({
   options,
   onChange,
   placeholder,
+  id,
 }: {
   value: string;
   options: string[];
   onChange: (value: string) => void;
   placeholder: string;
+  id: string;
 }) => (
   <div className="w-full">
     <select
+      id={id}
+      name={id}
+      className="border border-gray-300 dark:border-gray-700 p-2 w-full"
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="border border-gray-300 dark:border-gray-700 p-2 w-full"
     >
       <option value="">{placeholder}</option>
       {options.map(option => (
@@ -130,6 +135,7 @@ export default function SortConditions({ sortOrder, setSortOrder }: SortConditio
               options={sortOptions.examType}
               onChange={value => handleSortChange(index, 'examType', value)}
               placeholder="試験を選択"
+              id={`exam-type-${index}`}
             />
             <span className="ml-2">の</span>
           </div>
@@ -139,6 +145,7 @@ export default function SortConditions({ sortOrder, setSortOrder }: SortConditio
               options={sortOptions.subjectName}
               onChange={value => handleSortChange(index, 'subjectName', value)}
               placeholder="科目名を選択"
+              id={`subject-name-${index}`}
             />
             <span className="ml-2 whitespace-nowrap">の比率が</span>
           </div>
@@ -148,6 +155,7 @@ export default function SortConditions({ sortOrder, setSortOrder }: SortConditio
               options={sortOptions.order}
               onChange={value => handleSortChange(index, 'order', value)}
               placeholder="並び順を選択"
+              id={`order-${index}`}
             />
             <span className="ml-2">順</span>
           </div>

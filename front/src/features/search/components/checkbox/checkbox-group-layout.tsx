@@ -44,14 +44,20 @@ const CheckboxGroupLayout = ({
   className = '',
   containerClassName = '',
 }: CheckboxGroupLayoutProps) => {
+  const checkboxId = `checkbox-${label.replace(/\s+/g, '-').toLowerCase()}`;
+
   return (
     <div className={`mt-2 mb-4 ${containerClassName}`}>
-      <label className="block mb-2 text-gray-700 dark:text-gray-300">{label}</label>
+      <label htmlFor={checkboxId} className="block mb-2 text-gray-700 dark:text-gray-300">
+        {label}
+      </label>
       <AllCheckbox
+        id={checkboxId}
         allChecked={allChecked}
         indeterminate={isIndeterminate}
         onChange={onAllChange}
         label="すべて"
+        tabIndex={0}
       />
       <div className={`flex flex-wrap ml-2 ${className}`}>{children}</div>
     </div>

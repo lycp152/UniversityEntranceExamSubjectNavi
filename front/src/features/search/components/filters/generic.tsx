@@ -30,26 +30,43 @@ interface GenericFilterProps extends FilterCheckboxProps {
  * @example
  * ```tsx
  * <GenericFilter
- *   items={["東京", "大阪", "名古屋"]}
+ *   items={["東京", "大阪", "愛知"]}
  *   selectedItems={["東京"]}
  *   setSelectedItems={setSelectedItems}
  *   label="所在地"
  * />
  * ```
  *
- * @param {GenericFilterProps} props - コンポーネントのプロパティ
- * @returns {JSX.Element} 汎用フィルターコンポーネント
+ * @accessibility
+ * - WAI-ARIAガイドラインに準拠
+ * - キーボードナビゲーション対応（Tab、Space）
+ * - スクリーンリーダー対応
+ * - フォーカス可視性の保証
  */
 export const GenericFilter = ({
   items,
   selectedItems,
   setSelectedItems,
   label,
-}: GenericFilterProps) => (
-  <GenericCheckboxGroup
-    items={items}
-    selectedItems={selectedItems}
-    setSelectedItems={setSelectedItems}
-    label={label}
-  />
-);
+}: GenericFilterProps) => {
+  if (!items || !Array.isArray(items)) {
+    console.error('GenericFilter: itemsは配列である必要があります');
+    return null;
+  }
+
+  if (!label) {
+    console.error('GenericFilter: labelは必須です');
+    return null;
+  }
+
+  return (
+    <GenericCheckboxGroup
+      items={items}
+      selectedItems={selectedItems}
+      setSelectedItems={setSelectedItems}
+      label={label}
+      aria-label={`${label}フィルター`}
+      aria-describedby={`${label}-description`}
+    />
+  );
+};

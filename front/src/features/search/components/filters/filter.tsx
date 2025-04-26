@@ -29,7 +29,7 @@ import { FilterProps } from '../../types/filter';
  * <Filter
  *   config={{
  *     isCategory: false,
- *     options: ["東京", "大阪", "名古屋"],
+ *     options: ["東京", "大阪", "愛知"],
  *     label: "所在地"
  *   }}
  *   selectedItems={["東京"]}

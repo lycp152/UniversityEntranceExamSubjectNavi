@@ -21,16 +21,19 @@ import { ValidationError } from '@/types/api/validation';
  * @extends {Error}
  * @property {string} code - エラーコード
  * @property {ValidationError[]} errors - バリデーションエラーの配列
+ * @property {unknown} [originalError] - 元のエラー
  */
 export class ValidationException extends Error {
   readonly code: string;
   readonly errors: ValidationError[];
+  readonly originalError?: unknown;
 
-  constructor(errors: ValidationError[]) {
+  constructor(errors: ValidationError[], originalError?: unknown) {
     super(ERROR_MESSAGES[API_ERROR_CODES.API_VALIDATION_ERROR]);
     this.name = 'ValidationException';
     this.code = API_ERROR_CODES.API_VALIDATION_ERROR;
     this.errors = errors;
+    this.originalError = originalError;
   }
 }
 
@@ -50,7 +53,7 @@ export const handleZodError = (error: z.ZodError): ValidationException => {
     })
   );
 
-  return new ValidationException(validationErrors);
+  return new ValidationException(validationErrors, error);
 };
 
 /**
@@ -69,6 +72,16 @@ export const validateApiResponse = async <T>(schema: z.ZodType<T>, data: unknown
     if (error instanceof z.ZodError) {
       throw handleZodError(error);
     }
-    throw error;
+    throw new ValidationException(
+      [
+        {
+          code: ValidationErrorCode.INVALID_DATA_FORMAT,
+          message: '予期せぬエラーが発生しました',
+          field: '',
+          severity: ValidationSeverity.ERROR,
+        },
+      ],
+      error
+    );
   }
 };

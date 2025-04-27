@@ -3,12 +3,7 @@
 import { SearchFormSchema } from '@/types/api/schemas';
 import { SearchFormState } from '../types/search-form';
 import { fetchUniversities } from './university-api-client';
-
-const ERROR_MESSAGES = {
-  API_ERROR: 'エラーが発生しました',
-  SEARCH_ERROR: '検索中にエラーが発生しました',
-  SEARCH_SUCCESS: '検索を実行しました',
-} as const;
+import { ERROR_MESSAGES, SEARCH_ERROR_CODES } from '@/constants/errors/domain';
 
 /**
  * 大学検索のためのServer Action
@@ -46,19 +41,21 @@ export async function searchUniversities(
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
+      message: ERROR_MESSAGES[SEARCH_ERROR_CODES.SEARCH_ERROR],
     };
   }
 
   try {
     await fetchUniversities(validatedFields.data);
     return {
-      message: ERROR_MESSAGES.SEARCH_SUCCESS,
+      message: ERROR_MESSAGES[SEARCH_ERROR_CODES.SEARCH_SUCCESS],
     };
   } catch (error: unknown) {
     console.error('APIエラー:', error);
-    const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.SEARCH_ERROR;
+    const errorMessage =
+      error instanceof Error ? error.message : ERROR_MESSAGES[SEARCH_ERROR_CODES.SEARCH_ERROR];
     return {
-      message: ERROR_MESSAGES.API_ERROR,
+      message: ERROR_MESSAGES[SEARCH_ERROR_CODES.API_ERROR],
       errors: {
         keyword: [errorMessage],
       },

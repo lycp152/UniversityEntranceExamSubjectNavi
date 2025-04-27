@@ -15,7 +15,7 @@
  * - 基本的なデータ型の定義
  */
 
-import { ErrorSeverity } from '@/types/error';
+import { ValidationError } from '@/types/api/validation';
 
 /** 全てのモデルの基底となる型 */
 export interface BaseModel {
@@ -36,41 +36,9 @@ export interface BaseModel {
 }
 
 /**
- * バリデーションエラーの型定義
- */
-export interface ValidationError {
-  /** エラーが発生したフィールド名 */
-  field: string;
-  /** エラーメッセージ */
-  message: string;
-  /** エラーコード */
-  code: string;
-  /** エラーの重要度 */
-  severity: ErrorSeverity;
-  /** 元のエラー */
-  err?: Error;
-  /** エラーの詳細情報 */
-  details?: Record<string, unknown>;
-}
-
-/**
  * バリデーションエラーの集合型定義
  */
 export interface ValidationErrors {
   /** バリデーションエラーの配列 */
   errors: ValidationError[];
-}
-
-/**
- * バリデーションルールの型定義
- */
-export interface ValidationRule<T> {
-  /** バリデーション対象のフィールド名 */
-  field: string;
-  /** バリデーション条件 */
-  condition: (value: T) => boolean;
-  /** エラーメッセージ */
-  message: string;
-  /** エラーコード */
-  code: string;
 }

@@ -6,10 +6,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { searchUniversities } from '@/features/search/utils/university-search-actions';
 import { SectionTitle } from '@/components/ui/section-title';
-import { SearchFormState, searchFormSchema } from '@/features/search/types/search-form';
+import { SearchFormState } from '@/features/search/types/search-form';
 import DetailSearch from './detail-search';
 import SortConditions from './sort-conditions';
-
+import { SearchFormSchema } from '@/types/api/schemas';
 /**
  * 検索フォームの初期状態
  * @type {SearchFormState}
@@ -65,7 +65,7 @@ const SearchForm = memo(function SearchForm() {
         return;
       }
 
-      const result = searchFormSchema.safeParse(data);
+      const result = SearchFormSchema.safeParse(data);
       if (!result.success) {
         state.message = '入力内容に誤りがあります';
         state.errors = result.error.flatten().fieldErrors;

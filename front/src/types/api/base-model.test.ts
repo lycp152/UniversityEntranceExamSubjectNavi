@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { BaseModel, ValidationError, ValidationErrors, ValidationRule } from './base-model';
+import type { BaseModel, ValidationError, ValidationErrors } from './base-model';
 
 /**
  * BaseModelの型定義のテスト
@@ -111,23 +111,6 @@ describe('APIの基本型定義', () => {
       expect(errors.errors).toHaveLength(2);
       expect(errors.errors[0].field).toBe('testField1');
       expect(errors.errors[1].field).toBe('testField2');
-    });
-  });
-
-  describe('ValidationRule型の検証', () => {
-    it('バリデーションルールが正しく定義されている', () => {
-      const rule: ValidationRule<number> = {
-        field: 'testField',
-        condition: value => value > 0,
-        message: '値は0より大きい必要があります',
-        code: 'INVALID_VALUE',
-      };
-
-      expect(rule.field).toBe('testField');
-      expect(rule.condition(1)).toBe(true);
-      expect(rule.condition(-1)).toBe(false);
-      expect(rule.message).toBe('値は0より大きい必要があります');
-      expect(rule.code).toBe('INVALID_VALUE');
     });
   });
 

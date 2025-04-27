@@ -10,7 +10,7 @@
  * - バリデーションルールの作成ヘルパー
  */
 
-import { ValidationRule } from '@/features/search/types/validation';
+import { ValidationRule } from '@/types/api/validation';
 
 /**
  * バリデーションの重要度を表す列挙型
@@ -102,3 +102,26 @@ export const createValidationRule = <T>(
   severity,
   category,
 });
+
+/**
+ * バリデーションのデフォルト設定
+ */
+export const ValidationDefaults = {
+  severity: ValidationSeverity.ERROR,
+  category: ValidationCategory.TRANSFORM,
+} as const;
+
+/**
+ * バリデーションのエラーメッセージ
+ */
+export const ValidationMessages = {
+  [ValidationErrorCode.TRANSFORM_ERROR]: 'データの変換に失敗しました',
+  [ValidationErrorCode.INVALID_DATA_FORMAT]: 'データの形式が無効です',
+  [ValidationErrorCode.MISSING_REQUIRED_FIELD]: '必須項目が未入力です',
+  [ValidationErrorCode.CALCULATION_ERROR]: '計算エラーが発生しました',
+  [ValidationErrorCode.INVALID_PERCENTAGE]: 'パーセンテージの値が無効です',
+  [ValidationErrorCode.TOTAL_EXCEEDED]: '合計値が上限を超えています',
+  [ValidationErrorCode.RENDER_ERROR]: '表示エラーが発生しました',
+  [ValidationErrorCode.INVALID_DIMENSIONS]: '寸法の値が無効です',
+  [ValidationErrorCode.OVERFLOW_ERROR]: 'オーバーフローエラーが発生しました',
+} as const;

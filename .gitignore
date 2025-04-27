@@ -75,3 +75,7 @@ front/.vercel
 **/dist
 **/build
 **/*.tsbuildinfo
+
+# テストスナップショット
+**/__snapshots__/
+**/*.snap

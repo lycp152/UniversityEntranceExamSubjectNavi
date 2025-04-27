@@ -10,7 +10,7 @@
  */
 
 import { z } from 'zod';
-import { commonRules } from '@/features/search/lib/zod-rules';
+import { commonRules } from '@/features/search/utils/zod-rules';
 
 /**
  * 検索フォームの状態を表す型

@@ -2,7 +2,7 @@ import {
   UniversitiesResponseSchema,
   ErrorResponseSchema,
 } from '@/features/search/types/api-response-schemas';
-import { validateApiResponse } from '@/features/search/lib/api-validation';
+import { validateApiResponse } from '@/features/search/utils/api-validation';
 import { SearchFormSchema } from '@/types/api/schemas';
 import { z } from 'zod';
 

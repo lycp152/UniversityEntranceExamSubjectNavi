@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import type { UISubject } from '@/types/university-subject';
 import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
 import type { PieData, ChartResult } from '@/types/pie-chart';
-import { createOuterPieData } from '@/features/charts/lib/chart-data-transformer';
+import { createOuterPieData } from '@/features/charts/utils/chart-data-transformer';
 import { createChartError } from '@/features/charts/utils/chart-error-factory';
 import { CHART_ERROR_CODES, CHART_ERROR_MESSAGES } from '@/constants/errors/chart';
 import {

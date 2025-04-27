@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';
-import { UniversityService } from '@/features/universities/lib/university-service';
-import { findDepartmentAndMajor } from '@/features/universities/utils/university-department-major-finder';
+import { UniversityService } from '@/features/universities/utils/university-service';
+import { findDepartmentAndMajor } from '@/features/universities/utils/university-finder';
 import type { APIAdmissionSchedule, APITestType } from '@/types/api/types';
 import type { UISubject } from '@/types/university-subject';
 import { UniversityPageParams } from '@/features/universities/types/params';

@@ -5,73 +5,28 @@ import type {
   TestType,
   Subject,
   Major,
-  AdmissionSchedule,
 } from '@/features/admin/types/university';
-import type { APITestType, APISubject } from '@/types/api/types';
+import type { APITestType } from '@/types/api/types';
 import { useUniversityData } from '@/features/admin/hooks/use-university-data';
 import { useSubjectData } from '@/features/admin/hooks/use-subject-data';
 import type { EditMode } from '@/features/admin/types/university-list';
 import type { SubjectName } from '@/constants/constraint/subjects/subjects';
-import type { AdmissionScheduleName } from '@/constants/constraint/admission-schedule';
-import type { ExamTypeName } from '@/constants/constraint/exam-types';
+import {
+  transformSubjectToAPI,
+  transformSubjectFromAPI,
+  transformTestTypeToAPI,
+  transformTestTypeFromAPI,
+} from '@/features/admin/utils/api-transformers';
+import { updateDepartmentInUniversity } from '@/features/admin/utils/department-updaters';
+import {
+  updateTestTypesWithNewSubject,
+  updateTestTypesWithSubjectName,
+} from '@/features/admin/utils/test-type-updaters';
+
 interface BackupState {
   university: University;
   department: Department;
 }
-
-const transformSubjectToAPI = (subject: Subject): APISubject => ({
-  id: subject.id,
-  test_type_id: subject.testTypeId,
-  name: subject.name,
-  score: subject.score,
-  percentage: subject.percentage,
-  display_order: 0,
-  created_at: subject.createdAt,
-  updated_at: subject.updatedAt,
-  deleted_at: subject.deletedAt ?? null,
-  version: subject.version,
-  created_by: subject.createdBy,
-  updated_by: subject.updatedBy,
-});
-
-const transformSubjectFromAPI = (subject: APISubject): Subject => ({
-  id: subject.id,
-  testTypeId: subject.test_type_id,
-  name: subject.name as SubjectName,
-  score: subject.score,
-  percentage: subject.percentage,
-  displayOrder: 0,
-  createdAt: subject.created_at ?? '',
-  updatedAt: subject.updated_at ?? '',
-  version: subject.version ?? 1,
-  createdBy: subject.created_by ?? '',
-  updatedBy: subject.updated_by ?? '',
-});
-
-const transformTestTypeToAPI = (testType: TestType): APITestType => ({
-  id: testType.id,
-  admission_schedule_id: testType.admissionScheduleId,
-  name: testType.name,
-  subjects: testType.subjects.map(transformSubjectToAPI),
-  created_at: testType.createdAt,
-  updated_at: testType.updatedAt,
-  deleted_at: testType.deletedAt ?? null,
-  version: testType.version,
-  created_by: testType.createdBy,
-  updated_by: testType.updatedBy,
-});
-
-const transformTestTypeFromAPI = (testType: APITestType): TestType => ({
-  id: testType.id,
-  admissionScheduleId: testType.admission_schedule_id,
-  name: testType.name as ExamTypeName,
-  subjects: testType.subjects.map(transformSubjectFromAPI),
-  createdAt: (testType.created_at ?? '').toString(),
-  updatedAt: (testType.updated_at ?? '').toString(),
-  version: testType.version ?? 1,
-  createdBy: testType.created_by ?? '',
-  updatedBy: testType.updated_by ?? '',
-});
 
 /**
  * 大学データの編集機能を提供するカスタムフック
@@ -120,69 +75,6 @@ export function useUniversityEditor() {
 
   const [editMode, setEditMode] = useState<EditMode | null>(null);
   const [backupState, setBackupState] = useState<BackupState | null>(null);
-
-  const updateDepartmentField = (department: Department, field: string, value: string | number) => {
-    const major = department.majors[0];
-    const admissionSchedule = major?.admissionSchedules?.[0];
-    const admissionInfo = admissionSchedule?.admissionInfos?.[0];
-    if (!major || !admissionSchedule || !admissionInfo) return department;
-
-    const updatedDepartment = { ...department };
-    const updatedMajor = { ...major };
-    const updatedAdmissionSchedule = { ...admissionSchedule };
-    const updatedAdmissionInfo = { ...admissionInfo };
-
-    switch (field) {
-      case 'universityName':
-        // 大学名は上位のhandleInfoChangeで処理
-        break;
-      case 'departmentName':
-        updatedDepartment.name = value as string;
-        break;
-      case 'majorName':
-        updatedMajor.name = value as string;
-        break;
-      case 'enrollment':
-        updatedAdmissionInfo.enrollment = value as number;
-        break;
-      case 'schedule':
-        updatedAdmissionSchedule.name = value as AdmissionScheduleName;
-        break;
-      default:
-        console.warn(`Unknown field: ${field}`);
-        return department;
-    }
-
-    updatedAdmissionSchedule.admissionInfos = [updatedAdmissionInfo];
-    updatedMajor.admissionSchedules = [updatedAdmissionSchedule];
-    updatedDepartment.majors = [updatedMajor];
-
-    return updatedDepartment;
-  };
-
-  const updateDepartmentInUniversity = (
-    university: University,
-    departmentId: number,
-    field: string,
-    value: string | number
-  ): University => {
-    if (field === 'universityName') {
-      return {
-        ...university,
-        name: value as string,
-      };
-    }
-
-    const updatedDepartments = university.departments.map((department: Department) => {
-      if (department.id !== departmentId) return department;
-      return updateDepartmentField(department, field, value);
-    });
-
-    return {
-      ...university,
-      departments: updatedDepartments,
-    };
-  };
 
   const handleInfoChange = (
     universityId: number,
@@ -274,23 +166,6 @@ export function useUniversityEditor() {
     }
   };
 
-  const updateTestTypesWithNewSubject = (
-    admissionSchedule: AdmissionSchedule,
-    internalType: TestType,
-    newSubject: Subject
-  ): AdmissionSchedule => ({
-    ...admissionSchedule,
-    testTypes: admissionSchedule.testTypes.map(testType => {
-      if (testType.id === internalType.id) {
-        return {
-          ...testType,
-          subjects: [...testType.subjects, newSubject],
-        };
-      }
-      return testType;
-    }),
-  });
-
   const updateDepartmentWithNewSubject = (
     department: Department,
     internalType: TestType,
@@ -349,18 +224,6 @@ export function useUniversityEditor() {
       })
     );
   };
-
-  const updateTestTypesWithSubjectName = (
-    testTypes: TestType[],
-    subjectId: number,
-    name: string
-  ): TestType[] =>
-    testTypes.map(testType => ({
-      ...testType,
-      subjects: testType.subjects.map(subject =>
-        subject.id === subjectId ? { ...subject, name: name as SubjectName } : subject
-      ),
-    }));
 
   const updateDepartmentWithSubjectName = (
     department: Department,

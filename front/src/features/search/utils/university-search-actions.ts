@@ -1,9 +1,14 @@
 'use server';
 
 import { SearchFormSchema } from '@/types/api/schemas';
-import { ERROR_MESSAGES } from '../constants/error-messages';
 import { SearchFormState } from '../types/search-form';
-import { fetchUniversities } from './universities';
+import { fetchUniversities } from './university-api-client';
+
+const ERROR_MESSAGES = {
+  API_ERROR: 'エラーが発生しました',
+  SEARCH_ERROR: '検索中にエラーが発生しました',
+  SEARCH_SUCCESS: '検索を実行しました',
+} as const;
 
 /**
  * 大学検索のためのServer Action

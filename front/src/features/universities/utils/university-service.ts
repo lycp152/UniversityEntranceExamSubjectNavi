@@ -1,5 +1,5 @@
-import { apiClient } from '@/features/universities/lib/api-client';
-import { API_ENDPOINTS } from '@/features/universities/lib/api-endpoints-paths';
+import { apiClient } from '@/features/universities/utils/api-client';
+import { API_ENDPOINTS } from '@/features/universities/types/api-endpoints-paths';
 import type {
   APIUniversity,
   APIDepartment,

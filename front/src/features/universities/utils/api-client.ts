@@ -19,8 +19,8 @@ import type {
   RequestInterceptor,
   ResponseInterceptor,
   ErrorInterceptor,
-} from '@/features/universities/lib/middleware';
-import { InterceptorManager } from '@/features/universities/lib/middleware';
+} from '@/features/universities/utils/middleware';
+import { InterceptorManager } from '@/features/universities/utils/middleware';
 
 /**
  * APIクライアントエラーの基底クラス

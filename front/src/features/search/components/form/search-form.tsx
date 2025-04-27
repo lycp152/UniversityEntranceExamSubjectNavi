@@ -4,7 +4,7 @@ import { useFormStatus } from 'react-dom';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { searchUniversities } from '@/features/search/api/actions';
+import { searchUniversities } from '@/features/search/utils/university-search-actions';
 import { SectionTitle } from '@/components/ui/section-title';
 import { SearchFormState, searchFormSchema } from '@/features/search/types/search-form';
 import DetailSearch from './detail-search';

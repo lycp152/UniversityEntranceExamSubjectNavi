@@ -15,7 +15,7 @@ import type { UISubject } from '@/types/university-subject';
 import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
 import { CHART_ERROR_CODES, CHART_ERROR_MESSAGES } from '@/constants/errors/chart';
 import type { DetailedPieData, ChartResult, ChartError } from '@/types/pie-chart';
-import { createDetailedPieData } from '@/features/charts/lib/chart-data-transformer';
+import { createDetailedPieData } from '@/features/charts/utils/chart-data-transformer';
 import { createChartError } from '@/features/charts/utils/chart-error-factory';
 import { extractScores } from '@/features/charts/utils/extractors/subject-score-extractor';
 import { TEST_TYPES } from '@/types/score';

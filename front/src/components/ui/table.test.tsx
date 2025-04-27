@@ -141,4 +141,66 @@ describe('Table Components', () => {
       expect(screen.getByText('キャプション')).toBeInTheDocument();
     });
   });
+
+  describe('スナップショットテスト', () => {
+    it('基本的なテーブル構造のスナップショットが一致すること', () => {
+      const { container } = render(
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ヘッダー</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>セル</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    it('カスタムクラスを持つテーブルのスナップショットが一致すること', () => {
+      const { container } = render(
+        <Table className="custom-table">
+          <TableHeader>
+            <TableRow>
+              <TableHead>ヘッダー</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>セル</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      );
+      expect(container).toMatchSnapshot();
+    });
+
+    it('フッターとキャプションを含むテーブルのスナップショットが一致すること', () => {
+      const { container } = render(
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ヘッダー</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>セル</TableCell>
+            </TableRow>
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>フッター</TableCell>
+            </TableRow>
+          </TableFooter>
+          <TableCaption>キャプション</TableCaption>
+        </Table>
+      );
+      expect(container).toMatchSnapshot();
+    });
+  });
 });

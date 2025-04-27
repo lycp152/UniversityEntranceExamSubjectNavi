@@ -50,7 +50,7 @@ export async function searchUniversities(
       message: ERROR_MESSAGES.SEARCH_SUCCESS,
     };
   } catch (error: unknown) {
-    console.error('API Error:', error);
+    console.error('APIエラー:', error);
     const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.SEARCH_ERROR;
     return {
       message: ERROR_MESSAGES.API_ERROR,

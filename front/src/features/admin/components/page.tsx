@@ -39,7 +39,7 @@ export function AdminPage(): ReactElement {
   // コンポーネントマウント時に大学データを取得
   useEffect(() => {
     fetchUniversities().catch(error => {
-      console.error('Failed to fetch universities:', error);
+      console.error('大学データの取得に失敗しました:', error);
     });
   }, [fetchUniversities]);
 

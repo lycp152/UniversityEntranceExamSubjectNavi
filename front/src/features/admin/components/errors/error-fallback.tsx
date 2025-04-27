@@ -12,7 +12,7 @@ import { fallbackStyles } from '@/styles/error';
  * @example
  * ```tsx
  * <DefaultErrorFallback
- *   error={new Error('Something went wrong')}
+ *   error={new Error('予期せぬエラーが発生しました')}
  *   onRetry={() => window.location.reload()}
  * />
  * ```

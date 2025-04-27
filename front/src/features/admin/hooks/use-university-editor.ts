@@ -269,7 +269,7 @@ export function useUniversityEditor() {
         })
       );
     } catch (error) {
-      console.error('Error updating score:', error);
+      console.error('点数の更新に失敗しました:', error);
       setError('点数の更新に失敗しました。');
     }
   };
@@ -479,7 +479,7 @@ export function useUniversityEditor() {
       const timeoutId = setTimeout(() => setSuccessMessage(null), 3000);
       return () => clearTimeout(timeoutId);
     } catch (error) {
-      console.error('Error updating data:', error);
+      console.error('データの更新に失敗しました:', error);
       setError(error instanceof Error ? error.message : 'データの更新に失敗しました。');
 
       if (backupState) {

@@ -2,7 +2,7 @@ import { Region } from '@/features/search/components/filters/region';
 import { AcademicField } from '@/features/search/components/filters/academic-field';
 import { Schedule } from '@/features/search/components/filters/schedule';
 import { Classification } from '@/features/search/components/filters/classification';
-import { SectionTitle } from '@/features/search/components/section-title';
+import { SectionTitle } from '@/components/ui/section-title';
 import { Button } from '@/components/ui/button';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -19,6 +19,7 @@ import { X, ChevronDown, ChevronUp } from 'lucide-react';
  * @property {React.Dispatch<React.SetStateAction<string[]>>} setClassification - 設置区分の選択値を更新する関数
  * @property {boolean} isExpanded - 詳細検索が展開されているかどうか
  * @property {() => void} onToggleExpanded - 詳細検索の展開状態を切り替える関数
+ * @property {boolean} disabled - コンポーネントが無効化されているかどうか
  */
 interface DetailSearchProps {
   selectedItems: string[];
@@ -31,6 +32,7 @@ interface DetailSearchProps {
   setClassification: React.Dispatch<React.SetStateAction<string[]>>;
   isExpanded: boolean;
   onToggleExpanded: () => void;
+  disabled?: boolean;
 }
 
 /**
@@ -70,9 +72,10 @@ const DetailSearch = ({
   setClassification,
   isExpanded,
   onToggleExpanded,
+  disabled,
 }: DetailSearchProps) => {
   return (
-    <div className="mt-4">
+    <div className="mt-6">
       <Button
         type="button"
         variant="ghost"
@@ -80,12 +83,13 @@ const DetailSearch = ({
         onClick={onToggleExpanded}
         aria-expanded={isExpanded}
         aria-controls="detail-search-content"
+        disabled={disabled}
       >
-        <SectionTitle>詳細条件</SectionTitle>
+        <SectionTitle className="mb-0">詳細条件</SectionTitle>
         {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
       </Button>
       {isExpanded && (
-        <div id="detail-search-content" className="mt-4">
+        <div id="detail-search-content">
           <div className="mb-4">
             <Region selectedItems={selectedItems} setSelectedItems={setSelectedItems} />
           </div>

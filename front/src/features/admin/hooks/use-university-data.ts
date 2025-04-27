@@ -54,7 +54,7 @@ export const useUniversityData = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleAPIError = useCallback((error: unknown): string => {
-    console.error('API Error:', error);
+    console.error('APIエラー:', error);
     if (error instanceof Response) {
       return `APIエラー: ${error.status} ${error.statusText}`;
     }
@@ -81,10 +81,10 @@ export const useUniversityData = () => {
       }
 
       const data = await response.json();
-      console.log('API Response:', data);
+      console.log('APIレスポンス:', data);
 
       const transformedData = transformAPIResponse(data);
-      console.log('Transformed Data:', transformedData);
+      console.log('変換後のデータ:', transformedData);
 
       setUniversities(transformedData);
       setError(null);
@@ -165,7 +165,7 @@ export const useUniversityData = () => {
         }
 
         const apiTestTypes = testTypes.map(transformToAPITestType);
-        console.log('Sending data to API:', {
+        console.log('APIに送信するデータ:', {
           university_id: university.id,
           department_id: department.id,
           test_types: apiTestTypes,
@@ -182,7 +182,7 @@ export const useUniversityData = () => {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
-          console.error('API Error Response:', {
+          console.error('APIエラーレスポンス:', {
             status: response.status,
             statusText: response.statusText,
             data: errorData,

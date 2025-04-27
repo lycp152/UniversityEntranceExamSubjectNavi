@@ -29,7 +29,7 @@ interface GenericFilterProps extends FilterCheckboxProps {
  * @component
  * @example
  * ```tsx
- * <GenericFilter
+ * <汎用フィルター
  *   items={["東京", "大阪", "愛知"]}
  *   selectedItems={["東京"]}
  *   setSelectedItems={setSelectedItems}
@@ -50,12 +50,12 @@ export const GenericFilter = ({
   label,
 }: GenericFilterProps) => {
   if (!items || !Array.isArray(items)) {
-    console.error('GenericFilter: itemsは配列である必要があります');
+    console.error('汎用フィルター: itemsは配列である必要があります');
     return null;
   }
 
   if (!label) {
-    console.error('GenericFilter: labelは必須です');
+    console.error('汎用フィルター: labelは必須です');
     return null;
   }
 

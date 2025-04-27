@@ -11,6 +11,7 @@ import { UISubject } from '@/types/university-subject';
 import { tableStyles, tableLabels } from '@/features/universities/constants/table-constants';
 import { calculateTotalScores } from '@/features/universities/utils/calculate-scores';
 import TableRow from '@/features/universities/components/table-row';
+import { SectionTitle } from '@/components/ui/section-title';
 
 interface SubjectScoreTableProps {
   subjectData: UISubject;
@@ -25,7 +26,7 @@ const SubjectScoreTable: FC<SubjectScoreTableProps> = ({ subjectData }) => {
   return (
     <div className="mt-4">
       {/* テーブルのタイトル */}
-      <h2 className="text-lg font-semibold mb-2">{tableLabels.title}</h2>
+      <SectionTitle>{tableLabels.title}</SectionTitle>
       <div className="overflow-x-auto w-full">
         <table className="w-full border-collapse py-4 border border-gray-300 dark:border-gray-700">
           <thead>

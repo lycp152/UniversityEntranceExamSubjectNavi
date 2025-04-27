@@ -43,93 +43,95 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Filter } from './filter';
-import { FilterProps } from '../../types/filter';
+import { FilterProps, FilterType } from '../../types/filter';
 
 describe('Filter', () => {
-  const mockOnChange = vi.fn();
-  const defaultProps: FilterProps = {
-    config: {
-      type: 'region',
-      isCategory: false,
-      options: ['東京', '大阪', '愛知'],
-      label: '所在地',
-    },
+  const mockSetSelectedItems = vi.fn();
+  const mockProps: FilterProps = {
     selectedItems: [],
-    setSelectedItems: mockOnChange,
+    setSelectedItems: mockSetSelectedItems,
+    config: {
+      type: FilterType.REGION,
+      label: '地域',
+      options: ['北海道', '東北'],
+      isCategory: false,
+    },
   };
 
   beforeEach(() => {
-    mockOnChange.mockClear();
+    mockSetSelectedItems.mockClear();
   });
 
   describe('通常型フィルターの場合', () => {
     it('ラベルが正しく表示されること', () => {
-      render(<Filter {...defaultProps} />);
-      expect(screen.getByText('所在地')).toBeInTheDocument();
+      render(<Filter {...mockProps} />);
+      expect(screen.getByText('地域')).toBeInTheDocument();
     });
 
     it('すべての選択肢が表示されること', () => {
-      render(<Filter {...defaultProps} />);
-      (defaultProps.config.options as string[]).forEach((option: string) => {
+      render(<Filter {...mockProps} />);
+      (mockProps.config.options as string[]).forEach((option: string) => {
         expect(screen.getByText(option)).toBeInTheDocument();
       });
     });
 
     it('選択された値が正しく反映されること', () => {
-      const selectedItems = [(defaultProps.config.options as string[])[0]];
-      render(<Filter {...defaultProps} selectedItems={selectedItems} />);
-      const checkbox = screen.getByLabelText((defaultProps.config.options as string[])[0]);
+      const selectedItems = [(mockProps.config.options as string[])[0]];
+      render(<Filter {...mockProps} selectedItems={selectedItems} />);
+      const checkbox = screen.getByLabelText((mockProps.config.options as string[])[0]);
       expect(checkbox).toBeChecked();
     });
 
-    it('選択値が変更されたときにonChangeが呼ばれること', () => {
-      render(<Filter {...defaultProps} />);
-      const checkbox = screen.getByLabelText((defaultProps.config.options as string[])[0]);
+    it('選択値が変更されたときにsetSelectedItemsが呼ばれること', () => {
+      render(<Filter {...mockProps} />);
+      const checkbox = screen.getByLabelText((mockProps.config.options as string[])[0]);
       fireEvent.click(checkbox);
-      expect(mockOnChange).toHaveBeenCalledWith([(defaultProps.config.options as string[])[0]]);
+      expect(mockSetSelectedItems).toHaveBeenCalledWith([
+        (mockProps.config.options as string[])[0],
+      ]);
     });
 
     it('複数の選択肢を選択できること', () => {
-      render(<Filter {...defaultProps} />);
-      const firstCheckbox = screen.getByLabelText((defaultProps.config.options as string[])[0]);
-      const secondCheckbox = screen.getByLabelText((defaultProps.config.options as string[])[1]);
+      render(<Filter {...mockProps} />);
+      const firstCheckbox = screen.getByLabelText((mockProps.config.options as string[])[0]);
+      const secondCheckbox = screen.getByLabelText((mockProps.config.options as string[])[1]);
 
       fireEvent.click(firstCheckbox);
       fireEvent.click(secondCheckbox);
 
-      expect(mockOnChange).toHaveBeenLastCalledWith([
-        (defaultProps.config.options as string[])[0],
-        (defaultProps.config.options as string[])[1],
+      expect(mockSetSelectedItems).toHaveBeenLastCalledWith([
+        (mockProps.config.options as string[])[0],
+        (mockProps.config.options as string[])[1],
       ]);
     });
 
     it('選択を解除できること', () => {
-      const selectedItems = [(defaultProps.config.options as string[])[0]];
-      render(<Filter {...defaultProps} selectedItems={selectedItems} />);
-      const checkbox = screen.getByLabelText((defaultProps.config.options as string[])[0]);
+      const selectedItems = [(mockProps.config.options as string[])[0]];
+      render(<Filter {...mockProps} selectedItems={selectedItems} />);
+      const checkbox = screen.getByLabelText((mockProps.config.options as string[])[0]);
       fireEvent.click(checkbox);
-      expect(mockOnChange).toHaveBeenCalledWith([]);
+      expect(mockSetSelectedItems).toHaveBeenCalledWith([]);
     });
   });
 
   describe('カテゴリー型フィルターの場合', () => {
     const categoryProps: FilterProps = {
-      config: {
-        type: 'classification',
-        isCategory: true,
-        options: {
-          理系: ['理学部', '工学部'],
-          文系: ['文学部', '経済学部'],
-        },
-        label: '学部',
-      },
       selectedItems: [],
-      setSelectedItems: mockOnChange,
+      setSelectedItems: mockSetSelectedItems,
+      config: {
+        type: FilterType.CLASSIFICATION,
+        label: '設置区分',
+        options: {
+          国立: ['北海道大学', '東北大学'],
+          公立: ['公立大学1', '公立大学2'],
+        },
+        isCategory: true,
+      },
     };
 
     it('ラベルが正しく表示されること', () => {
       render(<Filter {...categoryProps} />);
-      expect(screen.getByText('学部')).toBeInTheDocument();
+      expect(screen.getByText('設置区分')).toBeInTheDocument();
     });
 
     it('すべてのカテゴリーが表示されること', () => {
@@ -154,12 +156,12 @@ describe('Filter', () => {
       expect(checkbox).toBeChecked();
     });
 
-    it('選択値が変更されたときにonChangeが呼ばれること', () => {
+    it('選択値が変更されたときにsetSelectedItemsが呼ばれること', () => {
       render(<Filter {...categoryProps} />);
       const firstItem = Object.values(categoryProps.config.options)[0][0];
       const checkbox = screen.getByLabelText(firstItem);
       fireEvent.click(checkbox);
-      expect(mockOnChange).toHaveBeenCalledWith([firstItem]);
+      expect(mockSetSelectedItems).toHaveBeenCalledWith([firstItem]);
     });
 
     it('複数の選択肢を選択できること', () => {
@@ -170,7 +172,7 @@ describe('Filter', () => {
       fireEvent.click(screen.getByLabelText(firstItem));
       fireEvent.click(screen.getByLabelText(secondItem));
 
-      expect(mockOnChange).toHaveBeenLastCalledWith([firstItem, secondItem]);
+      expect(mockSetSelectedItems).toHaveBeenLastCalledWith([firstItem, secondItem]);
     });
 
     it('選択を解除できること', () => {
@@ -178,7 +180,7 @@ describe('Filter', () => {
       render(<Filter {...categoryProps} selectedItems={selectedItems} />);
       const checkbox = screen.getByLabelText(selectedItems[0]);
       fireEvent.click(checkbox);
-      expect(mockOnChange).toHaveBeenCalledWith([]);
+      expect(mockSetSelectedItems).toHaveBeenCalledWith([]);
     });
   });
 });

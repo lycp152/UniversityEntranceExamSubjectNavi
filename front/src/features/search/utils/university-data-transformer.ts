@@ -6,7 +6,7 @@ import type {
   APIAdmissionSchedule,
   APITestType,
 } from '@/types/api/types';
-import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';
+import { transformSubjectData } from '@/utils/subject-data-transformer';
 
 /**
  * 試験タイプのデータを処理し、UI用の科目データに変換します

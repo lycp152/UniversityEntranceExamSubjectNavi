@@ -10,7 +10,7 @@
  */
 
 import { BaseTransformParams, TransformResult } from '@/features/charts/types/transformers';
-import { calculatePercentage } from '@/utils/math/percentage';
+import { calculatePercentage } from '@/utils/percentage';
 
 /**
  * スコアデータを円グラフ表示用に変換

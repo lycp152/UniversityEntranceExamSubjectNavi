@@ -1,0 +1,132 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import SubjectScoreTable from './subject-score-table';
+import { UISubject } from '@/types/university-subject';
+
+/**
+ * テスト用のモックデータ
+ */
+const mockSubjectData = {
+  id: 1,
+  version: 1,
+  name: 'テスト科目',
+  score: 600,
+  percentage: 100,
+  displayOrder: 1,
+  testTypeId: 1,
+  university: {
+    id: 1,
+    name: 'テスト大学',
+    displayOrder: 1,
+  },
+  department: {
+    id: 1,
+    name: 'テスト学部',
+    displayOrder: 1,
+  },
+  major: {
+    id: 1,
+    name: 'テスト学科',
+    displayOrder: 1,
+  },
+  examInfo: {
+    id: 1,
+    enrollment: 100,
+    academicYear: 2024,
+    status: 'active',
+  },
+  admissionSchedule: {
+    id: 1,
+    name: 'テスト日程',
+    displayOrder: 1,
+  },
+  subjects: {
+    数学: {
+      commonTest: 100,
+      secondTest: 200,
+    },
+    英語: {
+      commonTest: 150,
+      secondTest: 150,
+    },
+  },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  createdBy: 'テストユーザー',
+  updatedBy: 'テストユーザー',
+} as unknown as UISubject;
+
+/**
+ * 科目別配点テーブルコンポーネントのテスト
+ */
+describe('SubjectScoreTable', () => {
+  beforeEach(() => {
+    render(<SubjectScoreTable subjectData={mockSubjectData} />);
+  });
+
+  it('テーブルのタイトルが正しく表示される', () => {
+    const title = screen.getByText('科目別配点と割合');
+    expect(title).toBeInTheDocument();
+    expect(title.tagName).toBe('H2');
+  });
+
+  it('科目名が正しく表示される', () => {
+    const math = screen.getByText('数学');
+    const english = screen.getByText('英語');
+    expect(math).toBeInTheDocument();
+    expect(english).toBeInTheDocument();
+    expect(math.tagName).toBe('TH');
+    expect(english.tagName).toBe('TH');
+  });
+
+  it('共通テストの配点が正しく表示される', () => {
+    expect(screen.getByText('100')).toBeInTheDocument();
+    const elements = screen.getAllByText('150');
+    expect(elements).toHaveLength(2);
+    elements.forEach(element => {
+      expect(element.tagName).toBe('TD');
+    });
+  });
+
+  it('二次試験の配点が正しく表示される', () => {
+    expect(screen.getByText('200')).toBeInTheDocument();
+    const elements = screen.getAllByText('150');
+    expect(elements).toHaveLength(2);
+    elements.forEach(element => {
+      expect(element.tagName).toBe('TD');
+    });
+  });
+
+  it('合計点が正しく表示される', () => {
+    const elements = screen.getAllByText('300');
+    expect(elements).toHaveLength(2);
+    elements.forEach(element => {
+      expect(element.tagName).toBe('TD');
+      expect(element).toHaveAttribute('aria-label', expect.stringMatching(/の総配点$/));
+    });
+  });
+
+  it('割合が正しく表示される', () => {
+    expect(screen.getByText('16.7%')).toBeInTheDocument();
+    const elements = screen.getAllByText('25.0%');
+    expect(elements).toHaveLength(2);
+    elements.forEach(element => {
+      expect(element.tagName).toBe('TD');
+      expect(element).toHaveAttribute('aria-label', expect.stringMatching(/の配点割合$/));
+    });
+  });
+
+  it('アクセシビリティ属性が正しく設定されている', () => {
+    // テーブルに適切なroleが設定されている
+    const table = screen.getByRole('table');
+    expect(table).toBeInTheDocument();
+    expect(table).toHaveAttribute('aria-label', 'テーブル');
+
+    // ヘッダーセルに適切なscope属性が設定されている
+    const headerCells = screen.getAllByRole('columnheader');
+    expect(headerCells).toHaveLength(4);
+    headerCells.forEach(cell => {
+      expect(cell).toHaveAttribute('scope', 'col');
+    });
+  });
+});

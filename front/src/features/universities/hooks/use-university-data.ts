@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';
+import { transformSubjectData } from '@/utils/subject-data-transformer';
 import { UniversityService } from '@/features/universities/utils/university-service';
 import { findDepartmentAndMajor } from '@/features/universities/utils/university-finder';
 import type { APIAdmissionSchedule, APITestType } from '@/types/api/types';

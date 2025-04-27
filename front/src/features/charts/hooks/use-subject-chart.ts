@@ -8,7 +8,7 @@ import type { UISubject } from '@/types/university-subject';
 import type { DisplaySubjectScore } from '@/types/score';
 import { useChartData } from '@/features/charts/hooks/use-chart-data';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
-import { calculatePercentage } from '@/utils/math/percentage';
+import { calculatePercentage } from '@/utils/percentage';
 import {
   sortByCommonSubject,
   getCategoryType,

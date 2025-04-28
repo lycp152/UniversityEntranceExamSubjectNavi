@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import UniversityLayout from './layout';
 import { UISubject } from '@/types/university-subject';
 
@@ -64,12 +64,50 @@ const mockSubject: UISubject = {
 describe('UniversityLayout', () => {
   beforeEach(() => {
     // チャートコンポーネントのサイズを設定
-    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { value: 800 });
-    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { value: 600 });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      value: 800,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      value: 600,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+      configurable: true,
+      value: 800,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+      configurable: true,
+      value: 600,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        width: 800,
+        height: 600,
+        top: 0,
+        left: 0,
+        right: 800,
+        bottom: 600,
+      }),
+    });
+  });
+
+  afterEach(() => {
+    // プロパティの設定をクリア
+    delete (HTMLElement.prototype as any).clientWidth;
+    delete (HTMLElement.prototype as any).clientHeight;
+    delete (HTMLElement.prototype as any).offsetWidth;
+    delete (HTMLElement.prototype as any).offsetHeight;
+    delete (HTMLElement.prototype as any).getBoundingClientRect;
   });
 
   it('アクセシビリティ属性が正しく設定されていること', () => {
-    render(<UniversityLayout subject={mockSubject} />);
+    render(
+      <div style={{ width: '800px', height: '600px' }}>
+        <UniversityLayout subject={mockSubject} />
+      </div>
+    );
 
     // メインコンテンツのaria-labelを確認
     const main = screen.getByRole('main');
@@ -90,7 +128,11 @@ describe('UniversityLayout', () => {
   });
 
   it('レイアウト構造が正しく配置されていること', () => {
-    render(<UniversityLayout subject={mockSubject} />);
+    render(
+      <div style={{ width: '800px', height: '600px' }}>
+        <UniversityLayout subject={mockSubject} />
+      </div>
+    );
 
     // メインコンテンツの構造を確認
     const main = screen.getByRole('main');
@@ -111,7 +153,11 @@ describe('UniversityLayout', () => {
   });
 
   it('子コンポーネントが正しくレンダリングされていること', () => {
-    render(<UniversityLayout subject={mockSubject} />);
+    render(
+      <div style={{ width: '800px', height: '600px' }}>
+        <UniversityLayout subject={mockSubject} />
+      </div>
+    );
 
     // BasicInfoコンポーネントの存在を確認
     expect(screen.getByRole('article', { name: '基本情報' })).toBeInTheDocument();

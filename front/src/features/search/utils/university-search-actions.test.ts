@@ -1,8 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { searchUniversities } from './university-search-actions';
 import { fetchUniversities } from './university-api-client';
 import { ERROR_MESSAGES, SEARCH_ERROR_CODES } from '@/constants/errors/domain';
 import { SearchFormState } from '../types/search-form';
+/**
+ * 大学検索アクションのテスト
+ *
+ * このテストスイートでは、大学検索のServer Actionの
+ * 正常系・異常系の動作を検証します。
+ *
+ * @module university-search-actions.test
+ */
 
 // APIクライアントのモック
 vi.mock('./university-api-client', () => ({
@@ -10,6 +18,11 @@ vi.mock('./university-api-client', () => ({
 }));
 
 describe('大学検索のServer Action', () => {
+  beforeEach(() => {
+    // console.errorをモック
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
   // テストデータの準備
   const createValidFormData = () => {
     const formData = new FormData();

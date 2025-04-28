@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import UniversityLayout from './layout';
 import { UISubject } from '@/types/university-subject';
 
@@ -62,6 +62,12 @@ const mockSubject: UISubject = {
  * アクセシビリティ、レイアウト構造、コンポーネントの統合を検証
  */
 describe('UniversityLayout', () => {
+  beforeEach(() => {
+    // チャートコンポーネントのサイズを設定
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { value: 800 });
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { value: 600 });
+  });
+
   it('アクセシビリティ属性が正しく設定されていること', () => {
     render(<UniversityLayout subject={mockSubject} />);
 

@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { UniversityDataError } from './university-errors';
 
+/**
+ * 大学データエラーのテスト
+ *
+ * このテストスイートでは、大学データ処理時に発生する
+ * カスタムエラーの動作を検証します。
+ *
+ * @module university-errors.test
+ */
+
 describe('UniversityDataError', () => {
   describe('インスタンス化', () => {
     it('正しいエラー名でインスタンスを作成できること', () => {

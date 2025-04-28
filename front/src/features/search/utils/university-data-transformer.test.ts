@@ -1,6 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { transformUniversityData } from './university-data-transformer';
 import type { APIUniversity } from '@/types/api/types';
+/**
+ * 大学データ変換ユーティリティのテスト
+ *
+ * このテストスイートでは、APIから取得した大学データを
+ * フロントエンドで使用する形式に変換する機能を検証します。
+ *
+ * @module university-data-transformer.test
+ */
 
 // テストデータの定義
 const createTestSubject = (id: string) => ({

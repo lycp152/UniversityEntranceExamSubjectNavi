@@ -5,6 +5,15 @@ import { UISubject } from '@/types/university-subject';
 import { Table, TableBody } from '@/components/ui/table';
 
 /**
+ * テーブル行コンポーネントのテスト
+ *
+ * このテストスイートでは、大学情報を表示するテーブル行の
+ * レンダリングと表示内容を検証します。
+ *
+ * @module table-row.test
+ */
+
+/**
  * テスト用のモックデータ
  */
 const mockSubjects: UISubject['subjects'] = {

@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchUniversities, UniversityApiError } from './university-api-client';
+/**
+ * 大学APIクライアントのテスト
+ *
+ * このテストスイートでは、大学情報を取得するAPIクライアントの
+ * 正常系・異常系の動作を検証します。
+ *
+ * @module university-api-client.test
+ */
 
 /**
  * テスト用のモックデータ

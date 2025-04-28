@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 Element.prototype.scrollIntoView = vi.fn();
 
 describe('Select', () => {
-  it('should render select trigger with placeholder', () => {
+  it('プレースホルダー付きのセレクトトリガーを表示すること', () => {
     render(
       <Select>
         <SelectTrigger>
@@ -25,7 +25,7 @@ describe('Select', () => {
     expect(trigger).toHaveTextContent('選択してください');
   });
 
-  it('should open select content when trigger is clicked', async () => {
+  it('トリガーをクリックしたときにセレクトコンテンツを開くこと', async () => {
     render(
       <Select>
         <SelectTrigger>
@@ -48,7 +48,7 @@ describe('Select', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('should select an option when clicked', async () => {
+  it('オプションをクリックしたときに選択すること', async () => {
     render(
       <Select>
         <SelectTrigger>
@@ -74,7 +74,7 @@ describe('Select', () => {
     expect(trigger).toHaveTextContent('オプション1');
   });
 
-  it('should handle keyboard navigation', async () => {
+  it('キーボードナビゲーションを処理すること', async () => {
     render(
       <Select>
         <SelectTrigger>
@@ -104,7 +104,7 @@ describe('Select', () => {
     expect(selectedValue).toBeInTheDocument();
   });
 
-  it('should close select when clicking outside', async () => {
+  it('外部をクリックしたときにセレクトを閉じること', async () => {
     render(
       <div>
         <Select>
@@ -138,7 +138,7 @@ describe('Select', () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
   });
 
-  it('should have proper accessibility attributes', () => {
+  it('適切なアクセシビリティ属性を持つこと', () => {
     render(
       <Select>
         <SelectTrigger>
@@ -158,7 +158,7 @@ describe('Select', () => {
     expect(trigger).toHaveAttribute('role', 'combobox');
   });
 
-  it('should handle disabled state', () => {
+  it('無効状態を処理すること', () => {
     render(
       <Select disabled>
         <SelectTrigger>

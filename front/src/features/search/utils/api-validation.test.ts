@@ -2,6 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 import { ValidationException, handleZodError, validateApiResponse } from './api-validation';
 import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation-constants';
+/**
+ * APIバリデーションのテスト
+ *
+ * このテストスイートでは、APIレスポンスのバリデーション機能と
+ * エラーハンドリングを検証します。
+ *
+ * @module api-validation.test
+ */
 
 /**
  * テスト用の共通データ

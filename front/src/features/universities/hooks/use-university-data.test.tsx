@@ -8,6 +8,15 @@ import { UniversityPageParams } from '@/features/universities/types/params';
 import type { APIDepartment, APIMajor } from '@/types/api/types';
 import { UniversityDataError } from '@/features/universities/utils/university-errors';
 
+/**
+ * 大学データフックのテスト
+ *
+ * このテストスイートでは、大学データを取得・管理するカスタムフックの
+ * 動作と状態管理を検証します。
+ *
+ * @module use-university-data.test
+ */
+
 // モックの設定
 vi.mock('@/features/universities/utils/university-service');
 vi.mock('@/features/universities/utils/university-finder');

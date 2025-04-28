@@ -4,6 +4,15 @@ import BasicInfo from './basic-info';
 import type { UISubject } from '@/types/university-subject';
 
 /**
+ * 基本情報コンポーネントのテスト
+ *
+ * このテストスイートでは、大学の基本情報を表示するコンポーネントの
+ * レンダリングと表示内容を検証します。
+ *
+ * @module basic-info.test
+ */
+
+/**
  * テスト用のモックデータ
  */
 const mockSubjectDetail: UISubject = {

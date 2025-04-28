@@ -1,9 +1,18 @@
 import { render, screen, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import UniversityPage from './page';
 import { UISubject } from '@/types/university-subject';
 import { useUniversityData } from '@/features/universities/hooks/use-university-data';
 import { UniversityPageParams } from '@/features/universities/types/params';
+
+/**
+ * 大学詳細ページコンポーネントのテスト
+ *
+ * このテストスイートでは、大学の詳細情報を表示するページの
+ * レンダリングと表示内容を検証します。
+ *
+ * @module page.test
+ */
 
 // ResizeObserverのモックを設定
 beforeAll(() => {
@@ -85,6 +94,12 @@ vi.mock('@/features/universities/hooks/use-university-data', () => ({
  * ローディング状態、エラーハンドリング、データ表示を検証
  */
 describe('UniversityPage', () => {
+  beforeEach(() => {
+    // チャートコンポーネントのサイズを設定
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { value: 800 });
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { value: 600 });
+  });
+
   it('ローディング中はスピナーが表示されること', async () => {
     // useUniversityDataのモックを設定
     vi.mocked(useUniversityData).mockReturnValue({

@@ -2,6 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { findDepartmentAndMajor } from './university-finder';
 import { UniversityDataError } from './university-errors';
 
+/**
+ * 大学検索ユーティリティのテスト
+ *
+ * このテストスイートでは、大学の学部・学科を検索する
+ * ユーティリティ関数の動作を検証します。
+ *
+ * @module university-finder.test
+ */
+
 // モックデータを別の定数として定義
 const mockUniversity = {
   id: 1,

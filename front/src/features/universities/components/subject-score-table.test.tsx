@@ -4,6 +4,15 @@ import SubjectScoreTable from './subject-score-table';
 import { UISubject } from '@/types/university-subject';
 
 /**
+ * 科目スコアテーブルコンポーネントのテスト
+ *
+ * このテストスイートでは、大学の科目スコアを表示するテーブルの
+ * レンダリングと表示内容を検証します。
+ *
+ * @module subject-score-table.test
+ */
+
+/**
  * テスト用のモックデータ
  */
 const mockSubjectData = {

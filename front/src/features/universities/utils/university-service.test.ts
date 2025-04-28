@@ -7,6 +7,15 @@ import {
 import { apiClient } from '@/features/universities/utils/api-client';
 import { API_ENDPOINTS } from '@/constants/api/index';
 
+/**
+ * 大学サービスのテスト
+ *
+ * このテストスイートでは、大学データの取得や処理を行う
+ * サービスクラスの機能を検証します。
+ *
+ * @module university-service.test
+ */
+
 // APIクライアントのモック
 vi.mock('@/features/universities/utils/api-client', () => ({
   apiClient: {

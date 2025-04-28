@@ -108,6 +108,8 @@ const mockTransformedSubject = {
 describe('useUniversityData', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // console.errorをモック
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     // UniversityServiceのモックを設定
     vi.mocked(UniversityService.getUniversity).mockResolvedValue(mockUniversityData);
     // findDepartmentAndMajorのモックを設定

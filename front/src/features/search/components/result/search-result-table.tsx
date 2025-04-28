@@ -113,7 +113,7 @@ const SearchResultTable = () => {
       <div>
         <SectionTitle>{title}</SectionTitle>
         <div className="mt-2">
-          <Table className="text-base">
+          <Table className="text-base" aria-label="大学入試科目の配点比率">
             <TableHeader>
               <TableRow>
                 <TableHead scope="col" className="font-semibold">
@@ -151,6 +151,7 @@ const SearchResultTable = () => {
                   onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
+                      e.stopPropagation();
                       handleRowClick(
                         subject.examInfo.academicYear,
                         subject.university.id,

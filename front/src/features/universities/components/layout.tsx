@@ -18,22 +18,25 @@ interface UniversityLayoutProps {
  */
 const UniversityLayout: FC<UniversityLayoutProps> = ({ subject }) => {
   return (
-    <main className="container mx-auto px-4 py-8" aria-label="大学科目情報">
+    <main
+      className="container mx-auto px-4 py-8"
+      aria-label={`${subject.university.name} ${subject.department.name} ${subject.major.name}の科目情報`}
+    >
       {/* メインコンテンツエリア: 科目情報とスコア表示を横並びに配置 */}
-      <div className="flex flex-col lg:flex-row">
+      <section className="flex flex-col md:flex-row gap-4" aria-label="科目情報とスコア表示">
         {/* 左側: 基本情報を表示 */}
-        <div className="lg:w-1/4 lg:pr-4">
+        <article className="w-full md:w-1/4" aria-label="基本情報">
           <BasicInfo subjectDetail={subject} />
-        </div>
+        </article>
         {/* 右側: 科目別配点グラフを配置 */}
-        <div className="flex-1 flex bg-transparent">
+        <article className="flex-1 flex bg-transparent" aria-label="スコア表示">
           <ScoreDisplay subject={subject} />
-        </div>
-      </div>
+        </article>
+      </section>
       {/* 下部: 科目別配点テーブルを表示 */}
-      <div>
+      <section className="mt-8" aria-label="科目別配点テーブル">
         <SubjectScoreTable subjectData={subject} />
-      </div>
+      </section>
     </main>
   );
 };

@@ -11,20 +11,7 @@ import {
   transformAPIResponse,
   transformToAPITestType,
 } from '@/features/admin/utils/api-transformers';
-
-const API_ENDPOINTS = {
-  UNIVERSITIES: `${process.env.NEXT_PUBLIC_API_URL}/universities`,
-  DEPARTMENTS: (universityId: number, departmentId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/universities/${universityId}/departments/${departmentId}`,
-  SUBJECTS_BATCH: (universityId: number, departmentId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/universities/${universityId}/departments/${departmentId}/subjects/batch`,
-  MAJOR: (departmentId: number, majorId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/departments/${departmentId}/majors/${majorId}`,
-  ADMISSION_SCHEDULE: (majorId: number, scheduleId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/majors/${majorId}/schedules/${scheduleId}`,
-  ADMISSION_INFO: (scheduleId: number, infoId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/schedules/${scheduleId}/info/${infoId}`,
-} as const;
+import { API_ENDPOINTS } from '@/constants/api';
 
 /**
  * 大学データの取得と更新機能を提供するカスタムフック

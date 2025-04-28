@@ -5,6 +5,7 @@ import { findDepartmentAndMajor } from '@/features/universities/utils/university
 import type { APIAdmissionSchedule, APITestType } from '@/types/api/types';
 import type { UISubject } from '@/types/university-subject';
 import { UniversityPageParams } from '@/features/universities/types/params';
+import { UniversityDataError } from '@/features/universities/utils/university-errors';
 
 /**
  * 大学データを取得するカスタムフック
@@ -33,7 +34,7 @@ export const useUniversityData = (params: UniversityPageParams) => {
         const result = findDepartmentAndMajor(universityData, departmentId, majorId);
 
         if (!result) {
-          throw new Error('学部または学科が見つかりません');
+          throw new UniversityDataError('学部または学科が見つかりません');
         }
 
         const { department, major } = result;
@@ -42,16 +43,16 @@ export const useUniversityData = (params: UniversityPageParams) => {
         );
 
         if (!admissionSchedule) {
-          throw new Error('入試日程が見つかりません');
+          throw new UniversityDataError('入試日程が見つかりません');
         }
 
         const admissionInfo = admissionSchedule.admission_infos?.[0];
         if (!admissionInfo || admissionInfo.academic_year !== parseInt(academicYear, 10)) {
-          throw new Error('指定された年度の入試情報が見つかりません');
+          throw new UniversityDataError('指定された年度の入試情報が見つかりません');
         }
 
         if (!admissionSchedule.test_types) {
-          throw new Error('入試日程にテストタイプが設定されていません');
+          throw new UniversityDataError('入試日程にテストタイプが設定されていません');
         }
 
         // 科目データを取得
@@ -60,7 +61,7 @@ export const useUniversityData = (params: UniversityPageParams) => {
         );
 
         if (!allSubjectsData.length) {
-          throw new Error('科目データが見つかりません');
+          throw new UniversityDataError('科目データが見つかりません');
         }
 
         // 科目データをUI用に変換
@@ -75,7 +76,7 @@ export const useUniversityData = (params: UniversityPageParams) => {
         );
 
         if (!transformedSubject) {
-          throw new Error('科目データの変換に失敗しました');
+          throw new UniversityDataError('科目データの変換に失敗しました');
         }
 
         setSelectedSubject(transformedSubject);

@@ -78,6 +78,17 @@ export interface HttpRequestConfig {
   timeout?: number;
   /** リクエストの再試行回数 */
   retryCount?: number;
+  /** Next.js 15以降のキャッシュ制御 */
+  cache?: RequestCache;
+  /** Next.jsの再検証設定 */
+  revalidate?: number | false;
+  /** Next.jsのキャッシュタグ */
+  tags?: string[];
+  /** Next.jsの設定 */
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
 }
 
 /**

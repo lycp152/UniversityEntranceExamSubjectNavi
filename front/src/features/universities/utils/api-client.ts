@@ -21,6 +21,7 @@ import type {
   ErrorInterceptor,
 } from '@/features/universities/utils/middleware';
 import { InterceptorManager } from '@/features/universities/utils/middleware';
+import { cache } from 'react';
 
 /**
  * APIクライアントエラーの基底クラス
@@ -177,7 +178,9 @@ export class ApiClient {
    */
   async request<T>(path: string, config: HttpRequestConfig): Promise<HttpResponse<T>> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, this.timeout);
 
     try {
       const finalConfig = await this.interceptors.runRequestInterceptors({
@@ -187,6 +190,11 @@ export class ApiClient {
           ...config.headers,
         },
         signal: config.signal ?? controller.signal,
+        cache: config.cache ?? 'no-store',
+        next: {
+          revalidate: config.revalidate,
+          tags: config.tags,
+        },
       });
 
       const response = await fetch(`${this.baseURL}${path}`, finalConfig);
@@ -195,7 +203,13 @@ export class ApiClient {
       const processedResponse = await this.interceptors.runResponseInterceptors(response);
 
       if (!processedResponse.ok) {
-        await this.interceptors.runErrorInterceptors(processedResponse);
+        const data = await processedResponse.json();
+        throw new ApiClientError({
+          code: data.code ?? API_ERROR_CODES.INTERNAL_SERVER_ERROR,
+          message: data.message ?? ERROR_MESSAGES[API_ERROR_CODES.INTERNAL_SERVER_ERROR],
+          status: processedResponse.status,
+          details: data.details,
+        });
       }
 
       const data = await processedResponse.json();
@@ -222,12 +236,16 @@ export class ApiClient {
         throw new TimeoutError();
       }
 
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new NetworkError();
+      }
+
       throw new NetworkError();
     }
   }
 
   /**
-   * GETリクエストを実行
+   * GETリクエストを実行（メモ化対応）
    *
    * @template T - レスポンスデータの型
    * @param {string} path - APIエンドポイントのパス
@@ -307,3 +325,13 @@ export class ApiClient {
 export const apiClient = new ApiClient({
   baseURL: ENV.API.BASE_URL,
 });
+
+// メモ化されたGETリクエスト
+const memoizedGet = cache(
+  async <T>(path: string, config?: Omit<HttpRequestConfig, 'method'>): Promise<T> => {
+    return apiClient.get<T>(path, config);
+  }
+);
+
+// メモ化されたGETリクエストをエクスポート
+export { memoizedGet };

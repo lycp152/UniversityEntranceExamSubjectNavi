@@ -112,6 +112,17 @@ describe('UniversityPage', () => {
       configurable: true,
       value: 600,
     });
+    Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => ({
+        width: 800,
+        height: 600,
+        top: 0,
+        left: 0,
+        right: 800,
+        bottom: 600,
+      }),
+    });
   });
 
   afterEach(() => {
@@ -120,6 +131,7 @@ describe('UniversityPage', () => {
     delete (HTMLElement.prototype as any).clientHeight;
     delete (HTMLElement.prototype as any).offsetWidth;
     delete (HTMLElement.prototype as any).offsetHeight;
+    delete (HTMLElement.prototype as any).getBoundingClientRect;
   });
 
   it('ローディング中はスピナーが表示されること', async () => {
@@ -178,7 +190,11 @@ describe('UniversityPage', () => {
     });
 
     await act(async () => {
-      render(<UniversityPage params={Promise.resolve(mockParams)} />);
+      render(
+        <div style={{ width: '800px', height: '600px' }}>
+          <UniversityPage params={Promise.resolve(mockParams)} />
+        </div>
+      );
     });
 
     // 大学名が表示されていることを確認

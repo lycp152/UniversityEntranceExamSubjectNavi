@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { Spinner } from '@/components/ui/feedback/spinner';
@@ -31,26 +31,46 @@ import {
  * @returns {JSX.Element} 検索結果テーブルコンポーネント
  */
 const SearchResultTable = () => {
-  const {
-    data: subjects,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['universities'],
-    queryFn: async () => {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/universities`);
-      const responseData = await response.json();
-      const data = responseData.data ?? responseData;
+  /** 検索結果の科目データ */
+  const [subjects, setSubjects] = useState<UISubject[]>([]);
+  /** データ読み込み中の状態 */
+  const [loading, setLoading] = useState(true);
+  /** エラーメッセージ */
+  const [error, setError] = useState<string | null>(null);
 
-      if (!Array.isArray(data)) {
-        throw new Error('無効なレスポンス形式です');
+  /**
+   * 大学データの取得と変換
+   *
+   * APIから大学データを取得し、表示用の形式に変換します。
+   * エラーが発生した場合はエラーメッセージを表示します。
+   */
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/universities`);
+        const responseData = await response.json();
+        const data = responseData.data ?? responseData;
+
+        if (!Array.isArray(data)) {
+          console.error('データが配列ではありません:', typeof data, data);
+          throw new Error('無効なレスポンス形式です');
+        }
+
+        const transformedData = transformUniversityData(data);
+        setSubjects(transformedData);
+      } catch (error) {
+        console.error('大学データの取得に失敗しました:', error);
+        setError('データの取得に失敗しました。サーバーが起動しているか確認してください。');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      return transformUniversityData(data);
-    },
-    staleTime: 5 * 60 * 1000, // 5分間キャッシュ
-    retry: 2, // エラー時に2回までリトライ
-  });
+    fetchUniversities();
+  }, []);
 
   /** テーブルのタイトル */
   const title = `大学入試科目の配点比率`;
@@ -75,17 +95,15 @@ const SearchResultTable = () => {
     window.open(url, '_blank');
   };
 
-  if (isLoading) {
+  if (loading) {
     return <Spinner aria-live="polite" />;
   }
 
   if (error) {
-    return (
-      <ErrorMessage message="データの取得に失敗しました。サーバーが起動しているか確認してください。" />
-    );
+    return <ErrorMessage message={error} />;
   }
 
-  if (!subjects || subjects.length === 0) {
+  if (subjects.length === 0) {
     return (
       <output className="flex flex-col items-center justify-center py-12">
         <svg

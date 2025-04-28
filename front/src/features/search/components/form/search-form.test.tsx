@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import SearchForm from './search-form';
 
@@ -95,7 +95,15 @@ describe('SearchForm', () => {
     fireEvent.change(input, { target: { value: '北海道大学' } });
 
     const submitButton = screen.getByRole('button', { name: '検索を実行' });
-    fireEvent.click(submitButton);
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    // 検索処理が完了するのを待つ
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '検索を実行' })).not.toBeDisabled();
+    });
   });
 
   it('アクセシビリティ属性が正しく設定されていること', () => {

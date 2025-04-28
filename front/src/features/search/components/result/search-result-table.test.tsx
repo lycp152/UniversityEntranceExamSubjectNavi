@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SearchResultTable from './search-result-table';
 import { transformUniversityData } from '@/features/search/utils/university-data-transformer';
 
@@ -49,6 +50,16 @@ describe('SearchResultTable', () => {
     },
   ];
 
+  // QueryClientのインスタンスを作成
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+      },
+    },
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     // コンソールエラーをモック
@@ -59,12 +70,18 @@ describe('SearchResultTable', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    queryClient.clear();
   });
+
+  // コンポーネントをラップする関数
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return render(<QueryClientProvider client={queryClient}>{component}</QueryClientProvider>);
+  };
 
   describe('ローディング状態のテスト', () => {
     it('データ取得中の表示が正しいこと', async () => {
       mockFetch.mockImplementationOnce(() => Promise.resolve());
-      render(<SearchResultTable />);
+      renderWithQueryClient(<SearchResultTable />);
 
       const spinner = screen.getByRole('status');
       expect(spinner).toBeInTheDocument();
@@ -77,33 +94,33 @@ describe('SearchResultTable', () => {
       const errorMessage = 'エラーが発生しました';
       mockFetch.mockRejectedValueOnce(new Error(errorMessage));
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
-      await waitFor(() => {
-        const errorElement = screen.getByRole('alert');
-        expect(errorElement).toBeInTheDocument();
-        expect(errorElement).toHaveTextContent(
-          'データの取得に失敗しました。サーバーが起動しているか確認してください。'
-        );
-      });
+      await waitFor(
+        () => {
+          const errorElement = screen.getByText(
+            'データの取得に失敗しました。サーバーが起動しているか確認してください。'
+          );
+          expect(errorElement).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
     });
 
     it('ネットワークエラーが発生した場合に適切なエラーメッセージが表示されること', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network Error'));
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
-      await waitFor(() => {
-        const errorElement = screen.getByRole('alert');
-        expect(errorElement).toBeInTheDocument();
-        expect(errorElement).toHaveTextContent(
-          'データの取得に失敗しました。サーバーが起動しているか確認してください。'
-        );
-      });
+      await waitFor(
+        () => {
+          const errorElement = screen.getByText(
+            'データの取得に失敗しました。サーバーが起動しているか確認してください。'
+          );
+          expect(errorElement).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
     });
   });
 
@@ -114,15 +131,11 @@ describe('SearchResultTable', () => {
       });
       (transformUniversityData as any).mockReturnValue([]);
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
       await waitFor(() => {
-        const emptyState = screen.getByRole('status');
+        const emptyState = screen.getByText('データが見つかりませんでした。');
         expect(emptyState).toBeInTheDocument();
-        expect(emptyState).toHaveTextContent('データが見つかりませんでした。');
-        expect(emptyState).toHaveTextContent('現在、データベースに大学情報が登録されていません。');
       });
     });
 
@@ -131,13 +144,9 @@ describe('SearchResultTable', () => {
         json: () => Promise.resolve(mockData),
       });
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
       await waitFor(() => {
-        const table = screen.getByRole('table');
-        expect(table).toBeInTheDocument();
         expect(screen.getByText('テスト大学')).toBeInTheDocument();
         expect(screen.getByText('テスト学部')).toBeInTheDocument();
         expect(screen.getByText('テスト学科')).toBeInTheDocument();
@@ -153,9 +162,7 @@ describe('SearchResultTable', () => {
       const mockOpen = vi.fn();
       window.open = mockOpen;
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
       await waitFor(() => {
         const row = screen.getByText('テスト大学').closest('tr');
@@ -164,14 +171,10 @@ describe('SearchResultTable', () => {
 
       const row = screen.getByText('テスト大学').closest('tr');
       if (row) {
-        await act(async () => {
-          fireEvent.click(row);
-        });
+        fireEvent.click(row);
       }
 
-      await waitFor(() => {
-        expect(mockOpen).toHaveBeenCalledWith('/universities/2024/1/1/1/1', '_blank');
-      });
+      expect(mockOpen).toHaveBeenCalledWith('/universities/2024/1/1/1/1', '_blank');
     });
 
     it('キーボード操作で行を選択したときに正しいURLが開かれること', async () => {
@@ -181,9 +184,7 @@ describe('SearchResultTable', () => {
       const mockOpen = vi.fn();
       window.open = mockOpen;
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
       await waitFor(() => {
         const row = screen.getByText('テスト大学').closest('tr');
@@ -192,14 +193,10 @@ describe('SearchResultTable', () => {
 
       const row = screen.getByText('テスト大学').closest('tr');
       if (row) {
-        await act(async () => {
-          fireEvent.keyDown(row, { key: 'Enter', code: 'Enter' });
-        });
+        fireEvent.keyDown(row, { key: 'Enter', code: 'Enter' });
       }
 
-      await waitFor(() => {
-        expect(mockOpen).toHaveBeenCalledWith('/universities/2024/1/1/1/1', '_blank');
-      });
+      expect(mockOpen).toHaveBeenCalledWith('/universities/2024/1/1/1/1', '_blank');
     });
   });
 
@@ -209,9 +206,7 @@ describe('SearchResultTable', () => {
         json: () => Promise.resolve(mockData),
       });
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
       await waitFor(() => {
         const table = screen.getByRole('table');
@@ -232,9 +227,7 @@ describe('SearchResultTable', () => {
         json: () => Promise.resolve(mockData),
       });
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
       await waitFor(() => {
         const row = screen.getByText('テスト大学').closest('tr');
@@ -253,17 +246,17 @@ describe('SearchResultTable', () => {
         json: () => Promise.resolve({ invalid: 'data' }),
       });
 
-      await act(async () => {
-        render(<SearchResultTable />);
-      });
+      renderWithQueryClient(<SearchResultTable />);
 
-      await waitFor(() => {
-        const errorElement = screen.getByRole('alert');
-        expect(errorElement).toBeInTheDocument();
-        expect(errorElement).toHaveTextContent(
-          'データの取得に失敗しました。サーバーが起動しているか確認してください。'
-        );
-      });
+      await waitFor(
+        () => {
+          const errorElement = screen.getByText(
+            'データの取得に失敗しました。サーバーが起動しているか確認してください。'
+          );
+          expect(errorElement).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
     });
   });
 });

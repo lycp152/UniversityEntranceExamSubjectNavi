@@ -1,5 +1,5 @@
 import { render, screen, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import UniversityPage from './page';
 import { UISubject } from '@/types/university-subject';
 import { useUniversityData } from '@/features/universities/hooks/use-university-data';
@@ -96,8 +96,30 @@ vi.mock('@/features/universities/hooks/use-university-data', () => ({
 describe('UniversityPage', () => {
   beforeEach(() => {
     // チャートコンポーネントのサイズを設定
-    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { value: 800 });
-    Object.defineProperty(HTMLElement.prototype, 'clientHeight', { value: 600 });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      value: 800,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      value: 600,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+      configurable: true,
+      value: 800,
+    });
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+      configurable: true,
+      value: 600,
+    });
+  });
+
+  afterEach(() => {
+    // プロパティの設定をクリア
+    delete (HTMLElement.prototype as any).clientWidth;
+    delete (HTMLElement.prototype as any).clientHeight;
+    delete (HTMLElement.prototype as any).offsetWidth;
+    delete (HTMLElement.prototype as any).offsetHeight;
   });
 
   it('ローディング中はスピナーが表示されること', async () => {

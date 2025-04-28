@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { Spinner } from '@/components/ui/feedback/spinner';
-import { EmptyState } from '@/components/ui/empty-state';
 import type { UISubject } from '@/types/university-subject';
 import { transformUniversityData } from '@/features/search/utils/university-data-transformer';
 import { SectionTitle } from '@/components/ui/section-title';
@@ -97,7 +96,7 @@ const SearchResultTable = () => {
   };
 
   if (loading) {
-    return <Spinner />;
+    return <Spinner aria-live="polite" />;
   }
 
   if (error) {
@@ -105,7 +104,32 @@ const SearchResultTable = () => {
   }
 
   if (subjects.length === 0) {
-    return <EmptyState />;
+    return (
+      <output className="flex flex-col items-center justify-center py-12">
+        <svg
+          aria-hidden="true"
+          className="lucide lucide-file-question w-12 h-12 text-gray-400 mb-4"
+          data-testid="empty-state-icon"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M12 17h.01" />
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+          <path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3" />
+        </svg>
+        <h3 className="text-xl text-gray-500 dark:text-gray-400">データが見つかりませんでした。</h3>
+        <p className="mt-2 text-gray-500 dark:text-gray-400">
+          現在、データベースに大学情報が登録されていません。
+        </p>
+      </output>
+    );
   }
 
   return (

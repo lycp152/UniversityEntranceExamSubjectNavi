@@ -5,13 +5,15 @@ import { UniversityService } from '@/features/universities/utils/university-serv
 import { findDepartmentAndMajor } from '@/features/universities/utils/university-finder';
 import { transformSubjectData } from '@/utils/subject-data-transformer';
 import { UniversityPageParams } from '@/features/universities/types/params';
+import type { APIDepartment, APIMajor } from '@/types/api/types';
+import { UniversityDataError } from '@/features/universities/utils/university-errors';
 
 // モックの設定
 vi.mock('@/features/universities/utils/university-service');
 vi.mock('@/features/universities/utils/university-finder');
 vi.mock('@/utils/subject-data-transformer');
 
-// モックデータ
+// テストデータ
 const mockParams: UniversityPageParams = {
   academicYear: '2024',
   universityId: '1',
@@ -110,92 +112,100 @@ describe('useUniversityData', () => {
     vi.mocked(UniversityService.getUniversity).mockResolvedValue(mockUniversityData);
     // findDepartmentAndMajorのモックを設定
     vi.mocked(findDepartmentAndMajor).mockReturnValue({
-      department: mockUniversityData.departments[0],
-      major: mockUniversityData.departments[0].majors[0],
+      department: mockUniversityData.departments[0] as APIDepartment,
+      major: mockUniversityData.departments[0].majors[0] as APIMajor,
     });
     // transformSubjectDataのモックを設定
     vi.mocked(transformSubjectData).mockReturnValue(mockTransformedSubject);
   });
 
-  it('データ取得成功時は正しい科目データを返すこと', async () => {
-    const { result } = renderHook(() => useUniversityData(mockParams));
+  describe('正常系', () => {
+    it('データ取得成功時は正しい科目データを返すこと', async () => {
+      const { result } = renderHook(() => useUniversityData(mockParams));
 
-    // 初期状態の確認
-    expect(result.current.loading).toBe(true);
-    expect(result.current.error).toBeNull();
-    expect(result.current.selectedSubject).toBeNull();
+      // 初期状態の確認
+      expect(result.current.loading).toBe(true);
+      expect(result.current.error).toBeNull();
+      expect(result.current.selectedSubject).toBeNull();
 
-    // 非同期処理の完了を待つ
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // 非同期処理の完了を待つ
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
+      // 結果の確認
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBeNull();
+      expect(result.current.selectedSubject).toEqual(mockTransformedSubject);
+      expect(result.current.selectedSubject?.name).toBe('数学');
+      expect(result.current.selectedSubject?.score).toBe(100);
     });
-
-    // 結果の確認
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBeNull();
-    expect(result.current.selectedSubject).toEqual(mockTransformedSubject);
   });
 
-  it('学部または学科が見つからない場合はエラーを返すこと', async () => {
-    // findDepartmentAndMajorのモックを失敗するように設定
-    vi.mocked(findDepartmentAndMajor).mockReturnValue(null);
+  describe('異常系', () => {
+    it('学部または学科が見つからない場合はエラーを返すこと', async () => {
+      // findDepartmentAndMajorのモックをエラーを投げるように設定
+      vi.mocked(findDepartmentAndMajor).mockImplementation(() => {
+        throw new UniversityDataError('学部または学科が見つかりません');
+      });
 
-    const { result } = renderHook(() => useUniversityData(mockParams));
+      const { result } = renderHook(() => useUniversityData(mockParams));
 
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBe('学部または学科が見つかりません');
+      expect(result.current.selectedSubject).toBeNull();
     });
 
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBe('学部または学科が見つかりません');
-    expect(result.current.selectedSubject).toBeNull();
-  });
+    it('入試日程が見つからない場合はエラーを返すこと', async () => {
+      // 入試日程を空にする
+      const mockDataWithoutSchedule = {
+        ...mockUniversityData,
+        departments: [
+          {
+            ...mockUniversityData.departments[0],
+            majors: [
+              {
+                ...mockUniversityData.departments[0].majors[0],
+                admission_schedules: [],
+              },
+            ],
+          },
+        ],
+      };
+      vi.mocked(UniversityService.getUniversity).mockResolvedValue(mockDataWithoutSchedule);
+      vi.mocked(findDepartmentAndMajor).mockReturnValue({
+        department: mockDataWithoutSchedule.departments[0] as APIDepartment,
+        major: mockDataWithoutSchedule.departments[0].majors[0] as APIMajor,
+      });
 
-  it('入試日程が見つからない場合はエラーを返すこと', async () => {
-    // 入試日程を空にする
-    const mockDataWithoutSchedule = {
-      ...mockUniversityData,
-      departments: [
-        {
-          ...mockUniversityData.departments[0],
-          majors: [
-            {
-              ...mockUniversityData.departments[0].majors[0],
-              admission_schedules: [],
-            },
-          ],
-        },
-      ],
-    };
-    vi.mocked(UniversityService.getUniversity).mockResolvedValue(mockDataWithoutSchedule);
-    vi.mocked(findDepartmentAndMajor).mockReturnValue({
-      department: mockDataWithoutSchedule.departments[0],
-      major: mockDataWithoutSchedule.departments[0].majors[0],
+      const { result } = renderHook(() => useUniversityData(mockParams));
+
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBe('入試日程が見つかりません');
+      expect(result.current.selectedSubject).toBeNull();
     });
 
-    const { result } = renderHook(() => useUniversityData(mockParams));
+    it('APIエラー発生時はエラーメッセージを返すこと', async () => {
+      // UniversityServiceのモックをエラーを投げるように設定
+      vi.mocked(UniversityService.getUniversity).mockRejectedValue(new Error('APIエラー'));
 
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
+      const { result } = renderHook(() => useUniversityData(mockParams));
+
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBe('APIエラー');
+      expect(result.current.selectedSubject).toBeNull();
     });
-
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBe('入試日程が見つかりません');
-    expect(result.current.selectedSubject).toBeNull();
-  });
-
-  it('APIエラー発生時はエラーメッセージを返すこと', async () => {
-    // UniversityServiceのモックをエラーを投げるように設定
-    vi.mocked(UniversityService.getUniversity).mockRejectedValue(new Error('APIエラー'));
-
-    const { result } = renderHook(() => useUniversityData(mockParams));
-
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0));
-    });
-
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBe('APIエラー');
-    expect(result.current.selectedSubject).toBeNull();
   });
 });

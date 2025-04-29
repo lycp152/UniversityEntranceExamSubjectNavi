@@ -13,24 +13,21 @@
 import { TooltipPayload } from '../types/chart';
 
 /**
- * 円グラフのツールチップを生成する関数
+ * 円グラフのツールチップを生成
  *
- * @remarks
- * - 値とパーセンテージを組み合わせて表示
- * - パーセンテージが存在する場合のみ表示
- * - 小数点以下1桁まで表示
- *
- * @param {number} value - 表示する値
- * @param {string} name - 表示するラベル名
- * @param {TooltipPayload} entry - ツールチップのデータエントリ
- *
- * @returns {[string, string]} [値の文字列, ラベル名]の配列
+ * @param value - 表示する値
+ * @param name - 表示するラベル名
+ * @param entry - ツールチップのデータエントリ（オプショナル）
+ * @returns [値の文字列, ラベル名]の配列
  *
  * @example
  * const result = ChartTooltip(85, "数学", { payload: { percentage: 0.25 } });
  * // 戻り値: ["85点 (25.0%)", "数学"]
  */
-export const ChartTooltip = (value: number, name: string, entry: TooltipPayload) => {
-  const percentage = entry?.payload?.percentage ? ` (${entry.payload.percentage.toFixed(1)}%)` : '';
+export const ChartTooltip = (value: number, name: string, entry?: TooltipPayload) => {
+  const percentage =
+    entry?.payload?.percentage !== undefined
+      ? ` (${(entry.payload.percentage * 100).toFixed(1)}%)`
+      : '';
   return [`${value}点${percentage}`, name];
 };

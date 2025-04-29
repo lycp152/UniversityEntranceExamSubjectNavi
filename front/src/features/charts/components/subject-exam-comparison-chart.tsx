@@ -14,7 +14,7 @@ import {
   containerClassName,
   chartStyles,
 } from '@/features/charts/constants/chart-styles';
-import { BaseChart } from './base-chart';
+import { DonutChart } from './donut-chart';
 import { SubjectExamComparisonChartProps } from '../types/chart';
 
 /**
@@ -29,14 +29,22 @@ const SubjectExamComparisonChart: FC<SubjectExamComparisonChartProps> = ({ subje
   const { subjectChart, examChart } = useSubjectChart(subjectData);
 
   return (
-    <div className="flex w-full gap-4">
-      <div className={containerClassName} style={containerStyles}>
+    <div className="flex w-full gap-4" data-testid="subject-exam-comparison-chart">
+      <div
+        className={containerClassName}
+        style={{ ...containerStyles, minWidth: '400px', minHeight: '400px' }}
+        data-testid="subject-chart-container"
+      >
         <style>{chartStyles}</style>
-        <BaseChart detailedData={subjectChart.detailedData} outerData={subjectChart.outerData} />
+        <DonutChart detailedData={subjectChart.detailedData} outerData={subjectChart.outerData} />
       </div>
-      <div className={containerClassName} style={containerStyles}>
+      <div
+        className={containerClassName}
+        style={{ ...containerStyles, minWidth: '400px', minHeight: '400px' }}
+        data-testid="exam-chart-container"
+      >
         <style>{chartStyles}</style>
-        <BaseChart
+        <DonutChart
           detailedData={examChart.detailedData}
           outerData={examChart.outerData}
           isRightChart={true}

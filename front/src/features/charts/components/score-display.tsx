@@ -20,9 +20,9 @@ import { ScoreDisplayProps } from '../types/chart';
  */
 export const ScoreDisplay: FC<ScoreDisplayProps> = ({ subject }) => {
   return (
-    <div className="w-full">
+    <div className="w-full" data-testid="score-display-container">
       <div className="flex w-full h-[400px]">
-        <div className="flex-1">
+        <div className="flex-1" data-testid="chart-container">
           <SubjectExamComparisonChart subjectData={subject} />
         </div>
       </div>

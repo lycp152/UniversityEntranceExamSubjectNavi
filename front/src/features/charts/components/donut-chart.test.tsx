@@ -14,9 +14,15 @@ import { DisplaySubjectScore } from '@/types/score';
 
 // ResizeObserverのモック
 class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe() {
+    // モック実装のため空のメソッド
+  }
+  unobserve() {
+    // モック実装のため空のメソッド
+  }
+  disconnect() {
+    // モック実装のため空のメソッド
+  }
 }
 
 // テスト用のモックデータ

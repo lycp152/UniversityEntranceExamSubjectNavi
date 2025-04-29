@@ -12,7 +12,7 @@
 
 import { TestType } from '@/types/score';
 import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
-import { FORMAT_PATTERNS } from '@/features/charts/constants/format';
+import { FORMAT_PATTERNS } from '@/features/charts/constants/chart-format';
 type SubjectNameDisplayMapping = typeof SUBJECTS;
 type SubjectName = keyof SubjectNameDisplayMapping;
 

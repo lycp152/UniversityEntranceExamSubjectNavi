@@ -10,7 +10,7 @@
  * @example
  * const { data, errors, hasErrors } = useDetailedData(subjectData, totalScore);
  */
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { UISubject } from '@/types/university-subject';
 import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
 import { CHART_ERROR_CODES, CHART_ERROR_MESSAGES } from '@/constants/errors/chart';
@@ -37,6 +37,31 @@ export const useDetailedData = (
   subjectData: UISubject,
   totalScore: number
 ): ChartResult<DetailedPieData> => {
+  /** エラー情報を生成するメモ化された関数 */
+  const createError = useCallback((subjectName: string, message: string): ChartError => {
+    return createChartError(
+      CHART_ERROR_CODES.CALCULATION_ERROR,
+      CHART_ERROR_MESSAGES[CHART_ERROR_CODES.CALCULATION_ERROR],
+      subjectName,
+      {
+        severity: 'error',
+        details: { originalMessage: message },
+      }
+    );
+  }, []);
+
+  /** 円グラフデータを生成するメモ化された関数 */
+  const createPieData = useCallback(
+    (
+      name: string,
+      value: number,
+      type: (typeof TEST_TYPES)[keyof typeof TEST_TYPES]
+    ): DetailedPieData => {
+      return createDetailedPieData(name, value, totalScore, type);
+    },
+    [totalScore]
+  );
+
   return useMemo(() => {
     /** 処理開始時間を記録（パフォーマンス計測用） */
     const startTime = Date.now();
@@ -51,26 +76,15 @@ export const useDetailedData = (
         /** 各スコアを処理し、円グラフデータまたはエラー情報として追加 */
         extractedScores.forEach(score => {
           if (score.type === 'error') {
-            /** エラーケースの処理：エラー情報を記録 */
-            const error: ChartError = createChartError(
-              CHART_ERROR_CODES.CALCULATION_ERROR,
-              CHART_ERROR_MESSAGES[CHART_ERROR_CODES.CALCULATION_ERROR],
-              score.subjectName,
-              {
-                severity: 'error',
-                details: { originalMessage: score.message },
-              }
-            );
-            acc.errors.push(error);
+            acc.errors.push(createError(subjectName, score.message));
           } else {
-            /** 正常ケースの処理：円グラフデータを生成 */
-            const pieData: DetailedPieData = createDetailedPieData(
-              score.name,
-              score.value,
-              totalScore,
-              score.type === '共通' ? TEST_TYPES.COMMON : TEST_TYPES.SECONDARY
+            acc.data.push(
+              createPieData(
+                score.name,
+                score.value,
+                score.type === '共通' ? TEST_TYPES.COMMON : TEST_TYPES.SECONDARY
+              )
             );
-            acc.data.push(pieData);
           }
         });
 
@@ -89,5 +103,5 @@ export const useDetailedData = (
     );
 
     return result;
-  }, [subjectData.subjects, totalScore]);
+  }, [subjectData.subjects, createError, createPieData]);
 };

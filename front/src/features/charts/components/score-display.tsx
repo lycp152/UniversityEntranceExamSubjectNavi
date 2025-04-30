@@ -8,7 +8,7 @@
  */
 import { FC } from 'react';
 import SubjectExamComparisonChart from './subject-exam-comparison-chart';
-import { ScoreDisplayProps } from '../types/chart';
+import { ChartScoreDisplayProps } from '../types/score-display';
 
 /**
  * 科目スコアを表示するコンポーネント
@@ -18,7 +18,7 @@ import { ScoreDisplayProps } from '../types/chart';
  *
  * @returns 科目スコア表示のReact要素
  */
-export const ScoreDisplay: FC<ScoreDisplayProps> = ({ subject }) => {
+export const ScoreDisplay: FC<ChartScoreDisplayProps> = ({ subject }) => {
   return (
     <div className="w-full" data-testid="score-display-container">
       <div className="flex w-full h-[400px]">

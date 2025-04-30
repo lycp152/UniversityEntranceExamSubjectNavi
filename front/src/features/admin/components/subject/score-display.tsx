@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/constraint/subjects/subject-score';
-import type { EditScoreProps, ScoreDisplayProps, ViewScoreProps } from '../../types/types';
+import type { EditScoreProps, AdminScoreDisplayProps, ViewScoreProps } from '../../types/types';
 /**
  * スコア表示コンポーネント
  *
@@ -102,7 +102,7 @@ export const ScoreDisplay = ({
   score,
   percentage,
   onScoreChange,
-}: ScoreDisplayProps) => (
+}: AdminScoreDisplayProps) => (
   <fieldset
     className="flex flex-col h-full justify-center w-full border-0 p-0 m-0"
     aria-label={isEditing ? 'スコア編集' : 'スコア表示'}

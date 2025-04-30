@@ -1,24 +1,46 @@
 import type { APITestType, APISubject } from '@/types/api/types';
 
 /**
- * スコア表示コンポーネントのプロパティ型
+ * 管理画面の型定義
+ *
+ * @remarks
+ * - 管理画面用の型定義
+ * - スコア表示コンポーネントの型定義
  */
-export interface ScoreDisplayProps {
-  /** スコア値 */
+
+/**
+ * スコア編集コンポーネントのプロパティ型定義
+ * @property score - 表示するスコア
+ * @property onScoreChange - スコア変更時のコールバック関数
+ */
+export type EditScoreProps = {
   score: number;
-  /** パーセンテージ値 */
+  onScoreChange: (score: number) => void;
+};
+
+/**
+ * スコア表示コンポーネントのプロパティ型定義
+ * @property score - 表示するスコア
+ * @property percentage - 表示するパーセンテージ
+ */
+export type ViewScoreProps = {
+  score: number;
   percentage: number;
-  /** 編集モードの状態 */
+};
+
+/**
+ * 管理画面用スコア表示コンポーネントのプロパティ型定義
+ * @property isEditing - 編集モードかどうか
+ * @property score - 表示するスコア
+ * @property percentage - 表示するパーセンテージ
+ * @property onScoreChange - スコア変更時のコールバック関数
+ */
+export type AdminScoreDisplayProps = {
   isEditing: boolean;
-  /** スコア変更時のハンドラー */
-  onScoreChange: (value: number) => void;
-}
-
-/** スコア編集コンポーネントのプロパティ型 */
-export type EditScoreProps = Omit<ScoreDisplayProps, 'percentage' | 'isEditing'>;
-
-/** スコア表示コンポーネントのプロパティ型 */
-export type ViewScoreProps = Omit<ScoreDisplayProps, 'isEditing' | 'onScoreChange'>;
+  score: number;
+  percentage: number;
+  onScoreChange: (score: number) => void;
+};
 
 /**
  * 科目カードコンポーネントのプロパティ型

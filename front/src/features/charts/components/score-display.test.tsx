@@ -12,7 +12,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ScoreDisplay } from './score-display';
-import { ScoreDisplayProps } from '@/features/charts/types/chart';
+import { ChartScoreDisplayProps } from '@/features/charts/types/score-display';
 import { UISubject } from '@/types/university-subject';
 
 // ResizeObserverのモック
@@ -68,7 +68,7 @@ describe('ScoreDisplay', () => {
     updatedBy: 'テストユーザー',
   };
 
-  const defaultProps: ScoreDisplayProps = {
+  const defaultProps: ChartScoreDisplayProps = {
     subject: mockSubject,
   };
 

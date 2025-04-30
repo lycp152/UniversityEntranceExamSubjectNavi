@@ -18,8 +18,8 @@ import type { DetailedPieData, ChartResult, ChartError } from '@/types/pie-chart
 import { createDetailedPieData } from '@/features/charts/utils/chart-data-transformer';
 import { createChartError } from '@/features/charts/utils/chart-error-factory';
 import { extractScores } from '@/features/charts/utils/extractors/subject-score-extractor';
-import { TEST_TYPES } from '@/types/score';
 import { createChartMetadata } from '@/features/charts/utils/chart-utils';
+import { EXAM_TYPES, ExamType } from '@/constants/constraint/exam-types';
 
 /**
  * 詳細なチャートデータを生成するフック
@@ -52,11 +52,7 @@ export const useDetailedData = (
 
   /** 円グラフデータを生成するメモ化された関数 */
   const createPieData = useCallback(
-    (
-      name: string,
-      value: number,
-      type: (typeof TEST_TYPES)[keyof typeof TEST_TYPES]
-    ): DetailedPieData => {
+    (name: string, value: number, type: ExamType): DetailedPieData => {
       return createDetailedPieData(name, value, totalScore, type);
     },
     [totalScore]
@@ -82,7 +78,9 @@ export const useDetailedData = (
               createPieData(
                 score.name,
                 score.value,
-                score.type === '共通' ? TEST_TYPES.COMMON : TEST_TYPES.SECONDARY
+                score.type === EXAM_TYPES.COMMON.name
+                  ? EXAM_TYPES.COMMON.name
+                  : EXAM_TYPES.SECONDARY.name
               )
             );
           }

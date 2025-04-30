@@ -38,7 +38,7 @@ const mockDetailedData: DisplaySubjectScore[] = [
 
 const mockOuterData: DisplaySubjectScore[] = [
   {
-    name: '理系',
+    name: '理科',
     value: 100,
     percentage: 1,
     category: 'science',

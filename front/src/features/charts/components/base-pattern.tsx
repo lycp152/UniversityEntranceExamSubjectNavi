@@ -10,7 +10,7 @@ import { FC, useMemo, useCallback } from 'react';
 import { SUBJECT_CATEGORIES } from '@/constants/constraint/subjects/subject-categories';
 import { PATTERN_CONFIG } from '@/features/charts/constants/pattern-config';
 import { BasePatternProps } from '../types/patterns';
-import { getSubjectBaseCategory } from '@/features/charts/utils/subject-type-validator';
+import { getCategoryFromSubject } from '@/features/charts/utils/extractors/subject-name-extractor';
 
 /**
  * パターンの基本コンポーネント
@@ -23,7 +23,7 @@ import { getSubjectBaseCategory } from '@/features/charts/utils/subject-type-val
  * @returns パターンの基本構造を含むReact要素
  */
 const BasePattern: FC<BasePatternProps> = ({ id, children, patternTransform }) => {
-  const baseCategory = useMemo(() => getSubjectBaseCategory(id), [id]);
+  const baseCategory = useMemo(() => getCategoryFromSubject(id), [id]);
 
   const getBackgroundColor = useCallback(() => {
     const category = SUBJECT_CATEGORIES[baseCategory];

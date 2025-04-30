@@ -1,9 +1,4 @@
-import { EXAM_TYPES } from '@/constants/constraint/exam-types';
-
-/**
- * テストタイプの定義
- */
-type TestType = 'common' | 'secondary';
+import { EXAM_TYPES, ExamType } from '@/constants/constraint/exam-types';
 
 /**
  * フォーマットパターンの定義
@@ -11,15 +6,14 @@ type TestType = 'common' | 'secondary';
  */
 export const FORMAT_PATTERNS = {
   /** テストタイプに基づくフォーマット */
-  TEST_TYPE: (name: string | null | undefined, testType: string): string => {
+  TEST_TYPE: (name: string | null | undefined, testType: ExamType): string => {
     const displayName = name ?? '';
-    const normalizedTestType = testType.toLowerCase() as TestType;
 
-    if (normalizedTestType !== 'common' && normalizedTestType !== 'secondary') {
+    if (testType !== EXAM_TYPES.COMMON.name && testType !== EXAM_TYPES.SECONDARY.name) {
       return `${displayName}(${EXAM_TYPES.SECONDARY.name})`;
     }
 
-    return normalizedTestType === 'common'
+    return testType === EXAM_TYPES.COMMON.name
       ? `${displayName}(${EXAM_TYPES.COMMON.name})`
       : `${displayName}(${EXAM_TYPES.SECONDARY.name})`;
   },

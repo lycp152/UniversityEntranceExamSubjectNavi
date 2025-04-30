@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { FORMAT_PATTERNS } from './chart-format';
+import { EXAM_TYPES, ExamType } from '@/constants/constraint/exam-types';
 
 /**
  * テストデータの型定義
  */
 type TestData = {
   name: string | null | undefined;
-  testType: string;
+  testType: ExamType;
   expected: string;
 };
 
@@ -17,32 +18,32 @@ type TestData = {
 const TEST_DATA: Record<string, TestData> = {
   common: {
     name: '数学',
-    testType: 'common',
+    testType: EXAM_TYPES.COMMON.name as ExamType,
     expected: '数学(共通)',
   },
   secondary: {
     name: '英語',
-    testType: 'secondary',
+    testType: EXAM_TYPES.SECONDARY.name as ExamType,
     expected: '英語(二次)',
   },
   emptyName: {
     name: '',
-    testType: 'common',
+    testType: EXAM_TYPES.COMMON.name as ExamType,
     expected: '(共通)',
   },
   emptyTestType: {
     name: '数学',
-    testType: '',
+    testType: EXAM_TYPES.SECONDARY.name as ExamType,
     expected: '数学(二次)',
   },
   nullName: {
     name: null,
-    testType: 'common',
+    testType: EXAM_TYPES.COMMON.name as ExamType,
     expected: '(共通)',
   },
   undefinedName: {
     name: undefined,
-    testType: 'common',
+    testType: EXAM_TYPES.COMMON.name as ExamType,
     expected: '(共通)',
   },
 } as const;

@@ -5,8 +5,7 @@
 
 import { DetailedPieData, PieData } from '@/types/pie-chart';
 import { BaseTransformParams } from '@/features/charts/types/transformers';
-import { TestType, TEST_TYPES } from '@/types/score';
-import { EXAM_TYPES } from '@/constants/constraint/exam-types';
+import { EXAM_TYPES, ExamType } from '@/constants/constraint/exam-types';
 import { transformSubjectData } from '@/features/charts/utils/formatters/subject-data-formatter';
 import { transformToPieData } from '@/features/charts/utils/pie-data-transformer';
 
@@ -16,8 +15,8 @@ import { transformToPieData } from '@/features/charts/utils/pie-data-transformer
  * @param {TestType} testType - テストタイプ（共通テストまたは二次試験）
  * @returns {typeof EXAM_TYPES[keyof typeof EXAM_TYPES]} 対応する科目タイプ
  */
-const mapTestTypeToSubjectType = (testType: TestType) =>
-  testType === TEST_TYPES.COMMON ? EXAM_TYPES.COMMON : EXAM_TYPES.SECONDARY;
+const mapTestTypeToSubjectType = (testType: ExamType) =>
+  testType === EXAM_TYPES.COMMON.name ? EXAM_TYPES.COMMON : EXAM_TYPES.SECONDARY;
 
 /**
  * 詳細な円グラフデータを生成する関数
@@ -33,7 +32,7 @@ export const createDetailedPieData = (
   subjectName: string,
   value: number,
   totalScore: number,
-  testType: TestType
+  testType: ExamType
 ): DetailedPieData => {
   const { name, displayName, category } = transformSubjectData(subjectName, testType);
   const transformInput: BaseTransformParams = {

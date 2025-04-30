@@ -16,7 +16,7 @@ import {
   isSecondarySubject,
   compareSubjectOrder,
 } from '@/features/charts/utils/subject-type-validator';
-import { extractSubjectMainCategory } from '@/features/charts/utils/formatters/subject-name-display-formatter';
+import { getCategoryFromSubject } from '@/features/charts/utils/extractors/subject-name-extractor';
 import type { DisplaySubjectScore } from '@/types/score';
 import type { ChartResult, ChartError } from '@/types/pie-chart';
 
@@ -48,7 +48,7 @@ export const createChartMetadata = <T>(
 export const getCategoryType = (name: string): string => {
   if (isCommonSubject(name)) return EXAM_TYPES.COMMON.name;
   if (isSecondarySubject(name)) return EXAM_TYPES.SECONDARY.name;
-  return extractSubjectMainCategory(name);
+  return getCategoryFromSubject(name);
 };
 
 /**

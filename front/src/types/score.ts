@@ -15,9 +15,6 @@
 
 import type { PieData } from '@/types/pie-chart';
 
-/** テスト種別の型 */
-export type TestType = (typeof TEST_TYPES)[keyof typeof TEST_TYPES];
-
 /** 基本科目スコアの型 */
 export interface BaseSubjectScore {
   /** 共通テストスコア */
@@ -41,11 +38,3 @@ export interface DisplaySubjectScore extends PieData {
   /** 表示用の名前 */
   displayName?: string;
 }
-
-/** テスト種別の定数 */
-export const TEST_TYPES = {
-  /** 共通テスト */
-  COMMON: 'common',
-  /** 二次テスト */
-  SECONDARY: 'secondary',
-} as const;

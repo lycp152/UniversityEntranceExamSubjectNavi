@@ -19,7 +19,8 @@ import { ExamType } from '@/constants/constraint/exam-types';
  * @param subjectName - 科目名
  * @returns プレフィックスを除去した科目名
  * @example
- * - "1英語R" -> "英語R"
+ * - "英語R" -> "R"
+ * - "数学" -> ""
  */
 export const removeSubjectNamePrefix = (subjectName: string): string => {
   return subjectName.replace(/^[^RLa-z]+/, '');

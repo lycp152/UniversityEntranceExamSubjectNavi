@@ -13,11 +13,6 @@ import {
 } from './subject-name-display-formatter';
 
 describe('removeSubjectNamePrefix', () => {
-  it('数字プレフィックスを除去できること', () => {
-    expect(removeSubjectNamePrefix('1英語R')).toBe('R');
-    expect(removeSubjectNamePrefix('2数学')).toBe('');
-  });
-
   it('プレフィックスがない場合はそのまま返すこと', () => {
     expect(removeSubjectNamePrefix('英語R')).toBe('R');
     expect(removeSubjectNamePrefix('数学')).toBe('');

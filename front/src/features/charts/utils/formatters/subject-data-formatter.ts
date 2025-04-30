@@ -24,8 +24,8 @@ import { ExamType } from '@/constants/constraint/exam-types';
  * @throws {Error} 科目名が空の場合
  * @example
  * {
- *   name: "英語（共通）",
- *   displayName: "英語（共通）",
+ *   name: "英語R（二次）",
+ *   displayName: "R（二次）",
  *   category: "英語",
  *   testTypeId: 0,
  *   percentage: 0,

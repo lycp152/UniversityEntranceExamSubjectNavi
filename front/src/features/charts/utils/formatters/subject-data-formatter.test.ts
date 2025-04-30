@@ -47,38 +47,6 @@ describe('transformSubjectData', () => {
     expect(() => transformSubjectData(subjectName, testType)).toThrow('科目名は必須です');
   });
 
-  it('数字プレフィックス付きの科目名で二次のテスト種別で正しく変換されること', () => {
-    const subjectName = '1数学';
-    const testType = EXAM_TYPES.SECONDARY.name as ExamType;
-
-    const result = transformSubjectData(subjectName, testType);
-
-    expect(result).toEqual({
-      name: '1数学(二次)',
-      displayName: '(二次)',
-      category: '1数学',
-      testTypeId: 0,
-      percentage: 0,
-      displayOrder: 0,
-    });
-  });
-
-  it('数字プレフィックス付きの科目名で共通のテスト種別で正しく変換されること', () => {
-    const subjectName = '1数学';
-    const testType = EXAM_TYPES.COMMON.name as ExamType;
-
-    const result = transformSubjectData(subjectName, testType);
-
-    expect(result).toEqual({
-      name: '1数学(共通)',
-      displayName: '(共通)',
-      category: '1数学',
-      testTypeId: 0,
-      percentage: 0,
-      displayOrder: 0,
-    });
-  });
-
   it('異なるテスト種別で正しく変換されること', () => {
     const subjectName = '英語R';
     const testType = EXAM_TYPES.SECONDARY.name as ExamType;

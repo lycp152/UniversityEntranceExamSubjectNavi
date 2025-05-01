@@ -7,7 +7,7 @@ import { DetailedPieData, PieData } from '@/types/pie-chart';
 import { BaseTransformParams } from '@/features/charts/types/transformers';
 import { EXAM_TYPES, ExamType } from '@/constants/constraint/exam-types';
 import { transformSubjectData } from '@/features/charts/utils/formatters/subject-data-formatter';
-import { transformToPieData } from '@/features/charts/utils/pie-data-transformer';
+import { transformToPieData } from '@/features/charts/utils/calculations/pie-data-transformer';
 
 /**
  * テストタイプを科目タイプに変換する関数

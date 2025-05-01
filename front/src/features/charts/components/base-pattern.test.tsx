@@ -83,11 +83,31 @@ describe('BasePattern', () => {
 
     it('存在しない科目カテゴリーの場合、デフォルトの背景色を使用し警告を表示する', () => {
       const consoleSpy = vi.spyOn(console, 'warn');
-      renderPattern({ id: 'invalid-category' });
+      const invalidCategory = 'invalid-category';
+      renderPattern({ id: invalidCategory });
 
-      const rect = screen.getByTestId('pattern-invalid-category-rect');
+      const rect = screen.getByTestId(`pattern-${invalidCategory}-rect`);
       expect(rect).toHaveAttribute('fill', '#ffffff');
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('科目カテゴリー'));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `科目カテゴリー "${invalidCategory}" が見つかりません。デフォルトの背景色を使用します。`
+        )
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('空の科目カテゴリーの場合、デフォルトの背景色を使用し警告を表示する', () => {
+      const consoleSpy = vi.spyOn(console, 'warn');
+      renderPattern({ id: '' });
+
+      const rect = screen.getByTestId('pattern--rect');
+      expect(rect).toHaveAttribute('fill', '#ffffff');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          '科目カテゴリー "" が見つかりません。デフォルトの背景色を使用します。'
+        )
+      );
 
       consoleSpy.mockRestore();
     });

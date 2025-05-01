@@ -100,7 +100,7 @@ describe('DonutChart', () => {
     );
 
     // データの表示確認
-    const mathCell = screen.getByText('数学');
+    const mathCell = screen.getByRole('figure', { name: '共通テスト科目配点' });
     expect(mathCell).toBeInTheDocument();
   });
 

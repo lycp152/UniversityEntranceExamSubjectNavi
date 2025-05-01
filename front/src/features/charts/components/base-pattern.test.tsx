@@ -10,6 +10,22 @@ import { render, screen, cleanup } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import BasePattern from './base-pattern';
 
+// モックの設定
+vi.mock('@/constants/constraint/subjects/subject-categories', () => ({
+  SUBJECT_CATEGORIES: {
+    math: {
+      color: '#ff0000',
+    },
+    'test-pattern': {
+      color: '#00ff00',
+    },
+  },
+}));
+
+vi.mock('@/features/charts/utils/extractors/subject-name-extractor', () => ({
+  getCategoryFromSubject: (id: string) => id,
+}));
+
 describe('BasePattern', () => {
   // テストケースの共通設定
   const renderPattern = (props = {}) => {
@@ -60,7 +76,7 @@ describe('BasePattern', () => {
       renderPattern({ id: 'math' });
 
       const rect = screen.getByTestId('pattern-math-rect');
-      expect(rect).toHaveAttribute('fill', expect.any(String));
+      expect(rect).toHaveAttribute('fill', '#ff0000');
       expect(rect).toHaveAttribute('width', expect.any(String));
       expect(rect).toHaveAttribute('height', expect.any(String));
     });

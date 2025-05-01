@@ -42,7 +42,7 @@ export const DonutChart = ({ detailedData, outerData, isRightChart = false }: Ch
 
   return (
     <figure aria-label={chartTitle} className="w-full h-[400px]">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={400} minHeight={400}>
         <PieChart>
           {/* パターン定義 */}
           <defs>

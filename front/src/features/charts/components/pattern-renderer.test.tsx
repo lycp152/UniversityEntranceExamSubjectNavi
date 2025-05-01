@@ -36,10 +36,14 @@ vi.mock('../utils/formatters/pattern-definitions', () => ({
 describe('PatternRenderer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // テスト実行時はエラーメッセージを抑制
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
     cleanup();
+    // エラーメッセージの抑制を解除
+    vi.restoreAllMocks();
   });
 
   describe('パターンのレンダリング', () => {

@@ -51,17 +51,18 @@ describe('DonutChart', () => {
     global.ResizeObserver = ResizeObserverMock;
   });
 
+  // テスト用のコンテナスタイル
+  const containerStyle = {
+    width: '400px',
+    height: '400px',
+    minWidth: '400px',
+    minHeight: '400px',
+    position: 'relative' as const,
+  };
+
   it('共通テストのチャートが正しくレンダリングされること', () => {
     render(
-      <div
-        style={{
-          width: '400px',
-          height: '400px',
-          minWidth: '0',
-          minHeight: '0',
-          position: 'relative',
-        }}
-      >
+      <div style={containerStyle}>
         <DonutChart
           detailedData={mockDetailedData}
           outerData={mockOuterData}
@@ -77,15 +78,7 @@ describe('DonutChart', () => {
 
   it('二次試験のチャートが正しくレンダリングされること', () => {
     render(
-      <div
-        style={{
-          width: '400px',
-          height: '400px',
-          minWidth: '0',
-          minHeight: '0',
-          position: 'relative',
-        }}
-      >
+      <div style={containerStyle}>
         <DonutChart detailedData={mockDetailedData} outerData={mockOuterData} isRightChart={true} />
       </div>
     );
@@ -97,15 +90,7 @@ describe('DonutChart', () => {
 
   it('データに基づいて適切なセルがレンダリングされること', () => {
     render(
-      <div
-        style={{
-          width: '400px',
-          height: '400px',
-          minWidth: '0',
-          minHeight: '0',
-          position: 'relative',
-        }}
-      >
+      <div style={containerStyle}>
         <DonutChart
           detailedData={mockDetailedData}
           outerData={mockOuterData}
@@ -113,19 +98,15 @@ describe('DonutChart', () => {
         />
       </div>
     );
+
+    // データの表示確認
+    const mathCell = screen.getByText('数学');
+    expect(mathCell).toBeInTheDocument();
   });
 
   it('レスポンシブコンテナが適切なサイズで設定されていること', () => {
     render(
-      <div
-        style={{
-          width: '400px',
-          height: '400px',
-          minWidth: '0',
-          minHeight: '0',
-          position: 'relative',
-        }}
-      >
+      <div style={containerStyle}>
         <DonutChart
           detailedData={mockDetailedData}
           outerData={mockOuterData}

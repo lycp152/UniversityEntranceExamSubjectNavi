@@ -62,11 +62,7 @@ describe('SubjectExamComparisonChart', () => {
   });
 
   it('科目データと試験データのチャートが正しく表示されること', () => {
-    render(
-      <div style={{ width: '800px', height: '400px', minWidth: '800px', minHeight: '400px' }}>
-        <SubjectExamComparisonChart subjectData={mockSubjectData} />
-      </div>
-    );
+    render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
 
     // チャートコンテナの確認
     expect(screen.getByTestId('subject-exam-comparison-chart')).toBeInTheDocument();
@@ -83,20 +79,12 @@ describe('SubjectExamComparisonChart', () => {
   });
 
   it('useSubjectChartが正しい引数で呼び出されること', () => {
-    render(
-      <div style={{ width: '800px', height: '400px', minWidth: '800px', minHeight: '400px' }}>
-        <SubjectExamComparisonChart subjectData={mockSubjectData} />
-      </div>
-    );
+    render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
     expect(useSubjectChart).toHaveBeenCalledWith(mockSubjectData);
   });
 
   it('チャートコンテナが正しいスタイルで表示されること', () => {
-    const { container } = render(
-      <div style={{ width: '800px', height: '400px', minWidth: '800px', minHeight: '400px' }}>
-        <SubjectExamComparisonChart subjectData={mockSubjectData} />
-      </div>
-    );
+    const { container } = render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
     const chartContainers = container.querySelectorAll('.flex.w-full.gap-4');
     expect(chartContainers).toHaveLength(1);
   });

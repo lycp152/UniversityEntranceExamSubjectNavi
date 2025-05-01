@@ -9,8 +9,8 @@
 
 import { SUBJECT_CATEGORIES } from '@/constants/constraint/subjects/subject-categories';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
-import { PATTERN_CONFIG } from '../constants/pattern-config';
-import { PatternConfig } from '../types/patterns';
+import { PATTERN_CONFIG } from '../../constants/pattern-config';
+import { PatternConfig } from '../../types/patterns';
 
 /**
  * パターンの属性を生成する関数
@@ -18,7 +18,7 @@ import { PatternConfig } from '../types/patterns';
  * @param options.fill - 塗りつぶしの有無
  * @returns パターンの属性文字列
  */
-const generatePathAttributes = (options: { fill?: boolean }) => {
+export const generatePathAttributes = (options: { fill?: boolean }) => {
   if (options.fill) {
     return `fill="${PATTERN_CONFIG.strokeColor}" fillOpacity="${PATTERN_CONFIG.opacity}"`;
   }
@@ -34,7 +34,7 @@ const generatePathAttributes = (options: { fill?: boolean }) => {
  * @param options.fill - 塗りつぶしの有無
  * @returns パターン設定
  */
-const createPatternDefinition = (
+export const createPatternDefinition = (
   color: string,
   path: string,
   options: {

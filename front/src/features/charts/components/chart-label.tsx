@@ -13,7 +13,7 @@
 import { FC } from 'react';
 import { CustomLabelProps } from '@/types/pie-chart';
 import { RADIAN } from '@/features/charts/constants/chart-config';
-import { formatLabelText } from '@/features/charts/utils/label-formatters';
+import { formatLabelText } from '@/features/charts/utils/formatters/label-formatters';
 
 /**
  * チャートのラベルコンポーネント

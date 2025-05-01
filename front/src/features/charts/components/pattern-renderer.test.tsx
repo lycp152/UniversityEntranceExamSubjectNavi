@@ -9,7 +9,7 @@
 import { render, screen, cleanup } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import PatternRenderer from './pattern-renderer';
-import { SUBJECT_PATTERNS } from '../utils/pattern-definitions';
+import { SUBJECT_PATTERNS } from '../utils/formatters/pattern-definitions';
 
 // モックの設定
 vi.mock('../utils/pattern-definitions', () => ({

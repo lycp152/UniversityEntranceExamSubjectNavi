@@ -7,7 +7,7 @@ import { DisplaySubjectScore } from '@/types/score';
 import CustomLabel from './chart-label';
 import Patterns from './pattern-renderer';
 import { ChartTooltip } from './chart-tooltip';
-import { getSubjectBaseCategory } from '../utils/subject-type-validator';
+import { getSubjectBaseCategory } from '../utils/formatters/subject-type-validator';
 import { CHART, COMMON_PIE_PROPS } from '../constants/chart-config';
 import { ChartProps } from '../types/chart';
 

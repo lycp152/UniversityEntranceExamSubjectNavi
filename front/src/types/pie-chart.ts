@@ -82,6 +82,8 @@ export type ChartError = {
   message: string;
   /** エラーの重要度レベル */
   severity: ChartErrorSeverity;
+  /** エラーの詳細情報 */
+  details?: unknown;
 };
 
 /** チャート結果の型 */

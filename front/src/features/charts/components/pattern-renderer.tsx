@@ -15,7 +15,7 @@
  * ```
  */
 import { FC, useMemo } from 'react';
-import { SUBJECT_PATTERNS, TEST_TYPE_PATTERNS } from '../utils/pattern-definitions';
+import { SUBJECT_PATTERNS, TEST_TYPE_PATTERNS } from '../utils/formatters/pattern-definitions';
 
 interface PatternConfig {
   pattern: {

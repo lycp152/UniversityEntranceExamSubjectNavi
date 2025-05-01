@@ -62,7 +62,11 @@ describe('SubjectExamComparisonChart', () => {
   });
 
   it('科目データと試験データのチャートが正しく表示されること', () => {
-    render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
+    render(
+      <div style={{ width: '800px', height: '400px' }}>
+        <SubjectExamComparisonChart subjectData={mockSubjectData} />
+      </div>
+    );
 
     // チャートコンテナの確認
     expect(screen.getByTestId('subject-exam-comparison-chart')).toBeInTheDocument();
@@ -79,12 +83,20 @@ describe('SubjectExamComparisonChart', () => {
   });
 
   it('useSubjectChartが正しい引数で呼び出されること', () => {
-    render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
+    render(
+      <div style={{ width: '800px', height: '400px' }}>
+        <SubjectExamComparisonChart subjectData={mockSubjectData} />
+      </div>
+    );
     expect(useSubjectChart).toHaveBeenCalledWith(mockSubjectData);
   });
 
   it('チャートコンテナが正しいスタイルで表示されること', () => {
-    const { container } = render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
+    const { container } = render(
+      <div style={{ width: '800px', height: '400px' }}>
+        <SubjectExamComparisonChart subjectData={mockSubjectData} />
+      </div>
+    );
     const chartContainers = container.querySelectorAll('.flex.w-full.gap-4');
     expect(chartContainers).toHaveLength(1);
   });

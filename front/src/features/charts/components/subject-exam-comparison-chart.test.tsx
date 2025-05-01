@@ -16,6 +16,30 @@ vi.mock('@/features/charts/hooks/use-subject-chart', () => ({
   useSubjectChart: vi.fn(),
 }));
 
+// Rechartsのモック設定
+vi.mock('recharts', async () => {
+  const OriginalModule = await vi.importActual('recharts');
+  return {
+    ...OriginalModule,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 400, height: 400 }}>{children}</div>
+    ),
+  };
+});
+
+// テスト用のコンテナスタイル
+const containerStyle = {
+  width: '400px',
+  height: '400px',
+  minWidth: '400px',
+  minHeight: '400px',
+  position: 'relative' as const,
+  display: 'flex',
+  flexDirection: 'column' as const,
+  alignItems: 'center',
+  gap: '1rem',
+};
+
 describe('SubjectExamComparisonChart', () => {
   const mockSubjectData: UISubject = {
     id: 1,
@@ -62,7 +86,11 @@ describe('SubjectExamComparisonChart', () => {
   });
 
   it('科目データと試験データのチャートが正しく表示されること', () => {
-    render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
+    render(
+      <div style={containerStyle}>
+        <SubjectExamComparisonChart subjectData={mockSubjectData} />
+      </div>
+    );
 
     // チャートコンテナの確認
     expect(screen.getByTestId('subject-exam-comparison-chart')).toBeInTheDocument();
@@ -79,12 +107,20 @@ describe('SubjectExamComparisonChart', () => {
   });
 
   it('useSubjectChartが正しい引数で呼び出されること', () => {
-    render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
+    render(
+      <div style={containerStyle}>
+        <SubjectExamComparisonChart subjectData={mockSubjectData} />
+      </div>
+    );
     expect(useSubjectChart).toHaveBeenCalledWith(mockSubjectData);
   });
 
   it('チャートコンテナが正しいスタイルで表示されること', () => {
-    const { container } = render(<SubjectExamComparisonChart subjectData={mockSubjectData} />);
+    const { container } = render(
+      <div style={containerStyle}>
+        <SubjectExamComparisonChart subjectData={mockSubjectData} />
+      </div>
+    );
     const chartContainers = container.querySelectorAll('.flex.w-full.gap-4');
     expect(chartContainers).toHaveLength(1);
   });

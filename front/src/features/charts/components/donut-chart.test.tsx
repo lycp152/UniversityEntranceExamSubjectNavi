@@ -7,7 +7,7 @@
  * - アクセシビリティの検証
  * - レスポンシブ対応の確認
  */
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { DonutChart } from './donut-chart';
 import { DisplaySubjectScore } from '@/types/score';
@@ -24,6 +24,17 @@ class ResizeObserverMock {
     // モック実装のため空のメソッド
   }
 }
+
+// Rechartsのモック設定
+vi.mock('recharts', async () => {
+  const OriginalModule = await vi.importActual('recharts');
+  return {
+    ...OriginalModule,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 400, height: 400 }}>{children}</div>
+    ),
+  };
+});
 
 // テスト用のモックデータ
 const mockDetailedData: DisplaySubjectScore[] = [
@@ -58,6 +69,10 @@ describe('DonutChart', () => {
     minWidth: '400px',
     minHeight: '400px',
     position: 'relative' as const,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '1rem',
   };
 
   it('共通テストのチャートが正しくレンダリングされること', () => {

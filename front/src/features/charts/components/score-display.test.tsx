@@ -28,6 +28,17 @@ class ResizeObserverMock {
   }
 }
 
+// Rechartsのモック設定
+vi.mock('recharts', async () => {
+  const OriginalModule = await vi.importActual('recharts');
+  return {
+    ...OriginalModule,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div style={{ width: 400, height: 400 }}>{children}</div>
+    ),
+  };
+});
+
 describe('ScoreDisplay', () => {
   beforeEach(() => {
     // ResizeObserverをモック
@@ -72,8 +83,25 @@ describe('ScoreDisplay', () => {
     subject: mockSubject,
   };
 
+  // テスト用のコンテナスタイル
+  const containerStyle = {
+    width: '400px',
+    height: '400px',
+    minWidth: '400px',
+    minHeight: '400px',
+    position: 'relative' as const,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '1rem',
+  };
+
   it('コンポーネントが正しくレンダリングされること', () => {
-    render(<ScoreDisplay {...defaultProps} />);
+    render(
+      <div style={containerStyle}>
+        <ScoreDisplay {...defaultProps} />
+      </div>
+    );
 
     // コンテナの存在を確認
     expect(screen.getByTestId('score-display-container')).toBeInTheDocument();
@@ -82,7 +110,11 @@ describe('ScoreDisplay', () => {
   });
 
   it('レスポンシブなレイアウトが適用されていること', () => {
-    render(<ScoreDisplay {...defaultProps} />);
+    render(
+      <div style={containerStyle}>
+        <ScoreDisplay {...defaultProps} />
+      </div>
+    );
 
     const container = screen.getByTestId('score-display-container');
     expect(container).toHaveClass('w-full');
@@ -92,7 +124,11 @@ describe('ScoreDisplay', () => {
   });
 
   it('子コンポーネントが正しく表示されること', () => {
-    render(<ScoreDisplay {...defaultProps} />);
+    render(
+      <div style={containerStyle}>
+        <ScoreDisplay {...defaultProps} />
+      </div>
+    );
 
     // SubjectExamComparisonChartの存在を確認
     const chart = screen.getByTestId('subject-exam-comparison-chart');

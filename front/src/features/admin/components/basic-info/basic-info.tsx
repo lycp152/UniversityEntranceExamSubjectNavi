@@ -90,20 +90,20 @@ export const BasicInfo = ({
             type="text"
             value={university.name}
             onChange={handleChange('universityName')}
-            className="w-[120px] p-1 mb-2"
+            className="w-[120px] p-1 mb-2 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
           />
           <div className="flex gap-1">
             <Input
               type="text"
               value={department.name}
               onChange={handleChange('departmentName')}
-              className="w-[60px] p-1"
+              className="w-[60px] p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
             />
             <Input
               type="text"
               value={major.name}
               onChange={handleChange('majorName')}
-              className="w-[60px] p-1"
+              className="w-[60px] p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
             />
           </div>
           <div className="flex gap-1">
@@ -116,7 +116,7 @@ export const BasicInfo = ({
                   value={admissionSchedule.name}
                   onValueChange={value => handleChange('schedule')({ target: { value } } as any)}
                 >
-                  <SelectTrigger className="w-[50px] text-xs p-1">
+                  <SelectTrigger className="w-[50px] text-xs p-1 bg-background/50 hover:bg-background ">
                     <SelectValue>{admissionSchedule.name ?? '選択'}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
@@ -139,7 +139,7 @@ export const BasicInfo = ({
                 type="number"
                 value={admissionInfo.enrollment}
                 onChange={handleChange('enrollment')}
-                className="p-1"
+                className="p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
                 min="0"
               />
             </div>

@@ -74,10 +74,7 @@ export const SubjectList = ({
             h-16 w-[60px]
 
             border border-dashed
-            border-gray-300 dark:border-gray-600
-            hover:border-gray-400 dark:hover:border-gray-500
-
-            hover:bg-background
+            bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/100
 
             rounded-lg
             group
@@ -87,15 +84,15 @@ export const SubjectList = ({
           <Plus
             className="
               h-5 w-5
-              text-gray-400 dark:text-gray-500
-              group-hover:text-gray-500 dark:group-hover:text-gray-400
+              text-gray-500 dark:text-gray-300
+              group-hover:text-gray-600 dark:group-hover:text-gray-200
             "
           />
           <span
             className="
             text-xs mt-1
-            text-gray-400 dark:text-gray-500
-            group-hover:text-gray-500 dark:group-hover:text-gray-400
+            text-gray-500 dark:text-gray-300
+            group-hover:text-gray-600 dark:group-hover:text-gray-200
           "
           >
             追加

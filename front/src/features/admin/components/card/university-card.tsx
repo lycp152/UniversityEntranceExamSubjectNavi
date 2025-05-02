@@ -96,7 +96,7 @@ const UniversityCardList = ({
 export const UniversityCard = (props: UniversityCardProps) => {
   return (
     <article aria-label={`${props.university.name}の情報`}>
-      <Card className="overflow-hidden py-1 hover:bg-gray-50 dark:hover:bg-gray-900">
+      <Card className="overflow-hidden py-1 hover:bg-background/40 dark:hover:bg-muted/70">
         <CardContent className="divide-y divide-gray-100 p-0">
           <UniversityCardList {...props} />
         </CardContent>

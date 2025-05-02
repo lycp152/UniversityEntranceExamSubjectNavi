@@ -35,7 +35,7 @@ export const SubjectCard = ({
 }: SubjectCardProps) => {
   return (
     <Card
-      className="border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 h-16 flex flex-col w-[60px] shadow-sm hover:shadow-md dark:shadow-gray-800 dark:hover:shadow-gray-700 transition-all duration-200 gap-0 py-0"
+      className="border rounded-lg bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50 h-16 flex flex-col w-[60px] shadow-sm hover:shadow-md dark:shadow-gray-800 dark:hover:shadow-gray-700 transition-all duration-200 gap-0 py-0"
       aria-label="科目カード"
     >
       <SubjectNameDisplay name={subject.name} isEditing={isEditing} onNameChange={onNameChange} />

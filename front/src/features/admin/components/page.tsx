@@ -14,7 +14,7 @@
 
 import { useEffect, ReactElement } from 'react';
 import { useUniversityEditor } from '@/features/admin/hooks/use-university-editor';
-import { AdminPageContent } from './content';
+import { AdminPageContent } from './admin-page-content';
 import { ErrorBoundary } from '@/features/admin/components/errors/error-boundary';
 
 export function AdminPage(): ReactElement {

@@ -21,7 +21,8 @@ import React from 'react';
 import type { UniversityListProps } from '@/features/admin/types/university-list';
 import { UniversityCard } from '@/features/admin/components/card/university-card';
 import { InsertUniversityButton } from '@/features/admin/components/buttons/insert-button';
-import { sortUniversities } from '../utils/sort-universities';
+import { sortUniversities } from '../../utils/sort-universities';
+import type { University } from '@/features/admin/types/university';
 
 export const UniversityList = ({
   universities,
@@ -50,7 +51,7 @@ export const UniversityList = ({
           isOnly={sortedUniversities.length === 0}
         />
       )}
-      {sortedUniversities.map((university, index) => (
+      {sortedUniversities.map((university: University, index: number) => (
         <React.Fragment key={`university-${university.id ?? index}`}>
           <UniversityCard
             university={university}

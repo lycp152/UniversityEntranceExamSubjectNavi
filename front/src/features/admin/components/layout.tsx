@@ -11,33 +11,39 @@ import type { AdminLayoutProps } from '../types/admin-layout';
 import { ErrorMessage } from '@/components/errors/error-message';
 import { Spinner } from '@/components/ui/feedback/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
+import { memo, useMemo } from 'react';
 
-export function AdminLayout({
+export const AdminLayout = memo(function AdminLayout({
   children,
   isLoading,
   error,
   isEmpty,
   successMessage,
 }: Readonly<AdminLayoutProps>) {
-  // ローディング状態の場合はローディングスピナーを表示
-  if (isLoading) return <Spinner />;
-  // エラー状態の場合はエラーメッセージを表示
-  if (error) return <ErrorMessage message={error} />;
-  // 空の状態の場合は空の状態メッセージを表示
-  if (isEmpty) return <EmptyState />;
+  // 状態に基づいて表示するコンポーネントをメモ化
+  const content = useMemo(() => {
+    if (isLoading) return <Spinner />;
+    if (error) return <ErrorMessage message={error} />;
+    if (isEmpty) return <EmptyState />;
 
-  return (
-    <div className="min-h-screen bg-gray-100 dark:bg-background">
-      {successMessage && (
-        <div
-          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
-          role="alert"
-          aria-live="polite"
-        >
-          <span className="block sm:inline">{successMessage}</span>
-        </div>
-      )}
-      <main className="container mx-auto px-4 py-8">{children}</main>
-    </div>
-  );
-}
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-background">
+        {successMessage && (
+          <div
+            className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+            role="alert"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span className="block sm:inline">{successMessage}</span>
+          </div>
+        )}
+        <main className="container mx-auto px-4 py-8" role="main">
+          {children}
+        </main>
+      </div>
+    );
+  }, [isLoading, error, isEmpty, successMessage, children]);
+
+  return content;
+});

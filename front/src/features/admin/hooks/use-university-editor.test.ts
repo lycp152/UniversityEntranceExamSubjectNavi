@@ -112,11 +112,11 @@ describe('useUniversityEditor', () => {
     expect(mockSetUniversities).toHaveBeenCalledWith(expect.any(Function));
   });
 
-  it('大学情報を更新できること', async () => {
+  it('大学情報を更新できること', () => {
     const { result } = renderHook(() => useUniversityEditor());
 
-    await act(async () => {
-      await result.current.handleInfoChange(
+    act(() => {
+      result.current.handleInfoChange(
         mockUniversity.id,
         mockUniversity.departments[0].id,
         'name',

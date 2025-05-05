@@ -7,7 +7,7 @@ import {
   calculateTotalScore,
   calculateCategoryTotal,
   calculateTotalScores,
-} from '@/features/charts/utils/calculations/subject-scores';
+} from '@/utils/subject-scores';
 
 /**
  * 科目スコアの計算を管理するフック

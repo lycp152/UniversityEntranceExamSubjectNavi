@@ -4,7 +4,7 @@ import {
   isSecondarySubject,
   getSubjectBaseCategory,
   compareSubjectOrder,
-} from './subject-type-validator';
+} from '@/utils/subject-type-validator';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 import { SUBJECT_CATEGORIES } from '@/constants/constraint/subjects/subject-categories';
 

@@ -9,6 +9,7 @@ import type {
 import type { APITestType } from '@/types/api/types';
 import { useUniversityData } from '@/features/admin/hooks/use-university-data';
 import { useSubjectData } from '@/features/admin/hooks/use-subject-data';
+import { isCommonSubject, isSecondarySubject } from '@/utils/subject-type-validator';
 import type { EditMode } from '@/features/admin/types/university-list';
 import type { SubjectName } from '@/constants/constraint/subjects/subjects';
 import {
@@ -70,8 +71,7 @@ export function useUniversityEditor() {
     updateAdmissionInfo,
   } = useUniversityData();
 
-  const { calculateUpdatedSubjects, isCommonAPITestType, isSecondaryAPITestType } =
-    useSubjectData();
+  const { calculateUpdatedSubjects } = useSubjectData();
 
   const [editMode, setEditMode] = useState<EditMode | null>(null);
   const [backupState, setBackupState] = useState<BackupState | null>(null);
@@ -102,8 +102,8 @@ export function useUniversityEditor() {
 
     const targetTestType = admissionSchedule.testTypes.find((type: TestType) =>
       isCommon
-        ? isCommonAPITestType(transformTestTypeToAPI(type))
-        : isSecondaryAPITestType(transformTestTypeToAPI(type))
+        ? isCommonSubject(transformTestTypeToAPI(type).name)
+        : isSecondarySubject(transformTestTypeToAPI(type).name)
     );
 
     if (!targetTestType) return department;

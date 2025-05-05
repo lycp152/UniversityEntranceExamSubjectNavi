@@ -15,7 +15,7 @@ import {
   isCommonSubject,
   isSecondarySubject,
   compareSubjectOrder,
-} from '@/features/charts/utils/formatters/subject-type-validator';
+} from '@/utils/subject-type-validator';
 import { getCategoryFromSubject } from '@/features/charts/utils/extractors/subject-name-extractor';
 import type { DisplaySubjectScore } from '@/types/score';
 import type { ChartResult, ChartError } from '@/types/pie-chart';

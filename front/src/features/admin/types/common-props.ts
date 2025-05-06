@@ -10,9 +10,9 @@ import type { EditMode } from '@/features/admin/types/university-list';
  * @property successMessage - 成功メッセージ
  */
 export interface CommonStateProps {
-  readonly error: string | null;
-  readonly isLoading: boolean;
-  readonly successMessage: string | null;
+  readonly error?: string | null;
+  readonly isLoading?: boolean;
+  readonly successMessage?: string | null;
 }
 
 /**

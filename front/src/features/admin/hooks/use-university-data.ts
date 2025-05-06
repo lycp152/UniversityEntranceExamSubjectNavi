@@ -9,7 +9,7 @@ import type {
 import type { HttpError } from '@/types/api/types';
 import {
   transformAPIResponse,
-  transformToAPITestType,
+  transformTestTypeToAPI,
 } from '@/features/admin/utils/api-transformers';
 import { API_ENDPOINTS } from '@/constants/api';
 
@@ -151,7 +151,7 @@ export const useUniversityData = () => {
           throw new Error('テストタイプが見つかりません');
         }
 
-        const apiTestTypes = testTypes.map(transformToAPITestType);
+        const apiTestTypes = testTypes.map(transformTestTypeToAPI);
         console.log('APIに送信するデータ:', {
           university_id: university.id,
           department_id: department.id,

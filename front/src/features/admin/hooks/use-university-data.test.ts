@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUniversityData } from './use-university-data';
-import type { University } from '@/features/admin/types/university';
+import type { University, TestType } from '@/features/admin/types/university';
 import type { AdmissionScheduleName } from '@/constants/constraint/admission-schedule';
 import type { ExamTypeName } from '@/constants/constraint/exam-types';
 import type { AdmissionStatus } from '@/constants/constraint/admission-info';
@@ -15,10 +15,21 @@ import type { AdmissionStatus } from '@/constants/constraint/admission-info';
  * @module use-university-data.test
  */
 
-// モックの設定
+// APIトランスフォーマーのモック
 vi.mock('@/features/admin/utils/api-transformers', () => ({
   transformAPIResponse: vi.fn(data => data),
-  transformToAPITestType: vi.fn(data => data),
+  transformTestTypeToAPI: vi.fn((testType: TestType) => ({
+    id: testType.id,
+    admission_schedule_id: testType.admissionScheduleId,
+    name: testType.name,
+    subjects: testType.subjects,
+    created_at: testType.createdAt,
+    updated_at: testType.updatedAt,
+    deleted_at: testType.deletedAt,
+    version: testType.version,
+    created_by: testType.createdBy,
+    updated_by: testType.updatedBy,
+  })),
 }));
 
 // テストデータ

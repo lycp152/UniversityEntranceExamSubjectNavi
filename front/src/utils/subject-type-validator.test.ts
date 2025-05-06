@@ -100,6 +100,21 @@ describe('科目タイプバリデーション', () => {
       const result = getSubjectBaseCategory('未知の科目');
       expect(result).toBe(SUBJECT_CATEGORIES.ENGLISH.category);
     });
+
+    it('科目名にカテゴリ名が部分一致する場合、該当するカテゴリを返す - 部分一致ケース', () => {
+      const result = getSubjectBaseCategory('英語リーディング');
+      expect(result).toBe(SUBJECT_CATEGORIES.ENGLISH.category);
+    });
+
+    it('科目名に複数のカテゴリ名が含まれる場合、最初に一致したカテゴリを返す - 複数一致ケース', () => {
+      const result = getSubjectBaseCategory('英語数学');
+      expect(result).toBe(SUBJECT_CATEGORIES.ENGLISH.category);
+    });
+
+    it('科目名の途中にカテゴリ名が含まれる場合、該当するカテゴリを返す - 途中一致ケース', () => {
+      const result = getSubjectBaseCategory('大学入試英語');
+      expect(result).toBe(SUBJECT_CATEGORIES.ENGLISH.category);
+    });
   });
 
   /**

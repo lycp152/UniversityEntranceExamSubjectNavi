@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { SUBJECT_SCORE_CONSTRAINTS } from '@/constants/constraint/subjects/subject-score';
-import type { EditScoreProps, AdminScoreDisplayProps, ViewScoreProps } from '../../types/types';
+import type { EditScoreProps, AdminScoreDisplayProps, ViewScoreProps } from '../../types/score';
 /**
  * スコア表示コンポーネント
  *

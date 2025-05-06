@@ -20,7 +20,7 @@
  * @param onAddSubject - 科目追加時のコールバック
  * @param onSubjectNameChange - 科目名変更時のコールバック
  */
-import type { AdminPageContentProps } from '../types/admin-props';
+import type { AdminPageContentProps } from '../types/common-props';
 import type { University, Department } from '@/features/admin/types/university';
 import type { APITestType } from '@/types/api/types';
 import { UniversityList } from '@/features/admin/components/lists/university-list';
@@ -59,21 +59,21 @@ export const AdminPageContent = memo(function AdminPageContent({
   );
 
   const handleScoreChange = useCallback(
-    (
+    async (
       universityId: number,
       departmentId: number,
       subjectId: number,
       value: number,
       isCommon: boolean
     ) => {
-      onScoreChange(universityId, departmentId, subjectId, value, isCommon);
+      await onScoreChange(universityId, departmentId, subjectId, value, isCommon);
     },
     [onScoreChange]
   );
 
   const handleSave = useCallback(
-    (university: University, department: Department) => {
-      onSave(university, department);
+    async (university: University, department: Department) => {
+      return await onSave(university, department);
     },
     [onSave]
   );

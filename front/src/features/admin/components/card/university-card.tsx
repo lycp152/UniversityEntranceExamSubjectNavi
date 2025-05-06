@@ -66,9 +66,7 @@ const UniversityCardList = ({
           onScoreChange={onScoreChange}
           onInfoChange={onInfoChange}
           onAddSubject={type => onAddSubject(university.id, department.id, type)}
-          onSubjectNameChange={(subjectId, name) =>
-            onSubjectNameChange(university.id, department.id, subjectId, name)
-          }
+          onSubjectNameChange={onSubjectNameChange}
         />
       )),
     [

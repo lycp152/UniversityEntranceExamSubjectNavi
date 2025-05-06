@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { ScoreDisplay } from './score-display';
 import { SubjectNameDisplay } from './subject-name-display';
-import type { SubjectCardProps } from '../../types/types';
+import type { SubjectCardProps } from '../../types/score';
 
 /**
  * 科目カードコンポーネント

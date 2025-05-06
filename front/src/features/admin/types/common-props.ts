@@ -3,28 +3,22 @@ import type { University, Department } from '@/features/admin/types/university';
 import type { EditMode } from '@/features/admin/types/university-list';
 
 /**
- * 管理ページのコンテンツコンポーネントのプロパティ型定義
+ * 共通の状態プロパティ型定義
  *
- * @property universities - 表示する大学データの配列
  * @property error - エラーメッセージ
  * @property isLoading - ローディング状態
  * @property successMessage - 成功メッセージ
- * @property editMode - 編集モードの状態
- * @property onEdit - 編集開始時のコールバック
- * @property onInfoChange - 大学情報変更時のコールバック
- * @property onScoreChange - スコア変更時のコールバック
- * @property onSave - 保存時のコールバック
- * @property onCancel - キャンセル時のコールバック
- * @property onInsert - 新規追加時のコールバック
- * @property onAddSubject - 科目追加時のコールバック
- * @property onSubjectNameChange - 科目名変更時のコールバック
  */
-export interface AdminPageContentProps {
-  readonly universities: University[];
+export interface CommonStateProps {
   readonly error: string | null;
   readonly isLoading: boolean;
   readonly successMessage: string | null;
-  readonly editMode: EditMode | null;
+}
+
+/**
+ * 編集操作のコールバック型定義
+ */
+export interface EditCallbacks {
   readonly onEdit: (university: University, department: Department) => void;
   readonly onInfoChange: (
     universityId: number,
@@ -44,7 +38,12 @@ export interface AdminPageContentProps {
     department: Department
   ) => Promise<(() => void) | undefined>;
   readonly onCancel: () => void;
-  readonly onInsert: (index: number) => void;
+}
+
+/**
+ * 科目操作のコールバック型定義
+ */
+export interface SubjectCallbacks {
   readonly onAddSubject: (universityId: number, departmentId: number, type: APITestType) => void;
   readonly onSubjectNameChange: (
     universityId: number,
@@ -52,4 +51,17 @@ export interface AdminPageContentProps {
     subjectId: number,
     name: string
   ) => void;
+}
+
+/**
+ * 管理ページのコンテンツコンポーネントのプロパティ型定義
+ *
+ * @property universities - 表示する大学データの配列
+ * @property editMode - 編集モードの状態
+ * @property onInsert - 新規追加時のコールバック
+ */
+export interface AdminPageContentProps extends CommonStateProps, EditCallbacks, SubjectCallbacks {
+  readonly universities: University[];
+  readonly editMode: EditMode | null;
+  readonly onInsert: (index: number) => void;
 }

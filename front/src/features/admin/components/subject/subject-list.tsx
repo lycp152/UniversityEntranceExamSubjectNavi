@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { SubjectListProps } from '../../types/types';
+import type { SubjectListProps } from '../../types/score';
 import { SubjectCard } from './subject-card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';

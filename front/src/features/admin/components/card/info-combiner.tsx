@@ -112,6 +112,11 @@ export const InfoCombiner = ({
     testTypes: mappedTestTypes,
   };
 
+  const handleAddSubject = (type: APITestType) => onAddSubject(university.id, department.id, type);
+
+  const handleSubjectNameChange = (subjectId: number, name: string) =>
+    onSubjectNameChange(university.id, department.id, subjectId, name);
+
   return (
     <div className="px-4 py-3 transition-colors">
       <div className="flex items-start min-w-max">
@@ -139,8 +144,8 @@ export const InfoCombiner = ({
             admissionInfo={mappedAdmissionInfo}
             isEditing={isEditing}
             onScoreChange={handleScoreChange}
-            onAddSubject={onAddSubject}
-            onSubjectNameChange={onSubjectNameChange}
+            onAddSubject={handleAddSubject}
+            onSubjectNameChange={handleSubjectNameChange}
           />
         </div>
       </div>

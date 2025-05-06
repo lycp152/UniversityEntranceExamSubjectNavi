@@ -1,7 +1,7 @@
 import { vi, describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ExamSection } from './exam-section';
-import type { ExamSectionProps } from '../../types/types';
+import type { ExamSectionProps } from '../../types/score';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 
 /**

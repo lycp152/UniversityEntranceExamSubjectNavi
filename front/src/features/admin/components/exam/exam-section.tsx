@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { ExamSectionProps } from '../../types/types';
+import type { ExamSectionProps } from '../../types/score';
 import { SubjectList } from '../subject/subject-list';
 import { EXAM_TYPES } from '@/constants/constraint/exam-types';
 

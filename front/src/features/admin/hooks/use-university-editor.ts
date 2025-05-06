@@ -6,7 +6,7 @@ import type {
   Subject,
   Major,
 } from '@/features/admin/types/university';
-import type { APITestType } from '@/types/api/types';
+import type { APITestType, APISubject } from '@/types/api/types';
 import { useUniversityData } from '@/features/admin/hooks/use-university-data';
 import { useSubjectData } from '@/features/admin/hooks/use-subject-data';
 import { isCommonSubject, isSecondarySubject } from '@/utils/subject-type-validator';
@@ -94,7 +94,12 @@ export function useUniversityEditor() {
     department: Department,
     subjectId: number,
     value: number,
-    isCommon: boolean
+    isCommon: boolean,
+    calculateUpdatedSubjects: (
+      subjects: APISubject[],
+      subjectId: number,
+      value: number
+    ) => APISubject[]
   ) => {
     const major = department.majors[0];
     const admissionSchedule = major?.admissionSchedules?.[0];
@@ -137,12 +142,23 @@ export function useUniversityEditor() {
     departmentId: number,
     subjectId: number,
     value: number,
-    isCommon: boolean
+    isCommon: boolean,
+    calculateUpdatedSubjects: (
+      subjects: APISubject[],
+      subjectId: number,
+      value: number
+    ) => APISubject[]
   ): University => ({
     ...university,
     departments: university.departments.map((department: Department) => {
       if (department.id !== departmentId) return department;
-      return updateDepartmentSubjects(department, subjectId, value, isCommon);
+      return updateDepartmentSubjects(
+        department,
+        subjectId,
+        value,
+        isCommon,
+        calculateUpdatedSubjects
+      );
     }),
   });
 
@@ -157,7 +173,14 @@ export function useUniversityEditor() {
       setUniversities(prevUniversities =>
         prevUniversities.map(university => {
           if (university.id !== universityId) return university;
-          return updateUniversityDepartments(university, departmentId, subjectId, value, isCommon);
+          return updateUniversityDepartments(
+            university,
+            departmentId,
+            subjectId,
+            value,
+            isCommon,
+            calculateUpdatedSubjects
+          );
         })
       );
     } catch (error) {

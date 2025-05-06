@@ -132,14 +132,14 @@ describe('useUniversityEditor', () => {
     const { result } = renderHook(() => useUniversityEditor());
     const mockTestType: APITestType = {
       id: 1,
-      name: '共通',
-      admissionScheduleId: 1,
-      version: 1,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z',
-      createdBy: 'system',
-      updatedBy: 'system',
+      name: '共通テスト',
       subjects: [],
+      displayOrder: 1,
+      createdAt: new Date().toString(),
+      updatedAt: new Date().toString(),
+      version: 1,
+      createdBy: '',
+      updatedBy: '',
     };
 
     act(() => {
@@ -235,14 +235,14 @@ describe('useUniversityEditor', () => {
 
     const mockTestType: APITestType = {
       id: 1,
-      name: '共通',
-      admissionScheduleId: 1,
-      version: 1,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z',
-      createdBy: 'system',
-      updatedBy: 'system',
+      name: '共通テスト',
       subjects: [],
+      displayOrder: 1,
+      createdAt: new Date().toString(),
+      updatedAt: new Date().toString(),
+      version: 1,
+      createdBy: '',
+      updatedBy: '',
     };
 
     act(() => {
@@ -339,14 +339,14 @@ describe('useUniversityEditor', () => {
     const mockTestTypes: APITestType[] = [
       {
         id: 1,
-        name: '共通',
-        admissionScheduleId: 1,
-        version: 1,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
-        createdBy: 'system',
-        updatedBy: 'system',
+        name: '共通テスト',
         subjects: [],
+        displayOrder: 1,
+        createdAt: new Date().toString(),
+        updatedAt: new Date().toString(),
+        version: 1,
+        createdBy: '',
+        updatedBy: '',
       },
       {
         id: 2,
@@ -413,5 +413,126 @@ describe('useUniversityEditor', () => {
     expect(result.current.editMode).toBeNull();
     expect(result.current.error).toBeNull();
     expect(mockSetUniversities).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('エラーハンドリング', () => {
+  it('handleScoreChangeでエラーが発生した場合、適切なエラーメッセージが設定されること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+    const mockError = new Error('スコア更新エラー');
+    mockSetUniversities.mockImplementationOnce(() => {
+      throw mockError;
+    });
+
+    act(() => {
+      result.current.handleScoreChange(1, 1, 1, 100, true);
+    });
+
+    expect(mockSetError).toHaveBeenCalledWith('点数の更新に失敗しました。');
+  });
+
+  it('handleAddSubjectでエラーが発生した場合、適切なエラーメッセージが設定されること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+    const mockError = new Error('科目追加エラー');
+    mockSetUniversities.mockImplementationOnce(() => {
+      throw mockError;
+    });
+
+    const mockTestType: APITestType = {
+      id: 1,
+      name: '共通テスト',
+      subjects: [],
+      displayOrder: 1,
+      createdAt: new Date().toString(),
+      updatedAt: new Date().toString(),
+      version: 1,
+      createdBy: '',
+      updatedBy: '',
+    };
+
+    act(() => {
+      result.current.handleAddSubject(1, 1, mockTestType);
+    });
+
+    expect(mockSetError).toHaveBeenCalledWith('科目の追加に失敗しました。');
+  });
+
+  it('handleSubjectNameChangeでエラーが発生した場合、適切なエラーメッセージが設定されること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+    const mockError = new Error('科目名変更エラー');
+    mockSetUniversities.mockImplementationOnce(() => {
+      throw mockError;
+    });
+
+    act(() => {
+      result.current.handleSubjectNameChange(1, 1, 1, '新しい科目名');
+    });
+
+    expect(mockSetError).toHaveBeenCalledWith('科目名の変更に失敗しました。');
+  });
+
+  it('handleInfoChangeでエラーが発生した場合、適切なエラーメッセージが設定されること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+    const mockError = new Error('情報更新エラー');
+    mockSetUniversities.mockImplementationOnce(() => {
+      throw mockError;
+    });
+
+    act(() => {
+      result.current.handleInfoChange(1, 1, 'name', '新しい大学名');
+    });
+
+    expect(mockSetError).toHaveBeenCalledWith('大学情報の更新に失敗しました。');
+  });
+});
+
+describe('状態管理', () => {
+  it('バックアップ状態が正しく保存されること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+
+    act(() => {
+      result.current.handleEdit(mockUniversity, mockUniversity.departments[0]);
+    });
+
+    expect(result.current.editMode).toEqual({
+      universityId: mockUniversity.id,
+      departmentId: mockUniversity.departments[0].id,
+      isEditing: true,
+    });
+  });
+
+  it('新規追加時に空の大学データが正しく作成されること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+
+    act(() => {
+      result.current.handleInsert(0);
+    });
+
+    const setUniversitiesCallback = mockSetUniversities.mock.calls[0][0];
+    const newUniversities = setUniversitiesCallback([mockUniversity]);
+
+    expect(newUniversities[0]).toEqual({
+      id: expect.any(Number),
+      name: '',
+      departments: [],
+      version: 1,
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+      createdBy: '',
+      updatedBy: '',
+    });
+  });
+
+  it('保存失敗時にバックアップ状態が正しく復元されること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+    const mockError = new Error('保存エラー');
+    mockUpdateUniversity.mockRejectedValueOnce(mockError);
+
+    act(() => {
+      result.current.handleEdit(mockUniversity, mockUniversity.departments[0]);
+      result.current.handleScoreChange(1, 1, 1, 100, true);
+    });
+
+    expect(mockSetUniversities).toHaveBeenCalledWith(expect.any(Function));
   });
 });

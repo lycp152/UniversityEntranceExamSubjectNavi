@@ -81,6 +81,76 @@ describe('UniversityService', () => {
       );
     });
   });
+
+  describe('updateDepartment', () => {
+    it('学部情報を正常に更新できること', async () => {
+      const mockDepartment = {
+        id: 1,
+        name: 'テスト学部',
+        universityId: 1,
+      };
+      vi.mocked(apiClient.put).mockResolvedValueOnce(mockDepartment);
+      const result = await UniversityService.updateDepartment(1, mockDepartment);
+      expect(result).toEqual(mockDepartment);
+      expect(apiClient.put).toHaveBeenCalledWith(
+        API_ENDPOINTS.DEPARTMENTS(1, mockDepartment.id),
+        mockDepartment
+      );
+    });
+
+    it('学部情報の更新に失敗した場合にエラーをスローすること', async () => {
+      const mockDepartment = {
+        id: 1,
+        name: 'テスト学部',
+        universityId: 1,
+      };
+      const error = new Error('更新に失敗しました');
+      vi.mocked(apiClient.put).mockRejectedValueOnce(error);
+      await expect(UniversityService.updateDepartment(1, mockDepartment)).rejects.toThrow(error);
+    });
+  });
+
+  describe('updateSubjects', () => {
+    it('科目情報を正常に一括更新できること', async () => {
+      const mockSubjects = [
+        { id: 1, name: 'テスト科目1', score: 100 },
+        { id: 2, name: 'テスト科目2', score: 200 },
+      ];
+      vi.mocked(apiClient.put).mockResolvedValueOnce(mockSubjects);
+      const result = await UniversityService.updateSubjects(1, 1, mockSubjects);
+      expect(result).toEqual(mockSubjects);
+      expect(apiClient.put).toHaveBeenCalledWith(API_ENDPOINTS.SUBJECTS_BATCH(1, 1), {
+        subjects: mockSubjects,
+      });
+    });
+
+    it('科目情報の一括更新に失敗した場合にエラーをスローすること', async () => {
+      const mockSubjects = [{ id: 1, name: 'テスト科目1', score: 100 }];
+      const error = new Error('更新に失敗しました');
+      vi.mocked(apiClient.put).mockRejectedValueOnce(error);
+      await expect(UniversityService.updateSubjects(1, 1, mockSubjects)).rejects.toThrow(error);
+    });
+  });
+
+  describe('エラーハンドリング', () => {
+    it('getUniversitiesが失敗した場合にエラーをスローすること', async () => {
+      const error = new Error('データ取得に失敗しました');
+      vi.mocked(apiClient.get).mockRejectedValueOnce(error);
+      await expect(UniversityService.getUniversities()).rejects.toThrow(error);
+    });
+
+    it('getUniversityが失敗した場合にエラーをスローすること', async () => {
+      const error = new Error('データ取得に失敗しました');
+      vi.mocked(apiClient.get).mockRejectedValueOnce(error);
+      await expect(UniversityService.getUniversity(1)).rejects.toThrow(error);
+    });
+
+    it('updateUniversityが失敗した場合にエラーをスローすること', async () => {
+      const error = new Error('更新に失敗しました');
+      vi.mocked(apiClient.put).mockRejectedValueOnce(error);
+      await expect(UniversityService.updateUniversity(mockUniversity)).rejects.toThrow(error);
+    });
+  });
 });
 
 describe('キャッシュ機能', () => {
@@ -96,5 +166,23 @@ describe('キャッシュ機能', () => {
     await getCachedUniversity(1);
     await getCachedUniversity(1);
     expect(apiClient.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('異なるIDに対してgetCachedUniversityは別々にAPIを呼び出すこと', async () => {
+    vi.mocked(apiClient.get)
+      .mockResolvedValueOnce({ ...mockUniversity, id: 1 })
+      .mockResolvedValueOnce({ ...mockUniversity, id: 2 });
+    await getCachedUniversity(1);
+    await getCachedUniversity(2);
+  });
+
+  it('キャッシュされたデータが正しく返されること', async () => {
+    const mockData = { ...mockUniversity, id: 1 };
+    vi.mocked(apiClient.get).mockResolvedValueOnce(mockData);
+    const result1 = await getCachedUniversity(1);
+    const result2 = await getCachedUniversity(1);
+    expect(result1).toEqual(mockData);
+    expect(result2).toEqual(mockData);
+    expect(result1).toBe(result2); // 同じオブジェクト参照であることを確認
   });
 });

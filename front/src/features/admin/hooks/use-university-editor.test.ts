@@ -333,4 +333,85 @@ describe('useUniversityEditor', () => {
       isEditing: true,
     });
   });
+
+  it('複数の科目を同時に追加できること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+    const mockTestTypes: APITestType[] = [
+      {
+        id: 1,
+        name: '共通',
+        admissionScheduleId: 1,
+        version: 1,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        createdBy: 'system',
+        updatedBy: 'system',
+        subjects: [],
+      },
+      {
+        id: 2,
+        name: '個別',
+        admissionScheduleId: 1,
+        version: 1,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        createdBy: 'system',
+        updatedBy: 'system',
+        subjects: [],
+      },
+    ];
+
+    act(() => {
+      mockTestTypes.forEach(testType => {
+        result.current.handleAddSubject(
+          mockUniversity.id,
+          mockUniversity.departments[0].id,
+          testType
+        );
+      });
+    });
+
+    expect(result.current.error).toBeNull();
+    expect(mockSetUniversities).toHaveBeenCalledTimes(2);
+  });
+
+  it('複数の科目のスコアを同時に更新できること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+
+    act(() => {
+      result.current.handleScoreChange(1, 1, 1, 100, true);
+      result.current.handleScoreChange(1, 1, 2, 200, true);
+    });
+
+    expect(result.current.error).toBeNull();
+    expect(mockSetUniversities).toHaveBeenCalledTimes(2);
+  });
+
+  it('編集モード中に複数の変更を行えること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+
+    act(() => {
+      result.current.handleEdit(mockUniversity, mockUniversity.departments[0]);
+      result.current.handleInfoChange(1, 1, 'name', '新しい大学名');
+      result.current.handleSubjectNameChange(1, 1, 1, '新しい科目名');
+    });
+
+    expect(result.current.error).toBeNull();
+    expect(mockSetUniversities).toHaveBeenCalledTimes(2);
+  });
+
+  it('キャンセル時に複数の変更が正しく元に戻ること', () => {
+    const { result } = renderHook(() => useUniversityEditor());
+
+    act(() => {
+      result.current.handleEdit(mockUniversity, mockUniversity.departments[0]);
+      result.current.handleInfoChange(1, 1, 'name', '新しい大学名');
+      result.current.handleSubjectNameChange(1, 1, 1, '新しい科目名');
+      result.current.handleCancel();
+    });
+
+    expect(result.current.editMode).toBeNull();
+    expect(result.current.error).toBeNull();
+    expect(mockSetUniversities).toHaveBeenCalledTimes(2);
+  });
 });

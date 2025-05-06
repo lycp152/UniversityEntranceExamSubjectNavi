@@ -82,12 +82,17 @@ export function useUniversityEditor() {
     field: string,
     value: string | number
   ) => {
-    setUniversities(prevUniversities =>
-      prevUniversities.map(university => {
-        if (university.id !== universityId) return university;
-        return updateDepartmentInUniversity(university, departmentId, field, value);
-      })
-    );
+    try {
+      setUniversities(prevUniversities =>
+        prevUniversities.map(university => {
+          if (university.id !== universityId) return university;
+          return updateDepartmentInUniversity(university, departmentId, field, value);
+        })
+      );
+    } catch (error) {
+      console.error('大学情報の更新に失敗しました:', error);
+      setError('大学情報の更新に失敗しました。');
+    }
   };
 
   const updateDepartmentSubjects = (
@@ -225,27 +230,32 @@ export function useUniversityEditor() {
   });
 
   const handleAddSubject = (universityId: number, departmentId: number, type: APITestType) => {
-    const internalType = transformTestTypeFromAPI(type);
-    const newSubject: Subject = {
-      id: 0,
-      testTypeId: internalType.id,
-      name: `科目${internalType.subjects.length + 1}` as SubjectName,
-      score: 100,
-      percentage: 100,
-      displayOrder: internalType.subjects.length,
-      createdAt: new Date().toString(),
-      updatedAt: new Date().toString(),
-      version: 1,
-      createdBy: '',
-      updatedBy: '',
-    };
+    try {
+      const internalType = transformTestTypeFromAPI(type);
+      const newSubject: Subject = {
+        id: 0,
+        testTypeId: internalType.id,
+        name: `科目${internalType.subjects.length + 1}` as SubjectName,
+        score: 100,
+        percentage: 100,
+        displayOrder: internalType.subjects.length,
+        createdAt: new Date().toString(),
+        updatedAt: new Date().toString(),
+        version: 1,
+        createdBy: '',
+        updatedBy: '',
+      };
 
-    setUniversities(prevUniversities =>
-      prevUniversities.map(university => {
-        if (university.id !== universityId) return university;
-        return updateUniversityWithNewSubject(university, departmentId, internalType, newSubject);
-      })
-    );
+      setUniversities(prevUniversities =>
+        prevUniversities.map(university => {
+          if (university.id !== universityId) return university;
+          return updateUniversityWithNewSubject(university, departmentId, internalType, newSubject);
+        })
+      );
+    } catch (error) {
+      console.error('科目の追加に失敗しました:', error);
+      setError('科目の追加に失敗しました。');
+    }
   };
 
   const updateDepartmentWithSubjectName = (
@@ -295,12 +305,17 @@ export function useUniversityEditor() {
     subjectId: number,
     name: string
   ) => {
-    setUniversities(prevUniversities =>
-      prevUniversities.map(university => {
-        if (university.id !== universityId) return university;
-        return updateUniversityWithSubjectName(university, departmentId, subjectId, name);
-      })
-    );
+    try {
+      setUniversities(prevUniversities =>
+        prevUniversities.map(university => {
+          if (university.id !== universityId) return university;
+          return updateUniversityWithSubjectName(university, departmentId, subjectId, name);
+        })
+      );
+    } catch (error) {
+      console.error('科目名の変更に失敗しました:', error);
+      setError('科目名の変更に失敗しました。');
+    }
   };
 
   const handleEdit = (university: University, department: Department) => {

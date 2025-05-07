@@ -20,8 +20,9 @@ export const sortUniversities = (
   return [...universities].sort((a, b) => {
     // 新規データの場合は指定されたindexの位置を維持
     if (editMode?.isNew) {
-      if (editMode.universityId === a.id) return -1;
-      if (editMode.universityId === b.id) return 1;
+      const aIndex = universities.findIndex(u => u.id === a.id);
+      const bIndex = universities.findIndex(u => u.id === b.id);
+      return aIndex - bIndex;
     }
     // それ以外は既存のID順でソート
     return a.id - b.id;

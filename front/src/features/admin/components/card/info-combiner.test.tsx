@@ -171,6 +171,7 @@ describe('InfoCombiner', () => {
     onInfoChange: vi.fn(),
     onAddSubject: vi.fn(),
     onSubjectNameChange: vi.fn(),
+    showEditButton: true,
   };
 
   it('コンポーネントが正しくレンダリングされること', () => {

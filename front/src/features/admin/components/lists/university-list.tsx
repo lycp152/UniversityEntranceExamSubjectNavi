@@ -17,7 +17,7 @@
  * @param onAddSubject - 科目追加時のコールバック
  * @param onSubjectNameChange - 科目名変更時のコールバック
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { UniversityListProps } from '@/features/admin/types/university-list';
 import { UniversityCard } from '@/features/admin/components/card/university-card';
 import { InsertUniversityButton } from '@/features/admin/components/buttons/insert-button';
@@ -40,10 +40,16 @@ export const UniversityList = ({
   const showInsertButtons = !editMode?.isEditing;
 
   // 大学データを安定的にソート
-  const sortedUniversities = sortUniversities(universities, editMode);
+  const sortedUniversities = useMemo(
+    () => sortUniversities(universities, editMode),
+    [universities, editMode]
+  );
+
+  // 編集モード中の大学IDを取得
+  const editingUniversityId = editMode?.isEditing ? editMode.universityId : null;
 
   return (
-    <div className="space-y-2">
+    <ul className="space-y-2" aria-label="大学リスト">
       {showInsertButtons && (
         <InsertUniversityButton
           onInsert={onInsert}
@@ -63,10 +69,12 @@ export const UniversityList = ({
             onInfoChange={onInfoChange}
             onAddSubject={onAddSubject}
             onSubjectNameChange={onSubjectNameChange}
+            isEditing={editingUniversityId === university.id}
+            showEditButton={!editMode?.isEditing || editingUniversityId === university.id}
           />
           {showInsertButtons && <InsertUniversityButton onInsert={onInsert} index={index + 1} />}
         </React.Fragment>
       ))}
-    </div>
+    </ul>
   );
 };

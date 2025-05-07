@@ -129,6 +129,7 @@ describe('RowProps', () => {
       onScoreChange: async () => {},
       onAddSubject: () => {},
       onSubjectNameChange: () => {},
+      showEditButton: true,
     };
   });
 
@@ -144,6 +145,7 @@ describe('RowProps', () => {
     expect(typeof props.onScoreChange).toBe('function');
     expect(typeof props.onAddSubject).toBe('function');
     expect(typeof props.onSubjectNameChange).toBe('function');
+    expect(props.showEditButton).toBe(true);
   });
 
   it('コールバック関数が正しく動作すること', () => {

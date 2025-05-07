@@ -19,6 +19,6 @@ import { FilterCheckboxProps } from '../../types/filter';
  * />
  * ```
  */
-export const AcademicField: React.FC<FilterCheckboxProps> = props => (
+export const AcademicField = (props: FilterCheckboxProps) => (
   <GenericFilter items={ACADEMIC_FIELD_OPTIONS} label={FILTER_LABELS.ACADEMIC_FIELD} {...props} />
 );

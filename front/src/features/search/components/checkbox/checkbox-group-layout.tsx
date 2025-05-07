@@ -4,7 +4,6 @@
  * このコンポーネントは、チェックボックスグループのレイアウト構造を提供します。
  * グループ全体のラベル、全選択/解除チェックボックス、および子要素の配置を管理します。
  */
-import { checkboxStyles } from './checkbox-styles';
 import AllCheckbox from './all-checkbox';
 
 /**
@@ -36,7 +35,7 @@ interface CheckboxGroupLayoutProps {
  * @param children - 子要素
  * @param className - コンテナに適用する追加のCSSクラス
  */
-const CheckboxGroupLayout: React.FC<CheckboxGroupLayoutProps> = ({
+const CheckboxGroupLayout = ({
   label,
   allChecked,
   isIndeterminate,
@@ -44,17 +43,23 @@ const CheckboxGroupLayout: React.FC<CheckboxGroupLayoutProps> = ({
   children,
   className = '',
   containerClassName = '',
-}) => {
+}: CheckboxGroupLayoutProps) => {
+  const checkboxId = `checkbox-${label.replace(/\s+/g, '-').toLowerCase()}`;
+
   return (
-    <div className={`${checkboxStyles.groupContainer} ${containerClassName}`}>
-      <label className={checkboxStyles.groupLabel}>{label}</label>
+    <div className={`mt-2 mb-4 ${containerClassName}`}>
+      <label htmlFor={checkboxId} className="block mb-2 text-gray-700 dark:text-gray-300">
+        {label}
+      </label>
       <AllCheckbox
+        id={checkboxId}
         allChecked={allChecked}
         indeterminate={isIndeterminate}
         onChange={onAllChange}
         label="すべて"
+        tabIndex={0}
       />
-      <div className={`${checkboxStyles.itemsContainer} ${className}`}>{children}</div>
+      <div className={`flex flex-wrap ml-2 ${className}`}>{children}</div>
     </div>
   );
 };

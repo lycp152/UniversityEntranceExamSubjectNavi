@@ -14,7 +14,7 @@
 
 import { useEffect, ReactElement } from 'react';
 import { useUniversityEditor } from '@/features/admin/hooks/use-university-editor';
-import { AdminPageContent } from './content';
+import { AdminPageContent } from './admin-page-content';
 import { ErrorBoundary } from '@/features/admin/components/errors/error-boundary';
 
 export function AdminPage(): ReactElement {
@@ -39,7 +39,7 @@ export function AdminPage(): ReactElement {
   // コンポーネントマウント時に大学データを取得
   useEffect(() => {
     fetchUniversities().catch(error => {
-      console.error('Failed to fetch universities:', error);
+      console.error('大学データの取得に失敗しました:', error);
     });
   }, [fetchUniversities]);
 

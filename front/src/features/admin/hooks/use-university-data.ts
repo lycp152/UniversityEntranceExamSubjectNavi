@@ -9,22 +9,9 @@ import type {
 import type { HttpError } from '@/types/api/types';
 import {
   transformAPIResponse,
-  transformToAPITestType,
+  transformTestTypeToAPI,
 } from '@/features/admin/utils/api-transformers';
-
-const API_ENDPOINTS = {
-  UNIVERSITIES: `${process.env.NEXT_PUBLIC_API_URL}/universities`,
-  DEPARTMENTS: (universityId: number, departmentId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/universities/${universityId}/departments/${departmentId}`,
-  SUBJECTS_BATCH: (universityId: number, departmentId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/universities/${universityId}/departments/${departmentId}/subjects/batch`,
-  MAJOR: (departmentId: number, majorId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/departments/${departmentId}/majors/${majorId}`,
-  ADMISSION_SCHEDULE: (majorId: number, scheduleId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/majors/${majorId}/schedules/${scheduleId}`,
-  ADMISSION_INFO: (scheduleId: number, infoId: number) =>
-    `${process.env.NEXT_PUBLIC_API_URL}/schedules/${scheduleId}/info/${infoId}`,
-} as const;
+import { API_ENDPOINTS } from '@/constants/api';
 
 /**
  * 大学データの取得と更新機能を提供するカスタムフック
@@ -54,7 +41,7 @@ export const useUniversityData = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleAPIError = useCallback((error: unknown): string => {
-    console.error('API Error:', error);
+    console.error('APIエラー:', error);
     if (error instanceof Response) {
       return `APIエラー: ${error.status} ${error.statusText}`;
     }
@@ -81,10 +68,10 @@ export const useUniversityData = () => {
       }
 
       const data = await response.json();
-      console.log('API Response:', data);
+      console.log('APIレスポンス:', data);
 
       const transformedData = transformAPIResponse(data);
-      console.log('Transformed Data:', transformedData);
+      console.log('変換後のデータ:', transformedData);
 
       setUniversities(transformedData);
       setError(null);
@@ -164,8 +151,8 @@ export const useUniversityData = () => {
           throw new Error('テストタイプが見つかりません');
         }
 
-        const apiTestTypes = testTypes.map(transformToAPITestType);
-        console.log('Sending data to API:', {
+        const apiTestTypes = testTypes.map(transformTestTypeToAPI);
+        console.log('APIに送信するデータ:', {
           university_id: university.id,
           department_id: department.id,
           test_types: apiTestTypes,
@@ -182,7 +169,7 @@ export const useUniversityData = () => {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
-          console.error('API Error Response:', {
+          console.error('APIエラーレスポンス:', {
             status: response.status,
             statusText: response.statusText,
             data: errorData,

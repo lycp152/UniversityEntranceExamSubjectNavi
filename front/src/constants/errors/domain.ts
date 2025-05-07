@@ -70,14 +70,29 @@ export const VALIDATION_ERROR_CODES = {
   INVALID_TEST_TYPE: 'INVALID_TEST_TYPE',
 } as const;
 
+/**
+ * 検索関連のエラーコード
+ * 大学検索に関するエラーを定義
+ */
+export const SEARCH_ERROR_CODES = {
+  /** APIエラー */
+  API_ERROR: 'API_ERROR',
+  /** 検索エラー */
+  SEARCH_ERROR: 'SEARCH_ERROR',
+  /** 検索成功 */
+  SEARCH_SUCCESS: 'SEARCH_SUCCESS',
+} as const;
+
 /** エラーコードの型定義 */
 export type ApiErrorCode = keyof typeof API_ERROR_CODES;
 export type ScoreErrorCode = keyof typeof SCORE_ERROR_CODES;
 export type ValidationErrorCode = keyof typeof VALIDATION_ERROR_CODES;
+export type SearchErrorCode = keyof typeof SEARCH_ERROR_CODES;
 export type ErrorCode =
   | (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES]
   | (typeof SCORE_ERROR_CODES)[keyof typeof SCORE_ERROR_CODES]
-  | (typeof VALIDATION_ERROR_CODES)[keyof typeof VALIDATION_ERROR_CODES];
+  | (typeof VALIDATION_ERROR_CODES)[keyof typeof VALIDATION_ERROR_CODES]
+  | (typeof SEARCH_ERROR_CODES)[keyof typeof SEARCH_ERROR_CODES];
 
 /**
  * エラーメッセージの定義
@@ -114,9 +129,15 @@ export const ERROR_MESSAGES: Record<string, string> = {
   [VALIDATION_ERROR_CODES.INVALID_SCHEDULE_NAME]:
     '無効なスケジュール名です（前期、中期、後期のいずれか）',
   [VALIDATION_ERROR_CODES.INVALID_TEST_TYPE]: '無効な試験区分です（共通、二次のいずれか）',
+
+  // 検索エラーメッセージ
+  [SEARCH_ERROR_CODES.API_ERROR]: 'エラーが発生しました',
+  [SEARCH_ERROR_CODES.SEARCH_ERROR]: '検索中にエラーが発生しました',
+  [SEARCH_ERROR_CODES.SEARCH_SUCCESS]: '検索を実行しました',
 };
 
 /** エラーメッセージの型定義 */
 export type ApiErrorMessage = (typeof ERROR_MESSAGES)[ApiErrorCode];
 export type ScoreErrorMessage = (typeof ERROR_MESSAGES)[ScoreErrorCode];
 export type ValidationErrorMessage = (typeof ERROR_MESSAGES)[ValidationErrorCode];
+export type SearchErrorMessage = (typeof ERROR_MESSAGES)[SearchErrorCode];

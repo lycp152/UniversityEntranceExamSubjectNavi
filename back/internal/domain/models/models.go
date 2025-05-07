@@ -388,7 +388,7 @@ func (m *Major) Validate() error {
 type AdmissionSchedule struct {
 	BaseModel
 	MajorID       uint           `json:"major_id" gorm:"not null;index:idx_schedule_major_year,type:btree"` // 学科ID
-	Name          string         `json:"name" gorm:"not null;size:6;check:name in ('前期','中期','後期')"` // 日程名
+	Name          string         `json:"name" gorm:"not null;size:6;check:name in ('前','中','後')"` // 日程名
 	DisplayOrder  int `json:"display_order" gorm:"not null;default:0;index:idx_schedule_display_order,type:btree"` // 表示順
 	_ struct{} `gorm:"check:display_order >= 0 AND display_order <= 3"`
 	Major         Major         `json:"-" gorm:"foreignKey:MajorID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"` // 所属学科
@@ -418,9 +418,9 @@ func (a *AdmissionSchedule) Validate() error {
 			Field: "Name",
 			Condition: func(v interface{}) bool {
 				name, ok := v.(string)
-				return ok && (name == "前期" || name == "中期" || name == "後期")
+				return ok && (name == "前" || name == "中" || name == "後")
 			},
-			Message: "日程名は'前期'、'中期'、'後期'のいずれかである必要があります",
+			Message: "日程名は'前'、'中'、'後'のいずれかである必要があります",
 			Code:    "INVALID_SCHEDULE_NAME",
 		},
 		{
@@ -570,7 +570,8 @@ type Subject struct {
 	TestTypeID   uint     `json:"test_type_id" gorm:"not null;index:idx_subject_test_type,type:btree"` // 試験種別ID
 	Name         string   `json:"name" gorm:"not null;index:idx_subject_name,type:btree;size:20;check:name <> ''"` // 科目名
 	Score        int      `json:"score" gorm:"not null;check:score >= 0 AND score <= 1000"` // 配点
-	Percentage   float64  `json:"percentage" gorm:"not null;check:percentage >= 0 AND percentage <= 100"` // 配点比率
+	Percentage   float64  `json:"percentage"` // 配点比率
+	_ struct{} `gorm:"not null;check:percentage >= 0 AND percentage <= 100 AND ROUND(percentage, 2) = percentage"`
 	DisplayOrder int      `json:"display_order"`
 	_ struct{} `gorm:"not null;default:0;index:idx_subject_display_order,type:btree"` // 表示順
 	_ struct{} `gorm:"check:display_order >= 0 AND display_order <= 999"`

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { BaseModel, ValidationError, ValidationErrors, ValidationRule } from './base-model';
+import type { BaseModel, ValidationErrors } from './base-model';
+import type { ValidationError } from '@/types/api/validation';
+import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation-constants';
 
 /**
  * BaseModelの型定義のテスト
@@ -52,6 +54,50 @@ describe('BaseModelの型定義', () => {
     expect(model.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
     expect(model.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
   });
+
+  it('ValidationErrorsの型が正しく定義されている', () => {
+    const errors: ValidationErrors = {
+      errors: [
+        {
+          field: 'testField',
+          code: ValidationErrorCode.TRANSFORM_ERROR,
+          message: 'エラーメッセージ1',
+          severity: ValidationSeverity.ERROR,
+        },
+      ],
+    };
+
+    expect(errors.errors).toHaveLength(1);
+    expect(errors.errors[0].field).toBe('testField');
+    expect(errors.errors[0].code).toBe(ValidationErrorCode.TRANSFORM_ERROR);
+    expect(errors.errors[0].message).toBe('エラーメッセージ1');
+    expect(errors.errors[0].severity).toBe(ValidationSeverity.ERROR);
+  });
+
+  it('複数のエラーを保持できること', () => {
+    const errors: ValidationErrors = {
+      errors: [
+        {
+          field: 'testField1',
+          code: ValidationErrorCode.TRANSFORM_ERROR,
+          message: 'エラーメッセージ1',
+          severity: ValidationSeverity.ERROR,
+        },
+        {
+          field: 'testField2',
+          code: ValidationErrorCode.INVALID_DATA_FORMAT,
+          message: '警告メッセージ1',
+          severity: ValidationSeverity.WARNING,
+        },
+      ],
+    };
+
+    expect(errors.errors).toHaveLength(2);
+    expect(errors.errors[0].field).toBe('testField1');
+    expect(errors.errors[0].severity).toBe(ValidationSeverity.ERROR);
+    expect(errors.errors[1].field).toBe('testField2');
+    expect(errors.errors[1].severity).toBe(ValidationSeverity.WARNING);
+  });
 });
 
 /**
@@ -64,28 +110,26 @@ describe('APIの基本型定義', () => {
       const error: ValidationError = {
         field: 'testField',
         message: 'テストエラーメッセージ',
-        code: 'TEST_ERROR',
-        severity: 'error',
+        code: ValidationErrorCode.TRANSFORM_ERROR,
+        severity: ValidationSeverity.ERROR,
       };
 
       expect(error.field).toBe('testField');
       expect(error.message).toBe('テストエラーメッセージ');
-      expect(error.code).toBe('TEST_ERROR');
-      expect(error.severity).toBe('error');
+      expect(error.code).toBe(ValidationErrorCode.TRANSFORM_ERROR);
+      expect(error.severity).toBe(ValidationSeverity.ERROR);
     });
 
     it('オプショナルフィールドが正しく定義されている', () => {
       const error: ValidationError = {
         field: 'testField',
         message: 'テストエラーメッセージ',
-        code: 'TEST_ERROR',
-        severity: 'error',
-        err: new Error('元のエラー'),
-        details: { additionalInfo: '追加情報' },
+        code: ValidationErrorCode.TRANSFORM_ERROR,
+        severity: ValidationSeverity.ERROR,
+        metadata: { additionalInfo: '追加情報' },
       };
 
-      expect(error.err).toBeInstanceOf(Error);
-      expect(error.details).toEqual({ additionalInfo: '追加情報' });
+      expect(error.metadata).toEqual({ additionalInfo: '追加情報' });
     });
   });
 
@@ -96,14 +140,14 @@ describe('APIの基本型定義', () => {
           {
             field: 'testField1',
             message: 'テストエラーメッセージ1',
-            code: 'TEST_ERROR_1',
-            severity: 'error',
+            code: ValidationErrorCode.TRANSFORM_ERROR,
+            severity: ValidationSeverity.ERROR,
           },
           {
             field: 'testField2',
             message: 'テストエラーメッセージ2',
-            code: 'TEST_ERROR_2',
-            severity: 'warning',
+            code: ValidationErrorCode.INVALID_DATA_FORMAT,
+            severity: ValidationSeverity.WARNING,
           },
         ],
       };
@@ -111,23 +155,6 @@ describe('APIの基本型定義', () => {
       expect(errors.errors).toHaveLength(2);
       expect(errors.errors[0].field).toBe('testField1');
       expect(errors.errors[1].field).toBe('testField2');
-    });
-  });
-
-  describe('ValidationRule型の検証', () => {
-    it('バリデーションルールが正しく定義されている', () => {
-      const rule: ValidationRule<number> = {
-        field: 'testField',
-        condition: value => value > 0,
-        message: '値は0より大きい必要があります',
-        code: 'INVALID_VALUE',
-      };
-
-      expect(rule.field).toBe('testField');
-      expect(rule.condition(1)).toBe(true);
-      expect(rule.condition(-1)).toBe(false);
-      expect(rule.message).toBe('値は0より大きい必要があります');
-      expect(rule.code).toBe('INVALID_VALUE');
     });
   });
 

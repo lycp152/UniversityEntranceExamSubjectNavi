@@ -43,12 +43,12 @@ interface CategoryFilterProps extends FilterCheckboxProps {
  * @param {CategoryFilterProps} props - コンポーネントのプロパティ
  * @returns {JSX.Element} カテゴリーフィルターコンポーネント
  */
-export const CategoryFilter: React.FC<CategoryFilterProps> = ({
+export const CategoryFilter = ({
   categories,
   selectedItems,
   setSelectedItems,
   label,
-}) => (
+}: CategoryFilterProps) => (
   <CategoryCheckboxGroup
     categories={categories}
     selectedItems={selectedItems}

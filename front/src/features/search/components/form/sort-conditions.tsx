@@ -1,4 +1,16 @@
-import { SectionTitle } from '@/features/search/components/section-title';
+import { SectionTitle } from '@/components/ui/section-title';
+import { memo, useCallback } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
 
 /**
  * 並び順の条件を表すインターフェース
@@ -46,46 +58,6 @@ const sortOptions = {
 };
 
 /**
- * セレクトボックスコンポーネント
- *
- * 並び順の条件を選択するためのセレクトボックスを提供します。
- *
- * @component
- * @param {Object} props - コンポーネントのプロパティ
- * @param {string} props.value - 現在の選択値
- * @param {string[]} props.options - 選択肢の配列
- * @param {(value: string) => void} props.onChange - 選択値が変更されたときに呼び出される関数
- * @param {string} props.placeholder - プレースホルダーテキスト
- * @returns {JSX.Element} セレクトボックスコンポーネント
- */
-const Select = ({
-  value,
-  options,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  options: string[];
-  onChange: (value: string) => void;
-  placeholder: string;
-}) => (
-  <div className="w-full">
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="border border-gray-300 dark:border-gray-700 p-2 w-full"
-    >
-      <option value="">{placeholder}</option>
-      {options.map(option => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  </div>
-);
-
-/**
  * 並び順コンポーネント
  *
  * 検索結果の並び順を設定するためのコンポーネントです。
@@ -103,56 +75,141 @@ const Select = ({
  * />
  * ```
  */
-export default function SortConditions({ sortOrder, setSortOrder }: SortConditionsProps) {
+const SortConditions = memo(function SortConditions({
+  sortOrder,
+  setSortOrder,
+}: SortConditionsProps) {
   /**
    * 並び順の条件を更新する関数
    * @param {number} index - 更新する条件のインデックス
    * @param {keyof SortCondition} field - 更新するフィールド
    * @param {string} value - 新しい値
    */
-  const handleSortChange = (index: number, field: keyof SortCondition, value: string) => {
-    const newSortOrder = [...sortOrder];
-    newSortOrder[index] = { ...newSortOrder[index], [field]: value };
-    setSortOrder(newSortOrder);
-  };
+  const handleSortChange = useCallback(
+    (index: number, field: keyof SortCondition, value: string) => {
+      setSortOrder(prev => {
+        const newSortOrder = [...prev];
+        newSortOrder[index] = { ...newSortOrder[index], [field]: value };
+        return newSortOrder;
+      });
+    },
+    [setSortOrder]
+  );
 
   return (
-    <div className="mb-4">
+    <div>
       <SectionTitle>検索結果の並び順</SectionTitle>
       {sortOrder.map((condition, index) => (
         <div
           key={`${condition.examType}-${condition.subjectName}-${condition.order}`}
-          className="flex flex-col md:flex-row items-start md:items-center md:space-x-4 space-y-2 md:space-y-0 mt-2 w-full"
+          className="flex flex-col md:flex-row items-start md:items-center md:space-x-4 space-y-2 md:space-y-0 w-full"
         >
-          <div className="flex items-center w-full">
-            <Select
-              value={condition.examType}
-              options={sortOptions.examType}
-              onChange={value => handleSortChange(index, 'examType', value)}
-              placeholder="試験を選択"
-            />
-            <span className="ml-2">の</span>
+          <div className="flex items-center w-full md:w-auto">
+            <div className="flex-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    aria-expanded={!!condition.examType}
+                    aria-haspopup="listbox"
+                    aria-label="試験の種類を選択"
+                  >
+                    {condition.examType || '試験を選択'} <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>試験の種類</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    {sortOptions.examType.map(option => (
+                      <DropdownMenuItem
+                        key={option}
+                        onClick={() => handleSortChange(index, 'examType', option)}
+                        aria-selected={condition.examType === option}
+                      >
+                        {option}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <span className="ml-2 whitespace-nowrap">の</span>
           </div>
-          <div className="flex items-center w-full">
-            <Select
-              value={condition.subjectName}
-              options={sortOptions.subjectName}
-              onChange={value => handleSortChange(index, 'subjectName', value)}
-              placeholder="科目名を選択"
-            />
+
+          <div className="flex items-center w-full md:w-auto">
+            <div className="flex-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    aria-expanded={!!condition.subjectName}
+                    aria-haspopup="listbox"
+                    aria-label="科目名を選択"
+                  >
+                    {condition.subjectName || '科目名を選択'}{' '}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>科目名</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    {sortOptions.subjectName.map(option => (
+                      <DropdownMenuItem
+                        key={option}
+                        onClick={() => handleSortChange(index, 'subjectName', option)}
+                        aria-selected={condition.subjectName === option}
+                      >
+                        {option}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <span className="ml-2 whitespace-nowrap">の比率が</span>
           </div>
-          <div className="flex items-center w-full">
-            <Select
-              value={condition.order}
-              options={sortOptions.order}
-              onChange={value => handleSortChange(index, 'order', value)}
-              placeholder="並び順を選択"
-            />
-            <span className="ml-2">順</span>
+
+          <div className="flex items-center w-full md:w-auto">
+            <div className="flex-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    aria-expanded={!!condition.order}
+                    aria-haspopup="listbox"
+                    aria-label="並び順を選択"
+                  >
+                    {condition.order || '並び順を選択'} <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>並び順</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    {sortOptions.order.map(option => (
+                      <DropdownMenuItem
+                        key={option}
+                        onClick={() => handleSortChange(index, 'order', option)}
+                        aria-selected={condition.order === option}
+                      >
+                        {option}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <span className="ml-2 whitespace-nowrap">順</span>
           </div>
         </div>
       ))}
     </div>
   );
-}
+});
+
+export default SortConditions;

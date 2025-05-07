@@ -3,13 +3,16 @@ import {
   API_ERROR_CODES,
   SCORE_ERROR_CODES,
   VALIDATION_ERROR_CODES,
+  SEARCH_ERROR_CODES,
   ERROR_MESSAGES,
   type ApiErrorCode,
   type ScoreErrorCode,
   type ValidationErrorCode,
+  type SearchErrorCode,
   type ApiErrorMessage,
   type ScoreErrorMessage,
   type ValidationErrorMessage,
+  type SearchErrorMessage,
 } from './domain';
 
 /**
@@ -73,6 +76,14 @@ describe('ドメインエラー関連の定数と型定義', () => {
     });
   });
 
+  describe('検索エラーコードの定義', () => {
+    it('検索関連のエラーコードが正しく定義されている', () => {
+      expect(SEARCH_ERROR_CODES.API_ERROR).toBe('API_ERROR');
+      expect(SEARCH_ERROR_CODES.SEARCH_ERROR).toBe('SEARCH_ERROR');
+      expect(SEARCH_ERROR_CODES.SEARCH_SUCCESS).toBe('SEARCH_SUCCESS');
+    });
+  });
+
   describe('エラーメッセージの定義', () => {
     it('APIエラーメッセージが正しく定義されている', () => {
       expect(ERROR_MESSAGES[API_ERROR_CODES.NETWORK_ERROR]).toBe(
@@ -132,6 +143,12 @@ describe('ドメインエラー関連の定数と型定義', () => {
         '無効な試験区分です（共通、二次のいずれか）'
       );
     });
+
+    it('検索エラーメッセージが正しく定義されている', () => {
+      expect(ERROR_MESSAGES[SEARCH_ERROR_CODES.API_ERROR]).toBe('エラーが発生しました');
+      expect(ERROR_MESSAGES[SEARCH_ERROR_CODES.SEARCH_ERROR]).toBe('検索中にエラーが発生しました');
+      expect(ERROR_MESSAGES[SEARCH_ERROR_CODES.SEARCH_SUCCESS]).toBe('検索を実行しました');
+    });
   });
 
   describe('型定義の検証', () => {
@@ -162,6 +179,16 @@ describe('ドメインエラー関連の定数と型定義', () => {
 
     it('ValidationErrorMessage型が正しく定義されている', () => {
       const validMessage: ValidationErrorMessage = 'バージョンは0より大きい必要があります';
+      expect(validMessage).toBeDefined();
+    });
+
+    it('SearchErrorCode型が正しく定義されている', () => {
+      const validCode: SearchErrorCode = 'API_ERROR';
+      expect(validCode).toBeDefined();
+    });
+
+    it('SearchErrorMessage型が正しく定義されている', () => {
+      const validMessage: SearchErrorMessage = 'エラーが発生しました';
       expect(validMessage).toBeDefined();
     });
   });

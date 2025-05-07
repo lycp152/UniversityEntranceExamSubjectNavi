@@ -12,23 +12,12 @@ export const SUBJECT_SCORE_CONSTRAINTS = {
   MIN_PERCENTAGE: 0,
   MAX_PERCENTAGE: 100,
 
-  /** 科目名の制約（バックエンドと一致） */
-  MAX_SUBJECT_NAME_LENGTH: 20,
+  /** 表示順の制約（バックエンドと一致） */
+  MIN_DISPLAY_ORDER: 0,
+  MAX_DISPLAY_ORDER: 999,
 
   /** 表示用の小数点以下の桁数 */
   DEFAULT_DECIMAL_PLACES: 2,
-
-  /** スコアの計算制約 */
-  CALCULATION_CONSTRAINTS: {
-    /** 合計スコアの制限 */
-    MIN_TOTAL_SCORE: 0,
-    MAX_TOTAL_SCORE: 1000,
-    /** 合計パーセンテージの制限 */
-    MIN_TOTAL_PERCENTAGE: 0,
-    MAX_TOTAL_PERCENTAGE: 100,
-    /** 小数点以下の桁数制限 */
-    MAX_DECIMAL_PLACES: 2,
-  } as const,
 } as const;
 
 /** スコアの型定義 */
@@ -39,7 +28,9 @@ export type Score =
 export type Percentage =
   | typeof SUBJECT_SCORE_CONSTRAINTS.MIN_PERCENTAGE
   | typeof SUBJECT_SCORE_CONSTRAINTS.MAX_PERCENTAGE;
+/** 表示順の型定義 */
+export type DisplayOrder =
+  | typeof SUBJECT_SCORE_CONSTRAINTS.MIN_DISPLAY_ORDER
+  | typeof SUBJECT_SCORE_CONSTRAINTS.MAX_DISPLAY_ORDER;
 /** 小数点以下の桁数の型定義 */
 export type DecimalPlaces = typeof SUBJECT_SCORE_CONSTRAINTS.DEFAULT_DECIMAL_PLACES;
-/** 計算制約の型定義 */
-export type CalculationConstraint = typeof SUBJECT_SCORE_CONSTRAINTS.CALCULATION_CONSTRAINTS;

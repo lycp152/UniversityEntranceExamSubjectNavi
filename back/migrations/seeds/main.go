@@ -9,12 +9,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"university-exam-api/internal/domain/models"
 	"university-exam-api/internal/infrastructure/database"
 
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
+)
+
+const (
+	rollbackErrorMsg = "ロールバックに失敗しました: %v"
 )
 
 // calculatePercentages は科目のパーセンテージを自動計算します
@@ -32,7 +37,9 @@ func calculatePercentages(subjects []models.Subject) []models.Subject {
 	// パーセンテージを計算
 	if totalScore > 0 {
 		for i := range subjects {
-			subjects[i].Percentage = float64(subjects[i].Score) / totalScore * 100
+			// パーセンテージを計算し、小数点以下2桁に丸める
+			percentage := float64(subjects[i].Score) / totalScore * 100
+			subjects[i].Percentage = math.Round(percentage*100) / 100
 		}
 	}
 
@@ -123,27 +130,29 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 // - デフォルト値の設定
 // - 環境変数の検証
 func setupEnvironment() error {
+	// .envファイルの読み込み
 	if err := godotenv.Load(); err != nil {
-		log.Printf("警告: .envファイルが見つかりません")
+		log.Printf("警告: .envファイルが見つかりません: %v", err)
+	}
 
-		if err := os.Setenv("DB_HOST", "localhost"); err != nil {
-			return fmt.Errorf("DB_HOSTの設定に失敗しました: %v", err)
-		}
+	// 必須環境変数の定義
+	requiredEnvVars := map[string]string{
+		"DB_HOST":     "localhost",
+		"DB_USER":     "user",
+		"DB_PASSWORD": "password",
+		"DB_NAME":     "university_exam_db",
+		"DB_PORT":     "5432",
+	}
 
-		if err := os.Setenv("DB_USER", "user"); err != nil {
-			return fmt.Errorf("DB_USERの設定に失敗しました: %v", err)
-		}
+	// 環境変数の設定と検証
+	for key, defaultValue := range requiredEnvVars {
+		value := os.Getenv(key)
+		if value == "" {
+			if err := os.Setenv(key, defaultValue); err != nil {
+				return fmt.Errorf("%sの設定に失敗しました: %v", key, err)
+			}
 
-		if err := os.Setenv("DB_PASSWORD", "password"); err != nil {
-			return fmt.Errorf("DB_PASSWORDの設定に失敗しました: %v", err)
-		}
-
-		if err := os.Setenv("DB_NAME", "university_exam_db"); err != nil {
-			return fmt.Errorf("DB_NAMEの設定に失敗しました: %v", err)
-		}
-
-		if err := os.Setenv("DB_PORT", "5432"); err != nil {
-			return fmt.Errorf("DB_PORTの設定に失敗しました: %v", err)
+			log.Printf("警告: %sが設定されていないため、デフォルト値(%s)を使用します", key, defaultValue)
 		}
 	}
 
@@ -283,33 +292,43 @@ func seedUniversities(tx *gorm.DB, universities []models.University) error {
 // - シードデータの投入
 // - トランザクションのコミット
 func main() {
+	log.Println("シードデータの投入を開始します")
+
 	// 環境変数の設定
 	if err := setupEnvironment(); err != nil {
-		log.Fatalf("環境変数の設定に失敗しました: %v", err)
+		log.Printf("環境変数の設定に失敗しました: %v", err)
+		os.Exit(1)
 	}
 
 	// データベース接続の確立
 	db, err := database.NewDB()
 	if err != nil {
-		log.Fatalf("データベース接続に失敗しました: %v", err)
+		log.Printf("データベース接続に失敗しました: %v", err)
+		os.Exit(1)
 	}
 
 	// データベースのクリーンアップ
 	if err := cleanupDatabase(db); err != nil {
-		log.Fatalf("データベースのクリーンアップに失敗しました: %v", err)
+		log.Printf("データベースのクリーンアップに失敗しました: %v", err)
+		os.Exit(1)
 	}
 
 	// トランザクションの開始
 	tx := db.Begin()
 	if tx.Error != nil {
-		log.Fatalf("トランザクションの開始に失敗しました: %v", tx.Error)
+		log.Printf("トランザクションの開始に失敗しました: %v", tx.Error)
+		os.Exit(1)
 	}
 
 	// パニック時のロールバック処理
 	defer func() {
 		if r := recover(); r != nil {
-			tx.Rollback()
-			log.Fatalf("パニックが発生しました: %v", r)
+			if err := tx.Rollback().Error; err != nil {
+				log.Printf(rollbackErrorMsg, err)
+			}
+
+			log.Printf("パニックが発生しました: %v", r)
+			os.Exit(1)
 		}
 	}()
 
@@ -338,7 +357,7 @@ func main() {
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									Name:         "前期",
+									Name:         "前",
 									DisplayOrder: 1,
 									AdmissionInfos: []models.AdmissionInfo{
 										{
@@ -405,7 +424,7 @@ func main() {
 									BaseModel: models.BaseModel{
 										Version: 1,
 									},
-									Name:         "後期",
+									Name:         "後",
 									DisplayOrder: 1,
 									AdmissionInfos: []models.AdmissionInfo{
 										{
@@ -459,23 +478,19 @@ func main() {
 	// シードデータの投入
 	if err := seedUniversities(tx, universities); err != nil {
 		if err := tx.Rollback().Error; err != nil {
-			log.Printf("ロールバックに失敗しました: %v", err)
+			log.Printf(rollbackErrorMsg, err)
 		}
 
 		log.Printf("シードデータの投入に失敗しました: %v", err)
-
-		return
 	}
 
 	// トランザクションのコミット
 	if err := tx.Commit().Error; err != nil {
 		if err := tx.Rollback().Error; err != nil {
-			log.Printf("ロールバックに失敗しました: %v", err)
+			log.Printf(rollbackErrorMsg, err)
 		}
 
 		log.Printf("トランザクションのコミットに失敗しました: %v", err)
-
-		return
 	}
 
 	log.Println("シードデータの投入が正常に完了しました")

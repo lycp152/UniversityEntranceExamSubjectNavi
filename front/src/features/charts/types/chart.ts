@@ -32,14 +32,6 @@ export type ChartProps = {
 export type TooltipPayload = Payload<number, string>;
 
 /**
- * スコア表示コンポーネントのプロパティ型定義
- * @property subject - 表示する科目データ
- */
-export type ScoreDisplayProps = {
-  subject: UISubject;
-};
-
-/**
  * 科目と試験の比較チャートコンポーネントのプロパティ型定義
  * @property subjectData - 表示する科目データ
  */

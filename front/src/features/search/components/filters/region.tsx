@@ -1,9 +1,9 @@
 import { Filter } from './filter';
 import { REGION_OPTIONS, FILTER_LABELS } from '../../constants/filter-options';
-import { FilterCheckboxProps } from '../../types/filter';
+import { FilterCheckboxProps, FilterType } from '../../types/filter';
 
 const config = {
-  type: 'region' as const,
+  type: FilterType.REGION,
   label: FILTER_LABELS.REGION,
   options: REGION_OPTIONS,
   isCategory: true,
@@ -26,4 +26,4 @@ const config = {
  * />
  * ```
  */
-export const Region: React.FC<FilterCheckboxProps> = props => <Filter config={config} {...props} />;
+export const Region = (props: FilterCheckboxProps) => <Filter config={config} {...props} />;

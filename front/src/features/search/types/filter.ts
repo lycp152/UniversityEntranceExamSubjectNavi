@@ -7,6 +7,23 @@
  */
 
 /**
+ * フィルターの種類を定義する列挙型
+ *
+ * アプリケーションで使用可能なすべてのフィルターの種類を列挙します。
+ * 地域、日程、学問系統、設置区分のフィルターが含まれます。
+ */
+export enum FilterType {
+  /** 地域フィルター */
+  REGION = 'region',
+  /** 日程フィルター */
+  SCHEDULE = 'schedule',
+  /** 学問系統フィルター */
+  ACADEMIC_FIELD = 'academicField',
+  /** 設置区分フィルター */
+  CLASSIFICATION = 'classification',
+}
+
+/**
  * チェックボックスフィルターの基本プロパティ
  *
  * すべてのフィルターコンポーネントで共通して使用される基本プロパティを定義します。
@@ -24,14 +41,11 @@ export interface FilterCheckboxProps {
 }
 
 /**
- * フィルターの種類を定義する型
+ * フィルターの選択肢の型定義
  *
- * アプリケーションで使用可能なすべてのフィルターの種類を列挙します。
- * 地域、日程、学問系統、設置区分のフィルターが含まれます。
- *
- * @type {('region' | 'schedule' | 'academicField' | 'classification')}
+ * 単一レベルの選択肢またはカテゴリー型の選択肢を表します。
  */
-export type FilterType = 'region' | 'schedule' | 'academicField' | 'classification';
+export type FilterOptions = string[] | Record<string, string[]>;
 
 /**
  * フィルターの設定を定義するインターフェース
@@ -42,7 +56,7 @@ export type FilterType = 'region' | 'schedule' | 'academicField' | 'classificati
  * @interface FilterConfig
  * @property {FilterType} type - フィルターの種類
  * @property {string} label - フィルターの表示ラベル
- * @property {string[] | Record<string, string[]>} options - フィルターの選択肢（単一レベルまたはカテゴリー型）
+ * @property {FilterOptions} options - フィルターの選択肢（単一レベルまたはカテゴリー型）
  * @property {boolean} isCategory - カテゴリー型のフィルターかどうか
  */
 export interface FilterConfig {
@@ -51,7 +65,7 @@ export interface FilterConfig {
   /** フィルターのラベル */
   label: string;
   /** フィルターの選択肢 */
-  options: string[] | Record<string, string[]>;
+  options: FilterOptions;
   /** カテゴリー型かどうか */
   isCategory: boolean;
 }

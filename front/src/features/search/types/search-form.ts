@@ -6,11 +6,9 @@
  *
  * @module search-form
  * @see {@link SearchFormState} 検索フォームの状態を表す型
- * @see {@link searchFormSchema} 検索フォームのバリデーションスキーマ
  */
 
-import { z } from 'zod';
-import { commonRules } from '@/features/search/lib/zod-rules';
+import { SearchFormSchema } from '@/types/api/schemas';
 
 /**
  * 検索フォームの状態を表す型
@@ -59,49 +57,4 @@ export type SearchFormState = {
   };
 };
 
-/**
- * 検索フォームのバリデーションスキーマ
- *
- * このスキーマは、検索フォームの入力値のバリデーションルールを定義します。
- * Zodを使用して、各フィールドの型チェックとバリデーションを行います。
- *
- * @constant {z.ZodObject} searchFormSchema
- * @property {z.ZodString} keyword - キーワード検索（0-100文字）
- * @property {z.ZodArray} region - 地域の選択（オプショナル）
- * @property {z.ZodArray} academicField - 学問分野の選択（オプショナル）
- * @property {z.ZodArray} schedule - スケジュールの選択（オプショナル）
- * @property {z.ZodArray} classification - 分類の選択（オプショナル）
- * @property {z.ZodArray} sortOrder - ソート順の設定（オプショナル）
- * @property {z.ZodNumber} page - ページ番号（1-100、オプショナル）
- * @property {z.ZodNumber} perPage - 1ページあたりの表示件数（1-100、オプショナル）
- *
- * @example
- * ```typescript
- * const result = searchFormSchema.safeParse({
- *   keyword: '北海道大学',
- *   region: ['北海道'],
- *   page: 1,
- *   perPage: 10
- * });
- * ```
- */
-export const searchFormSchema = z.object({
-  keyword: commonRules.string.minMax(0, 100, 'キーワードは100文字以内で入力してください'),
-  region: z.array(z.string()).optional(),
-  academicField: z.array(z.string()).optional(),
-  schedule: z.array(z.string()).optional(),
-  classification: z.array(z.string()).optional(),
-  sortOrder: z
-    .array(
-      z.object({
-        examType: z.string(),
-        subjectName: z.string(),
-        order: z.string(),
-      })
-    )
-    .optional(),
-  page: commonRules.number.minMax(1, 100, 'ページ番号は1から100の間で入力してください').optional(),
-  perPage: commonRules.number
-    .minMax(1, 100, '1ページあたりの表示件数は1から100の間で入力してください')
-    .optional(),
-});
+export { SearchFormSchema };

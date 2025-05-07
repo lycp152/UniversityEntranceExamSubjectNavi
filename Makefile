@@ -4,252 +4,371 @@ DOCKER_COMPOSE_DIR = deployments/docker/$(ENV)
 DOCKER_COMPOSE = docker compose -f $(DOCKER_COMPOSE_DIR)/docker-compose.yml
 CURRENT_TIME := $(shell date "+%Y%m%d_%H%M%S")
 
-# 環境変数ファイルのパス
-ENV_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV)
-ENV_EXAMPLE_FILE = $(DOCKER_COMPOSE_DIR)/.env.$(ENV).example
-TEST_ENV_FILE = back/tests/testdata/.env
-TEST_ENV_EXAMPLE_FILE = back/tests/testdata/.env.example
-FRONT_TEST_ENV_FILE = front/.env.test
-FRONT_TEST_ENV_EXAMPLE_FILE = front/.env.test.example
+# メッセージ出力の共通処理
+MSG_START = @echo "🚀 $(1)を開始しています..."
+MSG_SUCCESS = @echo "✅ $(1)が完了しました"
+MSG_ERROR = @echo "❌ $(1)"
+MSG_INFO = @echo "👉 $(1)"
+
+# 環境変数ファイル関連の共通処理
+ENV_FILES = \
+	$(DOCKER_COMPOSE_DIR)/.env.$(ENV) \
+	$(DOCKER_COMPOSE_DIR)/.env.$(ENV).example \
+	back/tests/testdata/.env \
+	back/tests/testdata/.env.example \
+	front/.env.test \
+	front/.env.test.example
+
+# 共通の処理を定義
+INSTALL_DEPS = make front-install && make back-install
+RUN_MIGRATIONS = $(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
+RUN_SEEDS = $(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
+CLEAN_DB = $(DOCKER_COMPOSE) exec postgres psql -U postgres -d university_exam_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+# バックエンド関連の共通処理
+BACK_DEPS = check-deps
+BACK_TEST = cd back && go test -v
+BACK_BUILD = cd back && go build -o dist/app ./cmd/api
+BACK_TEST_COVERAGE = cd back && go test -coverprofile=coverage/coverage.out
+BACK_TEST_HTML = cd back && go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+BACK_TEST_MOCK = cd back && go generate
+
+# テスト関連の共通処理
+TEST_DEPS = $(BACK_DEPS)
+TEST_RUN = $(BACK_TEST)
+
+# フロントエンド関連の共通処理
+FRONT_CMD = cd front && pnpm
+FRONT_INSTALL = $(FRONT_CMD) install
+FRONT_BUILD = $(FRONT_CMD) build
+FRONT_TEST = $(FRONT_CMD) test
+FRONT_LINT = $(FRONT_CMD) lint
+
+# デプロイ関連の共通処理
+DEPLOY = ENV=$(1) $(DOCKER_COMPOSE) up -d --build
+
+# クリーンアップ関連の共通処理
+CLEAN_FRONT = rm -rf front/dist front/.next front/node_modules
+CLEAN_BACK = rm -rf back/dist back/tmp back/coverage
+CLEAN_DOCKER = docker system prune -f
+CLEAN_VOLUMES = docker volume ls -q | grep $(ENV) | xargs -r docker volume rm
+
+# データベース関連の共通処理
+DB_BACKUP = @mkdir -p ./backups && $(DOCKER_COMPOSE) exec db pg_dump -U postgres university_exam_db > ./backups/backup_$(CURRENT_TIME).sql
+DB_RESTORE = $(DOCKER_COMPOSE) exec -T db psql -U postgres university_exam_db < $(1)
+
+# 環境変数ファイル関連の共通処理
+CREATE_ENV_FILE = @if [ ! -f $(1) ]; then \
+	cp $(2) $(1); \
+	echo "✅ 環境変数ファイルを作成しました: $(1)"; \
+else \
+	echo "👉 環境変数ファイルは既に存在します: $(1)"; \
+fi
 
 # 基本コマンド
 .PHONY: help
 help: ## ヘルプを表示
+	$(call MSG_INFO,利用可能なコマンド:)
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 # 開発環境セットアップ
 .PHONY: setup
 setup: check-deps init front-install back-install build start-db ## 開発環境の完全セットアップ
-	@echo "🎉 セットアップが完了しました！"
-	@echo "👉 開発を開始するには 'make dev' を実行してください"
+	$(call MSG_START,開発環境のセットアップ)
+	$(call MSG_SUCCESS,セットアップ)
+	$(call MSG_INFO,開発を開始するには 'make dev' を実行してください)
 
 .PHONY: check-deps
 check-deps: ## 必要な依存関係をチェック
-	@echo "🔍 依存関係をチェックしています..."
-	@which go >/dev/null 2>&1 || (echo "❌ Goがインストールされていません" && exit 1)
-	@which node >/dev/null 2>&1 || (echo "❌ Node.jsがインストールされていません" && exit 1)
-	@which docker >/dev/null 2>&1 || (echo "❌ Dockerがインストールされていません" && exit 1)
-	@echo "✅ 全ての依存関係が満たされています"
+	$(call MSG_START,依存関係のチェック)
+	@which go >/dev/null 2>&1 || ($(call MSG_ERROR,Goがインストールされていません) && exit 1)
+	@which node >/dev/null 2>&1 || ($(call MSG_ERROR,Node.jsがインストールされていません) && exit 1)
+	@which docker >/dev/null 2>&1 || ($(call MSG_ERROR,Dockerがインストールされていません) && exit 1)
+	$(call MSG_SUCCESS,依存関係のチェック)
 
 .PHONY: verify
 verify: ## 開発環境の状態を検証
-	@echo "🔍 開発環境を検証しています..."
-	@test -d front/node_modules || (echo "❌ フロントエンドの依存関係がインストールされていません" && exit 1)
-	@echo "✅ 検証が完了しました"
+	$(call MSG_START,開発環境の検証)
+	@test -d front/node_modules || ($(call MSG_ERROR,フロントエンドの依存関係がインストールされていません) && exit 1)
+	$(call MSG_SUCCESS,検証)
 
 # 開発環境の起動
 .PHONY: dev
 dev: verify ## 開発環境を起動
-	@echo "🚀 開発環境を起動しています..."
+	$(call MSG_START,開発環境の起動)
 	$(DOCKER_COMPOSE) up -d --build
-	@echo "⏳ コンテナの起動を待機しています..."
-	sleep 10
-	@echo "🐘 マイグレーションを実行しています..."
-	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
-	@echo "🌱 シードデータを投入しています..."
-	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
-	@echo "✅ 開発環境の準備が完了しました"
-	@echo "👉 ログを確認するには 'make logs' を実行してください"
+	$(call MSG_INFO,コンテナの起動を待機しています...)
+	sleep 15
+	$(call MSG_INFO,マイグレーションを実行しています...)
+	$(RUN_MIGRATIONS)
+	$(call MSG_INFO,シードデータを投入しています...)
+	$(RUN_SEEDS)
+	$(call MSG_SUCCESS,開発環境の準備)
+	$(call MSG_INFO,ログを確認するには 'make logs' を実行してください)
 
 .PHONY: dev-reset
 dev-reset: ## 開発環境を完全にリセット
-	@echo "🔄 開発環境をリセットしています..."
-	make down
-	make clean
+	$(call MSG_START,開発環境のリセット)
+	$(call MSG_INFO,1. コンテナを停止しています...)
+	$(DOCKER_COMPOSE) down --remove-orphans
+	$(call MSG_INFO,2. ボリュームを削除しています...)
 	make clean-volumes
+	$(call MSG_INFO,3. キャッシュをクリーンアップしています...)
+	make clean
+	$(call MSG_INFO,4. 環境変数を初期化しています...)
 	make init
-	make setup
+	$(call MSG_INFO,5. 依存関係を再インストールしています...)
+	$(INSTALL_DEPS)
+	$(call MSG_INFO,6. データベースを起動しています...)
+	make start-db
+	$(call MSG_INFO,7. 開発環境を起動しています...)
+	make dev
+	$(call MSG_SUCCESS,開発環境のリセット)
 
 .PHONY: dev-update
 dev-update: ## 依存関係を更新
-	@echo "🔄 依存関係を更新しています..."
-	make front-install
-	make back-install
+	$(call MSG_START,依存関係の更新)
+	$(INSTALL_DEPS)
 	make back-migrate
+	$(call MSG_SUCCESS,依存関係の更新)
 
 .PHONY: down
 down: ## 環境を停止
+	$(call MSG_START,環境の停止)
 	$(DOCKER_COMPOSE) down --remove-orphans
+	$(call MSG_SUCCESS,環境の停止)
 
 .PHONY: logs
 logs: ## コンテナのログを表示
+	$(call MSG_START,ログの表示)
 	$(DOCKER_COMPOSE) logs -f
 
 # フロントエンド関連
 .PHONY: front-install
 front-install: ## フロントエンドの依存関係をインストール
-	cd front && pnpm install
+	$(call MSG_START,フロントエンドの依存関係インストール)
+	$(FRONT_INSTALL)
+	$(call MSG_SUCCESS,フロントエンドの依存関係インストール)
 
 .PHONY: front-build
 front-build: ## フロントエンドをビルド
-	cd front && pnpm build
+	$(call MSG_START,フロントエンドのビルド)
+	$(FRONT_BUILD)
+	$(call MSG_SUCCESS,フロントエンドのビルド)
 
 .PHONY: front-test
 front-test: ## フロントエンドのテストを実行
-	cd front && pnpm test
+	$(call MSG_START,フロントエンドのテスト)
+	$(FRONT_TEST)
+	$(call MSG_SUCCESS,フロントエンドのテスト)
 
 .PHONY: front-lint
 front-lint: ## フロントエンドのリントを実行
-	cd front && pnpm lint
+	$(call MSG_START,フロントエンドのリント)
+	$(FRONT_LINT)
+	$(call MSG_SUCCESS,フロントエンドのリント)
 
 # バックエンド関連
 .PHONY: back-install
-back-install: check-deps ## バックエンドの依存関係をインストール
+back-install: $(BACK_DEPS) ## バックエンドの依存関係をインストール
+	$(call MSG_START,バックエンドの依存関係インストール)
 	cd back && go mod download && go mod tidy
+	$(call MSG_SUCCESS,バックエンドの依存関係インストール)
 
 .PHONY: back-build
-back-build: check-deps ## バックエンドをビルド
-	cd back && go build -o dist/app ./cmd/api
+back-build: $(BACK_DEPS) ## バックエンドをビルド
+	$(call MSG_START,バックエンドのビルド)
+	$(BACK_BUILD)
+	$(call MSG_SUCCESS,バックエンドのビルド)
 
 .PHONY: back-test
-back-test: check-deps ## バックエンドのテストを実行
-	cd back && go test ./... -v
-
-.PHONY: back-lint
-back-lint: check-deps ## バックエンドのリントを実行
-	cd back && golangci-lint run
+back-test: $(TEST_DEPS) ## バックエンドのテストを実行
+	$(call MSG_START,バックエンドのテスト)
+	$(TEST_RUN) ./...
+	$(call MSG_SUCCESS,バックエンドのテスト)
 
 .PHONY: back-test-unit
-back-test-unit: check-deps ## バックエンドのユニットテストを実行
-	cd back && go test -v ./tests/unit/...
+back-test-unit: $(TEST_DEPS) ## バックエンドのユニットテストを実行
+	$(call MSG_START,バックエンドのユニットテスト)
+	$(TEST_RUN) ./tests/unit/...
+	$(call MSG_SUCCESS,バックエンドのユニットテスト)
 
 .PHONY: back-test-integration
-back-test-integration: check-deps ## バックエンドの統合テストを実行
-	cd back && go test -v ./tests/integration/...
+back-test-integration: $(TEST_DEPS) ## バックエンドの統合テストを実行
+	$(call MSG_START,バックエンドの統合テスト)
+	$(TEST_RUN) ./tests/integration/...
+	$(call MSG_SUCCESS,バックエンドの統合テスト)
 
 .PHONY: back-test-e2e
-back-test-e2e: check-deps ## バックエンドのE2Eテストを実行
-	cd back && go test -v ./tests/e2e/...
+back-test-e2e: $(TEST_DEPS) ## バックエンドのE2Eテストを実行
+	$(call MSG_START,バックエンドのE2Eテスト)
+	$(TEST_RUN) ./tests/e2e/...
+	$(call MSG_SUCCESS,バックエンドのE2Eテスト)
 
 .PHONY: back-test-coverage
-back-test-coverage: check-deps ## バックエンドのテストカバレッジを生成
-	cd back && go test -coverprofile=coverage/coverage.out ./...
-	cd back && go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+back-test-coverage: $(TEST_DEPS) ## バックエンドのテストカバレッジを生成
+	$(call MSG_START,バックエンドのテストカバレッジ生成)
+	$(BACK_TEST_COVERAGE) ./...
+	$(BACK_TEST_HTML)
+	$(call MSG_SUCCESS,バックエンドのテストカバレッジ生成)
 
 .PHONY: back-test-mock
-back-test-mock: check-deps ## バックエンドのモックを生成
-	cd back && go generate ./...
+back-test-mock: $(TEST_DEPS) ## バックエンドのモックを生成
+	$(call MSG_START,バックエンドのモック生成)
+	$(BACK_TEST_MOCK) ./...
+	$(call MSG_SUCCESS,バックエンドのモック生成)
 
 # データベース関連
 .PHONY: back-migrate
-back-migrate: check-deps ## マイグレーションを実行
-	@echo "🐘 マイグレーションを実行しています..."
-	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go up
+back-migrate: $(BACK_DEPS) ## マイグレーションを実行
+	$(call MSG_START,マイグレーション)
+	$(RUN_MIGRATIONS)
+	$(call MSG_SUCCESS,マイグレーション)
 
 .PHONY: back-migrate-down
-back-migrate-down: check-deps ## マイグレーションをロールバック
-	@echo "🐘 マイグレーションをロールバックしています..."
+back-migrate-down: $(BACK_DEPS) ## マイグレーションをロールバック
+	$(call MSG_START,マイグレーションのロールバック)
 	$(DOCKER_COMPOSE) exec backend go run migrations/scripts/main.go down
+	$(call MSG_SUCCESS,マイグレーションのロールバック)
 
 .PHONY: back-migrate-create
-back-migrate-create: check-deps ## 新しいマイグレーションファイルを作成
+back-migrate-create: $(BACK_DEPS) ## 新しいマイグレーションファイルを作成
+	@if [ -z "$(name)" ]; then \
+		$(call MSG_ERROR,マイグレーション名を指定してください: make back-migrate-create name=<name>); \
+		exit 1; \
+	fi
+	$(call MSG_START,マイグレーションファイルの作成)
 	cd back && go run migrations/scripts/main.go create $(name)
+	$(call MSG_SUCCESS,マイグレーションファイルの作成)
 
 .PHONY: back-seed
-back-seed: check-deps ## シードデータを投入
-	@echo "🌱 シードデータを投入しています..."
-	$(DOCKER_COMPOSE) exec backend go run migrations/seeds/main.go
+back-seed: $(BACK_DEPS) ## シードデータを投入
+	$(call MSG_START,シードデータの投入)
+	$(RUN_SEEDS)
+	$(call MSG_SUCCESS,シードデータの投入)
 
 .PHONY: back-db-backup
 back-db-backup: ## データベースのバックアップを作成
-	@echo "💾 データベースをバックアップしています..."
+	$(call MSG_START,データベースのバックアップ)
 	@mkdir -p ./backups
-	$(DOCKER_COMPOSE) exec db pg_dump -U postgres university_exam_db > ./backups/backup_$(CURRENT_TIME).sql
-	@echo "✅ バックアップが完了しました: ./backups/backup_$(CURRENT_TIME).sql"
+	$(DB_BACKUP)
+	$(call MSG_SUCCESS,データベースのバックアップ: ./backups/backup_$(CURRENT_TIME).sql)
 
 .PHONY: back-db-restore
 back-db-restore: ## データベースのバックアップを復元
 	@if [ -z "$(file)" ]; then \
-		echo "❌ 復元するファイルを指定してください: make back-db-restore file=<path>"; \
+		$(call MSG_ERROR,復元するファイルを指定してください: make back-db-restore file=<path>); \
 		exit 1; \
 	fi
-	@echo "🔄 データベースを復元しています..."
-	$(DOCKER_COMPOSE) exec -T db psql -U postgres university_exam_db < $(file)
-	@echo "✅ 復元が完了しました"
+	$(call MSG_START,データベースの復元)
+	$(call DB_RESTORE,$(file))
+	$(call MSG_SUCCESS,データベースの復元)
+
+.PHONY: back-db-clean
+back-db-clean: ## データベースのデータを削除
+	$(call MSG_START,データベースのデータ削除)
+	$(CLEAN_DB)
+	$(call MSG_SUCCESS,データベースのデータ削除)
+	$(call MSG_INFO,マイグレーションを再実行するには 'make back-migrate' を実行してください)
 
 # デプロイ関連
 .PHONY: deploy-prod
 deploy-prod: ci ## 本番環境にデプロイ
-	ENV=production $(DOCKER_COMPOSE) up -d --build
+	$(call MSG_START,本番環境へのデプロイ)
+	$(call DEPLOY,production)
+	$(call MSG_SUCCESS,本番環境へのデプロイ)
 
 .PHONY: deploy-staging
 deploy-staging: ci ## ステージング環境にデプロイ
-	ENV=staging $(DOCKER_COMPOSE) up -d --build
+	$(call MSG_START,ステージング環境へのデプロイ)
+	$(call DEPLOY,staging)
+	$(call MSG_SUCCESS,ステージング環境へのデプロイ)
 
 # CI/CD
 .PHONY: ci
 ci: lint test build ## CI環境でのテスト実行
+	$(call MSG_START,CI環境でのテスト実行)
+	$(call MSG_SUCCESS,CI環境でのテスト実行)
 
 .PHONY: cd
 cd: ## CD環境でのデプロイ
 	@if [ "$(ENV)" = "production" ]; then \
-		echo "🚀 本番環境へのデプロイを実行します"; \
+		$(call MSG_START,本番環境へのデプロイ); \
 		make deploy-prod; \
 	elif [ "$(ENV)" = "staging" ]; then \
-		echo "🚀 ステージング環境へのデプロイを実行します"; \
+		$(call MSG_START,ステージング環境へのデプロイ); \
 		make deploy-staging; \
 	else \
-		echo "❌ 環境が指定されていません"; \
+		$(call MSG_ERROR,環境が指定されていません); \
 		exit 1; \
 	fi
 
 # テストとビルド
 .PHONY: test
 test: front-test back-test ## すべてのテストを実行
+	$(call MSG_START,すべてのテスト)
+	$(call MSG_SUCCESS,すべてのテスト)
 
 .PHONY: lint
 lint: front-lint back-lint ## すべてのリントを実行
+	$(call MSG_START,すべてのリント)
+	$(call MSG_SUCCESS,すべてのリント)
 
 .PHONY: build
 build: front-build back-build ## すべてのビルドを実行
+	$(call MSG_START,すべてのビルド)
+	$(call MSG_SUCCESS,すべてのビルド)
 
 # クリーンアップ
 .PHONY: clean
 clean: ## ビルドファイルとキャッシュを削除
-	rm -rf front/dist front/.next front/node_modules
-	rm -rf back/dist back/tmp back/coverage
-	docker system prune -f
+	$(call MSG_START,ビルドファイルとキャッシュの削除)
+	$(CLEAN_FRONT)
+	$(CLEAN_BACK)
+	$(CLEAN_DOCKER)
+	$(call MSG_SUCCESS,ビルドファイルとキャッシュの削除)
 
 .PHONY: clean-volumes
 clean-volumes: ## Dockerボリュームを削除
-	docker volume rm $(ENV)_postgres_data $(ENV)_backend_cache $(ENV)_frontend_node_modules 2>/dev/null || true
+	$(call MSG_START,Dockerボリュームの削除)
+	$(CLEAN_VOLUMES)
+	$(call MSG_SUCCESS,Dockerボリュームの削除)
 
 # その他
 .PHONY: init
 init: ## 環境変数ファイルを初期化
-	@if [ ! -f $(ENV_FILE) ]; then \
-		cp $(ENV_EXAMPLE_FILE) $(ENV_FILE); \
-		echo "✅ 環境変数ファイルを作成しました: $(ENV_FILE)"; \
-	else \
-		echo "✅ 環境変数ファイルは既に存在します: $(ENV_FILE)"; \
-	fi
-	@if [ ! -f $(TEST_ENV_FILE) ]; then \
-		cp $(TEST_ENV_EXAMPLE_FILE) $(TEST_ENV_FILE); \
-		echo "✅ テスト用環境変数ファイルを作成しました: $(TEST_ENV_FILE)"; \
-	else \
-		echo "✅ テスト用環境変数ファイルは既に存在します: $(TEST_ENV_FILE)"; \
-	fi
-	@if [ ! -f $(FRONT_TEST_ENV_FILE) ]; then \
-		cp $(FRONT_TEST_ENV_EXAMPLE_FILE) $(FRONT_TEST_ENV_FILE); \
-		echo "✅ フロントエンドのテスト用環境変数ファイルを作成しました: $(FRONT_TEST_ENV_FILE)"; \
-	else \
-		echo "✅ フロントエンドのテスト用環境変数ファイルは既に存在します: $(FRONT_TEST_ENV_FILE)"; \
-	fi
+	$(call MSG_START,環境変数ファイルの初期化)
+	@for file in $(ENV_FILES); do \
+		if [ ! -f "$$file" ]; then \
+			cp "$$file.example" "$$file"; \
+			echo "✅ 環境変数ファイルを作成しました: $$file"; \
+		else \
+			echo "👉 環境変数ファイルは既に存在します: $$file"; \
+		fi \
+	done
+	$(call MSG_SUCCESS,環境変数ファイルの初期化)
 
 .PHONY: release
 release: ## 新しいバージョンをリリース
 	@if [ -z "$(version)" ]; then \
-		echo "❌ バージョンを指定してください: make release version=<version>"; \
+		$(call MSG_ERROR,バージョンを指定してください: make release version=<version>); \
 		exit 1; \
 	fi
-	@echo "🏷️  バージョン v$(version) をリリースします..."
+	$(call MSG_START,バージョン v$(version) のリリース)
 	@git tag -a v$(version) -m "Release v$(version)"
 	@git push origin v$(version)
-	@echo "✅ リリースが完了しました"
+	$(call MSG_SUCCESS,バージョン v$(version) のリリース)
 
 .PHONY: start-db
 start-db: ## データベースコンテナを起動
-	@echo "🐘 PostgreSQLを起動しています..."
+	$(call MSG_START,PostgreSQLの起動)
 	$(DOCKER_COMPOSE) up -d postgres
-	@echo "⏳ データベースの初期化を待機しています..."
+	$(call MSG_INFO,データベースの初期化を待機しています...)
 	sleep 10
+	$(call MSG_SUCCESS,PostgreSQLの起動)
+
+.PHONY: back-lint
+back-lint: $(BACK_DEPS) ## バックエンドのリントを実行
+	$(call MSG_START,バックエンドのリント)
+	cd back && go vet ./...
+	$(call MSG_SUCCESS,バックエンドのリント)

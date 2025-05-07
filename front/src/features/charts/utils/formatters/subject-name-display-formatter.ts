@@ -10,31 +10,17 @@
  * - テストタイプとの組み合わせ
  */
 
-import { TestType } from '@/types/score';
-import { SUBJECTS } from '@/constants/constraint/subjects/subjects';
-import { FORMAT_PATTERNS } from '@/features/charts/constants/format';
-type SubjectNameDisplayMapping = typeof SUBJECTS;
-type SubjectName = keyof SubjectNameDisplayMapping;
-
-/**
- * 科目名から基本カテゴリを抽出
- * @param subjectName - 科目名
- * @returns 基本カテゴリ名
- * @example
- * - "英語R" -> "英語"
- * - "数学L" -> "数学"
- */
-export const extractSubjectMainCategory = (subjectName: string): string => {
-  return subjectName.replace(/[RL]$/, '');
-};
+import { SUBJECTS, SubjectName } from '@/constants/constraint/subjects/subjects';
+import { FORMAT_PATTERNS } from '@/features/charts/constants/chart-format';
+import { ExamType } from '@/constants/constraint/exam-types';
 
 /**
  * 科目名から数字などのプレフィックスを除去
  * @param subjectName - 科目名
  * @returns プレフィックスを除去した科目名
  * @example
- * - "1英語R" -> "英語R"
- * - "2数学L" -> "数学L"
+ * - "英語R" -> "R"
+ * - "数学" -> ""
  */
 export const removeSubjectNamePrefix = (subjectName: string): string => {
   return subjectName.replace(/^[^RLa-z]+/, '');
@@ -46,10 +32,9 @@ export const removeSubjectNamePrefix = (subjectName: string): string => {
  * @returns 表示用の科目名
  * @example
  * - "英語R" -> "英語"
- * - "数学L" -> "数学"
  */
 export const formatSubjectName = (subjectName: SubjectName): string => {
-  return SUBJECTS[subjectName] || subjectName;
+  return SUBJECTS[subjectName as keyof typeof SUBJECTS] || subjectName;
 };
 
 /**
@@ -58,9 +43,8 @@ export const formatSubjectName = (subjectName: SubjectName): string => {
  * @param testType - テスト種別
  * @returns テスト種別を含む表示用の科目名
  * @example
- * - "英語", "共通" -> "英語（共通）"
  * - "数学", "二次" -> "数学（二次）"
  */
-export const formatWithTestType = (name: string, testType: TestType): string => {
+export const formatWithTestType = (name: string, testType: ExamType): string => {
   return FORMAT_PATTERNS.TEST_TYPE(name, testType);
 };

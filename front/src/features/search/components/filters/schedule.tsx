@@ -1,9 +1,9 @@
 import { Filter } from './filter';
 import { SCHEDULE_OPTIONS, FILTER_LABELS } from '../../constants/filter-options';
-import { FilterCheckboxProps } from '../../types/filter';
+import { FilterCheckboxProps, FilterType } from '../../types/filter';
 
 const config = {
-  type: 'schedule' as const,
+  type: FilterType.SCHEDULE,
   label: FILTER_LABELS.SCHEDULE,
   options: SCHEDULE_OPTIONS,
   isCategory: false,
@@ -26,6 +26,4 @@ const config = {
  * />
  * ```
  */
-export const Schedule: React.FC<FilterCheckboxProps> = props => (
-  <Filter config={config} {...props} />
-);
+export const Schedule = (props: FilterCheckboxProps) => <Filter config={config} {...props} />;

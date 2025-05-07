@@ -63,7 +63,7 @@ export const AdmissionScheduleSchema: z.ZodType = z.object({
   /** 関連する学科のID */
   major_id: z.number().min(1),
   /** 入試スケジュール名 */
-  name: z.enum(['前期', '中期', '後期']),
+  name: z.enum(['前', '中', '後']),
   /** UI表示時の順序 */
   display_order: z.number().min(0).max(3),
   /** 関連する試験種別の配列 */

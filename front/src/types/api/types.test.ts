@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { HttpMethod, HttpRequestConfig, HttpResponse, HttpError, HttpProgress } from './types';
 import { ErrorSeverity } from '@/types/error';
+import { ValidationErrorCode, ValidationSeverity } from '@/constants/validation-constants';
 
 /**
  * HTTP関連の型定義のテスト
@@ -91,8 +92,8 @@ describe('http-types', () => {
             {
               field: 'testField',
               message: 'バリデーションエラー',
-              code: 'VALIDATION_ERROR',
-              severity: 'error',
+              code: ValidationErrorCode.TRANSFORM_ERROR,
+              severity: ValidationSeverity.ERROR,
             },
           ],
         },
@@ -160,6 +161,19 @@ describe('http-types', () => {
       expect(validProgress.total).toBe(1000);
       expect(validProgress.speed).toBe(100);
       expect(validProgress.estimatedTime).toBe(5);
+    });
+  });
+
+  describe('ValidationErrorCode', () => {
+    it('正しい値が定義されていること', () => {
+      expect(ValidationErrorCode.TRANSFORM_ERROR).toBe('TRANSFORM_ERROR');
+    });
+  });
+
+  describe('ValidationSeverity', () => {
+    it('正しい値が定義されていること', () => {
+      expect(ValidationSeverity.ERROR).toBe('error');
+      expect(ValidationSeverity.WARNING).toBe('warning');
     });
   });
 });

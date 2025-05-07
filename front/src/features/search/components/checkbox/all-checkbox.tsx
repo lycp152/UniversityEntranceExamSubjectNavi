@@ -18,6 +18,10 @@ interface AllCheckboxProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   /** チェックボックスのラベル */
   label: string;
+  /** チェックボックスのID */
+  id?: string;
+  /** タブインデックス */
+  tabIndex?: number;
 }
 
 /**
@@ -27,19 +31,25 @@ interface AllCheckboxProps {
  * @param indeterminate - 一部のアイテムのみが選択されているかどうか
  * @param onChange - チェックボックスの状態が変更されたときに呼び出される関数
  * @param label - チェックボックスのラベル
+ * @param id - チェックボックスのID
+ * @param tabIndex - タブインデックス
  */
-const AllCheckbox: React.FC<AllCheckboxProps> = ({
+const AllCheckbox = ({
   allChecked,
   indeterminate,
   onChange,
   label,
-}) => {
+  id,
+  tabIndex,
+}: AllCheckboxProps) => {
   return (
     <BaseCheckbox
       checked={allChecked}
       indeterminate={indeterminate}
       onChange={onChange}
       label={label}
+      id={id}
+      tabIndex={tabIndex}
     />
   );
 };

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { APITestType, APISubject } from '@/types/api/types';
+import type { APISubject } from '@/types/api/types';
 
 /**
  * 科目データの操作と検証機能を提供するカスタムフック
@@ -12,16 +12,17 @@ import type { APITestType, APISubject } from '@/types/api/types';
  *
  * @returns {Object} 科目データ操作機能を提供するオブジェクト
  * @property {Function} calculateUpdatedSubjects - 科目データの更新計算関数
- * @property {Function} isCommonAPITestType - 共通テストタイプ判定関数
- * @property {Function} isSecondaryAPITestType - 二次テストタイプ判定関数
  * @property {Function} createNewSubject - 新規科目作成関数
  * @property {Function} validateSubject - 科目データ検証関数
- * @property {Function} sortSubjects - 科目データソート関数
  */
 export const useSubjectData = () => {
   const calculateUpdatedSubjects = useCallback(
     (subjects: APISubject[] | undefined, subjectId: number, value: number): APISubject[] => {
       if (!subjects || subjects.length === 0) return [];
+
+      // 対象の科目が存在するか確認
+      const targetSubject = subjects.find(subject => subject.id === subjectId);
+      if (!targetSubject) return subjects;
 
       // 科目のスコアを更新
       const updatedSubjects = subjects.map(subject => ({
@@ -35,19 +36,11 @@ export const useSubjectData = () => {
       // パーセンテージを更新
       return updatedSubjects.map(subject => ({
         ...subject,
-        percentage: totalScore > 0 ? (subject.score / totalScore) * 100 : 0,
+        percentage: totalScore > 0 ? Number(((subject.score / totalScore) * 100).toFixed(2)) : 0,
       }));
     },
     []
   );
-
-  const isCommonAPITestType = useCallback((type: APITestType): boolean => {
-    return type.name === '共通';
-  }, []);
-
-  const isSecondaryAPITestType = useCallback((type: APITestType): boolean => {
-    return type.name === '二次';
-  }, []);
 
   const createNewSubject = useCallback((testTypeId: number, displayOrder: number): APISubject => {
     const now = new Date().toISOString();
@@ -79,16 +72,9 @@ export const useSubjectData = () => {
     );
   }, []);
 
-  const sortSubjects = useCallback((subjects: APISubject[]): APISubject[] => {
-    return [...subjects].sort((a, b) => a.display_order - b.display_order);
-  }, []);
-
   return {
     calculateUpdatedSubjects,
-    isCommonAPITestType,
-    isSecondaryAPITestType,
     createNewSubject,
     validateSubject,
-    sortSubjects,
   };
 };

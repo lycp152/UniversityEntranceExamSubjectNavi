@@ -19,7 +19,7 @@ import { FilterCheckboxProps } from '../../types/filter';
  * />
  * ```
  */
-export const Classification: React.FC<FilterCheckboxProps> = props => (
+export const Classification = (props: FilterCheckboxProps) => (
   <CategoryFilter
     categories={CLASSIFICATION_OPTIONS}
     label={FILTER_LABELS.CLASSIFICATION}

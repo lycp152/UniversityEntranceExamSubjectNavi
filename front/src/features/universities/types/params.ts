@@ -11,6 +11,6 @@ export type UniversityPageParams = {
   departmentId: string;
   /** 学科ID（例: "3"） */
   majorId: string;
-  /** 入試日程ID（例: "4"） */
+  /** 入試日程ID（例: "1"） */
   schedule: string;
 };

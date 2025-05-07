@@ -1,0 +1,78 @@
+import { describe, it, expect } from 'vitest';
+import type { ChartProps, TooltipPayload, SubjectExamComparisonChartProps } from './chart';
+import type { DisplaySubjectScore } from '@/types/score';
+import type { UISubject } from '@/types/university-subject';
+
+/**
+ * チャート関連の型テスト
+ *
+ * @remarks
+ * - チャートコンポーネントの型定義のテスト
+ * - ツールチップのペイロード型のテスト
+ * - 科目と試験の比較チャートコンポーネントの型テスト
+ */
+
+describe('ChartProps', () => {
+  it('正しい型のプロパティを持つべき', () => {
+    const props: ChartProps = {
+      detailedData: [] as DisplaySubjectScore[],
+      outerData: [] as DisplaySubjectScore[],
+      isRightChart: true,
+    };
+
+    expect(props).toBeDefined();
+    expect(props.detailedData).toBeInstanceOf(Array);
+    expect(props.outerData).toBeInstanceOf(Array);
+    expect(props.isRightChart).toBe(true);
+  });
+
+  it('isRightChartはオプショナルであるべき', () => {
+    const props: ChartProps = {
+      detailedData: [] as DisplaySubjectScore[],
+      outerData: [] as DisplaySubjectScore[],
+    };
+
+    expect(props).toBeDefined();
+    expect(props.isRightChart).toBeUndefined();
+  });
+});
+
+describe('TooltipPayload', () => {
+  it('正しい型のプロパティを持つべき', () => {
+    const payload: TooltipPayload = {
+      value: 100,
+      name: 'テスト',
+      payload: {
+        percentage: 50,
+      },
+    };
+
+    expect(payload).toBeDefined();
+    expect(typeof payload.value).toBe('number');
+    expect(typeof payload.name).toBe('string');
+    expect(payload.payload).toBeDefined();
+    expect(typeof payload.payload.percentage).toBe('number');
+  });
+
+  it('payload.percentageはオプショナルであるべき', () => {
+    const payload: TooltipPayload = {
+      value: 100,
+      name: 'テスト',
+      payload: {},
+    };
+
+    expect(payload).toBeDefined();
+    expect(payload.payload.percentage).toBeUndefined();
+  });
+});
+
+describe('SubjectExamComparisonChartProps', () => {
+  it('正しい型のプロパティを持つべき', () => {
+    const props: SubjectExamComparisonChartProps = {
+      subjectData: {} as UISubject,
+    };
+
+    expect(props).toBeDefined();
+    expect(props.subjectData).toBeDefined();
+  });
+});

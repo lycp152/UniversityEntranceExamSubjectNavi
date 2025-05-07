@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import type { CommonStateProps } from './common-props';
 
 /**
  * 管理ページのレイアウトコンポーネントのプロパティ型定義
@@ -9,10 +10,7 @@ import { ReactNode } from 'react';
  * @property isEmpty - データが空かどうかを示すフラグ
  * @property successMessage - 成功メッセージ
  */
-export interface AdminLayoutProps {
+export interface AdminLayoutProps extends CommonStateProps {
   readonly children: ReactNode;
-  readonly isLoading?: boolean;
-  readonly error?: string | null;
   readonly isEmpty?: boolean;
-  readonly successMessage?: string | null;
 }

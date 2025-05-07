@@ -28,13 +28,11 @@ export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS];
  * @see back/internal/domain/models/models.go
  */
 export const SUBJECT_NAME_CONSTRAINTS = {
-  /** 科目名の最小長 */
-  MIN_LENGTH: 1,
-  /** 科目名の最大長 */
+  /** 科目名の最大長（バックエンドのsize:20と一致） */
   MAX_LENGTH: 20,
+  /** 科目名の制約（バックエンドのcheck:name <> ''と一致） */
+  NOT_EMPTY: true,
 } as const;
 
 /** 科目名の型定義 */
-export type SubjectNameLength =
-  | typeof SUBJECT_NAME_CONSTRAINTS.MIN_LENGTH
-  | typeof SUBJECT_NAME_CONSTRAINTS.MAX_LENGTH;
+export type SubjectNameLength = typeof SUBJECT_NAME_CONSTRAINTS.MAX_LENGTH;

@@ -3,6 +3,7 @@
  * 詳細データ（個別科目）と集計データ（カテゴリ別）を統合し、エラー情報も含めて返す
  * 各データの生成と集計、エラーハンドリングを一元管理
  */
+import { useMemo, useCallback } from 'react';
 import type { UISubject } from '@/types/university-subject';
 import type { ChartData } from '@/types/pie-chart';
 import { useCalculateScore } from '@/features/charts/hooks/use-subject-score';
@@ -23,14 +24,21 @@ export const useChartData = (subjectData: UISubject): ChartData => {
   const detailedResult = useDetailedData(subjectData, totalScore);
   const categoryResult = useCategoryData(subjectData, totalScore, calculateCategoryTotal);
 
-  /** 両方のデータソースからエラーを集約 */
-  const allErrors = [...detailedResult.errors, ...categoryResult.errors];
-  const errorInfo = createChartErrorResult(allErrors);
+  /** エラー情報を生成するメモ化された関数 */
+  const getErrorInfo = useCallback(() => {
+    const allErrors = [...detailedResult.errors, ...categoryResult.errors];
+    return createChartErrorResult(allErrors);
+  }, [detailedResult.errors, categoryResult.errors]);
 
-  /** 統合されたチャートデータを返却 */
-  return {
-    detailedData: detailedResult.data,
-    outerData: categoryResult.data,
-    ...errorInfo,
-  };
+  /** メモ化された統合データを生成 */
+  return useMemo(() => {
+    const errorInfo = getErrorInfo();
+
+    /** 統合されたチャートデータを返却 */
+    return {
+      detailedData: detailedResult.data,
+      outerData: categoryResult.data,
+      ...errorInfo,
+    };
+  }, [detailedResult.data, categoryResult.data, getErrorInfo]);
 };

@@ -15,8 +15,8 @@ import {
   isCommonSubject,
   isSecondarySubject,
   compareSubjectOrder,
-} from '@/features/charts/utils/subject-type-validator';
-import { extractSubjectMainCategory } from '@/features/charts/utils/formatters/subject-name-display-formatter';
+} from '@/utils/subject-type-validator';
+import { getCategoryFromSubject } from '@/features/charts/utils/extractors/subject-name-extractor';
 import type { DisplaySubjectScore } from '@/types/score';
 import type { ChartResult, ChartError } from '@/types/pie-chart';
 
@@ -48,7 +48,7 @@ export const createChartMetadata = <T>(
 export const getCategoryType = (name: string): string => {
   if (isCommonSubject(name)) return EXAM_TYPES.COMMON.name;
   if (isSecondarySubject(name)) return EXAM_TYPES.SECONDARY.name;
-  return extractSubjectMainCategory(name);
+  return getCategoryFromSubject(name);
 };
 
 /**
@@ -70,12 +70,25 @@ export const getSubjectChartOrder = (name: string): number => {
 };
 
 /**
+ * 科目スコアをソート
+ * @param items - 科目スコアの配列
+ * @param sortFn - ソート関数
+ * @returns ソート済みの科目スコア配列
+ */
+export const sortSubjectScores = (
+  items: DisplaySubjectScore[],
+  sortFn: (a: DisplaySubjectScore, b: DisplaySubjectScore) => number
+): DisplaySubjectScore[] => {
+  return [...items].sort(sortFn);
+};
+
+/**
  * 共通科目を優先的にソート
  * @param items - 科目スコアの配列
  * @returns ソート済みの科目スコア配列
  */
 export const sortByCommonSubject = (items: DisplaySubjectScore[]): DisplaySubjectScore[] => {
-  return [...items].sort((a, b) => {
+  return sortSubjectScores(items, (a, b) => {
     const aIsCommon = isCommonSubject(a.name);
     const bIsCommon = isCommonSubject(b.name);
     if (aIsCommon !== bIsCommon) return aIsCommon ? -1 : 1;
@@ -89,7 +102,10 @@ export const sortByCommonSubject = (items: DisplaySubjectScore[]): DisplaySubjec
  * @returns ソート済みの科目スコア配列
  */
 export const sortSubjectDetailedData = (data: DisplaySubjectScore[]): DisplaySubjectScore[] => {
-  return [...data].sort((a, b) => getSubjectChartOrder(a.name) - getSubjectChartOrder(b.name));
+  return sortSubjectScores(
+    data,
+    (a, b) => getSubjectChartOrder(a.name) - getSubjectChartOrder(b.name)
+  );
 };
 
 /**

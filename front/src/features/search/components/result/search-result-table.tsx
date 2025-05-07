@@ -6,6 +6,15 @@ import { ErrorMessage } from '@/components/errors/error-message';
 import { Spinner } from '@/components/ui/feedback/spinner';
 import type { UISubject } from '@/types/university-subject';
 import { transformUniversityData } from '@/features/search/utils/university-data-transformer';
+import { SectionTitle } from '@/components/ui/section-title';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 /**
  * 検索結果テーブルコンポーネント
@@ -46,14 +55,14 @@ const SearchResultTable = () => {
         const data = responseData.data ?? responseData;
 
         if (!Array.isArray(data)) {
-          console.error('Data is not an array:', typeof data, data);
-          throw new Error('Invalid response format');
+          console.error('データが配列ではありません:', typeof data, data);
+          throw new Error('無効なレスポンス形式です');
         }
 
         const transformedData = transformUniversityData(data);
         setSubjects(transformedData);
       } catch (error) {
-        console.error('Failed to fetch universities:', error);
+        console.error('大学データの取得に失敗しました:', error);
         setError('データの取得に失敗しました。サーバーが起動しているか確認してください。');
       } finally {
         setLoading(false);
@@ -87,7 +96,7 @@ const SearchResultTable = () => {
   };
 
   if (loading) {
-    return <Spinner />;
+    return <Spinner aria-live="polite" />;
   }
 
   if (error) {
@@ -96,71 +105,98 @@ const SearchResultTable = () => {
 
   if (subjects.length === 0) {
     return (
-      <div className="text-center p-8">
-        <p className="text-xl text-gray-600">データが見つかりませんでした。</p>
-        <p className="mt-2 text-gray-500">現在、データベースに大学情報が登録されていません。</p>
-      </div>
+      <output className="flex flex-col items-center justify-center py-12">
+        <svg
+          aria-hidden="true"
+          className="lucide lucide-file-question w-12 h-12 text-gray-400 mb-4"
+          data-testid="empty-state-icon"
+          fill="none"
+          height="24"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M12 17h.01" />
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z" />
+          <path d="M9.1 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3" />
+        </svg>
+        <h3 className="text-xl text-gray-500 dark:text-gray-400">データが見つかりませんでした。</h3>
+        <p className="mt-2 text-gray-500 dark:text-gray-400">
+          現在、データベースに大学情報が登録されていません。
+        </p>
+      </output>
     );
   }
 
   return (
     <Card className="p-4">
-      <h2 className="text-xl font-bold mb-4">{title}</h2>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300 dark:border-gray-700">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
-                大学名
-              </th>
-              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
-                学部
-              </th>
-              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
-                学科
-              </th>
-              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
-                日程
-              </th>
-              <th className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 text-left whitespace-nowrap">
-                募集人員
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {subjects.map((subject: UISubject) => (
-              <tr
-                key={`${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`}
-                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900"
-                onClick={() =>
-                  handleRowClick(
-                    subject.examInfo.academicYear,
-                    subject.university.id,
-                    subject.department.id,
-                    subject.major.id,
-                    subject.admissionSchedule.id
-                  )
-                }
-              >
-                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
-                  {subject.university.name}
-                </td>
-                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
-                  {subject.department.name}
-                </td>
-                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
-                  {subject.major.name}
-                </td>
-                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
-                  {subject.admissionSchedule.name}
-                </td>
-                <td className="py-2 px-4 border-b border-gray-300 dark:border-gray-700 whitespace-nowrap">
-                  {subject.examInfo.enrollment} 名
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div>
+        <SectionTitle>{title}</SectionTitle>
+        <div className="mt-2">
+          <Table className="text-base" aria-label="大学入試科目の配点比率">
+            <TableHeader>
+              <TableRow>
+                <TableHead scope="col" className="font-semibold">
+                  大学名
+                </TableHead>
+                <TableHead scope="col" className="font-semibold">
+                  学部
+                </TableHead>
+                <TableHead scope="col" className="font-semibold">
+                  学科
+                </TableHead>
+                <TableHead scope="col" className="font-semibold">
+                  日程
+                </TableHead>
+                <TableHead scope="col" className="font-semibold">
+                  募集人員
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {subjects.map((subject: UISubject) => (
+                <TableRow
+                  key={`${subject.university.id}-${subject.department.id}-${subject.major.id}-${subject.admissionSchedule.id}`}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset focus:z-10 relative focus:relative"
+                  onClick={() =>
+                    handleRowClick(
+                      subject.examInfo.academicYear,
+                      subject.university.id,
+                      subject.department.id,
+                      subject.major.id,
+                      subject.admissionSchedule.id
+                    )
+                  }
+                  tabIndex={0}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleRowClick(
+                        subject.examInfo.academicYear,
+                        subject.university.id,
+                        subject.department.id,
+                        subject.major.id,
+                        subject.admissionSchedule.id
+                      );
+                    }
+                  }}
+                  aria-label={`${subject.university.name} ${subject.department.name} ${subject.major.name} ${subject.admissionSchedule.name} 募集人員${subject.examInfo.enrollment}名`}
+                >
+                  <TableCell className="relative">{subject.university.name}</TableCell>
+                  <TableCell className="relative">{subject.department.name}</TableCell>
+                  <TableCell className="relative">{subject.major.name}</TableCell>
+                  <TableCell className="relative">{subject.admissionSchedule.name}</TableCell>
+                  <TableCell className="relative">{subject.examInfo.enrollment} 名</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </Card>
   );

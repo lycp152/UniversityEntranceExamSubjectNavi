@@ -29,7 +29,7 @@ import { FilterProps } from '../../types/filter';
  * <Filter
  *   config={{
  *     isCategory: false,
- *     options: ["東京", "大阪", "名古屋"],
+ *     options: ["東京", "大阪", "愛知"],
  *     label: "所在地"
  *   }}
  *   selectedItems={["東京"]}
@@ -40,7 +40,7 @@ import { FilterProps } from '../../types/filter';
  * @param {FilterProps} props - コンポーネントのプロパティ
  * @returns {JSX.Element} フィルターコンポーネント
  */
-export const Filter: React.FC<FilterProps> = ({ config, ...props }) => {
+export const Filter = ({ config, ...props }: FilterProps) => {
   if (config.isCategory) {
     return (
       <CategoryFilter

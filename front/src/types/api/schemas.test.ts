@@ -114,7 +114,7 @@ describe('APIスキーマのバリデーション', () => {
       const validData = {
         id: 1,
         major_id: 1,
-        name: '前期',
+        name: '前',
         display_order: 1,
         test_types: [],
         admission_infos: [],
@@ -133,7 +133,7 @@ describe('APIスキーマのバリデーション', () => {
       const invalidData = {
         id: 1,
         major_id: 1,
-        name: '前期',
+        name: '前',
         display_order: 4, // 最大値3を超える
         test_types: [],
         admission_infos: [],
@@ -179,7 +179,7 @@ describe('APIスキーマのバリデーション', () => {
         admission_schedule: {
           id: 1,
           major_id: 1,
-          name: '前期',
+          name: '前',
           display_order: 1,
           test_types: [],
           admission_infos: [],
@@ -212,7 +212,7 @@ describe('APIスキーマのバリデーション', () => {
         admission_schedule: {
           id: 1,
           major_id: 1,
-          name: '前期',
+          name: '前',
           display_order: 1,
           test_types: [],
           admission_infos: [],
@@ -245,7 +245,7 @@ describe('APIスキーマのバリデーション', () => {
         admission_schedule: {
           id: 1,
           major_id: 1,
-          name: '前期',
+          name: '前',
           display_order: 1,
           test_types: [],
           admission_infos: [],

@@ -6,42 +6,7 @@
  */
 import { Button } from '@/components/ui/button';
 import type { EditButtonsProps } from '@/features/admin/types/university-list';
-import { BaseIcon, type IconProps } from '../icons/base-icon';
-
-/**
- * 保存アイコンコンポーネント
- */
-const SaveIcon = ({ className }: IconProps) => (
-  <BaseIcon className={className}>
-    <path
-      fillRule="evenodd"
-      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-      clipRule="evenodd"
-    />
-  </BaseIcon>
-);
-
-/**
- * キャンセルアイコンコンポーネント
- */
-const CancelIcon = ({ className }: IconProps) => (
-  <BaseIcon className={className}>
-    <path
-      fillRule="evenodd"
-      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-      clipRule="evenodd"
-    />
-  </BaseIcon>
-);
-
-/**
- * 編集アイコンコンポーネント
- */
-const EditIcon = ({ className }: IconProps) => (
-  <BaseIcon className={className}>
-    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-  </BaseIcon>
-);
+import { Check, X, Edit } from 'lucide-react';
 
 /**
  * ボタンのカラーバリエーション
@@ -83,7 +48,7 @@ const BaseButton = ({ onClick, icon, color, ariaLabel }: BaseButtonProps) => {
 export const SaveButton = ({ onSave }: { readonly onSave: () => void }) => (
   <BaseButton
     onClick={() => window.confirm('変更を保存しますか？') && onSave()}
-    icon={<SaveIcon />}
+    icon={<Check className="size-6" />}
     color="green"
     ariaLabel="保存"
   />
@@ -95,7 +60,7 @@ export const SaveButton = ({ onSave }: { readonly onSave: () => void }) => (
 export const CancelButton = ({ onCancel }: { readonly onCancel: () => void }) => (
   <BaseButton
     onClick={() => window.confirm('変更は破棄されますが、よろしいですか？') && onCancel()}
-    icon={<CancelIcon />}
+    icon={<X className="size-6" />}
     color="red"
     ariaLabel="キャンセル"
   />
@@ -105,7 +70,7 @@ export const CancelButton = ({ onCancel }: { readonly onCancel: () => void }) =>
  * 編集ボタンコンポーネント
  */
 const EditButton = ({ onEdit }: { readonly onEdit: () => void }) => (
-  <BaseButton onClick={onEdit} icon={<EditIcon />} color="blue" ariaLabel="編集" />
+  <BaseButton onClick={onEdit} icon={<Edit className="size-6" />} color="blue" ariaLabel="編集" />
 );
 
 /**

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { transformSubjectData } from '@/utils/transformers/subject-data-transformer';
-import { UniversityService } from '@/features/universities/lib/university-service';
-import { findDepartmentAndMajor } from '@/features/universities/utils/university-department-major-finder';
+import { transformSubjectData } from '@/utils/subject-data-transformer';
+import { UniversityService } from '@/features/universities/utils/university-service';
+import { findDepartmentAndMajor } from '@/features/universities/utils/university-finder';
 import type { APIAdmissionSchedule, APITestType } from '@/types/api/types';
 import type { UISubject } from '@/types/university-subject';
 import { UniversityPageParams } from '@/features/universities/types/params';
+import { UniversityDataError } from '@/features/universities/utils/university-errors';
 
 /**
  * 大学データを取得するカスタムフック
@@ -33,7 +34,7 @@ export const useUniversityData = (params: UniversityPageParams) => {
         const result = findDepartmentAndMajor(universityData, departmentId, majorId);
 
         if (!result) {
-          throw new Error('Department or major not found');
+          throw new UniversityDataError('学部または学科が見つかりません');
         }
 
         const { department, major } = result;
@@ -42,16 +43,16 @@ export const useUniversityData = (params: UniversityPageParams) => {
         );
 
         if (!admissionSchedule) {
-          throw new Error('Admission schedule not found');
+          throw new UniversityDataError('入試日程が見つかりません');
         }
 
         const admissionInfo = admissionSchedule.admission_infos?.[0];
         if (!admissionInfo || admissionInfo.academic_year !== parseInt(academicYear, 10)) {
-          throw new Error('Admission info not found for the specified academic year');
+          throw new UniversityDataError('指定された年度の入試情報が見つかりません');
         }
 
         if (!admissionSchedule.test_types) {
-          throw new Error('Test types not found in admission schedule');
+          throw new UniversityDataError('入試日程にテストタイプが設定されていません');
         }
 
         // 科目データを取得
@@ -60,7 +61,7 @@ export const useUniversityData = (params: UniversityPageParams) => {
         );
 
         if (!allSubjectsData.length) {
-          throw new Error('No subjects found');
+          throw new UniversityDataError('科目データが見つかりません');
         }
 
         // 科目データをUI用に変換
@@ -75,13 +76,13 @@ export const useUniversityData = (params: UniversityPageParams) => {
         );
 
         if (!transformedSubject) {
-          throw new Error('Failed to transform subject data');
+          throw new UniversityDataError('科目データの変換に失敗しました');
         }
 
         setSelectedSubject(transformedSubject);
       } catch (error) {
-        console.error('Failed to fetch exam details:', error);
-        setError(error instanceof Error ? error.message : 'An error occurred');
+        console.error('入試詳細の取得に失敗しました:', error);
+        setError(error instanceof Error ? error.message : 'エラーが発生しました');
       } finally {
         setLoading(false);
       }

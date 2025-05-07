@@ -16,10 +16,9 @@
 
 @import 'tw-animate-css';
 
-/*---break---
- */
-
+/* stylelint-disable */
 @custom-variant dark (&:is(.dark *));
+/* stylelint-enable */
 
 @layer utilities {
   .text-balance {
@@ -30,6 +29,7 @@
 /*---break---
  */
 
+/* stylelint-disable */
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -67,6 +67,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
+/* stylelint-enable */
 
 /*---break---
  */

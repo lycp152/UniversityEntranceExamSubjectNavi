@@ -45,4 +45,5 @@ export const createChartError = (
   field: subjectName,
   message,
   severity: options.severity ?? 'error',
+  details: options.details,
 });

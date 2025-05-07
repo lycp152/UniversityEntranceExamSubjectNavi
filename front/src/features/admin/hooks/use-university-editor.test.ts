@@ -220,16 +220,16 @@ describe('useUniversityEditor', () => {
 
     expect(newUniversities[0], '大学データの基本構造が不正です').toEqual({
       id: expect.any(Number),
-      name: '',
+      name: '大学',
       departments: expect.arrayContaining([
         expect.objectContaining({
           id: expect.any(Number),
-          name: '',
+          name: '学部',
           universityId: expect.any(Number),
           majors: expect.arrayContaining([
             expect.objectContaining({
               id: expect.any(Number),
-              name: '',
+              name: '学科',
               departmentId: expect.any(Number),
               admissionSchedules: expect.arrayContaining([
                 expect.objectContaining({

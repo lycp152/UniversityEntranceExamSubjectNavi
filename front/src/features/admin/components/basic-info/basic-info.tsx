@@ -83,31 +83,37 @@ export const BasicInfo = ({
     };
 
   return (
-    <div className="px-2 border-l border-gray-300 min-w-[125px]">
+    <div className="px-2 border-l border-gray-300 min-w-[180px]">
       {isEditing ? (
         <>
           <Input
             type="text"
             value={university.name}
             onChange={handleChange('universityName')}
-            className="w-[120px] p-1 mb-2 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
+            placeholder="〇〇大学"
+            className="w-[164px] p-1 mb-2 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
+            aria-label="大学名"
           />
           <div className="flex gap-1">
             <Input
               type="text"
               value={department.name}
               onChange={handleChange('departmentName')}
-              className="w-[60px] p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
+              placeholder="〇〇学部"
+              className="w-[80px] p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
+              aria-label="学部名"
             />
             <Input
               type="text"
               value={major.name}
               onChange={handleChange('majorName')}
-              className="w-[60px] p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
+              placeholder="〇〇学科"
+              className="w-[80px] p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
+              aria-label="学科名"
             />
           </div>
           <div className="flex gap-1">
-            <div className="w-[60px]">
+            <div className="w-[80px]">
               <label htmlFor="schedule" className="text-xs text-gray-900 dark:text-gray-100">
                 日程
               </label>
@@ -116,8 +122,14 @@ export const BasicInfo = ({
                   value={admissionSchedule.name}
                   onValueChange={value => handleChange('schedule')({ target: { value } } as any)}
                 >
-                  <SelectTrigger className="w-[50px] text-xs p-1 bg-background/50 hover:bg-background ">
-                    <SelectValue>{admissionSchedule.name ?? '選択'}</SelectValue>
+                  <SelectTrigger
+                    className="w-[65px] p-1 bg-background/50 hover:bg-background"
+                    id="schedule"
+                    aria-haspopup="listbox"
+                  >
+                    <SelectValue className="text-sm">
+                      {admissionSchedule.name ?? '選択'}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {ADMISSION_SCHEDULE_CONSTRAINTS.VALID_NAMES.map(option => (
@@ -127,20 +139,23 @@ export const BasicInfo = ({
                     ))}
                   </SelectContent>
                 </Select>
-                <span className="text-xs">期</span>
+                <span className="text-sm ml-1">期</span>
               </div>
             </div>
-            <div className="w-[60px]">
+            <div className="w-[80px]">
               <label htmlFor="enrollment" className="text-xs text-gray-900 dark:text-gray-100">
                 募集人数
               </label>
               <Input
                 id="enrollment"
                 type="number"
-                value={admissionInfo.enrollment}
+                value={admissionInfo.enrollment || ''}
                 onChange={handleChange('enrollment')}
                 className="p-1 bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/50"
                 min="0"
+                placeholder="100"
+                aria-label="募集人数"
+                aria-valuemin={0}
               />
             </div>
           </div>

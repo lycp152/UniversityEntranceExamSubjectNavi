@@ -409,16 +409,16 @@ export function useUniversityEditor() {
 
     const emptyUniversity: University = {
       id: tempId,
-      name: '',
+      name: '大学',
       departments: [
         {
           id: tempId + 1,
-          name: '',
+          name: '学部',
           universityId: tempId,
           majors: [
             {
               id: tempId + 2,
-              name: '',
+              name: '学科',
               departmentId: tempId + 1,
               admissionSchedules: [
                 {

@@ -30,7 +30,7 @@ back/logs/
 !back/logs/tests/.gitkeep
 back/bin/*
 back/internal/repositories/mocks/mock_university_repository.go
-back/coverage.txt
+back/coverage.*
 back/.air.toml
 
 # Frontend

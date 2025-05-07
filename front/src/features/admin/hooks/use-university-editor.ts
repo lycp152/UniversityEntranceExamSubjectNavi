@@ -338,6 +338,9 @@ export function useUniversityEditor() {
       setUniversities((prev: University[]) =>
         prev.map(u => (u.id === backupState.university.id ? backupState.university : u))
       );
+    } else if (editMode?.isNew) {
+      // 新規追加時のキャンセル処理
+      setUniversities((prev: University[]) => prev.filter(u => u.id !== editMode.universityId));
     }
 
     setEditMode(null);

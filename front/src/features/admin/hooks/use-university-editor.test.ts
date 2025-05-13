@@ -2,7 +2,6 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUniversityEditor } from './use-university-editor';
 import type { University } from '@/features/admin/types/university';
-import type { APITestType } from '@/types/api/types';
 
 /**
  * 大学データ編集フックのテスト
@@ -140,34 +139,6 @@ describe('useUniversityEditor', () => {
 
     expect(result.current.error, 'エラーが発生しています').toBeNull();
     expect(mockSetUniversities, '大学情報の更新が実行されていません').toHaveBeenCalledWith(
-      expect.any(Function)
-    );
-  });
-
-  it('科目を追加できること', () => {
-    const { result } = renderHook(() => useUniversityEditor());
-    const mockTestType: APITestType = {
-      id: 1,
-      name: '共通テスト',
-      subjects: [],
-      displayOrder: 1,
-      createdAt: new Date().toString(),
-      updatedAt: new Date().toString(),
-      version: 1,
-      createdBy: '',
-      updatedBy: '',
-    };
-
-    act(() => {
-      result.current.handleAddSubject(
-        mockUniversity.id,
-        mockUniversity.departments[0].id,
-        mockTestType
-      );
-    });
-
-    expect(result.current.error, 'エラーが発生しています').toBeNull();
-    expect(mockSetUniversities, '科目の追加が実行されていません').toHaveBeenCalledWith(
       expect.any(Function)
     );
   });

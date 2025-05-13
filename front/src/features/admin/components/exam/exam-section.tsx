@@ -72,7 +72,10 @@ export const ExamSection = ({
         isEditing={isEditing}
         editValues={editValues}
         onScoreChange={handleScoreChange}
-        onAddSubject={onAddSubject}
+        onAddSubject={type => {
+          console.log('ExamSection: 科目追加が呼び出されました。タイプ:', type);
+          onAddSubject?.(type);
+        }}
         onSubjectNameChange={onSubjectNameChange}
       />
     </div>

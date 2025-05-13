@@ -16,7 +16,6 @@ import {
   transformSubjectToAPI,
   transformSubjectFromAPI,
   transformTestTypeToAPI,
-  transformTestTypeFromAPI,
 } from '@/features/admin/utils/api-transformers';
 import { updateDepartmentInUniversity } from '@/features/admin/utils/department-updaters';
 import {
@@ -231,27 +230,73 @@ export function useUniversityEditor() {
 
   const handleAddSubject = (universityId: number, departmentId: number, type: APITestType) => {
     try {
-      const internalType = transformTestTypeFromAPI(type);
+      console.log('useUniversityEditor: 科目追加が呼び出されました。タイプ:', type);
+
+      if (!type || typeof type !== 'object') {
+        throw new Error('無効なテストタイプが指定されました');
+      }
+
+      if (!type.name) {
+        throw new Error('テストタイプ名が指定されていません');
+      }
+
+      const university = universities.find(u => u.id === universityId);
+      console.log('大学が見つかりました:', university);
+
+      if (!university) {
+        throw new Error('大学が見つかりません');
+      }
+
+      const department = university.departments.find(d => d.id === departmentId);
+      console.log('学部が見つかりました:', department);
+
+      if (!department) {
+        throw new Error('学部が見つかりません');
+      }
+
+      const major = department.majors[0];
+      console.log('学科が見つかりました:', major);
+
+      if (!major) {
+        throw new Error('学科が見つかりません');
+      }
+
+      const admissionSchedule = major.admissionSchedules[0];
+      console.log('入試日程が見つかりました:', admissionSchedule);
+
+      if (!admissionSchedule) {
+        throw new Error('入試日程が見つかりません');
+      }
+
+      const testType = admissionSchedule.testTypes.find(t => t.name === type.name);
+      console.log('テストタイプが見つかりました:', testType);
+
+      if (!testType) {
+        throw new Error('テストタイプが見つかりません');
+      }
+
       const newSubject: Subject = {
         id: 0,
-        testTypeId: internalType.id,
-        name: `科目${internalType.subjects.length + 1}` as SubjectName,
-        score: 100,
-        percentage: 100,
-        displayOrder: internalType.subjects.length,
+        testTypeId: testType.id,
+        name: `科目${testType.subjects.length + 1}` as SubjectName,
+        score: 0,
+        percentage: 0,
+        displayOrder: testType.subjects.length,
         createdAt: new Date().toString(),
         updatedAt: new Date().toString(),
         version: 1,
         createdBy: '',
         updatedBy: '',
       };
+      console.log('新しい科目を作成しました:', newSubject);
 
       setUniversities(prevUniversities =>
         prevUniversities.map(university => {
           if (university.id !== universityId) return university;
-          return updateUniversityWithNewSubject(university, departmentId, internalType, newSubject);
+          return updateUniversityWithNewSubject(university, departmentId, testType, newSubject);
         })
       );
+      console.log('大学データの更新が完了しました');
     } catch (error) {
       console.error('科目の追加に失敗しました:', error);
       setError('科目の追加に失敗しました。');

@@ -67,7 +67,10 @@ export const SubjectList = ({
       ))}
       {isEditing && onAddSubject && (
         <Button
-          onClick={() => onAddSubject(type)}
+          onClick={() => {
+            console.log('SubjectList: 科目追加が呼び出されました。タイプ:', type);
+            onAddSubject(type);
+          }}
           variant="outline"
           className="
             flex flex-col items-center justify-center

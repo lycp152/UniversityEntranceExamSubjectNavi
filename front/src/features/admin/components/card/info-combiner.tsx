@@ -54,7 +54,7 @@ export const InfoCombiner = ({
   const handleScoreChange = (subjectId: number, value: number, isCommon: boolean) =>
     onScoreChange(university.id, department.id, subjectId, value, isCommon);
 
-  // Convert TestType and Subject to their API counterparts
+  // テストタイプと科目をAPIの形式に変換
   const mappedTestTypes: APITestType[] = admissionSchedule.testTypes.map(testType => ({
     id: testType.id,
     admission_schedule_id: testType.admissionScheduleId,
@@ -114,7 +114,10 @@ export const InfoCombiner = ({
     testTypes: mappedTestTypes,
   };
 
-  const handleAddSubject = (type: APITestType) => onAddSubject(university.id, department.id, type);
+  const handleAddSubject = (type: APITestType) => {
+    console.log('InfoCombiner: 科目追加が呼び出されました。タイプ:', type);
+    onAddSubject(university.id, department.id, type);
+  };
 
   const handleSubjectNameChange = (subjectId: number, name: string) =>
     onSubjectNameChange(university.id, department.id, subjectId, name);

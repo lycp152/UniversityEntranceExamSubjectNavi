@@ -275,16 +275,19 @@ export function useUniversityEditor() {
         throw new Error('テストタイプが見つかりません');
       }
 
+      const subjects = testType.subjects.map(transformSubjectToAPI);
+      console.log('科目が見つかりました:', subjects);
+
       const newSubject: Subject = {
-        id: 0,
+        id: Date.now(),
         testTypeId: testType.id,
-        name: `科目${testType.subjects.length + 1}` as SubjectName,
+        name: '' as SubjectName,
         score: 0,
         percentage: 0,
-        displayOrder: testType.subjects.length,
-        createdAt: new Date().toString(),
-        updatedAt: new Date().toString(),
+        displayOrder: subjects.length + 1,
         version: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         createdBy: '',
         updatedBy: '',
       };

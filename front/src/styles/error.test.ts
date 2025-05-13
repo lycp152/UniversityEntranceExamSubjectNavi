@@ -34,15 +34,19 @@ describe('エラースタイルの検証', () => {
 
   describe('エラーバリアント', () => {
     it('デフォルトバリアントのスタイルが正しい', () => {
-      expect(errorVariants.default.container).toBe('bg-red-50 border border-red-200');
-      expect(errorVariants.default.message).toBe('text-red-600');
-      expect(errorVariants.default.icon).toBe('text-red-400');
+      expect(errorVariants.default.container).toBe(
+        'bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800'
+      );
+      expect(errorVariants.default.message).toBe('text-red-600 dark:text-red-400');
+      expect(errorVariants.default.icon).toBe('text-red-400 dark:text-red-500');
     });
 
     it('警告バリアントのスタイルが正しい', () => {
-      expect(errorVariants.warning.container).toBe('bg-yellow-50 border border-yellow-200');
-      expect(errorVariants.warning.message).toBe('text-yellow-600');
-      expect(errorVariants.warning.icon).toBe('text-yellow-400');
+      expect(errorVariants.warning.container).toBe(
+        'bg-yellow-50 dark:bg-yellow-950/50 border border-yellow-200 dark:border-yellow-800'
+      );
+      expect(errorVariants.warning.message).toBe('text-yellow-600 dark:text-yellow-400');
+      expect(errorVariants.warning.icon).toBe('text-yellow-400 dark:text-yellow-500');
     });
 
     it('バリアントの型が正しく定義されている', () => {
@@ -66,14 +70,16 @@ describe('エラースタイルの検証', () => {
   describe('フォールバックスタイル', () => {
     it('フォールバックスタイルの型が正しい', () => {
       expect(fallbackStyles.container).toBe(
-        'min-h-screen flex items-center justify-center bg-gray-100'
+        'min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900'
       );
-      expect(fallbackStyles.card).toBe('max-w-md w-full p-6 bg-white rounded-lg shadow-lg');
-      expect(fallbackStyles.title).toBe('text-2xl font-bold mb-4');
-      expect(fallbackStyles.message).toBe('text-gray-600 mb-4');
-      expect(fallbackStyles.errorDetails).toBe('text-sm font-mono bg-gray-100 p-2 rounded');
+      expect(fallbackStyles.card).toBe('w-full p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg');
+      expect(fallbackStyles.title).toBe('text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2');
+      expect(fallbackStyles.message).toBe('text-gray-600 dark:text-gray-300 mb-2');
+      expect(fallbackStyles.errorDetails).toBe(
+        'text-sm font-mono bg-gray-100 dark:bg-gray-700 p-2 rounded text-gray-800 dark:text-gray-200'
+      );
       expect(fallbackStyles.errorStack).toBe(
-        'text-xs font-mono bg-gray-100 p-2 mt-2 rounded overflow-auto'
+        'text-xs font-mono bg-gray-100 dark:bg-gray-700 p-2 mt-2 rounded overflow-auto text-gray-800 dark:text-gray-200'
       );
       expect(fallbackStyles.buttonContainer).toBe('flex justify-end');
     });

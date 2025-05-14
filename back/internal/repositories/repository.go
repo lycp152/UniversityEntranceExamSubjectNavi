@@ -270,7 +270,7 @@ func (r *universityRepository) FindAll(ctx context.Context) ([]models.University
 func (r *universityRepository) getUniversityFromCache(id uint) (*models.University, bool) {
 	cacheKey := fmt.Sprintf(cache.CacheKeyUniversityFormat, id)
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
-		applogger.Info(context.Background(), "Cache hit for FindByID: %d", id)
+		applogger.Info(context.Background(), "FindByIDのキャッシュヒット: %d", id)
 
 		if university, ok := cached.(models.University); ok {
 			return &university, true
@@ -301,6 +301,7 @@ func (r *universityRepository) getUniversityFromDB(id uint) (*models.University,
 // - キャッシュへの保存
 func (r *universityRepository) FindByID(id uint) (*models.University, error) {
 	if university, found := r.getUniversityFromCache(id); found {
+		applogger.Info(context.Background(), "FindByIDのキャッシュヒット: %d", id)
 		return university, nil
 	}
 
@@ -311,7 +312,7 @@ func (r *universityRepository) FindByID(id uint) (*models.University, error) {
 
 	cacheKey := fmt.Sprintf(cache.CacheKeyUniversityFormat, id)
 	r.cache.SetCache(cacheKey, university)
-	applogger.Info(context.Background(), "Cached university with ID: %d", id)
+	applogger.Info(context.Background(), "大学ID: %d をキャッシュしました", id)
 
 	return university, nil
 }
@@ -363,7 +364,7 @@ func (r *universityRepository) Search(query string) ([]models.University, error)
 		Find(&universities).Error
 
 	if err != nil {
-		return nil, appErrors.NewDatabaseError("Search", fmt.Errorf(errSearchFailed, err), nil)
+		return nil, appErrors.NewDatabaseError("大学検索処理", fmt.Errorf(errSearchFailed, err), nil)
 	}
 
 	r.cache.SetCache(cacheKey, universities)
@@ -377,7 +378,7 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
-		applogger.Info(context.Background(), "Cache hit for FindDepartment: %d:%d", universityID, departmentID)
+		applogger.Info(context.Background(), "FindDepartmentのキャッシュヒット: 学部 %d:%d", universityID, departmentID)
 
 		department := cached.(models.Department)
 
@@ -390,15 +391,15 @@ func (r *universityRepository) FindDepartment(universityID, departmentID uint) (
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, appErrors.NewNotFoundError("Department", departmentID, nil)
+			return nil, appErrors.NewNotFoundError("学部", departmentID, nil)
 		}
 
-		return nil, appErrors.NewDatabaseError("FindDepartment", err, nil)
+		return nil, appErrors.NewDatabaseError("学部検索処理", err, nil)
 	}
 
 	// キャッシュに保存
 	r.cache.SetCache(cacheKey, department)
-	applogger.Info(context.Background(), "Cached department: %d:%d", universityID, departmentID)
+	applogger.Info(context.Background(), "学部 %d:%d をキャッシュしました", universityID, departmentID)
 
 	return &department, nil
 }
@@ -409,7 +410,7 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 
 	// キャッシュをチェック
 	if cached, found := r.cache.GetFromCache(cacheKey); found {
-		applogger.Info(context.Background(), "Cache hit for FindSubject: %d:%d", departmentID, subjectID)
+		applogger.Info(context.Background(), "FindSubjectのキャッシュヒット: 科目 %d:%d", departmentID, subjectID)
 
 		subject := cached.(models.Subject)
 
@@ -423,15 +424,15 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, appErrors.NewNotFoundError("Subject", subjectID, nil)
+			return nil, appErrors.NewNotFoundError("科目", subjectID, nil)
 		}
 
-		return nil, appErrors.NewDatabaseError("FindSubject", err, nil)
+		return nil, appErrors.NewDatabaseError("科目検索処理", err, nil)
 	}
 
 	// キャッシュに保存
 	r.cache.SetCache(cacheKey, subject)
-	applogger.Info(context.Background(), "Cached subject: %d:%d", departmentID, subjectID)
+	applogger.Info(context.Background(), "科目 %d:%d をキャッシュしました", departmentID, subjectID)
 
 	return &subject, nil
 }
@@ -671,7 +672,7 @@ func (r *universityRepository) getRelevantTestTypeScores(
 ) (commonTotal float64, secondaryTotal float64, err error) {
 	if admissionScheduleID == 0 {
 		applogger.Warn(context.Background(),
-			"AdmissionScheduleID is zero when trying to get relevant test type scores. Returning 0,0.")
+			"関連試験種別スコア取得試行時に AdmissionScheduleID がゼロです。0,0 を返します。")
 		return 0.0, 0.0, nil
 	}
 
@@ -682,11 +683,11 @@ func (r *universityRepository) getRelevantTestTypeScores(
 		[]string{"共通", "二次"},
 	).Find(&testTypesInSchedule).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			applogger.Info(context.Background(), "No '共通' or '二次' test types found for schedule ID %d", admissionScheduleID)
+			applogger.Info(context.Background(), "試験日程ID %d に「共通」または「二次」の試験種別が見つかりませんでした", admissionScheduleID)
 			return 0.0, 0.0, nil
 		}
 
-		return 0.0, 0.0, fmt.Errorf("failed to find test types for schedule ID %d: %w", admissionScheduleID, err)
+		return 0.0, 0.0, fmt.Errorf("試験日程ID %d の試験種別検索に失敗しました: %w", admissionScheduleID, err)
 	}
 
 	for _, tt := range testTypesInSchedule {
@@ -697,7 +698,7 @@ func (r *universityRepository) getRelevantTestTypeScores(
 				continue
 			}
 
-			return 0.0, 0.0, fmt.Errorf("failed to retrieve subjects for test type ID %d (Name: %s): %w", tt.ID, tt.Name, errDb)
+			return 0.0, 0.0, fmt.Errorf("試験種別ID %d (名称: %s) の科目取得に失敗しました: %w", tt.ID, tt.Name, errDb)
 		}
 
 		var currentTypeSum float64
@@ -728,7 +729,7 @@ func (r *universityRepository) updateSubjectScores(tx *gorm.DB, subjects []model
 	var currentTestType models.TestType
 
 	if err := tx.First(&currentTestType, testTypeID).Error; err != nil {
-		return fmt.Errorf("test type ID %d not found: %w", testTypeID, err)
+		return fmt.Errorf("試験種別ID %d が見つかりませんでした: %w", testTypeID, err)
 	}
 
 	commonTestTotalScore, secondaryTestTotalScore, err := r.getRelevantTestTypeScores(
@@ -737,7 +738,7 @@ func (r *universityRepository) updateSubjectScores(tx *gorm.DB, subjects []model
 	)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to get relevant test type scores for schedule ID %d: %w",
+			"試験日程ID %d の関連試験種別スコア取得に失敗しました: %w",
 			currentTestType.AdmissionScheduleID,
 			err,
 		)
@@ -804,18 +805,18 @@ func (r *universityRepository) UpdateSubjectsBatch(testTypeID uint, subjects []m
 func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) error {
 	var subjects []models.Subject
 	if err := tx.Where(testTypeIDQuery, testTypeID).Order(displayOrderASC).Find(&subjects).Error; err != nil {
-		return fmt.Errorf("failed to find subjects for test type ID %d: %w", testTypeID, err)
+		return fmt.Errorf("試験種別ID %d の科目検索に失敗しました: %w", testTypeID, err)
 	}
 
 	if len(subjects) == 0 {
 		applogger.Info(context.Background(),
-			"No subjects found for testTypeID %d during recalculateScores. Skipping.", testTypeID)
+			"recalculateScores 中に試験種別ID %d の科目が見つかりませんでした。スキップします。", testTypeID)
 		return nil
 	}
 
 	var currentTestType models.TestType
 	if err := tx.First(&currentTestType, testTypeID).Error; err != nil {
-		return fmt.Errorf("failed to find test type ID %d: %w", testTypeID, err)
+		return fmt.Errorf("試験種別ID %d が見つかりませんでした: %w", testTypeID, err)
 	}
 
 	commonTestTotalScore, secondaryTestTotalScore, err := r.getRelevantTestTypeScores(
@@ -824,7 +825,7 @@ func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) e
 	)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to get relevant test type scores for schedule ID %d in recalculateScores: %w",
+			"recalculateScores 中に試験日程ID %d の関連試験種別スコア取得に失敗しました: %w",
 			currentTestType.AdmissionScheduleID,
 			err,
 		)
@@ -838,7 +839,7 @@ func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) e
 
 	for i := range subjects {
 		if err := tx.Model(&subjects[i]).Update("percentage", subjects[i].Percentage).Error; err != nil {
-			return fmt.Errorf("failed to update percentage for subject ID %d: %w", subjects[i].ID, err)
+			return fmt.Errorf("科目ID %d のパーセンテージ更新に失敗しました: %w", subjects[i].ID, err)
 		}
 	}
 
@@ -979,7 +980,7 @@ func (r *universityRepository) UpdateAdmissionSchedule(schedule *models.Admissio
 func (r *universityRepository) UpdateAdmissionInfo(info *models.AdmissionInfo) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(info).Error; err != nil {
-			return appErrors.NewDatabaseError("UpdateAdmissionInfo", err, nil)
+			return appErrors.NewDatabaseError("入試情報更新処理", err, nil)
 		}
 
 		return nil
@@ -1018,10 +1019,10 @@ func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Ma
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, appErrors.NewNotFoundError("Major", majorID, nil)
+			return nil, appErrors.NewNotFoundError("学科", majorID, nil)
 		}
 
-		return nil, appErrors.NewDatabaseError("FindMajor", err, nil)
+		return nil, appErrors.NewDatabaseError("学科検索処理", err, nil)
 	}
 
 	// キャッシュに保存
@@ -1037,7 +1038,7 @@ func (r *universityRepository) FindMajor(departmentID, majorID uint) (*models.Ma
 // - エラーハンドリング
 func (r *universityRepository) CreateMajor(major *models.Major) error {
 	if err := r.db.Create(major).Error; err != nil {
-		return appErrors.NewDatabaseError("CreateMajor", err, nil)
+		return appErrors.NewDatabaseError("学科作成処理", err, nil)
 	}
 
 	return nil
@@ -1049,7 +1050,7 @@ func (r *universityRepository) CreateMajor(major *models.Major) error {
 // - エラーハンドリング
 func (r *universityRepository) DeleteMajor(id uint) error {
 	if err := r.db.Delete(&models.Major{}, id).Error; err != nil {
-		return appErrors.NewDatabaseError("DeleteMajor", err, nil)
+		return appErrors.NewDatabaseError("学科削除処理", err, nil)
 	}
 
 	return nil
@@ -1078,10 +1079,10 @@ func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*mode
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, appErrors.NewNotFoundError("AdmissionInfo", infoID, nil)
+			return nil, appErrors.NewNotFoundError("入試情報", infoID, nil)
 		}
 
-		return nil, appErrors.NewDatabaseError("FindAdmissionInfo", err, nil)
+		return nil, appErrors.NewDatabaseError("入試情報検索処理", err, nil)
 	}
 
 	// キャッシュに保存
@@ -1097,7 +1098,7 @@ func (r *universityRepository) FindAdmissionInfo(scheduleID, infoID uint) (*mode
 // - エラーハンドリング
 func (r *universityRepository) CreateAdmissionInfo(info *models.AdmissionInfo) error {
 	if err := r.db.Create(info).Error; err != nil {
-		return appErrors.NewDatabaseError("CreateAdmissionInfo", err, nil)
+		return appErrors.NewDatabaseError("入試情報作成処理", err, nil)
 	}
 
 	return nil
@@ -1109,7 +1110,7 @@ func (r *universityRepository) CreateAdmissionInfo(info *models.AdmissionInfo) e
 // - エラーハンドリング
 func (r *universityRepository) DeleteAdmissionInfo(id uint) error {
 	if err := r.db.Delete(&models.AdmissionInfo{}, id).Error; err != nil {
-		return appErrors.NewDatabaseError("DeleteAdmissionInfo", err, nil)
+		return appErrors.NewDatabaseError("入試情報削除処理", err, nil)
 	}
 
 	return nil

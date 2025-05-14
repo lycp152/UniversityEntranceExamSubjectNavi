@@ -23,22 +23,13 @@ const (
 )
 
 // calculateAndSetSubjectPercentages は科目のパーセンテージを計算し、設定します
-func calculateAndSetSubjectPercentages(subjects []models.Subject, commonTestTotalScore float64, secondaryTestTotalScore float64, currentTestTypeName string) []models.Subject {
-	var currentTypeTotalScore float64
-
-	// 現在の試験種別の総得点を計算
-	for _, subject := range subjects {
-		currentTypeTotalScore += float64(subject.Score)
-	}
-
-	var denominator float64
-	if currentTestTypeName == "共通" || currentTestTypeName == "二次" {
-		// 共通テストと二次試験の場合、分母は両方の合計
-		denominator = commonTestTotalScore + secondaryTestTotalScore
-	} else {
-		// それ以外の試験種別の場合、分母は自身の合計点のみ (または要件に応じて変更)
-		denominator = currentTypeTotalScore
-	}
+func calculateAndSetSubjectPercentages(
+	subjects []models.Subject,
+	commonTestTotalScore float64,
+	secondaryTestTotalScore float64,
+) []models.Subject {
+	// 共通テストと二次試験の合計点を分母とする
+	denominator := commonTestTotalScore + secondaryTestTotalScore
 
 	// パーセンテージを計算
 	if denominator > 0 {
@@ -47,7 +38,13 @@ func calculateAndSetSubjectPercentages(subjects []models.Subject, commonTestTota
 			percentage := float64(subjects[i].Score) / denominator * 100
 			subjects[i].Percentage = math.Round(percentage*100) / 100
 		}
+	} else {
+		// 分母が0の場合はパーセンテージも0とする
+		for i := range subjects {
+			subjects[i].Percentage = 0
+		}
 	}
+
 	return subjects
 }
 
@@ -120,6 +117,7 @@ func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
 			})
 		}
 	}
+
 	return subjects
 }
 
@@ -175,6 +173,7 @@ func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypesI
 
 	// 共通テストと二次試験の合計点を計算
 	var commonTestTotalScore float64
+
 	var secondaryTestTotalScore float64
 
 	for _, tt := range createdTestTypes {
@@ -182,16 +181,22 @@ func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypesI
 		for _, s := range tt.Subjects {
 			currentTypeTotal += float64(s.Score)
 		}
-		if tt.Name == "共通" {
+
+		switch tt.Name {
+		case "共通":
 			commonTestTotalScore = currentTypeTotal
-		} else if tt.Name == "二次" {
+		case "二次":
 			secondaryTestTotalScore = currentTypeTotal
 		}
 	}
 
 	// 各試験種別の科目のパーセンテージを計算・設定
 	for i := range createdTestTypes {
-		createdTestTypes[i].Subjects = calculateAndSetSubjectPercentages(createdTestTypes[i].Subjects, commonTestTotalScore, secondaryTestTotalScore, createdTestTypes[i].Name)
+		createdTestTypes[i].Subjects = calculateAndSetSubjectPercentages(
+			createdTestTypes[i].Subjects,
+			commonTestTotalScore,
+			secondaryTestTotalScore,
+		)
 	}
 
 	// データベースに永続化
@@ -199,6 +204,7 @@ func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypesI
 		// Subjectsを一旦nilにしてTestType本体をCreateし、その後SubjectsをCreateする
 		subjectsToCreate := tt.Subjects
 		tt.Subjects = nil // GORMが関連を自動処理しようとするのを防ぐ
+
 		if err := tx.Create(&tt).Error; err != nil {
 			return fmt.Errorf("試験種別 '%s' の作成に失敗: %w", tt.Name, err)
 		}
@@ -207,6 +213,7 @@ func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypesI
 			return fmt.Errorf("試験種別 '%s' の科目作成に失敗: %w", tt.Name, err)
 		}
 	}
+
 	return nil
 }
 

@@ -610,7 +610,7 @@ func (r *universityRepository) CreateSubject(subject *models.Subject) error {
 	return nil
 }
 
-// calculateTotalScore は総得点を計算します。
+/* // calculateTotalScore は総得点を計算します。
 // この関数は以下の処理を行います：
 // - 科目のスコアの合計
 // - 総得点の返却
@@ -621,18 +621,16 @@ func (r *universityRepository) calculateTotalScore(subjects []models.Subject) fl
 	}
 
 	return total
-}
+} */
 
 // updatePercentages はパーセンテージを更新します。
-func (r *universityRepository) updatePercentages(subjects []models.Subject, currentTestTypeTotalScore float64, commonTestTotalScore float64, secondaryTestTotalScore float64, currentTestTypeName string) {
-	var denominator float64
-	if currentTestTypeName == "共通" || currentTestTypeName == "二次" {
-		// 共通テストと二次試験の場合、分母は両方の合計
-		denominator = commonTestTotalScore + secondaryTestTotalScore
-	} else {
-		// それ以外の試験種別の場合、分母は自身の合計点のみ
-		denominator = currentTestTypeTotalScore
-	}
+func (r *universityRepository) updatePercentages(
+	subjects []models.Subject,
+	commonTestTotalScore float64,
+	secondaryTestTotalScore float64,
+) {
+	// 共通テストと二次試験の合計点を分母とする
+	denominator := commonTestTotalScore + secondaryTestTotalScore
 
 	if denominator > 0 {
 		for i := range subjects {
@@ -667,18 +665,27 @@ func (r *universityRepository) saveSubjectWithScores(tx *gorm.DB, subject models
 // getRelevantTestTypeScores は、指定されたTestTypeに関連する共通テストと二次試験の合計点を取得します。
 // 同じAdmissionSchedule内の "共通" と "二次" のTestTypeを検索し、それぞれの合計点を返します。
 // 対象のTestTypeが見つからない場合やエラー時は 0.0 とエラーを返します。
-func (r *universityRepository) getRelevantTestTypeScores(tx *gorm.DB, admissionScheduleID uint) (commonTotal float64, secondaryTotal float64, err error) {
+func (r *universityRepository) getRelevantTestTypeScores(
+	tx *gorm.DB,
+	admissionScheduleID uint,
+) (commonTotal float64, secondaryTotal float64, err error) {
 	if admissionScheduleID == 0 {
-		applogger.Warn(context.Background(), "AdmissionScheduleID is zero when trying to get relevant test type scores. Returning 0,0.")
+		applogger.Warn(context.Background(),
+			"AdmissionScheduleID is zero when trying to get relevant test type scores. Returning 0,0.")
 		return 0.0, 0.0, nil
 	}
 
 	var testTypesInSchedule []models.TestType
-	if err := tx.Where("admission_schedule_id = ? AND name IN (?)", admissionScheduleID, []string{"共通", "二次"}).Find(&testTypesInSchedule).Error; err != nil {
+	if err := tx.Where(
+		"admission_schedule_id = ? AND name IN (?)",
+		admissionScheduleID,
+		[]string{"共通", "二次"},
+	).Find(&testTypesInSchedule).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			applogger.Info(context.Background(), "No '共通' or '二次' test types found for schedule ID %d", admissionScheduleID)
 			return 0.0, 0.0, nil
 		}
+
 		return 0.0, 0.0, fmt.Errorf("failed to find test types for schedule ID %d: %w", admissionScheduleID, err)
 	}
 
@@ -689,18 +696,24 @@ func (r *universityRepository) getRelevantTestTypeScores(tx *gorm.DB, admissionS
 				// このTestTypeに科目がなくてもエラーではない。合計は0のまま。
 				continue
 			}
+
 			return 0.0, 0.0, fmt.Errorf("failed to retrieve subjects for test type ID %d (Name: %s): %w", tt.ID, tt.Name, errDb)
 		}
+
 		var currentTypeSum float64
+
 		for _, s := range subjectsInTestType {
 			currentTypeSum += float64(s.Score)
 		}
-		if tt.Name == "共通" {
+
+		switch tt.Name {
+		case "共通":
 			commonTotal = currentTypeSum
-		} else if tt.Name == "二次" {
+		case "二次":
 			secondaryTotal = currentTypeSum
 		}
 	}
+
 	return commonTotal, secondaryTotal, nil
 }
 
@@ -709,25 +722,39 @@ func (r *universityRepository) updateSubjectScores(tx *gorm.DB, subjects []model
 	if len(subjects) == 0 {
 		return nil
 	}
+
 	testTypeID := subjects[0].TestTypeID
+
 	var currentTestType models.TestType
+
 	if err := tx.First(&currentTestType, testTypeID).Error; err != nil {
 		return fmt.Errorf("test type ID %d not found: %w", testTypeID, err)
 	}
 
-	commonTestTotalScore, secondaryTestTotalScore, err := r.getRelevantTestTypeScores(tx, currentTestType.AdmissionScheduleID)
+	commonTestTotalScore, secondaryTestTotalScore, err := r.getRelevantTestTypeScores(
+		tx,
+		currentTestType.AdmissionScheduleID,
+	)
 	if err != nil {
-		return fmt.Errorf("failed to get relevant test type scores for schedule ID %d: %w", currentTestType.AdmissionScheduleID, err)
+		return fmt.Errorf(
+			"failed to get relevant test type scores for schedule ID %d: %w",
+			currentTestType.AdmissionScheduleID,
+			err,
+		)
 	}
 
-	currentTestTypeTotalScore := r.calculateTotalScore(subjects)
-	r.updatePercentages(subjects, currentTestTypeTotalScore, commonTestTotalScore, secondaryTestTotalScore, currentTestType.Name)
+	r.updatePercentages(
+		subjects,
+		commonTestTotalScore,
+		secondaryTestTotalScore,
+	)
 
 	for _, s := range subjects {
 		if err := r.saveSubjectWithScores(tx, s); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -779,8 +806,10 @@ func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) e
 	if err := tx.Where(testTypeIDQuery, testTypeID).Order(displayOrderASC).Find(&subjects).Error; err != nil {
 		return fmt.Errorf("failed to find subjects for test type ID %d: %w", testTypeID, err)
 	}
+
 	if len(subjects) == 0 {
-		applogger.Info(context.Background(), "No subjects found for testTypeID %d during recalculateScores. Skipping.", testTypeID)
+		applogger.Info(context.Background(),
+			"No subjects found for testTypeID %d during recalculateScores. Skipping.", testTypeID)
 		return nil
 	}
 
@@ -789,32 +818,30 @@ func (r *universityRepository) recalculateScores(tx *gorm.DB, testTypeID uint) e
 		return fmt.Errorf("failed to find test type ID %d: %w", testTypeID, err)
 	}
 
-	commonTestTotalScore, secondaryTestTotalScore, err := r.getRelevantTestTypeScores(tx, currentTestType.AdmissionScheduleID)
+	commonTestTotalScore, secondaryTestTotalScore, err := r.getRelevantTestTypeScores(
+		tx,
+		currentTestType.AdmissionScheduleID,
+	)
 	if err != nil {
-		return fmt.Errorf("failed to get relevant test type scores for schedule ID %d in recalculateScores: %w", currentTestType.AdmissionScheduleID, err)
+		return fmt.Errorf(
+			"failed to get relevant test type scores for schedule ID %d in recalculateScores: %w",
+			currentTestType.AdmissionScheduleID,
+			err,
+		)
 	}
 
-	currentTestTypeTotalScore := r.calculateTotalScore(subjects) // 再計算対象の試験種別の合計点
-
-	var denominator float64
-	if currentTestType.Name == "共通" || currentTestType.Name == "二次" {
-		denominator = commonTestTotalScore + secondaryTestTotalScore
-	} else {
-		denominator = currentTestTypeTotalScore
-	}
+	r.updatePercentages(
+		subjects,
+		commonTestTotalScore,
+		secondaryTestTotalScore,
+	)
 
 	for i := range subjects {
-		percentage := 0.0
-		if denominator > 0 {
-			percentage = (float64(subjects[i].Score) / denominator) * 100
-			subjects[i].Percentage = math.Round(percentage*100) / 100
-		} else {
-			subjects[i].Percentage = 0
-		}
 		if err := tx.Model(&subjects[i]).Update("percentage", subjects[i].Percentage).Error; err != nil {
 			return fmt.Errorf("failed to update percentage for subject ID %d: %w", subjects[i].ID, err)
 		}
 	}
+
 	return nil
 }
 

@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testCSRFTokenPath = "/csrf-token"
+const testCSRFTokenPath = "/csrf-token" //nolint:gosec // APIパス定数のため問題なし
 
 // mockService は Service インターフェースのモックです。
 type mockService struct {

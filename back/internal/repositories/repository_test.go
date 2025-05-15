@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"os"
 	"testing"
 	"university-exam-api/internal/domain/models"
@@ -19,43 +20,35 @@ const errMsgCreateUniversity = "大学の作成に失敗"
 // TestMain で .env を読み込む
 func TestMain(m *testing.M) {
 	_ = godotenv.Load("back/tests/testdata/.env")
-	applogger.InitTestLogger()
-	os.Exit(m.Run())
-}
 
-// テスト用ロガー初期化のためのimport
-func importedLoggerInit() {
-	// 明示的にapplogger.InitTestLogger()を呼ぶ
-	// import cycle回避のためここでimport
-	imported := false
-	if !imported {
-		imported = true
-		// 下記のように直接呼び出し
-		// applogger.InitTestLogger()
-		// ただし、import cycleが発生する場合は、loggerパッケージのテスト用init.goでInitTestLoggerを呼ぶことも検討
-	}
+	applogger.InitTestLogger()
+
+	os.Exit(m.Run())
 }
 
 // setupTestDB はテスト用のデータベースをセットアップし、リポジトリとクリーンアップ関数を返します。
 // db_test_helper.go の関数を利用することを想定。
 func setupTestDB(t *testing.T) (IUniversityRepository, func()) {
-	cfg := DefaultTestDBConfig()      // 引数なしで呼び出し
-	db := SetupTestDB(t, cfg)          // *gorm.DB のみを返す
+	cfg := DefaultTestDBConfig() // 引数なしで呼び出し
+	db := SetupTestDB(t, cfg)    // *gorm.DB のみを返す
 	require.NotNil(t, db, "テストデータベースのセットアップに失敗しました") // dbがnilでないことを確認
-
 	repo := NewUniversityRepository(db)
 	require.NotNil(t, repo, "リポジトリの初期化に失敗しました")
 
 	cleanupFunc := func() {
-		if err := CleanupTestData(db); err != nil { // 引数は *gorm.DB のみ
+		if err := CleanupTestData(db); err != nil {
 			t.Logf("テストデータのクリーンアップに失敗しました: %v", err)
 		}
-		sqlDB, err := db.DB() // ここでのエラーもハンドルすることが望ましい
+
+		sqlDB, err := db.DB()
 		if err != nil {
 			t.Logf("DBインスタンスの取得に失敗しました: %v", err)
 			return
 		}
-		sqlDB.Close()
+
+		if err := sqlDB.Close(); err != nil {
+			t.Logf("DBクローズに失敗しました: %v", err)
+		}
 	}
 
 	return repo, cleanupFunc
@@ -154,6 +147,7 @@ func TestUniversityCreateAndFind(t *testing.T) {
 		require.Len(t, type1.Subjects, 2, "科目の数が正しくありません")
 		subj1 := type1.Subjects[0]
 		subj2 := type1.Subjects[1]
+
 		assert.Equal(t, "国語", subj1.Name, "科目1の名前が一致しません")
 		assert.Equal(t, 100, subj1.Score, "科目1のスコアが一致しません")
 		assert.Equal(t, 50.0, subj1.Percentage, "科目1のパーセンテージが一致しません")
@@ -235,7 +229,7 @@ func TestUniversityFindAll(t *testing.T) {
 	}
 
 	// 全大学を取得
-	unis, err := repo.FindAll(nil)
+	unis, err := repo.FindAll(context.TODO())
 	require.NoError(t, err, "全大学の取得に失敗")
 	assert.GreaterOrEqual(t, len(unis), len(names), "大学の件数が正しくありません")
 
@@ -244,6 +238,7 @@ func TestUniversityFindAll(t *testing.T) {
 	for _, uni := range unis {
 		found[uni.Name] = true
 	}
+
 	for _, name := range names {
 		assert.True(t, found[name], "大学 %s がFindAll結果に含まれていません", name)
 	}
@@ -280,6 +275,7 @@ func TestUniversitySearch(t *testing.T) {
 			},
 		},
 	}
+
 	require.NoError(t, repo.Create(uni1), errMsgCreateUniversity)
 	require.NoError(t, repo.Create(uni2), errMsgCreateUniversity)
 
@@ -287,12 +283,15 @@ func TestUniversitySearch(t *testing.T) {
 		results, err := repo.Search("東京")
 		require.NoError(t, err)
 		assert.NotEmpty(t, results, "大学名で検索してヒットしない")
+
 		var found bool
+
 		for _, u := range results {
 			if u.Name == "東京大学" {
 				found = true
 			}
 		}
+
 		assert.True(t, found, "東京大学が検索結果に含まれていない")
 	})
 
@@ -300,12 +299,15 @@ func TestUniversitySearch(t *testing.T) {
 		results, err := repo.Search("工学部")
 		require.NoError(t, err)
 		assert.NotEmpty(t, results, "学部名で検索してヒットしない")
+
 		var found bool
+
 		for _, u := range results {
 			if u.Name == "京都大学" {
 				found = true
 			}
 		}
+
 		assert.True(t, found, "京都大学が検索結果に含まれていない")
 	})
 
@@ -313,12 +315,15 @@ func TestUniversitySearch(t *testing.T) {
 		results, err := repo.Search("物理")
 		require.NoError(t, err)
 		assert.NotEmpty(t, results, "学科名で検索してヒットしない")
+
 		var found bool
+
 		for _, u := range results {
 			if u.Name == "東京大学" {
 				found = true
 			}
 		}
+
 		assert.True(t, found, "東京大学が検索結果に含まれていない")
 	})
 }

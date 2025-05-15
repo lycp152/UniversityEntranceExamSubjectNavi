@@ -551,9 +551,11 @@ func (r *universityRepository) Delete(id uint) error {
 		if result.Error != nil {
 			return result.Error
 		}
+
 		if result.RowsAffected == 0 {
 			return appErrors.NewNotFoundError("大学", id, nil)
 		}
+
 		return nil
 	})
 

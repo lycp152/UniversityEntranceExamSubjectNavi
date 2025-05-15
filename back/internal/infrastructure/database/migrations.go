@@ -288,6 +288,11 @@ func executeMigration(
 // - スキーマの設定
 // - エラーハンドリング
 func setupSchema(tx *gorm.DB, schema string) error {
+	// SQLiteの場合はスキップ
+	if tx.Name() == "sqlite" {
+		return nil
+	}
+
 	return tx.Exec(fmt.Sprintf("SET search_path TO %s", schema)).Error
 }
 

@@ -218,6 +218,11 @@ func (r *universityRepository) isRetryableError(err error) bool {
 		return false
 	}
 
+	// context.DeadlineExceeded もリトライ対象
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+
 	// リトライ可能なエラーの種類
 	retryableErrors := []string{
 		"deadlock",

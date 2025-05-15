@@ -547,10 +547,13 @@ func (r *universityRepository) Update(university *models.University) error {
 // - キャッシュのクリア
 func (r *universityRepository) Delete(id uint) error {
 	err := r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Unscoped().Delete(&models.University{}, id).Error; err != nil {
-			return err
+		result := tx.Unscoped().Delete(&models.University{}, id)
+		if result.Error != nil {
+			return result.Error
 		}
-
+		if result.RowsAffected == 0 {
+			return appErrors.NewNotFoundError("大学", id, nil)
+		}
 		return nil
 	})
 

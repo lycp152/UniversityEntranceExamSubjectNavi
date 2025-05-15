@@ -90,11 +90,11 @@ func SetupTestDB(t *testing.T, config *TestDBConfig) *gorm.DB {
 	}
 
 	// スキーマの設定
-	if err := db.Exec("DROP SCHEMA IF EXISTS ? CASCADE", config.Schema).Error; err != nil {
+	if err := db.Exec(fmt.Sprintf("DROP SCHEMA IF EXISTS %s CASCADE", config.Schema)).Error; err != nil {
 		t.Fatalf("スキーマの削除に失敗: %v", err)
 	}
 
-	if err := db.Exec("CREATE SCHEMA ?", config.Schema).Error; err != nil {
+	if err := db.Exec(fmt.Sprintf("CREATE SCHEMA %s", config.Schema)).Error; err != nil {
 		t.Fatalf("スキーマの作成に失敗: %v", err)
 	}
 
@@ -104,7 +104,7 @@ func SetupTestDB(t *testing.T, config *TestDBConfig) *gorm.DB {
 	}
 
 	// 検索パスを設定
-	if err := db.Exec("SET search_path TO ?", config.Schema).Error; err != nil {
+	if err := db.Exec(fmt.Sprintf("SET search_path TO %s", config.Schema)).Error; err != nil {
 		t.Fatalf("検索パスの設定に失敗: %v", err)
 	}
 

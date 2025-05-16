@@ -6,11 +6,20 @@
 package errors
 
 import (
+	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	apperrors "university-exam-api/internal/errors"
+	applogger "university-exam-api/internal/logger"
+
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
+
+const ValidationErrorMsg = "バリデーションエラー"
 
 // TestWrapError はエラーラップのテストを行います。
 // このテストは以下のケースを検証します：
@@ -146,6 +155,176 @@ func TestAppErrorError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			assert.Equal(t, tt.want, tt.appErr.Error())
+		})
+	}
+}
+
+// TestNewValidationError はバリデーションエラーの生成をテストします。
+func TestNewValidationError(t *testing.T) {
+	t.Parallel()
+
+	message := ValidationErrorMsg
+	err := NewValidationError(message)
+
+	var appErr *apperrors.Error
+
+	assert.True(t, errors.As(err, &appErr))
+	assert.Equal(t, apperrors.Code(Validation), appErr.Code)
+	assert.Equal(t, message, appErr.Message)
+}
+
+// TestNewRateLimitError はレート制限エラーの生成をテストします。
+func TestNewRateLimitError(t *testing.T) {
+	t.Parallel()
+
+	message := "レート制限を超えました"
+	err := NewRateLimitError(message)
+
+	var appErr *apperrors.Error
+
+	assert.True(t, errors.As(err, &appErr))
+	assert.Equal(t, apperrors.Code(RateLimit), appErr.Code)
+	assert.Equal(t, message, appErr.Message)
+}
+
+// TestNewRequestTooLargeError はリクエストサイズエラーの生成をテストします。
+func TestNewRequestTooLargeError(t *testing.T) {
+	t.Parallel()
+
+	message := "リクエストサイズが大きすぎます"
+	err := NewRequestTooLargeError(message)
+
+	var appErr *apperrors.Error
+
+	assert.True(t, errors.As(err, &appErr))
+	assert.Equal(t, apperrors.Code(RequestTooLarge), appErr.Code)
+	assert.Equal(t, message, appErr.Message)
+}
+
+// TestNewInvalidContentTypeError はコンテンツタイプエラーの生成をテストします。
+func TestNewInvalidContentTypeError(t *testing.T) {
+	t.Parallel()
+
+	message := "不正なコンテンツタイプです"
+	err := NewInvalidContentTypeError(message)
+
+	var appErr *apperrors.Error
+
+	assert.True(t, errors.As(err, &appErr))
+	assert.Equal(t, apperrors.Code(InvalidContentType), appErr.Code)
+	assert.Equal(t, message, appErr.Message)
+}
+
+// TestHandleError はエラーハンドリングをテストします。
+func TestHandleError(t *testing.T) {
+	t.Parallel()
+	applogger.InitTestLogger()
+
+	tests := []struct {
+		name          string
+		err          error
+		expectedCode int
+		expectedBody map[string]interface{}
+	}{
+		{
+			name: "バリデーションエラー",
+			err:  NewValidationError(ValidationErrorMsg),
+			expectedCode: http.StatusBadRequest,
+			expectedBody: map[string]interface{}{
+				"code":    Validation,
+				"message": ValidationErrorMsg,
+			},
+		},
+		{
+			name: "予期せぬエラー",
+			err:  errors.New("予期せぬエラー"),
+			expectedCode: http.StatusInternalServerError,
+			expectedBody: map[string]interface{}{
+				"code":    InternalServerError,
+				"message": "サーバー内部でエラーが発生しました",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			e := echo.New()
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
+
+			err := HandleError(c, tt.err)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedCode, rec.Code)
+
+			var response map[string]interface{}
+			err = json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedBody["code"], response["code"])
+			assert.Equal(t, tt.expectedBody["message"], response["message"])
+		})
+	}
+}
+
+// TestGetStatusCode はHTTPステータスコードの取得をテストします。
+func TestGetStatusCode(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		code     string
+		expected int
+	}{
+		{
+			name:     "NotFound",
+			code:     NotFound,
+			expected: http.StatusNotFound,
+		},
+		{
+			name:     "InvalidInput",
+			code:     InvalidInput,
+			expected: http.StatusBadRequest,
+		},
+		{
+			name:     "Authentication",
+			code:     Authentication,
+			expected: http.StatusUnauthorized,
+		},
+		{
+			name:     "Authorization",
+			code:     Authorization,
+			expected: http.StatusForbidden,
+		},
+		{
+			name:     "RateLimit",
+			code:     RateLimit,
+			expected: http.StatusTooManyRequests,
+		},
+		{
+			name:     "RequestTooLarge",
+			code:     RequestTooLarge,
+			expected: http.StatusRequestEntityTooLarge,
+		},
+		{
+			name:     "InvalidContentType",
+			code:     InvalidContentType,
+			expected: http.StatusUnsupportedMediaType,
+		},
+		{
+			name:     "Unknown",
+			code:     "UNKNOWN",
+			expected: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tt.expected, getStatusCode(tt.code))
 		})
 	}
 }

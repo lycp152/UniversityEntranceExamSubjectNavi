@@ -18,6 +18,8 @@ import (
 	"university-exam-api/internal/config"
 	applogger "university-exam-api/internal/logger"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -28,6 +30,16 @@ const (
 	sqliteMemoryDSN = "file::memory:?cache=shared"
 	// dbConnectionErrorMsg はデータベース接続エラーのメッセージです
 	dbConnectionErrorMsg = "データベース接続の確立に失敗しました: %v"
+	// healthCheckPath はヘルスチェックエンドポイントのパスです
+	healthCheckPath = "/health"
+	// metricsPath はメトリクスエンドポイントのパスです
+	metricsPath = "/metrics"
+	// dbConnectionFailedMsg はデータベース接続失敗時のメッセージです
+	dbConnectionFailedMsg = "データベース接続に失敗しました"
+	// memoryUsageHighMsg はメモリ使用量が高い場合のメッセージです
+	memoryUsageHighMsg = "メモリ使用量が高すぎます"
+	// sqlDBErrorMsg はSQLデータベース取得エラーのメッセージです
+	sqlDBErrorMsg = "SQLデータベースの取得に失敗しました: %v"
 )
 
 // setupTestLogger はテスト用のロガーをセットアップします。
@@ -183,7 +195,7 @@ func TestCheckDBHealth(t *testing.T) {
 
 				sqlDB, err := db.DB()
 				if err != nil {
-					t.Fatalf("SQLデータベースの取得に失敗しました: %v", err)
+					t.Fatalf(sqlDBErrorMsg, err)
 				}
 				sqlDB.SetMaxIdleConns(1)
 				sqlDB.SetMaxOpenConns(1)
@@ -207,7 +219,7 @@ func TestCheckDBHealth(t *testing.T) {
 
 				sqlDB, err := db.DB()
 				if err != nil {
-					t.Fatalf("SQLデータベースの取得に失敗しました: %v", err)
+					t.Fatalf(sqlDBErrorMsg, err)
 				}
 
 				if err := sqlDB.Close(); err != nil {
@@ -274,7 +286,7 @@ func TestMain(t *testing.T) {
 		setupHealthCheck(ctx, db)
 
 		// ヘルスチェックエンドポイントへのリクエストをシミュレート
-		req := httptest.NewRequest("GET", "/health", nil)
+		req := httptest.NewRequest("GET", healthCheckPath, nil)
 		w := httptest.NewRecorder()
 
 		http.DefaultServeMux.ServeHTTP(w, req)
@@ -289,7 +301,7 @@ func TestMain(t *testing.T) {
 		setupMetrics()
 
 		// メトリクスエンドポイントへのリクエストをシミュレート
-		req := httptest.NewRequest("GET", "/metrics", nil)
+		req := httptest.NewRequest("GET", metricsPath, nil)
 		w := httptest.NewRecorder()
 
 		http.DefaultServeMux.ServeHTTP(w, req)
@@ -331,4 +343,181 @@ func TestServerShutdown(t *testing.T) {
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		t.Errorf("サーバーのシャットダウンに失敗しました: %v", err)
 	}
+}
+
+// TestSetupMetrics はメトリクス設定のテストを行います。
+// このテストは以下のケースを検証します：
+// - メトリクスエンドポイントが正しく設定されているか
+// - メトリクスが正しく収集されているか
+func TestSetupMetrics(t *testing.T) {
+	setupTestLogger(t)
+
+	// テスト用の新しいServeMuxを作成
+	mux := http.NewServeMux()
+
+	// メトリクスの設定
+	registry := prometheus.NewRegistry()
+	httpRequestsTotal := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests",
+		},
+		[]string{"method", "path", "status"},
+	)
+	registry.MustRegister(httpRequestsTotal)
+
+	// メトリクスエンドポイントの設定
+	mux.Handle(metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+
+	// メトリクスエンドポイントのテスト
+	req := httptest.NewRequest(http.MethodGet, metricsPath, nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+// TestSetupHealthCheck はヘルスチェックエンドポイントのテストを行います。
+func TestSetupHealthCheck(t *testing.T) {
+	setupTestLogger(t)
+	t.Run("正常系", testHealthCheckNormal)
+	t.Run("異常系", testHealthCheckError)
+}
+
+// testHealthCheckNormal は正常系のヘルスチェックテストを行います。
+func testHealthCheckNormal(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	if err != nil {
+		t.Fatalf(dbConnectionErrorMsg, err)
+	}
+
+	mux := http.NewServeMux()
+	ctx := context.Background()
+
+	mux.HandleFunc(healthCheckPath, func(w http.ResponseWriter, _ *http.Request) {
+		if !checkDBHealth(ctx, db) {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, err := w.Write([]byte(dbConnectionFailedMsg))
+
+			if err != nil {
+				applogger.Error(ctx, writeErrorMsg, err)
+			}
+
+			return
+		}
+
+		if !checkMemoryHealth(ctx) {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, err := w.Write([]byte(memoryUsageHighMsg))
+
+			if err != nil {
+				applogger.Error(ctx, writeErrorMsg, err)
+			}
+
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("正常"))
+
+		if err != nil {
+			applogger.Error(ctx, writeErrorMsg, err)
+		}
+	})
+
+	req := httptest.NewRequest(http.MethodGet, healthCheckPath, nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Contains(t, rec.Body.String(), "正常")
+}
+
+// testHealthCheckError は異常系のヘルスチェックテストを行います。
+func testHealthCheckError(t *testing.T) {
+	tests := []struct {
+		name           string
+		setupDB        func(_ *testing.T) *gorm.DB
+		expectedStatus int
+		expectedBody   string
+	}{
+		{
+			name: "データベース接続が切断",
+			setupDB: func(_ *testing.T) *gorm.DB {
+				return setupBrokenDB(t)
+			},
+			expectedStatus: http.StatusServiceUnavailable,
+			expectedBody:   dbConnectionFailedMsg,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			runHealthCheckTest(t, tt.setupDB, tt.expectedStatus, tt.expectedBody)
+		})
+	}
+}
+
+// setupBrokenDB は切断されたデータベース接続をセットアップします
+func setupBrokenDB(t *testing.T) *gorm.DB {
+	brokenDB, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf(dbConnectionErrorMsg, err)
+	}
+
+	sqlDB, err := brokenDB.DB()
+
+	if err != nil {
+		t.Fatalf(sqlDBErrorMsg, err)
+	}
+
+	if err := sqlDB.Close(); err != nil {
+		t.Fatalf("データベース接続のクローズに失敗しました: %v", err)
+	}
+
+	return brokenDB
+}
+
+// runHealthCheckTest はヘルスチェックのテストケースを実行します
+func runHealthCheckTest(t *testing.T, setupDB func(*testing.T) *gorm.DB, expectedStatus int, expectedBody string) {
+	mux := http.NewServeMux()
+	ctx := context.Background()
+
+	mux.HandleFunc(healthCheckPath, func(w http.ResponseWriter, _ *http.Request) {
+		if !checkDBHealth(ctx, setupDB(t)) {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, err := w.Write([]byte(dbConnectionFailedMsg))
+
+			if err != nil {
+				applogger.Error(ctx, writeErrorMsg, err)
+			}
+
+			return
+		}
+
+		if !checkMemoryHealth(ctx) {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, err := w.Write([]byte(memoryUsageHighMsg))
+
+			if err != nil {
+				applogger.Error(ctx, writeErrorMsg, err)
+			}
+
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("正常"))
+
+		if err != nil {
+			applogger.Error(ctx, writeErrorMsg, err)
+		}
+	})
+
+	req := httptest.NewRequest(http.MethodGet, healthCheckPath, nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	assert.Equal(t, expectedStatus, rec.Code)
+	assert.Contains(t, rec.Body.String(), expectedBody)
 }

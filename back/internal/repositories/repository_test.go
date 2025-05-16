@@ -16,6 +16,7 @@ import (
 )
 
 const errMsgCreateUniversity = "大学の作成に失敗"
+const errMsgUniversityNotFound = "東京大学が検索結果に含まれていない"
 
 // TestMain で .env を読み込む
 func TestMain(m *testing.M) {
@@ -292,7 +293,7 @@ func TestUniversitySearch(t *testing.T) {
 			}
 		}
 
-		assert.True(t, found, "東京大学が検索結果に含まれていない")
+		assert.True(t, found, errMsgUniversityNotFound)
 	})
 
 	t.Run("学部名で検索", func(t *testing.T) {
@@ -308,7 +309,7 @@ func TestUniversitySearch(t *testing.T) {
 			}
 		}
 
-		assert.True(t, found, "京都大学が検索結果に含まれていない")
+		assert.True(t, found, errMsgUniversityNotFound)
 	})
 
 	t.Run("学科名で検索", func(t *testing.T) {
@@ -324,7 +325,7 @@ func TestUniversitySearch(t *testing.T) {
 			}
 		}
 
-		assert.True(t, found, "東京大学が検索結果に含まれていない")
+		assert.True(t, found, errMsgUniversityNotFound)
 	})
 }
 
@@ -398,4 +399,107 @@ func TestUniversityCacheLogic(t *testing.T) {
 	found3, err := repo.FindByID(uni.ID)
 	assert.Error(t, err)
 	assert.Nil(t, found3)
+}
+
+// TestUniversitySearchWithMultipleResults は複数の検索結果を返すケースをテストします
+func TestUniversitySearchWithMultipleResults(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テストデータの作成
+	universities := []*models.University{
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "東京大学",
+			Departments: []models.Department{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Name: "理学部",
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "東京工業大学",
+			Departments: []models.Department{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Name: "工学部",
+				},
+			},
+		},
+	}
+
+	for _, uni := range universities {
+		err := repo.Create(uni)
+		require.NoError(t, err, errMsgCreateUniversity)
+	}
+
+	// "東京"で検索
+	results, err := repo.Search("東京")
+	require.NoError(t, err)
+	assert.Len(t, results, 2, "検索結果が2件であるべき")
+
+	// 結果の順序を確認
+	found := map[string]bool{}
+	for _, u := range results {
+		found[u.Name] = true
+	}
+
+	assert.True(t, found["東京大学"], "東京大学が検索結果に含まれていない")
+	assert.True(t, found["東京工業大学"], "東京工業大学が検索結果に含まれていない")
+}
+
+// TestUniversitySearchWithNoResults は検索結果が0件のケースをテストします
+func TestUniversitySearchWithNoResults(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// 存在しない大学名で検索
+	results, err := repo.Search("存在しない大学")
+	require.NoError(t, err)
+	assert.Empty(t, results, "検索結果が空であるべき")
+}
+
+// TestUniversitySearchWithSpecialCharacters は特殊文字を含む検索をテストします
+func TestUniversitySearchWithSpecialCharacters(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// 特殊文字を含む大学名で検索
+	results, err := repo.Search("東京大学（本部）")
+	require.NoError(t, err)
+	assert.Empty(t, results, "特殊文字を含む検索結果が空であるべき")
+}
+
+// FindDepartmentのテスト
+func TestFindDepartment(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// 大学と学部を作成
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "FindDepartment大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "FindDepartment学部",
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, "大学の作成に失敗")
+	require.NotZero(t, uni.ID)
+	require.NotZero(t, uni.Departments[0].ID)
+
+	// 正常系: 取得できる
+	dept, err := repo.FindDepartment(uni.ID, uni.Departments[0].ID)
+	require.NoError(t, err, "FindDepartmentでエラー")
+	require.NotNil(t, dept)
+	assert.Equal(t, "FindDepartment学部", dept.Name)
+
+	// 異常系: 存在しないID
+	_, err = repo.FindDepartment(uni.ID, 99999)
+	assert.Error(t, err, "存在しない学部IDでエラーが返るべき")
 }

@@ -17,6 +17,7 @@ import (
 
 const errMsgCreateUniversity = "大学の作成に失敗"
 const errMsgUniversityNotFound = "東京大学が検索結果に含まれていない"
+const testDeptName = "DelDept学部"
 
 // TestMain で .env を読み込む
 func TestMain(m *testing.M) {
@@ -176,7 +177,7 @@ func TestUniversityUpdate(t *testing.T) {
 	// 大学を作成
 	uni := &models.University{
 		BaseModel: models.BaseModel{Version: 1},
-		Name: "更新前大学",
+		Name: "テスト大学",
 	}
 	err := repo.Create(uni)
 	require.NoError(t, err, errMsgCreateUniversity)
@@ -480,16 +481,16 @@ func TestFindDepartment(t *testing.T) {
 	// 大学と学部を作成
 	uni := &models.University{
 		BaseModel: models.BaseModel{Version: 1},
-		Name: "FindDepartment大学",
+		Name: "DelDept大学",
 		Departments: []models.Department{
 			{
 				BaseModel: models.BaseModel{Version: 1},
-				Name: "FindDepartment学部",
+				Name: testDeptName,
 			},
 		},
 	}
 	err := repo.Create(uni)
-	require.NoError(t, err, "大学の作成に失敗")
+	require.NoError(t, err, errMsgCreateUniversity)
 	require.NotZero(t, uni.ID)
 	require.NotZero(t, uni.Departments[0].ID)
 
@@ -497,9 +498,272 @@ func TestFindDepartment(t *testing.T) {
 	dept, err := repo.FindDepartment(uni.ID, uni.Departments[0].ID)
 	require.NoError(t, err, "FindDepartmentでエラー")
 	require.NotNil(t, dept)
-	assert.Equal(t, "FindDepartment学部", dept.Name)
+	assert.Equal(t, testDeptName, dept.Name)
 
 	// 異常系: 存在しないID
 	_, err = repo.FindDepartment(uni.ID, 99999)
 	assert.Error(t, err, "存在しない学部IDでエラーが返るべき")
+}
+
+func TestFindSubject(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テストデータの作成
+	university := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+	}
+	err := repo.Create(university)
+	require.NoError(t, err, "大学の作成に失敗")
+
+	department := &models.Department{
+		BaseModel: models.BaseModel{Version: 1},
+		Name:         "テスト学部",
+		UniversityID: university.ID,
+	}
+	err = repo.CreateDepartment(department)
+	require.NoError(t, err, "学部の作成に失敗")
+
+	major := &models.Major{
+		BaseModel: models.BaseModel{Version: 1},
+		Name:         "テスト学科",
+		DepartmentID: department.ID,
+	}
+	err = repo.CreateMajor(major)
+	require.NoError(t, err, "学科の作成に失敗")
+
+	admissionSchedule := &models.AdmissionSchedule{
+		BaseModel: models.BaseModel{Version: 1},
+		Name:         "前",
+		MajorID:      major.ID,
+		DisplayOrder: 1,
+		TestTypes: []models.TestType{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "共通",
+				Subjects: []models.Subject{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name:         "テスト科目",
+						Score:        100,
+						Percentage:   0.5,
+						DisplayOrder: 1,
+					},
+				},
+			},
+		},
+	}
+	err = repo.UpdateAdmissionSchedule(admissionSchedule)
+	require.NoError(t, err, "入試日程の作成に失敗")
+
+	t.Run("正常系 - 存在する科目を取得", func(t *testing.T) {
+		result, err := repo.FindSubject(department.ID, admissionSchedule.TestTypes[0].Subjects[0].ID)
+		require.NoError(t, err, "科目の取得に失敗")
+		require.NotNil(t, result, "科目が取得できませんでした")
+		assert.Equal(t, admissionSchedule.TestTypes[0].Subjects[0].ID, result.ID, "取得した科目のIDが一致しません")
+		assert.Equal(t, admissionSchedule.TestTypes[0].Subjects[0].Name, result.Name, "取得した科目の名前が一致しません")
+	})
+
+	t.Run("異常系 - 存在しない科目ID", func(t *testing.T) {
+		nonExistentID := uint(999)
+		result, err := repo.FindSubject(department.ID, nonExistentID)
+		assert.Error(t, err, "存在しない科目IDでエラーが発生しませんでした")
+		assert.Nil(t, result, "存在しない科目IDで結果が返されました")
+	})
+
+	t.Run("異常系 - 存在しない学部ID", func(t *testing.T) {
+		nonExistentID := uint(999)
+		result, err := repo.FindSubject(nonExistentID, admissionSchedule.TestTypes[0].Subjects[0].ID)
+		assert.Error(t, err, "存在しない学部IDでエラーが発生しませんでした")
+		assert.Nil(t, result, "存在しない学部IDで結果が返されました")
+	})
+}
+
+func TestUpdateDepartment(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// 大学と学部を作成
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, errMsgCreateUniversity)
+	require.NotZero(t, uni.ID)
+	require.NotZero(t, uni.Departments[0].ID)
+
+	// 学部名を更新
+	department := uni.Departments[0]
+	department.Name = "更新後学部"
+	err = repo.UpdateDepartment(&department)
+	require.NoError(t, err, "学部の更新に失敗")
+
+	// 更新後の学部を取得して確認
+	updated, err := repo.FindDepartment(uni.ID, department.ID)
+	require.NoError(t, err, "更新後の学部取得に失敗")
+	assert.Equal(t, "更新後学部", updated.Name, "学部名が更新されていない")
+
+	// 異常系: 存在しない学部ID
+	nonExistentDept := models.Department{
+		BaseModel: models.BaseModel{ID: 99999, Version: 1},
+		Name: "存在しない学部",
+	}
+	err = repo.UpdateDepartment(&nonExistentDept)
+	assert.Error(t, err, "存在しない学部IDで更新はエラーとなるべき")
+
+	// 異常系: 空の学部名
+	department.Name = ""
+	err = repo.UpdateDepartment(&department)
+	assert.Error(t, err, "空の学部名で更新はエラーとなるべき")
+}
+
+func TestSubjectAndMajorAndAdmissionInfoCRUD(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// 大学・学部・学科・入試日程・試験種別を作成
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+				Majors: []models.Major{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name: "テスト学科",
+						AdmissionSchedules: []models.AdmissionSchedule{
+							{
+								BaseModel: models.BaseModel{Version: 1},
+								Name: "前",
+								DisplayOrder: 1,
+								TestTypes: []models.TestType{
+									{
+										BaseModel: models.BaseModel{Version: 1},
+										Name: "共通",
+										Subjects: []models.Subject{
+											{
+												BaseModel: models.BaseModel{Version: 1},
+												Name: "英語",
+												Score: 100,
+												Percentage: 50,
+												DisplayOrder: 1,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	require.NoError(t, repo.Create(uni))
+	major := uni.Departments[0].Majors[0]
+	schedule := major.AdmissionSchedules[0]
+	testType := schedule.TestTypes[0]
+	subject := testType.Subjects[0]
+
+	// --- UpdateSubject ---
+	subject.Name = "英語（改）"
+	err := repo.UpdateSubject(&subject)
+	assert.NoError(t, err, "科目の更新に失敗")
+
+	// --- DeleteSubject ---
+	err = repo.DeleteSubject(subject.ID)
+	assert.NoError(t, err, "科目の削除に失敗")
+
+	// --- CreateMajor ---
+	newMajor := &models.Major{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "新規学科",
+		DepartmentID: uni.Departments[0].ID,
+	}
+	err = repo.CreateMajor(newMajor)
+	assert.NoError(t, err, "学科の作成に失敗")
+
+	// --- UpdateMajor ---
+	newMajor.Name = "新規学科（改）"
+	err = repo.UpdateMajor(newMajor)
+	assert.NoError(t, err, "学科の更新に失敗")
+
+	// --- FindMajor ---
+	foundMajor, err := repo.FindMajor(uni.Departments[0].ID, newMajor.ID)
+	assert.NoError(t, err, "学科の取得に失敗")
+	assert.Equal(t, "新規学科（改）", foundMajor.Name)
+
+	// --- DeleteMajor ---
+	err = repo.DeleteMajor(newMajor.ID)
+	assert.NoError(t, err, "学科の削除に失敗")
+
+	// --- CreateAdmissionInfo ---
+	admissionInfo := &models.AdmissionInfo{
+		BaseModel: models.BaseModel{Version: 1},
+		AdmissionScheduleID: schedule.ID,
+		Enrollment: 10,
+		AcademicYear: 2024,
+		Status: "published",
+	}
+	err = repo.CreateAdmissionInfo(admissionInfo)
+	assert.NoError(t, err, "入試情報の作成に失敗")
+
+	// --- UpdateAdmissionInfo ---
+	admissionInfo.Enrollment = 20
+	err = repo.UpdateAdmissionInfo(admissionInfo)
+	assert.NoError(t, err, "入試情報の更新に失敗")
+
+	// --- FindAdmissionInfo ---
+	foundInfo, err := repo.FindAdmissionInfo(schedule.ID, admissionInfo.ID)
+	assert.NoError(t, err, "入試情報の取得に失敗")
+	assert.Equal(t, 20, foundInfo.Enrollment)
+
+	// --- DeleteAdmissionInfo ---
+	err = repo.DeleteAdmissionInfo(admissionInfo.ID)
+	assert.NoError(t, err, "入試情報の削除に失敗")
+}
+
+// DeleteDepartmentのテスト
+func TestDeleteDepartment(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// 大学と学部を作成
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "DelDept大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: testDeptName,
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, errMsgCreateUniversity)
+	require.NotZero(t, uni.ID)
+	require.NotZero(t, uni.Departments[0].ID)
+
+	// 正常系: 削除できる
+	err = repo.DeleteDepartment(uni.Departments[0].ID)
+	assert.NoError(t, err, "学部の削除に失敗")
+
+	// 削除後に取得できないことを確認
+	dept, err := repo.FindDepartment(uni.ID, uni.Departments[0].ID)
+	assert.Error(t, err, "削除済み学部の取得はエラーとなるべき")
+	assert.Nil(t, dept, "削除済み学部はnilであるべき")
+
+	// 異常系: 存在しないIDで削除
+	err = repo.DeleteDepartment(99999)
+	// GORMのDeleteは存在しないIDでもエラーを返さないため、エラーはnilであることを確認
+	assert.NoError(t, err, "存在しないIDでDeleteDepartmentはエラーにならない（GORM仕様）")
 }

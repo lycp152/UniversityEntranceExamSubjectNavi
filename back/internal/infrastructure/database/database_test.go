@@ -189,3 +189,37 @@ func TestAutoMigrateAndTransaction(t *testing.T) {
 func NewTestSQLiteDB() (*gorm.DB, error) {
 	return gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 }
+
+// CloseDBのテスト
+func TestCloseDB(t *testing.T) {
+	db, err := NewTestSQLiteDB()
+	assert.NoError(t, err)
+	sqlDB, err := db.DB()
+	assert.NoError(t, err)
+	assert.NoError(t, CloseDB(db))
+	// 2回目以降はすでにcloseされているのでエラーになる可能性あり
+	_ = sqlDB.Close()
+}
+
+// GetDBStatsのテスト
+func TestGetDBStats(t *testing.T) {
+	db, err := NewTestSQLiteDB()
+	assert.NoError(t, err)
+	stats, err := GetDBStats(db)
+	assert.NoError(t, err)
+	assert.NotNil(t, stats)
+}
+
+func TestSetupConnectionPoolInvalidConfig(t *testing.T) {
+	db, err := NewTestSQLiteDB()
+	assert.NoError(t, err)
+	sqlDB, err := db.DB()
+	assert.NoError(t, err)
+
+	// MaxOpenConnsに異常値を入れてもエラーは返らない（デフォルト値にフォールバック）
+	cfg := &Config{
+		MaxOpenConns: -999,
+	}
+	err = setupConnectionPool(sqlDB, cfg)
+	assert.NoError(t, err)
+}

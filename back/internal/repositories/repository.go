@@ -418,8 +418,11 @@ func (r *universityRepository) FindSubject(departmentID, subjectID uint) (*model
 	}
 
 	var subject models.Subject
-	err := r.db.Preload("Department.University").
-		Where("department_id = ? AND id = ?", departmentID, subjectID).
+	err := r.db.Preload("TestType.AdmissionSchedule.Major.Department.University").
+		Joins("JOIN test_types ON subjects.test_type_id = test_types.id").
+		Joins("JOIN admission_schedules ON test_types.admission_schedule_id = admission_schedules.id").
+		Joins("JOIN majors ON admission_schedules.major_id = majors.id").
+		Where("majors.department_id = ? AND subjects.id = ?", departmentID, subjectID).
 		First(&subject).Error
 
 	if err != nil {
@@ -580,6 +583,10 @@ func (r *universityRepository) CreateDepartment(department *models.Department) e
 
 // UpdateDepartment は既存の学部を更新します
 func (r *universityRepository) UpdateDepartment(department *models.Department) error {
+	if strings.TrimSpace(department.Name) == "" {
+		return errors.New("学部名が空です")
+	}
+
 	err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(department).Error; err != nil {
 			return err

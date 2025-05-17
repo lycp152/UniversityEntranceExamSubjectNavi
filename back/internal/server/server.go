@@ -111,3 +111,21 @@ func (s *Server) SetupRoutes(db *gorm.DB) error {
 	routes := NewRoutes(s.echo, db, s.cfg)
 	return routes.Setup()
 }
+
+// Shutdown はサーバーをシャットダウンします。
+// この関数は以下の処理を行います：
+// - グレースフルシャットダウンの実行
+// - リソースの解放
+// ctx: コンテキスト
+// 戻り値: エラー情報
+func (s *Server) Shutdown(ctx context.Context) error {
+	applogger.Info(context.Background(), "サーバーを停止しています...")
+
+	if err := s.echo.Shutdown(ctx); err != nil {
+		return fmt.Errorf("サーバーのシャットダウンに失敗しました: %w", err)
+	}
+
+	applogger.Info(context.Background(), "サーバーが正常に停止しました")
+
+	return nil
+}

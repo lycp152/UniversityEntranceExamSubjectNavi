@@ -6,6 +6,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -222,14 +223,14 @@ func TestGetEnvOrDefaultInt(t *testing.T) {
 		expected     int
 	}{
 		{
-			name:         "環境変数が設定されている場合",
+			name:         testCaseEnvSet,
 			key:          "TEST_KEY_INT",
 			defaultValue: 10,
 			envValue:     "20",
 			expected:     20,
 		},
 		{
-			name:         "環境変数が設定されていない場合",
+			name:         testCaseEnvNotSet,
 			key:          "TEST_KEY_INT_NOT_SET",
 			defaultValue: 10,
 			envValue:     "",
@@ -268,10 +269,6 @@ func TestGetEnvOrDefaultInt(t *testing.T) {
 }
 
 // TestGetEnvOrDefaultDuration は時間型の環境変数取得をテストします
-// 以下のケースをテストします：
-// 1. 環境変数が設定されている場合
-// 2. 環境変数が設定されていない場合
-// 3. 無効な値が設定されている場合
 func TestGetEnvOrDefaultDuration(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -282,7 +279,7 @@ func TestGetEnvOrDefaultDuration(t *testing.T) {
 	}{
 		{
 			name:         testCaseEnvSet,
-			key:          "TEST_KEY_DURATION_SET",
+			key:          "TEST_KEY_DURATION",
 			defaultValue: time.Hour,
 			envValue:     "2h",
 			expected:     2 * time.Hour,
@@ -295,16 +292,29 @@ func TestGetEnvOrDefaultDuration(t *testing.T) {
 			expected:     time.Hour,
 		},
 		{
-			name:         testCaseInvalid,
+			name:         "無効な時間形式の場合",
 			key:          "TEST_KEY_DURATION_INVALID",
 			defaultValue: time.Hour,
 			envValue:     "invalid",
 			expected:     time.Hour,
 		},
+		{
+			name:         "複雑な時間形式の場合",
+			key:          "TEST_KEY_DURATION_COMPLEX",
+			defaultValue: time.Hour,
+			envValue:     "1h30m",
+			expected:     90 * time.Minute,
+		},
+		{
+			name:         "負の時間の場合",
+			key:          "TEST_KEY_DURATION_NEGATIVE",
+			defaultValue: time.Hour,
+			envValue:     "-1h",
+			expected:     -1 * time.Hour,
+		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			// 環境変数を確実にクリア
 			if err := os.Unsetenv(tt.key); err != nil {
@@ -326,14 +336,8 @@ func TestGetEnvOrDefaultDuration(t *testing.T) {
 	}
 }
 
-// TestConfigValidate は設定のバリデーションをテストします
-// 以下のケースをテストします：
-// 1. 有効な設定値での検証
-// 2. 無効なポート番号でのエラー
-// 3. 必須項目が不足している場合のエラー
+// TestConfigValidate は設定の検証をテストします
 func TestConfigValidate(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name        string
 		config      *Config
@@ -341,62 +345,177 @@ func TestConfigValidate(t *testing.T) {
 		errContains string
 	}{
 		{
-			name: "正常系: 有効な設定",
+			name: "正常系: 全ての必須項目が設定されている",
 			config: &Config{
-				Port:       "8080",
-				DBHost:     "localhost",
-				DBPort:     "5432",
-				DBUser:     "testuser",
-				DBPassword: "testpass",
-				DBName:     "testdb",
+				Port:     "8080",
+				DBHost:   "localhost",
+				DBPort:   "5432",
+				DBUser:   "postgres",
+				DBName:   "testdb",
 			},
 			expectedErr: false,
 		},
 		{
-			name: "異常系: 無効なポート番号",
+			name: "異常系: ポート番号が未設定",
 			config: &Config{
-				Port:       "-1",
-				DBHost:     "localhost",
-				DBPort:     "5432",
-				DBUser:     "testuser",
-				DBPassword: "testpass",
-				DBName:     "testdb",
+				Port:     "",
+				DBHost:   "localhost",
+				DBPort:   "5432",
+				DBUser:   "postgres",
+				DBName:   "testdb",
 			},
 			expectedErr: true,
-			errContains: "ポート番号は1から65535の範囲で指定してください",
+			errContains: ErrMsgPortNotSet,
 		},
 		{
-			name: "異常系: 必須項目が不足",
+			name: "異常系: 無効なポート番号",
 			config: &Config{
-				Port: "8080",
-				// DBHostが不足
-				DBPort:     "5432",
-				DBUser:     "testuser",
-				DBPassword: "testpass",
-				DBName:     "testdb",
+				Port:     "70000",
+				DBHost:   "localhost",
+				DBPort:   "5432",
+				DBUser:   "postgres",
+				DBName:   "testdb",
 			},
 			expectedErr: true,
-			errContains: "DBHost: データベースホストが設定されていません",
+			errContains: ErrMsgInvalidPort,
+		},
+		{
+			name: "異常系: データベースホストが未設定",
+			config: &Config{
+				Port:     "8080",
+				DBHost:   "",
+				DBPort:   "5432",
+				DBUser:   "postgres",
+				DBName:   "testdb",
+			},
+			expectedErr: true,
+			errContains: ErrMsgDBHostNotSet,
+		},
+		{
+			name: "異常系: データベースポートが未設定",
+			config: &Config{
+				Port:     "8080",
+				DBHost:   "localhost",
+				DBPort:   "",
+				DBUser:   "postgres",
+				DBName:   "testdb",
+			},
+			expectedErr: true,
+			errContains: ErrMsgDBPortNotSet,
+		},
+		{
+			name: "異常系: データベースユーザーが未設定",
+			config: &Config{
+				Port:     "8080",
+				DBHost:   "localhost",
+				DBPort:   "5432",
+				DBUser:   "",
+				DBName:   "testdb",
+			},
+			expectedErr: true,
+			errContains: ErrMsgDBUserNotSet,
+		},
+		{
+			name: "異常系: データベース名が未設定",
+			config: &Config{
+				Port:     "8080",
+				DBHost:   "localhost",
+				DBPort:   "5432",
+				DBUser:   "postgres",
+				DBName:   "",
+			},
+			expectedErr: true,
+			errContains: ErrMsgDBNameNotSet,
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			err := tt.config.Validate()
 			if tt.expectedErr {
 				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
-				if tt.errContains != "" {
-					assert.Contains(t, err.Error(), tt.errContains)
-				}
+// TestErrorMethods はError構造体のメソッドをテストします
+func TestErrorMethods(t *testing.T) {
+	tests := []struct {
+		name           string
+		err           *Error
+		target        error
+		expectedIs    bool
+		expectedAs    bool
+		expectedError string
+	}{
+		{
+			name: "エラーが存在する場合",
+			err: &Error{
+				Field:   "TestField",
+				Message: "TestMessage",
+				Err:     errors.New("original error"),
+				Code:    "TEST_ERROR",
+			},
+			target:        &Error{Code: "TEST_ERROR"},
+			expectedIs:    true,
+			expectedAs:    true,
+			expectedError: "TestField: TestMessage: original error",
+		},
+		{
+			name: "エラーが存在しない場合",
+			err: &Error{
+				Field:   "TestField",
+				Message: "TestMessage",
+				Code:    "TEST_ERROR",
+			},
+			target:        &Error{Code: "TEST_ERROR"},
+			expectedIs:    true,
+			expectedAs:    true,
+			expectedError: "TestField: TestMessage",
+		},
+		{
+			name: "異なるエラーコードの場合",
+			err: &Error{
+				Field:   "TestField",
+				Message: "TestMessage",
+				Code:    "TEST_ERROR",
+			},
+			target:        &Error{Code: "DIFFERENT_ERROR"},
+			expectedIs:    false,
+			expectedAs:    true,
+			expectedError: "TestField: TestMessage",
+		},
+	}
 
-				return
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Error()メソッドのテスト
+			assert.Equal(t, tt.expectedError, tt.err.Error())
+
+			// Unwrap()メソッドのテスト
+			if tt.err.Err != nil {
+				assert.Equal(t, tt.err.Err, tt.err.Unwrap())
+			} else {
+				assert.Nil(t, tt.err.Unwrap())
 			}
 
-			assert.NoError(t, err)
+			// Is()メソッドのテスト
+			assert.Equal(t, tt.expectedIs, tt.err.Is(tt.target))
+
+			// As()メソッドのテスト
+			var target Error
+
+			assert.Equal(t, tt.expectedAs, tt.err.As(&target))
+
+			if tt.expectedAs {
+				assert.Equal(t, tt.err.Code, target.Code)
+				assert.Equal(t, tt.err.Field, target.Field)
+				assert.Equal(t, tt.err.Message, target.Message)
+			}
 		})
 	}
 }

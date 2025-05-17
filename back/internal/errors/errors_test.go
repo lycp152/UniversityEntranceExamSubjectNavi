@@ -20,6 +20,8 @@ const (
 	resourceNotFoundMsg = "リソースが見つかりません"
 )
 
+const errMsgFormat = "Expected error message '%s', got '%s'"
+
 // TestErrorError はError型のError()メソッドのテストを行います
 // 以下のケースをテストします：
 // 1. 内部エラーがない場合のエラーメッセージ
@@ -235,5 +237,151 @@ func TestTranslateDBError(t *testing.T) {
 				t.Errorf("TranslateDBError().Code = %v, want %v", err.Code, tt.expected)
 			}
 		})
+	}
+}
+
+func TestNewValidationError(t *testing.T) {
+	field := "email"
+	message := "invalid format"
+	extra := map[string]string{"format": "RFC5322"}
+
+	err := NewValidationError(field, message, extra)
+	if err == nil {
+		t.Error("NewValidationError should not return nil")
+	}
+
+	expectedMsg := "VALIDATION_ERROR: フィールド email のバリデーションに失敗しました: invalid format"
+
+	if err.Error() != expectedMsg {
+		t.Errorf(errMsgFormat, expectedMsg, err.Error())
+	}
+
+	if err.Details.Field != field {
+		t.Errorf("Expected field '%s', got '%s'", field, err.Details.Field)
+	}
+
+	if err.Details.Extra["format"] != extra["format"] {
+		t.Errorf("Expected extra format '%s', got '%s'", extra["format"], err.Details.Extra["format"])
+	}
+}
+
+func TestNewSystemError(t *testing.T) {
+	message := "system error"
+	originalErr := NewValidationError("test", "test error", nil)
+	extra := map[string]string{"component": "database"}
+
+	err := NewSystemError(message, originalErr, extra)
+	if err == nil {
+		t.Error("NewSystemError should not return nil")
+	}
+
+	expectedMsg := "SYSTEM_ERROR: system error (VALIDATION_ERROR: フィールド test のバリデーションに失敗しました: test error)"
+
+	if err.Error() != expectedMsg {
+		t.Errorf(errMsgFormat, expectedMsg, err.Error())
+	}
+
+	if err.Err != originalErr {
+		t.Error("Original error should be preserved")
+	}
+
+	if err.Details.Extra["component"] != extra["component"] {
+		t.Errorf("Expected extra component '%s', got '%s'", extra["component"], err.Details.Extra["component"])
+	}
+}
+
+func TestNewAuthenticationError(t *testing.T) {
+	message := "authentication failed"
+	extra := map[string]string{"reason": "invalid token"}
+
+	err := NewAuthenticationError(message, extra)
+	if err == nil {
+		t.Error("NewAuthenticationError should not return nil")
+	}
+
+	expectedMsg := "AUTHENTICATION_ERROR: authentication failed"
+
+	if err.Error() != expectedMsg {
+		t.Errorf(errMsgFormat, expectedMsg, err.Error())
+	}
+
+	if err.Details.Extra["reason"] != extra["reason"] {
+		t.Errorf("Expected extra reason '%s', got '%s'", extra["reason"], err.Details.Extra["reason"])
+	}
+}
+
+func TestNewAuthorizationError(t *testing.T) {
+	message := "unauthorized access"
+	extra := map[string]string{"resource": "admin panel"}
+
+	err := NewAuthorizationError(message, extra)
+	if err == nil {
+		t.Error("NewAuthorizationError should not return nil")
+	}
+
+	expectedMsg := "AUTHORIZATION_ERROR: unauthorized access"
+
+	if err.Error() != expectedMsg {
+		t.Errorf(errMsgFormat, expectedMsg, err.Error())
+	}
+
+	if err.Details.Extra["resource"] != extra["resource"] {
+		t.Errorf("Expected extra resource '%s', got '%s'", extra["resource"], err.Details.Extra["resource"])
+	}
+}
+
+func TestNewExternalAPIError(t *testing.T) {
+	service := "payment"
+	message := "API call failed"
+	originalErr := NewValidationError("test", "test error", nil)
+	extra := map[string]string{"endpoint": "/v1/payments"}
+
+	err := NewExternalAPIError(service, message, originalErr, extra)
+	if err == nil {
+		t.Error("NewExternalAPIError should not return nil")
+	}
+
+	expectedMsg := "EXTERNAL_API_ERROR: 外部API 'payment' " +
+		"でエラーが発生しました: API call failed " +
+		"(VALIDATION_ERROR: フィールド test のバリデーションに失敗しました: test error)"
+
+	if err.Error() != expectedMsg {
+		t.Errorf(errMsgFormat, expectedMsg, err.Error())
+	}
+
+	if err.Err != originalErr {
+		t.Error("Original error should be preserved")
+	}
+
+	if err.Details.Service != service {
+		t.Errorf("Expected service '%s', got '%s'", service, err.Details.Service)
+	}
+
+	if err.Details.Extra["endpoint"] != extra["endpoint"] {
+		t.Errorf("Expected extra endpoint '%s', got '%s'", extra["endpoint"], err.Details.Extra["endpoint"])
+	}
+}
+
+func TestNewRateLimitError(t *testing.T) {
+	message := "rate limit exceeded"
+	extra := map[string]string{"limit": "100", "window": "1h"}
+
+	err := NewRateLimitError(message, extra)
+	if err == nil {
+		t.Error("NewRateLimitError should not return nil")
+	}
+
+	expectedMsg := "RATE_LIMIT_ERROR: rate limit exceeded"
+
+	if err.Error() != expectedMsg {
+		t.Errorf(errMsgFormat, expectedMsg, err.Error())
+	}
+
+	if err.Details.Extra["limit"] != extra["limit"] {
+		t.Errorf("Expected extra limit '%s', got '%s'", extra["limit"], err.Details.Extra["limit"])
+	}
+
+	if err.Details.Extra["window"] != extra["window"] {
+		t.Errorf("Expected extra window '%s', got '%s'", extra["window"], err.Details.Extra["window"])
 	}
 }

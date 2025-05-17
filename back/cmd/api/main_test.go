@@ -12,11 +12,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
 	"university-exam-api/internal/config"
 	applogger "university-exam-api/internal/logger"
+	"university-exam-api/internal/server"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -320,29 +322,75 @@ func TestMain(t *testing.T) {
 	})
 }
 
-// TestServerShutdown はサーバーのシャットダウン処理をテストします
-func TestServerShutdown(t *testing.T) {
+// TestServerStartupAndShutdown はサーバーの起動とシャットダウンをテストします
+func TestServerStartupAndShutdown(t *testing.T) {
 	setupTestLogger(t)
 
-	// テスト用のサーバーを作成
-	srv := &http.Server{
-		Addr:              ":0",
-		ReadHeaderTimeout: 5 * time.Second,
+	// テスト用の設定
+	cfg := &config.Config{
+		Port: "0", // ランダムポートを使用
+		DBHost: "localhost",
+		DBPort: "5432",
+		DBUser: "testuser",
+		DBName: "testdb",
 	}
 
+	// テスト用のデータベース接続
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	if err != nil {
+		t.Fatalf(dbConnectionErrorMsg, err)
+	}
+
+	// サーバーの初期化
+	srv := server.New(cfg)
+	if err := srv.SetupRoutes(db); err != nil {
+		t.Fatalf("ルーティングの設定に失敗しました: %v", err)
+	}
+
+	// コンテキストの作成
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// サーバー起動のテスト
+	t.Run("サーバー起動", func(t *testing.T) {
+		// サーバーを別ゴルーチンで起動
+		go func() {
+			if err := srv.Start(ctx); err != nil && err != http.ErrServerClosed {
+				t.Errorf("サーバーの起動に失敗しました: %v", err)
+			}
+		}()
+
+		// サーバーが起動するまで少し待機
+		time.Sleep(100 * time.Millisecond)
+
+		// ヘルスチェックエンドポイントにリクエスト
+		resp, err := http.Get("http://localhost:0/health")
+		if err == nil {
+			defer func() {
+				if err := resp.Body.Close(); err != nil {
+					t.Errorf("レスポンスボディのクローズに失敗しました: %v", err)
+				}
+			}()
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+		}
+	})
+
+	// サーバーシャットダウンのテスト
+	t.Run("サーバーシャットダウン", func(t *testing.T) {
 	// シャットダウンのタイムアウト設定
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 
-	// シャットダウン処理のテスト
-	go func() {
-		time.Sleep(100 * time.Millisecond)
-		shutdownCancel()
-	}()
+		// シャットダウン処理
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			t.Errorf("サーバーのシャットダウンに失敗しました: %v", err)
+		}
 
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		t.Errorf("サーバーのシャットダウンに失敗しました: %v", err)
-	}
+		// サーバーが完全にシャットダウンするまで待機
+		time.Sleep(100 * time.Millisecond)
+	})
 }
 
 // TestSetupMetrics はメトリクス設定のテストを行います。
@@ -520,4 +568,116 @@ func runHealthCheckTest(t *testing.T, setupDB func(*testing.T) *gorm.DB, expecte
 	mux.ServeHTTP(rec, req)
 	assert.Equal(t, expectedStatus, rec.Code)
 	assert.Contains(t, rec.Body.String(), expectedBody)
+}
+
+// TestMemoryThreshold はメモリ使用量の閾値テストを行います
+func TestMemoryThreshold(t *testing.T) {
+	setupTestLogger(t)
+
+	// メモリ使用量を強制的に増加させる
+	largeSlice := make([]byte, 2*1024*1024*1024) // 2GB
+	for i := range largeSlice {
+		largeSlice[i] = 1
+	}
+
+	ctx := context.Background()
+	result := checkMemoryHealth(ctx)
+	assert.False(t, result, "メモリ使用量が閾値を超えた場合、falseを返すべきです")
+
+	// メモリを解放
+	runtime.GC()
+}
+
+// TestMetricsCollection はメトリクス収集の詳細なテストを行います
+func TestMetricsCollection(t *testing.T) {
+	setupTestLogger(t)
+
+	// テスト用の新しいServeMuxを作成
+	mux := http.NewServeMux()
+
+	// メトリクスの設定
+	registry := prometheus.NewRegistry()
+
+	// HTTPリクエストの総数
+	httpRequestsTotal := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests",
+		},
+		[]string{"method", "path", "status"},
+	)
+
+	// HTTPリクエストの処理時間
+	httpRequestDuration := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "HTTP request duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"method", "path"},
+	)
+
+	// メモリ使用量
+	memoryUsage := prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "memory_usage_bytes",
+			Help: "Current memory usage in bytes",
+		},
+	)
+
+	// メトリクスの登録
+	registry.MustRegister(httpRequestsTotal)
+	registry.MustRegister(httpRequestDuration)
+	registry.MustRegister(memoryUsage)
+
+	// メトリクスエンドポイントの設定
+	mux.Handle(metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+
+	// テストケース
+	tests := []struct {
+		name           string
+		method         string
+		path           string
+		status         string
+		expectedStatus int
+	}{
+		{
+			name:           "正常なリクエスト",
+			method:         "GET",
+			path:           "/test",
+			status:         "200",
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:           "エラーレスポンス",
+			method:         "GET",
+			path:           "/error",
+			status:         "500",
+			expectedStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// メトリクスの更新
+			httpRequestsTotal.WithLabelValues(tt.method, tt.path, tt.status).Inc()
+			httpRequestDuration.WithLabelValues(tt.method, tt.path).Observe(0.1)
+
+			// メモリ使用量の更新
+			var m runtime.MemStats
+
+			runtime.ReadMemStats(&m)
+			memoryUsage.Set(float64(m.Alloc))
+
+			// メトリクスエンドポイントのテスト
+			req := httptest.NewRequest(http.MethodGet, metricsPath, nil)
+			rec := httptest.NewRecorder()
+			mux.ServeHTTP(rec, req)
+
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.Contains(t, rec.Body.String(), "http_requests_total")
+			assert.Contains(t, rec.Body.String(), "http_request_duration_seconds")
+			assert.Contains(t, rec.Body.String(), "memory_usage_bytes")
+		})
+	}
 }

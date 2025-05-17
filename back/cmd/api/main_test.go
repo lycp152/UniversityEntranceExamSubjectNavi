@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 	"university-exam-api/internal/config"
@@ -49,22 +50,26 @@ const (
 // - テスト用のログディレクトリの作成
 // - ロガーの設定
 // - ロガーの初期化
+var loggerInit sync.Once
+
 func setupTestLogger(t *testing.T) {
 	t.Helper()
 
-	// テスト用のログディレクトリを作成
-	logDir := filepath.Join("..", "..", "logs", "tests")
-	if err := os.MkdirAll(logDir, 0750); err != nil {
-		t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
-	}
+	loggerInit.Do(func() {
+		// テスト用のログディレクトリを作成
+		logDir := filepath.Join("..", "..", "logs", "tests")
+		if err := os.MkdirAll(logDir, 0750); err != nil {
+			t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
+		}
 
-	// ロガーの設定
-	cfg := applogger.DefaultConfig()
-	cfg.LogDir = logDir
+		// ロガーの設定
+		cfg := applogger.DefaultConfig()
+		cfg.LogDir = logDir
 
-	if err := applogger.InitLoggers(cfg); err != nil {
-		t.Fatalf("ロガーの初期化に失敗しました: %v", err)
-	}
+		if err := applogger.InitLoggers(cfg); err != nil {
+			t.Fatalf("ロガーの初期化に失敗しました: %v", err)
+		}
+	})
 }
 
 // setupTestEnv は環境変数を設定し、クリーンアップ関数を返します。
@@ -398,6 +403,7 @@ func TestServerStartupAndShutdown(t *testing.T) {
 // - メトリクスエンドポイントが正しく設定されているか
 // - メトリクスが正しく収集されているか
 func TestSetupMetrics(t *testing.T) {
+	t.Parallel() // このテストは並列実行可能
 	setupTestLogger(t)
 
 	// テスト用の新しいServeMuxを作成

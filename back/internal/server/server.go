@@ -74,30 +74,41 @@ func New(cfg *config.Config) *Server {
 // 戻り値: エラー情報
 func (s *Server) Start(ctx context.Context) error {
 	// サーバーの起動
+	errCh := make(chan error, 1)
 	go func() {
 		applogger.Info(context.Background(), "サーバーを起動しています。ポート: %s", s.cfg.Port)
 
 		if err := s.echo.Start(":" + s.cfg.Port); err != nil && err != http.ErrServerClosed {
+			errCh <- err
 			applogger.Error(context.Background(), "サーバーの起動に失敗しました: %v", err)
+
+			return
 		}
+		errCh <- nil
 	}()
 
-	// コンテキストのキャンセルを待機
-	<-ctx.Done()
+	select {
+	case <-ctx.Done():
+		// グレースフルシャットダウン
+		applogger.Info(context.Background(), "サーバーを停止しています...")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 
-	// グレースフルシャットダウン
-	applogger.Info(context.Background(), "サーバーを停止しています...")
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
 
-	defer cancel()
+		if err := s.echo.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("サーバーのシャットダウンに失敗しました: %w", err)
+		}
 
-	if err := s.echo.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("サーバーのシャットダウンに失敗しました: %w", err)
+		applogger.Info(context.Background(), "サーバーが正常に停止しました")
+
+		return nil
+	case err := <-errCh:
+		if err != nil {
+			return fmt.Errorf("サーバーの起動に失敗しました: %w", err)
+		}
+
+		return nil
 	}
-
-	applogger.Info(context.Background(), "サーバーが正常に停止しました")
-
-	return nil
 }
 
 // SetupRoutes はルーティングを設定します。
@@ -108,7 +119,22 @@ func (s *Server) Start(ctx context.Context) error {
 // db: データベース接続
 // 戻り値: エラー情報
 func (s *Server) SetupRoutes(db *gorm.DB) error {
+	if db == nil {
+		return fmt.Errorf("データベース接続がnilです")
+	}
+
+	sqlDB, err := db.DB()
+
+	if err != nil {
+		return fmt.Errorf("データベース接続の取得に失敗しました: %w", err)
+	}
+
+	if err := sqlDB.Ping(); err != nil {
+		return fmt.Errorf("データベース接続が無効です: %w", err)
+	}
+
 	routes := NewRoutes(s.echo, db, s.cfg)
+
 	return routes.Setup()
 }
 
@@ -121,8 +147,13 @@ func (s *Server) SetupRoutes(db *gorm.DB) error {
 func (s *Server) Shutdown(ctx context.Context) error {
 	applogger.Info(context.Background(), "サーバーを停止しています...")
 
-	if err := s.echo.Shutdown(ctx); err != nil {
+	err := s.echo.Shutdown(ctx)
+	if err != nil {
 		return fmt.Errorf("サーバーのシャットダウンに失敗しました: %w", err)
+	}
+
+	if ctx.Err() == context.DeadlineExceeded {
+		return fmt.Errorf("シャットダウンがタイムアウトしました")
 	}
 
 	applogger.Info(context.Background(), "サーバーが正常に停止しました")

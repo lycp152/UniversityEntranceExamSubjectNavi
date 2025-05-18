@@ -15,9 +15,11 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 	"university-exam-api/internal/config"
+	"university-exam-api/internal/infrastructure/database"
 	applogger "university-exam-api/internal/logger"
 	"university-exam-api/internal/server"
 
@@ -43,6 +45,8 @@ const (
 	memoryUsageHighMsg = "メモリ使用量が高すぎます"
 	// sqlDBErrorMsg はSQLデータベース取得エラーのメッセージです
 	sqlDBErrorMsg = "SQLデータベースの取得に失敗しました: %v"
+	helpTotalHTTPRequests = "Total number of HTTP requests"
+	errServerStartFmt = "サーバーの起動に失敗しました: %v"
 )
 
 // setupTestLogger はテスト用のロガーをセットアップします。
@@ -57,7 +61,7 @@ func setupTestLogger(t *testing.T) {
 
 	loggerInit.Do(func() {
 	// テスト用のログディレクトリを作成
-	logDir := filepath.Join("..", "..", "logs", "tests")
+		logDir := filepath.Join("..", "..", "logs")
 	if err := os.MkdirAll(logDir, 0750); err != nil {
 		t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
 	}
@@ -363,7 +367,7 @@ func TestServerStartupAndShutdown(t *testing.T) {
 		// サーバーを別ゴルーチンで起動
 		go func() {
 			if err := srv.Start(ctx); err != nil && err != http.ErrServerClosed {
-				t.Errorf("サーバーの起動に失敗しました: %v", err)
+				t.Errorf(errServerStartFmt, err)
 			}
 		}()
 
@@ -414,7 +418,7 @@ func TestSetupMetrics(t *testing.T) {
 	httpRequestsTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_requests_total",
-			Help: "Total number of HTTP requests",
+			Help: helpTotalHTTPRequests,
 		},
 		[]string{"method", "path", "status"},
 	)
@@ -608,7 +612,7 @@ func TestMetricsCollection(t *testing.T) {
 	httpRequestsTotal := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "http_requests_total",
-			Help: "Total number of HTTP requests",
+			Help: helpTotalHTTPRequests,
 		},
 		[]string{"method", "path", "status"},
 	)
@@ -686,4 +690,216 @@ func TestMetricsCollection(t *testing.T) {
 			assert.Contains(t, rec.Body.String(), "memory_usage_bytes")
 		})
 	}
+}
+
+// TestValidateEnvVars は環境変数の検証をテストします
+func TestValidateEnvVars(t *testing.T) {
+	tests := []struct {
+		name        string
+		envVars     map[string]string
+		expectedErr bool
+		errContains string
+	}{
+		{
+			name: "正常系/全ての必須環境変数が設定されている",
+			envVars: map[string]string{
+				"DB_HOST":     "localhost",
+				"DB_PORT":     "5432",
+				"DB_NAME":     "testdb",
+				"DB_USER":     "testuser",
+				"DB_PASSWORD": "testpass",
+			},
+			expectedErr: false,
+		},
+		{
+			name: "異常系/必須環境変数が不足している",
+			envVars: map[string]string{
+				"DB_HOST": "localhost",
+				"DB_PORT": "5432",
+			},
+			expectedErr: true,
+			errContains: "以下の必須環境変数が設定されていません",
+		},
+		{
+			name: "異常系/必須環境変数が空",
+			envVars: map[string]string{
+				"DB_HOST":     "localhost",
+				"DB_PORT":     "5432",
+				"DB_NAME":     "",
+				"DB_USER":     "",
+				"DB_PASSWORD": "",
+			},
+			expectedErr: true,
+			errContains: "以下の必須環境変数が空です",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			runValidateEnvVarsTest(t, tt)
+		})
+	}
+}
+
+func runValidateEnvVarsTest(t *testing.T, tt struct {
+	name        string
+	envVars     map[string]string
+	expectedErr bool
+	errContains string
+}) {
+	for k, v := range tt.envVars {
+		if err := os.Setenv(k, v); err != nil {
+			t.Fatalf("環境変数の設定に失敗しました: %v", err)
+		}
+		defer func(key string) {
+			if err := os.Unsetenv(key); err != nil {
+				t.Errorf("環境変数の削除に失敗しました: %v", err)
+			}
+		}(k)
+	}
+
+	err := validateEnvVars()
+	if tt.expectedErr {
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), tt.errContains)
+	} else {
+		assert.NoError(t, err)
+	}
+}
+
+// TestServerGracefulShutdown はサーバーのグレースフルシャットダウンをテストします
+func TestServerGracefulShutdown(t *testing.T) {
+	setupTestLogger(t)
+
+	// テスト用の設定
+	cfg := &config.Config{
+		Port: "0", // ランダムポートを使用
+	}
+
+	// テスト用のデータベース接続
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	if err != nil {
+		t.Fatalf(dbConnectionErrorMsg, err)
+	}
+
+	// サーバーの初期化
+	srv := server.New(cfg)
+	if err := srv.SetupRoutes(db); err != nil {
+		t.Fatalf("ルーティングの設定に失敗しました: %v", err)
+	}
+
+	// コンテキストの作成
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// サーバー起動
+	go func() {
+		if err := srv.Start(ctx); err != nil && err != http.ErrServerClosed {
+			t.Errorf(errServerStartFmt, err)
+		}
+	}()
+
+	// サーバーが起動するまで少し待機
+	time.Sleep(100 * time.Millisecond)
+
+	// グレースフルシャットダウンのテスト
+	t.Run("グレースフルシャットダウン", func(t *testing.T) {
+		// シャットダウンのタイムアウト設定
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutdownCancel()
+
+		// シャットダウン処理
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		t.Errorf("サーバーのシャットダウンに失敗しました: %v", err)
+	}
+
+		// サーバーが完全にシャットダウンするまで待機
+		time.Sleep(100 * time.Millisecond)
+	})
+}
+
+// TestDatabaseConnection はデータベース接続の確立をテストします
+func TestDatabaseConnection(t *testing.T) {
+	setupTestLogger(t)
+
+	// SQLiteインメモリDBでテスト
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, db)
+
+	// データベース接続をクローズ
+	err = database.CloseDB(db)
+	assert.NoError(t, err)
+}
+
+// TestServerInitialization はサーバーの初期化をテストします
+func TestServerInitialization(t *testing.T) {
+	setupTestLogger(t)
+
+	// テスト用の設定
+	cfg := &config.Config{
+		Port: "8080",
+	}
+
+	// テスト用のデータベース接続
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	assert.NoError(t, err)
+
+	// サーバーの初期化
+	srv := server.New(cfg)
+	err = srv.SetupRoutes(db)
+	assert.NoError(t, err)
+}
+
+// TestSignalHandling はシグナルハンドリングをテストします
+func TestSignalHandling(t *testing.T) {
+	setupTestLogger(t)
+
+	// テスト用の設定
+	cfg := &config.Config{
+		Port: "0", // ランダムポートを使用
+	}
+
+	// テスト用のデータベース接続
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	assert.NoError(t, err)
+
+	// サーバーの初期化
+	srv := server.New(cfg)
+	err = srv.SetupRoutes(db)
+	assert.NoError(t, err)
+
+	// コンテキストの作成
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// サーバー起動
+	go func() {
+		if err := srv.Start(ctx); err != nil && err != http.ErrServerClosed {
+			t.Errorf(errServerStartFmt, err)
+		}
+	}()
+
+	// サーバーが起動するまで少し待機
+	time.Sleep(100 * time.Millisecond)
+
+	// シグナルをシミュレート
+	sigChan := make(chan os.Signal, 1)
+	sigChan <- syscall.SIGTERM
+
+	// シャットダウンのタイムアウト設定
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	// シャットダウン処理
+	err = srv.Shutdown(shutdownCtx)
+	assert.NoError(t, err)
 }

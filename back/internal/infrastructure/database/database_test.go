@@ -301,3 +301,54 @@ func TestSetupConnectionPool(t *testing.T) {
 			})
 	}
 }
+
+func TestWithTransactionAdvanced(t *testing.T) {
+	db, err := NewTestSQLiteDB()
+	assert.NoError(t, err)
+
+	// マイグレーション実行
+	err = AutoMigrate(context.Background(), db)
+	assert.NoError(t, err)
+
+	tests := []struct {
+			name    string
+			fn      func(tx *gorm.DB) error
+			wantErr bool
+	}{
+			{
+					name: "正常系：ネストされたトランザクション",
+					fn: func(tx *gorm.DB) error {
+							return WithTransaction(context.Background(), tx, func(_ *gorm.DB) error {
+									return nil
+							})
+					},
+					wantErr: false,
+			},
+			{
+					name: "異常系：ロールバック",
+					fn: func(_ *gorm.DB) error {
+							return fmt.Errorf("強制ロールバック")
+					},
+					wantErr: true,
+			},
+			{
+					name: "異常系：デッドロック",
+					fn: func(_ *gorm.DB) error {
+							// デッドロックをシミュレート
+							return fmt.Errorf("deadlock detected")
+					},
+					wantErr: true,
+			},
+	}
+
+	for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+					err := WithTransaction(context.Background(), db, tt.fn)
+					if tt.wantErr {
+							assert.Error(t, err)
+					} else {
+							assert.NoError(t, err)
+					}
+			})
+	}
+}

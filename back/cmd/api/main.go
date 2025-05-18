@@ -217,29 +217,11 @@ func setupMetrics() {
 	}()
 }
 
-// main はアプリケーションのエントリーポイントです。
-// 以下の処理を順番に実行します：
-// 1. コンテキストの作成
-// 2. ロガーの初期化
-// 3. 設定の読み込み
-// 4. 環境変数の読み込みと検証
-// 5. データベース接続の確立
-// 6. サーバーの初期化とルーティングの設定
-// 7. ヘルスチェックとメトリクスの設定
-// 8. シグナルハンドリングの設定
-// 9. サーバーの起動
-func main() {
-	// コンテキストの作成
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+// initializeApp はアプリケーションの初期化を行います
+func initializeApp(ctx context.Context) (*config.Config, *gorm.DB, error) {
 	// ロガーの初期化
 	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
-		applogger.Error(ctx, "ロガーの初期化に失敗しました: %v", err)
-		log.Printf("ロガーの初期化に失敗しました: %v", err)
-		cancel()
-
-		return
+		return nil, nil, fmt.Errorf("ロガーの初期化に失敗しました: %w", err)
 	}
 
 	applogger.Info(ctx, "アプリケーションを起動しています...")
@@ -247,45 +229,24 @@ func main() {
 	// 設定の読み込み
 	cfg, err := config.New()
 	if err != nil {
-		applogger.Error(ctx, "設定の読み込みに失敗しました: %v", err)
-		log.Printf("設定の読み込みに失敗しました: %v", err)
-		cancel()
-
-		return
+		return nil, nil, fmt.Errorf("設定の読み込みに失敗しました: %w", err)
 	}
 
 	// 環境変数の読み込みと検証
 	if err := setupEnvironment(ctx, cfg); err != nil {
-		applogger.Error(ctx, "環境変数の読み込みに失敗しました: %v", err)
-		log.Printf("環境変数の読み込みに失敗しました: %v", err)
-		cancel()
-
-		return
+		return nil, nil, fmt.Errorf("環境変数の読み込みに失敗しました: %w", err)
 	}
 
 	// データベース接続の確立
 	db, err := database.NewDB()
 	if err != nil {
-		applogger.Error(ctx, "データベース接続の確立に失敗しました: %v", err)
-		log.Printf("データベース接続の確立に失敗しました: %v", err)
-		cancel()
-
-		return
+		return nil, nil, fmt.Errorf("データベース接続の確立に失敗しました: %w", err)
 	}
-
-	defer func() {
-		if err := database.CloseDB(db); err != nil {
-			applogger.Error(ctx, "データベース接続のクローズに失敗しました: %v", err)
-		}
-	}()
 
 	// データベース接続プールの設定
 	sqlDB, err := db.DB()
 	if err != nil {
-		applogger.Error(ctx, "データベース接続プールの設定に失敗しました: %v", err)
-		cancel()
-
-		return
+		return nil, nil, fmt.Errorf("データベース接続プールの設定に失敗しました: %w", err)
 	}
 
 	// データベース接続プールのパラメータを設定
@@ -297,6 +258,11 @@ func main() {
 	// 新しいセッションを作成して安全性を確保
 	db = db.Session(&gorm.Session{})
 
+	return cfg, db, nil
+}
+
+// setupServer はサーバーの初期化と設定を行います
+func setupServer(ctx context.Context, cfg *config.Config, db *gorm.DB) (*server.Server, error) {
 	// ヘルスチェックとメトリクスの設定
 	setupHealthCheck(ctx, db)
 	setupMetrics()
@@ -304,13 +270,14 @@ func main() {
 	// サーバーの初期化
 	srv := server.New(cfg)
 	if err := srv.SetupRoutes(db); err != nil {
-		applogger.Error(ctx, "ルーティングの設定に失敗しました: %v", err)
-		log.Printf("ルーティングの設定に失敗しました: %v", err)
-		cancel()
-
-		return
+		return nil, fmt.Errorf("ルーティングの設定に失敗しました: %w", err)
 	}
 
+	return srv, nil
+}
+
+// runServer はサーバーを起動し、シグナルハンドリングを行います
+func runServer(ctx context.Context, srv *server.Server) error {
 	// シグナルハンドリングの設定
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -324,11 +291,9 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		if err := srv.Start(ctx); err != nil {
+		if err := srv.Start(ctx); err != nil && err != http.ErrServerClosed {
 			applogger.Error(ctx, "サーバーの実行中にエラーが発生しました: %v", err)
 			sigChan <- syscall.SIGTERM
-
-			return
 		}
 	}()
 
@@ -339,9 +304,6 @@ func main() {
 	// シャットダウンのタイムアウト設定
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
-
-	// コンテキストのキャンセル
-	cancel()
 
 	// シャットダウン完了待機
 	done := make(chan struct{})
@@ -355,6 +317,40 @@ func main() {
 		applogger.Info(ctx, "シャットダウンが完了しました")
 	case <-shutdownCtx.Done():
 		applogger.Warn(ctx, "シャットダウンがタイムアウトしました")
+	}
+
+	return nil
+}
+
+func main() {
+	// コンテキストの作成
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// アプリケーションの初期化
+	cfg, db, err := initializeApp(ctx)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+
+	defer func() {
+		if err := database.CloseDB(db); err != nil {
+			applogger.Error(ctx, "データベース接続のクローズに失敗しました: %v", err)
+		}
+	}()
+
+	// サーバーの設定
+	srv, err := setupServer(ctx, cfg, db)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+
+	// サーバーの起動と実行
+	if err := runServer(ctx, srv); err != nil {
+		log.Printf("%v", err)
+		return
 	}
 
 	applogger.Info(ctx, "アプリケーションを終了します")

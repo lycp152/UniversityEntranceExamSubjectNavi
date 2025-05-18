@@ -180,8 +180,6 @@ type testModel struct {
 }
 
 func TestTransaction(t *testing.T) {
-	t.Parallel()
-
 	// テスト用のデータベース接続を設定
 	db, err := gorm.Open(sqlite.Open(sqliteInMemory), &gorm.Config{})
 	if err != nil {
@@ -214,8 +212,6 @@ func TestTransaction(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			err := repo.Transaction(tt.fn)
 
 			if tt.expectedError != nil {
@@ -229,8 +225,6 @@ func TestTransaction(t *testing.T) {
 }
 
 func TestTransactionWithOption(t *testing.T) {
-	t.Parallel()
-
 	// テスト用のデータベース接続を設定
 	db, err := gorm.Open(sqlite.Open(sqliteInMemory), &gorm.Config{})
 	if err != nil {
@@ -271,8 +265,6 @@ func TestTransactionWithOption(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
 			err := repo.TransactionWithOption(tt.fn, tt.opts)
 
 			if tt.expectedError != nil {
@@ -286,44 +278,42 @@ func TestTransactionWithOption(t *testing.T) {
 }
 
 func TestSavepoint(t *testing.T) {
-	t.Parallel()
-
 	// テスト用のデータベース接続を設定
 	db, err := gorm.Open(sqlite.Open(sqliteInMemory), &gorm.Config{})
 	if err != nil {
 		t.Fatalf(errInMemoryDBFailed, err)
 	}
 
-	repo := &universityRepository{
-		db: db,
-	}
+	repo := &universityRepository{db: db}
 
 	tests := []struct {
 		name          string
 		savepointName string
-		wantErr       bool
+		expectError   bool
 	}{
 		{
 			name:          "正常なセーブポイント",
 			savepointName: "test_savepoint",
-			wantErr:       false,
+			expectError:   false,
 		},
 		{
 			name:          "空のセーブポイント名",
 			savepointName: "",
-			wantErr:       true,
+			expectError:   true,
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			tx := db.Begin()
+			defer tx.Rollback()
 
-			err := repo.Savepoint(db, tt.savepointName)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Savepoint() error = %v, wantErr %v", err, tt.wantErr)
+			err := repo.Savepoint(tx, tt.savepointName)
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}

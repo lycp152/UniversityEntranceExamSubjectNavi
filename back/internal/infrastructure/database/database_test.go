@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -222,4 +223,81 @@ func TestSetupConnectionPoolInvalidConfig(t *testing.T) {
 	}
 	err = setupConnectionPool(sqlDB, cfg)
 	assert.NoError(t, err)
+}
+
+func TestWithTransactionError(t *testing.T) {
+	db, err := NewTestSQLiteDB()
+	assert.NoError(t, err)
+
+	// トランザクション内でエラーが発生するケース
+	err = WithTransaction(context.Background(), db, func(_ *gorm.DB) error {
+			return fmt.Errorf("テストエラー")
+	})
+	assert.Error(t, err)
+
+	// コンテキストがキャンセルされたケース
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err = WithTransaction(ctx, db, func(_ *gorm.DB) error {
+			return nil
+	})
+	assert.Error(t, err)
+}
+
+func TestAutoMigrateError(t *testing.T) {
+	db, err := NewTestSQLiteDB()
+	assert.NoError(t, err)
+
+	// コンテキストがキャンセルされたケース
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err = AutoMigrate(ctx, db)
+	assert.Error(t, err)
+}
+
+func TestSetupConnectionPool(t *testing.T) {
+	db, err := NewTestSQLiteDB()
+	assert.NoError(t, err)
+	sqlDB, err := db.DB()
+	assert.NoError(t, err)
+
+	tests := []struct {
+			name    string
+			config  *Config
+			wantErr bool
+	}{
+			{
+					name: "正常系：デフォルト設定",
+					config: &Config{
+							MaxIdleConns:    defaultMaxIdleConns,
+							MaxOpenConns:    defaultMaxOpenConns,
+							ConnMaxLifetime: defaultConnMaxLifetime,
+							ConnMaxIdleTime: defaultConnMaxIdleTime,
+					},
+					wantErr: false,
+			},
+			{
+					name: "正常系：カスタム設定",
+					config: &Config{
+							MaxIdleConns:    5,
+							MaxOpenConns:    20,
+							ConnMaxLifetime: time.Minute * 5,
+							ConnMaxIdleTime: time.Minute * 2,
+					},
+					wantErr: false,
+			},
+	}
+
+	for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+					err := setupConnectionPool(sqlDB, tt.config)
+					if tt.wantErr {
+							assert.Error(t, err)
+					} else {
+							assert.NoError(t, err)
+					}
+			})
+	}
 }

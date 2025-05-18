@@ -56,19 +56,19 @@ func setupTestLogger(t *testing.T) {
 	t.Helper()
 
 	loggerInit.Do(func() {
-		// テスト用のログディレクトリを作成
-		logDir := filepath.Join("..", "..", "logs", "tests")
-		if err := os.MkdirAll(logDir, 0750); err != nil {
-			t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
-		}
+	// テスト用のログディレクトリを作成
+	logDir := filepath.Join("..", "..", "logs", "tests")
+	if err := os.MkdirAll(logDir, 0750); err != nil {
+		t.Fatalf("ログディレクトリの作成に失敗しました: %v", err)
+	}
 
-		// ロガーの設定
-		cfg := applogger.DefaultConfig()
-		cfg.LogDir = logDir
+	// ロガーの設定
+	cfg := applogger.DefaultConfig()
+	cfg.LogDir = logDir
 
-		if err := applogger.InitLoggers(cfg); err != nil {
-			t.Fatalf("ロガーの初期化に失敗しました: %v", err)
-		}
+	if err := applogger.InitLoggers(cfg); err != nil {
+		t.Fatalf("ロガーの初期化に失敗しました: %v", err)
+	}
 	})
 }
 

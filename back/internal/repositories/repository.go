@@ -778,6 +778,17 @@ func (r *universityRepository) updateSubjectScores(tx *gorm.DB, subjects []model
 func (r *universityRepository) processBatch(tx *gorm.DB, batch []models.Subject, testTypeID uint) error {
 	for _, subject := range batch {
 		subject.TestTypeID = testTypeID
+
+		// 科目が存在するか確認
+		var existingSubject models.Subject
+		if err := tx.First(&existingSubject, subject.ID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("科目ID %d が見つかりませんでした", subject.ID)
+			}
+
+			return fmt.Errorf("科目の検索に失敗: %w", err)
+		}
+
 		if err := tx.Save(&subject).Error; err != nil {
 			return fmt.Errorf("科目の更新に失敗: %w", err)
 		}

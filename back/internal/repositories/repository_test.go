@@ -515,7 +515,7 @@ func TestFindSubject(t *testing.T) {
 		Name: "テスト大学",
 	}
 	err := repo.Create(university)
-	require.NoError(t, err, "大学の作成に失敗")
+	require.NoError(t, err, errMsgCreateUniversity)
 
 	department := &models.Department{
 		BaseModel: models.BaseModel{Version: 1},
@@ -766,4 +766,171 @@ func TestDeleteDepartment(t *testing.T) {
 	err = repo.DeleteDepartment(99999)
 	// GORMのDeleteは存在しないIDでもエラーを返さないため、エラーはnilであることを確認
 	assert.NoError(t, err, "存在しないIDでDeleteDepartmentはエラーにならない（GORM仕様）")
+}
+
+// TestCreateSubject は科目の作成をテストします
+func TestCreateSubject(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テストデータの準備
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+				Majors: []models.Major{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name: "テスト学科",
+						AdmissionSchedules: []models.AdmissionSchedule{
+							{
+								BaseModel: models.BaseModel{Version: 1},
+								Name: "前",
+								DisplayOrder: 1,
+								TestTypes: []models.TestType{
+									{
+										BaseModel: models.BaseModel{Version: 1},
+										Name: "共通",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, errMsgCreateUniversity)
+
+	testType := uni.Departments[0].Majors[0].AdmissionSchedules[0].TestTypes[0]
+
+	// 科目の作成
+	subject := &models.Subject{
+		BaseModel: models.BaseModel{Version: 1},
+		TestTypeID:   testType.ID,
+		Name:         "数学",
+		Score:        100,
+		Percentage:   50.0,
+		DisplayOrder: 1,
+	}
+
+	// 科目の作成をテスト
+	err = repo.CreateSubject(subject)
+	require.NoError(t, err)
+	assert.NotNil(t, subject)
+	assert.Equal(t, "数学", subject.Name)
+	assert.Equal(t, 100, subject.Score)
+	assert.Equal(t, 50.0, subject.Percentage)
+	assert.Equal(t, 1, subject.DisplayOrder)
+
+	// 無効なデータでのテスト
+	invalidSubject := &models.Subject{
+		BaseModel: models.BaseModel{Version: 1},
+		TestTypeID:   0, // 無効な試験種別ID
+		Name:         "数学",
+		Score:        100,
+		Percentage:   50.0,
+		DisplayOrder: 1,
+	}
+
+	err = repo.CreateSubject(invalidSubject)
+	assert.Error(t, err)
+}
+
+// TestUpdateSubjectsBatch は科目の一括更新をテストします
+func TestUpdateSubjectsBatch(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テストデータの準備
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+				Majors: []models.Major{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name: "テスト学科",
+						AdmissionSchedules: []models.AdmissionSchedule{
+							{
+								BaseModel: models.BaseModel{Version: 1},
+								Name: "前",
+								DisplayOrder: 1,
+								TestTypes: []models.TestType{
+									{
+										BaseModel: models.BaseModel{Version: 1},
+										Name: "共通",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, errMsgCreateUniversity)
+
+	testType := uni.Departments[0].Majors[0].AdmissionSchedules[0].TestTypes[0]
+
+	// 科目の作成
+	subject1 := &models.Subject{
+		BaseModel: models.BaseModel{Version: 1},
+		TestTypeID:   testType.ID,
+		Name:         "数学",
+		Score:        100,
+		Percentage:   50.0,
+		DisplayOrder: 1,
+	}
+	subject2 := &models.Subject{
+		BaseModel: models.BaseModel{Version: 1},
+		TestTypeID:   testType.ID,
+		Name:         "英語",
+		Score:        100,
+		Percentage:   50.0,
+		DisplayOrder: 2,
+	}
+
+	err = repo.CreateSubject(subject1)
+	require.NoError(t, err)
+	err = repo.CreateSubject(subject2)
+	require.NoError(t, err)
+
+	// 科目の更新
+	subject1.Score = 200
+	subject2.Score = 200
+
+	// 一括更新のテスト
+	err = repo.UpdateSubjectsBatch(testType.ID, []models.Subject{*subject1, *subject2})
+	require.NoError(t, err)
+
+	// 更新の確認
+	updatedSubject1, err := repo.FindSubject(uni.Departments[0].ID, subject1.ID)
+	require.NoError(t, err)
+	assert.Equal(t, 200, updatedSubject1.Score)
+
+	updatedSubject2, err := repo.FindSubject(uni.Departments[0].ID, subject2.ID)
+	require.NoError(t, err)
+	assert.Equal(t, 200, updatedSubject2.Score)
+
+	// 無効なデータでのテスト
+	invalidSubject := &models.Subject{
+		BaseModel: models.BaseModel{Version: 1},
+		TestTypeID:   testType.ID,
+		Name:         "無効な科目",
+		Score:        100,
+		Percentage:   50.0,
+		DisplayOrder: 3,
+	}
+
+	err = repo.UpdateSubjectsBatch(testType.ID, []models.Subject{*invalidSubject})
+	assert.Error(t, err)
 }

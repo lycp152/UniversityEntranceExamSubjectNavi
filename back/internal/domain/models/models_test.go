@@ -12,6 +12,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 // テストで使用する定数
@@ -673,7 +674,7 @@ func TestBaseModelBeforeUpdate(t *testing.T) {
 		Version: 1,
 	}
 
-	err := baseModel.BeforeUpdate()
+	err := baseModel.BeforeUpdate(&gorm.DB{})
 	require.NoError(t, err, "BeforeUpdate() がエラーを返しました")
 	assert.Equal(t, 2, baseModel.Version, "バージョンが期待通りに更新されていません")
 }

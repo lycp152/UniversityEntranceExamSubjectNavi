@@ -159,8 +159,8 @@ func (b *BaseModel) Validate() error {
 	return validateRules(b, rules)
 }
 
-// BeforeUpdate はGORMの更新前フックでバージョンをインクリメントする
-func (b *BaseModel) BeforeUpdate() error {
+// BeforeUpdate はGORMの更新前フックでバリデーションを行う
+func (b *BaseModel) BeforeUpdate(_ *gorm.DB) error {
 	b.Version++
 	return nil
 }
@@ -205,8 +205,8 @@ func (u *University) BeforeCreate(_ *gorm.DB) error {
 }
 
 // BeforeUpdate はGORMの更新前フックでバリデーションを行う
-func (u *University) BeforeUpdate(_ *gorm.DB) error {
-	if err := u.BaseModel.BeforeUpdate(); err != nil {
+func (u *University) BeforeUpdate(tx *gorm.DB) error {
+	if err := u.BaseModel.BeforeUpdate(tx); err != nil {
 		return err
 	}
 

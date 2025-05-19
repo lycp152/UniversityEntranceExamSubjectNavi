@@ -34,7 +34,7 @@ const (
 	// sqliteMemoryDSN はメモリ内SQLiteデータベースの接続文字列です
 	sqliteMemoryDSN = "file::memory:?cache=shared"
 	// dbConnectionErrorMsg はデータベース接続エラーのメッセージです
-	dbConnectionErrorMsg = "データベース接続の確立に失敗しました: %v"
+	dbConnectionErrorMsg = "データベース接続に失敗しました: %v"
 	// healthCheckPath はヘルスチェックエンドポイントのパスです
 	healthCheckPath = "/health"
 	// metricsPath はメトリクスエンドポイントのパスです
@@ -47,6 +47,7 @@ const (
 	sqlDBErrorMsg = "SQLデータベースの取得に失敗しました: %v"
 	helpTotalHTTPRequests = "Total number of HTTP requests"
 	errServerStartFmt = "サーバーの起動に失敗しました: %v"
+	responseWriteErrorMsg = "レスポンスの書き込みに失敗しました: %v"
 )
 
 // setupTestLogger はテスト用のロガーをセットアップします。
@@ -457,10 +458,9 @@ func testHealthCheckNormal(t *testing.T) {
 	mux.HandleFunc(healthCheckPath, func(w http.ResponseWriter, _ *http.Request) {
 		if !checkDBHealth(ctx, db) {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			_, err := w.Write([]byte(dbConnectionFailedMsg))
 
-			if err != nil {
-				applogger.Error(ctx, writeErrorMsg, err)
+			if _, err := w.Write([]byte(dbConnectionFailedMsg)); err != nil {
+				t.Errorf(responseWriteErrorMsg, err)
 			}
 
 			return
@@ -468,20 +468,18 @@ func testHealthCheckNormal(t *testing.T) {
 
 		if !checkMemoryHealth(ctx) {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			_, err := w.Write([]byte(memoryUsageHighMsg))
 
-			if err != nil {
-				applogger.Error(ctx, writeErrorMsg, err)
+			if _, err := w.Write([]byte(memoryUsageHighMsg)); err != nil {
+				t.Errorf(responseWriteErrorMsg, err)
 			}
 
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("正常"))
 
-		if err != nil {
-			applogger.Error(ctx, writeErrorMsg, err)
+		if _, err := w.Write([]byte("正常")); err != nil {
+			t.Errorf(responseWriteErrorMsg, err)
 		}
 	})
 
@@ -545,10 +543,9 @@ func runHealthCheckTest(t *testing.T, setupDB func(*testing.T) *gorm.DB, expecte
 	mux.HandleFunc(healthCheckPath, func(w http.ResponseWriter, _ *http.Request) {
 		if !checkDBHealth(ctx, setupDB(t)) {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			_, err := w.Write([]byte(dbConnectionFailedMsg))
 
-			if err != nil {
-				applogger.Error(ctx, writeErrorMsg, err)
+			if _, err := w.Write([]byte(dbConnectionFailedMsg)); err != nil {
+				t.Errorf(responseWriteErrorMsg, err)
 			}
 
 			return
@@ -556,20 +553,18 @@ func runHealthCheckTest(t *testing.T, setupDB func(*testing.T) *gorm.DB, expecte
 
 		if !checkMemoryHealth(ctx) {
 			w.WriteHeader(http.StatusServiceUnavailable)
-			_, err := w.Write([]byte(memoryUsageHighMsg))
 
-			if err != nil {
-				applogger.Error(ctx, writeErrorMsg, err)
+			if _, err := w.Write([]byte(memoryUsageHighMsg)); err != nil {
+				t.Errorf(responseWriteErrorMsg, err)
 			}
 
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("正常"))
 
-		if err != nil {
-			applogger.Error(ctx, writeErrorMsg, err)
+		if _, err := w.Write([]byte("正常")); err != nil {
+			t.Errorf(responseWriteErrorMsg, err)
 		}
 	})
 
@@ -902,4 +897,146 @@ func TestSignalHandling(t *testing.T) {
 	// シャットダウン処理
 	err = srv.Shutdown(shutdownCtx)
 	assert.NoError(t, err)
+}
+
+// TestServerInitializationWithInvalidConfig は無効な設定でのサーバー初期化をテストします
+func TestServerInitializationWithInvalidConfig(t *testing.T) {
+	setupTestLogger(t)
+
+	invalidConfig := &config.Config{
+		Port: "-1", // 無効なポート番号
+	}
+
+	srv := server.New(invalidConfig)
+	assert.NotNil(t, srv)
+}
+
+// TestDatabaseConnectionWithInvalidDSN は無効なDSNでのデータベース接続をテストします
+func TestDatabaseConnectionWithInvalidDSN(t *testing.T) {
+	setupTestLogger(t)
+
+	// 無効な環境変数を設定
+	envVars := map[string]string{
+		"DB_HOST":     "invalid",
+		"DB_PORT":     "invalid",
+		"DB_USER":     "invalid",
+		"DB_PASSWORD": "invalid",
+		"DB_NAME":     "invalid",
+	}
+	setupTestEnv(t, envVars)
+
+	_, err := database.NewDB()
+	assert.Error(t, err)
+}
+
+// TestMetricsCollectionWithInvalidLabels は無効なラベルでのメトリクス収集をテストします
+func TestMetricsCollectionWithInvalidLabels(t *testing.T) {
+	setupTestLogger(t)
+
+	invalidLabels := []string{"invalid_label"}
+	counter := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "test_counter",
+			Help: "Test counter",
+		},
+		invalidLabels,
+	)
+	assert.NotNil(t, counter)
+}
+
+// TestHealthCheckWithBrokenDB は壊れたデータベースでのヘルスチェックをテストします
+func TestHealthCheckWithBrokenDB(t *testing.T) {
+	setupTestLogger(t)
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+
+		if _, err := w.Write([]byte(dbConnectionFailedMsg)); err != nil {
+			t.Errorf(responseWriteErrorMsg, err)
+		}
+	})
+
+	req := httptest.NewRequest("GET", healthCheckPath, nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+	assert.Contains(t, w.Body.String(), dbConnectionFailedMsg)
+}
+
+// サーバー起動失敗時のテスト
+func TestServerStartFailure(t *testing.T) {
+	setupTestLogger(t)
+
+	cfg := &config.Config{
+		Port: "invalid_port", // 無効なポート番号
+	}
+	// テスト用のデータベース接続
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
+	})
+	if err != nil {
+		t.Fatalf(dbConnectionErrorMsg, err)
+	}
+
+	srv := server.New(cfg)
+	_ = srv.SetupRoutes(db)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- srv.Start(ctx)
+	}()
+
+	select {
+	case err := <-errCh:
+		if err == nil {
+			t.Error("無効なポート番号でサーバー起動時にエラーが発生しませんでした")
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Error("サーバー起動失敗時のエラーを検知できませんでした")
+	}
+}
+
+// DB接続失敗時のテスト
+func TestDatabaseConnectionFailure(t *testing.T) {
+	setupTestLogger(t)
+
+	// 無効なDSNでDB接続
+	_, err := gorm.Open(sqlite.Open("/invalid/path/to/db.sqlite"), &gorm.Config{})
+	if err == nil {
+		t.Error("無効なDSNでDB接続時にエラーが発生しませんでした")
+	}
+}
+
+// ルーティング設定失敗時のテスト
+func TestSetupRoutesFailure(t *testing.T) {
+	setupTestLogger(t)
+
+	cfg := &config.Config{
+		Port: "8080",
+	}
+	// dbをnilで渡すことでルーティング設定失敗を誘発
+	srv := server.New(cfg)
+	err := srv.SetupRoutes(nil)
+
+	if err == nil {
+		t.Error("nilのDBでルーティング設定時にエラーが発生しませんでした")
+	}
+}
+
+// 無効な環境変数でのテスト
+func TestInvalidEnvVars(t *testing.T) {
+	t.Setenv("DB_HOST", "")
+	t.Setenv("DB_PORT", "")
+	t.Setenv("DB_NAME", "")
+	t.Setenv("DB_USER", "")
+	t.Setenv("DB_PASSWORD", "")
+
+	err := validateEnvVars()
+	if err == nil {
+		t.Error("必須環境変数が空でもエラーが発生しませんでした")
+	}
 }

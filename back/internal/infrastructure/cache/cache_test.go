@@ -724,51 +724,66 @@ func TestCacheConcurrentAccess(t *testing.T) {
 
 	var wg sync.WaitGroup
 
+	var mu sync.Mutex // テスト結果の検証用のmutex
+
 	wg.Add(goroutines)
 
 	for i := 0; i < goroutines; i++ {
 		go func(id int) {
 			defer wg.Done()
-			runCacheOps(t, c, id, operations)
+			runCacheOps(t, c, id, operations, &mu)
 		}(i)
 	}
 
 	wg.Wait()
 }
 
-func runCacheOps(t *testing.T, c Interface, id, operations int) {
+func runCacheOps(t *testing.T, c Interface, id, operations int, mu *sync.Mutex) {
 	for j := 0; j < operations; j++ {
 		key := fmt.Sprintf("key_%d_%d", id, j)
 		value := fmt.Sprintf("value_%d_%d", id, j)
-		checkSetGetDelete(t, c, key, value)
+		checkSetGetDelete(t, c, key, value, mu)
 	}
 }
 
-func checkSetGetDelete(t *testing.T, c Interface, key, value string) {
+func checkSetGetDelete(t *testing.T, c Interface, key, value string, mu *sync.Mutex) {
 	if err := c.Set(key, value, time.Minute); err != nil {
+		mu.Lock()
 		t.Errorf(errMsgSet, err)
+		mu.Unlock()
+
 		return
 	}
 
 	gotValue, found, err := c.Get(key)
 
+	mu.Lock()
 	if err != nil {
 		t.Errorf(errMsgGet, err)
+		mu.Unlock()
+
 		return
 	}
 
 	if !found {
 		t.Errorf("Get() found = false, want true")
+		mu.Unlock()
+
 		return
 	}
 
 	if gotValue != value {
 		t.Errorf("Get() value = %v, want %v", gotValue, value)
+		mu.Unlock()
+
 		return
 	}
+	mu.Unlock()
 
 	if err := c.Delete(key); err != nil {
+		mu.Lock()
 		t.Errorf("Delete() error = %v", err)
+		mu.Unlock()
 	}
 }
 
@@ -861,11 +876,13 @@ func TestCacheLatencyRecording(t *testing.T) {
 func TestCacheManagerConcurrentAccess(t *testing.T) {
 	manager := NewCacheManager()
 
-	const goroutines = 5  // ゴルーチン数を減らす
+	const goroutines = 5
 
-	const operations = 50 // 操作回数を減らす
+	const operations = 50
 
 	var wg sync.WaitGroup
+
+	var mu sync.Mutex // テスト結果の検証用のmutex
 
 	wg.Add(goroutines)
 
@@ -882,15 +899,20 @@ func TestCacheManagerConcurrentAccess(t *testing.T) {
 
 				// GetFromCache操作
 				gotValue, found := manager.GetFromCache(key)
+
+				// テスト結果の検証をmutexで保護
+				mu.Lock()
 				if !found {
 					t.Errorf("GetFromCache() found = false, want true")
+					mu.Unlock()
+
 					continue
 				}
 
 				if gotValue != value {
 					t.Errorf("GetFromCache() value = %v, want %v", gotValue, value)
-					continue
 				}
+				mu.Unlock()
 			}
 		}(i)
 	}

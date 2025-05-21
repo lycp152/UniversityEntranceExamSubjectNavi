@@ -808,6 +808,16 @@ func (r *universityRepository) UpdateSubjectsBatch(testTypeID uint, subjects []m
 	const batchSize = 1000
 
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		// TestTypeの存在チェック
+		var testType models.TestType
+		if err := tx.First(&testType, testTypeID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("試験種別ID %d が見つかりませんでした", testTypeID)
+			}
+
+			return fmt.Errorf("試験種別の検索に失敗: %w", err)
+		}
+
 		// バッチ処理を実行
 		for i := 0; i < len(subjects); i += batchSize {
 			end := i + batchSize

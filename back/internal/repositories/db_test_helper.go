@@ -188,6 +188,10 @@ func (b *TestUniversityBuilder) Build() *models.University {
 // - エラーハンドリング
 // - データの返却
 func CreateTestUniversity(db *gorm.DB, builder *TestUniversityBuilder) (*models.University, error) {
+	if db == nil {
+		return nil, fmt.Errorf("データベース接続がnilです")
+	}
+
 	if builder == nil {
 		builder = NewTestUniversityBuilder()
 	}

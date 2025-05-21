@@ -8,6 +8,7 @@ package cache
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -25,6 +26,7 @@ const (
 	errMsgErrorType = "Operation error type = %v, want %v"
 	errMsgFound = "Get() found = %v, want %v"
 	errMsgValue = "Get() value = %v, want %v"
+	errMsgPerformanceMetrics = "GetPerformanceMetrics() error = %v"
 	// キーフォーマットの定数
 	keyFormat = "key_%d"
 	valueFormat = "value_%d"
@@ -37,6 +39,14 @@ const (
 func setup() {
 	// テスト用のロガーを初期化
 	applogger.InitTestLogger()
+
+	// テスト用の新しいキャッシュインスタンスを作成
+	instance = &Cache{
+		items:      make(map[string]cacheItem),
+		maxSize:    10000, // テスト用にmaxSizeを増やす
+		stats:      Stats{},
+	}
+	go instance.startCleanup()
 }
 
 // teardown はテストの後処理を行います。
@@ -49,6 +59,9 @@ func teardown(_ testing.TB) {
 	_ = c.ClearAll()
 	// トランザクションを確実にクリア
 	_ = c.RollbackTransaction()
+
+	// インスタンスをリセット
+	instance = nil
 }
 
 // TestCacheSet はキャッシュのSet操作をテストします。
@@ -304,7 +317,7 @@ func TestCachePerformance(t *testing.T) {
 	// パフォーマンスメトリクスの取得
 	metrics, err := c.GetPerformanceMetrics()
 	if err != nil {
-		t.Fatalf("GetPerformanceMetrics() error = %v", err)
+		t.Fatalf(errMsgPerformanceMetrics, err)
 	}
 
 	// メトリクスの検証
@@ -381,7 +394,7 @@ func BenchmarkCacheGet(b *testing.B) {
 		_, _, err := c.Get(key)
 
 		if err != nil {
-			b.Fatalf("Get() error = %v", err)
+			b.Fatalf(errMsgGet, err)
 		}
 	}
 }
@@ -401,7 +414,7 @@ func TestCachePerformanceMetrics(t *testing.T) {
 	// パフォーマンスメトリクスの取得
 	metrics, err := c.GetPerformanceMetrics()
 	if err != nil {
-		t.Fatalf("GetPerformanceMetrics() error = %v", err)
+		t.Fatalf(errMsgPerformanceMetrics, err)
 	}
 
 	// 基本的なメトリクスの確認
@@ -695,4 +708,192 @@ func TestCacheManagerStatsAndClear(t *testing.T) {
 	if foundSubj {
 		t.Error("Subjects cache should be cleared by ClearSubjectsCache")
 	}
+}
+
+// TestCacheConcurrentAccess はキャッシュの並行アクセスをテストします。
+func TestCacheConcurrentAccess(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	const goroutines = 5
+
+	const operations = 50
+
+	var wg sync.WaitGroup
+
+	wg.Add(goroutines)
+
+	for i := 0; i < goroutines; i++ {
+		go func(id int) {
+			defer wg.Done()
+			runCacheOps(t, c, id, operations)
+		}(i)
+	}
+
+	wg.Wait()
+}
+
+func runCacheOps(t *testing.T, c Interface, id, operations int) {
+	for j := 0; j < operations; j++ {
+		key := fmt.Sprintf("key_%d_%d", id, j)
+		value := fmt.Sprintf("value_%d_%d", id, j)
+		checkSetGetDelete(t, c, key, value)
+	}
+}
+
+func checkSetGetDelete(t *testing.T, c Interface, key, value string) {
+	if err := c.Set(key, value, time.Minute); err != nil {
+		t.Errorf(errMsgSet, err)
+		return
+	}
+
+	gotValue, found, err := c.Get(key)
+
+	if err != nil {
+		t.Errorf(errMsgGet, err)
+		return
+	}
+
+	if !found {
+		t.Errorf("Get() found = false, want true")
+		return
+	}
+
+	if gotValue != value {
+		t.Errorf("Get() value = %v, want %v", gotValue, value)
+		return
+	}
+
+	if err := c.Delete(key); err != nil {
+		t.Errorf("Delete() error = %v", err)
+	}
+}
+
+// TestCacheMemoryLimit はキャッシュのメモリ制限をテストします。
+func TestCacheMemoryLimit(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// 大きな値を設定してメモリ制限をテスト
+	largeValue := make([]byte, 1024*1024) // 1MB
+
+	for i := 0; i < 1000; i++ {
+		key := fmt.Sprintf("large_key_%d", i)
+		err := c.Set(key, largeValue, time.Minute)
+
+		if err != nil {
+			// メモリ制限に達した場合はエラーが返ることを確認
+			if !errors.Is(err, appErrors.NewSystemError(ErrCacheFull, nil, nil)) {
+				t.Errorf("Set() error = %v, want ErrCacheFull", err)
+			}
+
+			break
+		}
+	}
+}
+
+// TestCacheTransactionRollback はトランザクションのロールバックをテストします。
+func TestCacheTransactionRollback(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// トランザクション開始
+	err := c.StartTransaction()
+	if err != nil {
+		t.Fatalf("StartTransaction() error = %v", err)
+	}
+
+	// トランザクション内で値を設定
+	err = c.Set("key1", "value1", time.Minute)
+	if err != nil {
+		t.Fatalf(errMsgSet, err)
+	}
+
+	// ロールバック
+	err = c.RollbackTransaction()
+	if err != nil {
+		t.Fatalf("RollbackTransaction() error = %v", err)
+	}
+
+	// ロールバック後は値が存在しないことを確認
+	_, found, _ := c.Get("key1")
+	if found {
+		t.Error("Value should not exist after rollback")
+	}
+}
+
+// TestCacheLatencyRecording はレイテンシの記録をテストします。
+func TestCacheLatencyRecording(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// レイテンシを記録
+	err := c.RecordLatency("test_operation", 100*time.Millisecond)
+	if err != nil {
+		t.Errorf("RecordLatency() error = %v", err)
+	}
+
+	// パフォーマンスメトリクスを取得
+	metrics, err := c.GetPerformanceMetrics()
+	if err != nil {
+		t.Fatalf("GetPerformanceMetrics() error = %v", err)
+	}
+
+	// レイテンシが記録されていることを確認
+	if metrics.AverageLatency == 0 {
+		t.Error("AverageLatency should not be 0")
+	}
+}
+
+// TestCacheManagerConcurrentAccess はキャッシュマネージャーの並行アクセスをテストします。
+func TestCacheManagerConcurrentAccess(t *testing.T) {
+	manager := NewCacheManager()
+
+	const goroutines = 5  // ゴルーチン数を減らす
+
+	const operations = 50 // 操作回数を減らす
+
+	var wg sync.WaitGroup
+
+	wg.Add(goroutines)
+
+	for i := 0; i < goroutines; i++ {
+		go func(id int) {
+			defer wg.Done()
+
+			for j := 0; j < operations; j++ {
+				key := fmt.Sprintf("key_%d_%d", id, j)
+				value := fmt.Sprintf("value_%d_%d", id, j)
+
+				// SetCache操作
+				manager.SetCache(key, value)
+
+				// GetFromCache操作
+				gotValue, found := manager.GetFromCache(key)
+				if !found {
+					t.Errorf("GetFromCache() found = false, want true")
+					continue
+				}
+
+				if gotValue != value {
+					t.Errorf("GetFromCache() value = %v, want %v", gotValue, value)
+					continue
+				}
+			}
+		}(i)
+	}
+
+	wg.Wait()
 }

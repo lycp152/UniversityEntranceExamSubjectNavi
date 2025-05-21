@@ -13,11 +13,13 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 const errMsgCreateUniversity = "大学の作成に失敗"
 const errMsgUniversityNotFound = "東京大学が検索結果に含まれていない"
 const testDeptName = "DelDept学部"
+const errMsgNotUniversityRepository = "repoが*universityRepository型ではありません"
 
 // TestMain で .env を読み込む
 func TestMain(m *testing.M) {
@@ -933,4 +935,466 @@ func TestUpdateSubjectsBatch(t *testing.T) {
 
 	err = repo.UpdateSubjectsBatch(testType.ID, []models.Subject{*invalidSubject})
 	assert.Error(t, err)
+}
+
+// processBatchとrecalculateScoresの異常系・分岐網羅テスト
+func TestUpdateSubjectsBatchProcessBatchAndRecalculateScoresErrorCases(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テストデータの準備
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+				Majors: []models.Major{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name: "テスト学科",
+						AdmissionSchedules: []models.AdmissionSchedule{
+							{
+								BaseModel: models.BaseModel{Version: 1},
+								Name: "前",
+								DisplayOrder: 1,
+								TestTypes: []models.TestType{
+									{
+										BaseModel: models.BaseModel{Version: 1},
+										Name: "共通",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, errMsgCreateUniversity)
+
+	testType := uni.Departments[0].Majors[0].AdmissionSchedules[0].TestTypes[0]
+
+	// --- processBatch: 存在しないSubject IDを含むバッチ ---
+	invalidSubject := models.Subject{
+		BaseModel:  models.BaseModel{ID: 999999, Version: 1}, // 存在しないID
+		TestTypeID: testType.ID,
+		Name:       "存在しない科目",
+		Score:      100,
+		Percentage: 50.0,
+		DisplayOrder: 1,
+	}
+	err = repo.UpdateSubjectsBatch(testType.ID, []models.Subject{invalidSubject})
+	assert.Error(t, err, "存在しないSubject IDを含むバッチはエラーとなるべき")
+
+	// --- recalculateScores: TestTypeに紐づくSubjectが存在しない場合 ---
+	// 新規TestTypeを追加（科目なし）
+	major := &uni.Departments[0].Majors[0]
+	sched := &major.AdmissionSchedules[0]
+	newTestType := models.TestType{
+		BaseModel: models.BaseModel{Version: 1},
+		Name:     "二次",
+		AdmissionScheduleID: sched.ID,
+	}
+	// repoが*universityRepository型ならdbフィールドにアクセス
+	ur, ok := repo.(*universityRepository)
+	if !ok {
+		t.Fatal(errMsgNotUniversityRepository)
+	}
+
+	db := ur.db
+	db.Create(&newTestType)
+	// 科目なしのTestTypeで一括更新（recalculateScoresで分岐）
+	err = repo.UpdateSubjectsBatch(newTestType.ID, []models.Subject{})
+	assert.NoError(t, err, "科目が存在しない場合はエラーにならずスキップされる")
+}
+
+// getRelevantTestTypeScoresの分岐網羅テスト
+func TestGetRelevantTestTypeScores(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テスト用にDBインスタンスを取得
+	ur, ok := repo.(*universityRepository)
+	if !ok {
+		t.Fatal(errMsgNotUniversityRepository)
+	}
+
+	db := ur.db
+
+	// テスト用の大学、学部、学科を作成
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+				Majors: []models.Major{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name: "テスト学科",
+					},
+				},
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err)
+
+	majorID := uni.Departments[0].Majors[0].ID
+
+	t.Run("admissionScheduleID==0の場合は0,0,nilを返す", func(t *testing.T) {
+		common, secondary, err := ur.getRelevantTestTypeScores(db, 0)
+		assert.NoError(t, err)
+		assert.Equal(t, 0.0, common)
+		assert.Equal(t, 0.0, secondary)
+	})
+
+	t.Run("該当するTestTypeが存在しない場合は0,0,nilを返す", func(t *testing.T) {
+		// 新規AdmissionScheduleを作成
+		schedule := models.AdmissionSchedule{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "前",
+			MajorID: majorID,
+		}
+		err := db.Create(&schedule).Error
+		require.NoError(t, err)
+		common, secondary, err := ur.getRelevantTestTypeScores(db, schedule.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, 0.0, common)
+		assert.Equal(t, 0.0, secondary)
+	})
+
+	t.Run("共通のみ存在する場合", func(t *testing.T) {
+		schedule := models.AdmissionSchedule{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "中",
+			MajorID: majorID,
+		}
+		err := db.Create(&schedule).Error
+		require.NoError(t, err)
+
+		commonType := models.TestType{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "共通",
+			AdmissionScheduleID: schedule.ID,
+		}
+		err = db.Create(&commonType).Error
+		require.NoError(t, err)
+
+		subject := models.Subject{
+			BaseModel: models.BaseModel{Version: 1},
+			TestTypeID: commonType.ID,
+			Name: "国語",
+			Score: 80,
+		}
+		err = db.Create(&subject).Error
+		require.NoError(t, err)
+
+		common, secondary, err := ur.getRelevantTestTypeScores(db, schedule.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, 80.0, common)
+		assert.Equal(t, 0.0, secondary)
+	})
+
+	t.Run("二次のみ存在する場合", func(t *testing.T) {
+		schedule := models.AdmissionSchedule{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "後",
+			MajorID: majorID,
+		}
+		err := db.Create(&schedule).Error
+		require.NoError(t, err)
+
+		secondaryType := models.TestType{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "二次",
+			AdmissionScheduleID: schedule.ID,
+		}
+		err = db.Create(&secondaryType).Error
+		require.NoError(t, err)
+
+		subject := models.Subject{
+			BaseModel: models.BaseModel{Version: 1},
+			TestTypeID: secondaryType.ID,
+			Name: "数学",
+			Score: 90,
+		}
+		err = db.Create(&subject).Error
+		require.NoError(t, err)
+
+		common, secondary, err := ur.getRelevantTestTypeScores(db, schedule.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, 0.0, common)
+		assert.Equal(t, 90.0, secondary)
+	})
+
+	t.Run("共通・二次両方存在する場合", func(t *testing.T) {
+		schedule := models.AdmissionSchedule{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "前",
+			MajorID: majorID,
+		}
+		err := db.Create(&schedule).Error
+		require.NoError(t, err)
+
+		commonType := models.TestType{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "共通",
+			AdmissionScheduleID: schedule.ID,
+		}
+		err = db.Create(&commonType).Error
+		require.NoError(t, err)
+
+		secondaryType := models.TestType{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "二次",
+			AdmissionScheduleID: schedule.ID,
+		}
+		err = db.Create(&secondaryType).Error
+		require.NoError(t, err)
+
+		commonSubject := models.Subject{
+			BaseModel: models.BaseModel{Version: 1},
+			TestTypeID: commonType.ID,
+			Name: "国語",
+			Score: 70,
+		}
+		err = db.Create(&commonSubject).Error
+		require.NoError(t, err)
+
+		secondarySubject := models.Subject{
+			BaseModel: models.BaseModel{Version: 1},
+			TestTypeID: secondaryType.ID,
+			Name: "数学",
+			Score: 60,
+		}
+		err = db.Create(&secondarySubject).Error
+		require.NoError(t, err)
+
+		common, secondary, err := ur.getRelevantTestTypeScores(db, schedule.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, 70.0, common)
+		assert.Equal(t, 60.0, secondary)
+	})
+
+	t.Run("DBエラー時はエラーを返す", func(t *testing.T) {
+		// DB接続をクローズしてから利用し、エラーを発生させる
+		sqlDB, err := db.DB()
+		require.NoError(t, err)
+		err = sqlDB.Close() // 明示的にクローズ
+		require.NoError(t, err)
+
+		_, _, err = ur.getRelevantTestTypeScores(db, 12345)
+		assert.Error(t, err)
+	})
+}
+
+// TestCreateTestUniversity はテスト用の大学データ作成機能をテストします
+func TestCreateTestUniversity(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テスト用にDBインスタンスを取得
+	ur, ok := repo.(*universityRepository)
+	if !ok {
+		t.Fatal(errMsgNotUniversityRepository)
+	}
+
+	db := ur.db
+
+	t.Run("正常系：テスト用の大学データが正しく作成される", func(t *testing.T) {
+		// テスト用の大学データを作成
+		builder := NewTestUniversityBuilder().WithName("テスト大学").WithDepartment("テスト学部")
+		uni, err := CreateTestUniversity(db, builder)
+		require.NoError(t, err, "テスト用の大学データの作成に失敗")
+		require.NotNil(t, uni, "作成された大学データがnil")
+		require.NotZero(t, uni.ID, "大学IDが0")
+		require.NotEmpty(t, uni.Name, "大学名が空")
+		require.NotEmpty(t, uni.Departments, "学部が空")
+
+		// 作成されたデータをDBから取得して検証
+		found, err := repo.FindByID(uni.ID)
+		require.NoError(t, err, "作成した大学の取得に失敗")
+		require.NotNil(t, found, "取得した大学データがnil")
+		assert.Equal(t, uni.Name, found.Name, "大学名が一致しない")
+		assert.Len(t, found.Departments, len(uni.Departments), "学部の数が一致しない")
+	})
+
+	t.Run("異常系：無効なデータでの作成失敗", func(t *testing.T) {
+		// 無効なDBを渡してエラーを確認
+		var invalidDB *gorm.DB
+
+		builder := NewTestUniversityBuilder().WithName("テスト大学")
+		uni, err := CreateTestUniversity(invalidDB, builder)
+		assert.Error(t, err, "無効なDBでの作成はエラーとなるべき")
+		assert.Nil(t, uni, "無効なDBでの作成結果はnilとなるべき")
+	})
+}
+
+func TestFindMajor(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テストデータの準備
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+				Majors: []models.Major{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name: "テスト学科",
+					},
+				},
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, errMsgCreateUniversity)
+
+	departmentID := uni.Departments[0].ID
+	majorID := uni.Departments[0].Majors[0].ID
+
+	t.Run("正常系：存在する学科を取得", func(t *testing.T) {
+		major, err := repo.FindMajor(departmentID, majorID)
+		require.NoError(t, err)
+		assert.NotNil(t, major)
+		assert.Equal(t, "テスト学科", major.Name)
+	})
+
+	t.Run("異常系：存在しない学科ID", func(t *testing.T) {
+		nonExistentID := uint(99999)
+		major, err := repo.FindMajor(departmentID, nonExistentID)
+		assert.Error(t, err)
+		assert.Nil(t, major)
+	})
+
+	t.Run("異常系：存在しない学部ID", func(t *testing.T) {
+		nonExistentDeptID := uint(99999)
+		major, err := repo.FindMajor(nonExistentDeptID, majorID)
+		assert.Error(t, err)
+		assert.Nil(t, major)
+	})
+
+	t.Run("異常系：異なる学部に属する学科ID", func(t *testing.T) {
+		// 別の学部と学科を作成
+		otherDept := &models.Department{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "別の学部",
+			UniversityID: uni.ID,
+		}
+		err := repo.CreateDepartment(otherDept)
+		require.NoError(t, err)
+
+		otherMajor := &models.Major{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "別の学科",
+			DepartmentID: otherDept.ID,
+		}
+		err = repo.CreateMajor(otherMajor)
+		require.NoError(t, err)
+
+		// 異なる学部の学科IDで検索
+		major, err := repo.FindMajor(departmentID, otherMajor.ID)
+		assert.Error(t, err)
+		assert.Nil(t, major)
+	})
+}
+
+func TestFindAdmissionInfo(t *testing.T) {
+	repo, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// テストデータの準備
+	uni := &models.University{
+		BaseModel: models.BaseModel{Version: 1},
+		Name: "テスト大学",
+		Departments: []models.Department{
+			{
+				BaseModel: models.BaseModel{Version: 1},
+				Name: "テスト学部",
+				Majors: []models.Major{
+					{
+						BaseModel: models.BaseModel{Version: 1},
+						Name: "テスト学科",
+						AdmissionSchedules: []models.AdmissionSchedule{
+							{
+								BaseModel: models.BaseModel{Version: 1},
+								Name: "前",
+								DisplayOrder: 1,
+								AdmissionInfos: []models.AdmissionInfo{
+									{
+										BaseModel: models.BaseModel{Version: 1},
+										Enrollment: 100,
+										AcademicYear: 2024,
+										Status: "published",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	err := repo.Create(uni)
+	require.NoError(t, err, errMsgCreateUniversity)
+
+	scheduleID := uni.Departments[0].Majors[0].AdmissionSchedules[0].ID
+	infoID := uni.Departments[0].Majors[0].AdmissionSchedules[0].AdmissionInfos[0].ID
+
+	t.Run("正常系：存在する入試情報を取得", func(t *testing.T) {
+		info, err := repo.FindAdmissionInfo(scheduleID, infoID)
+		require.NoError(t, err)
+		assert.NotNil(t, info)
+		assert.Equal(t, 100, info.Enrollment)
+		assert.Equal(t, 2024, info.AcademicYear)
+		assert.Equal(t, "published", info.Status)
+	})
+
+	t.Run("異常系：存在しない入試情報ID", func(t *testing.T) {
+		nonExistentID := uint(99999)
+		info, err := repo.FindAdmissionInfo(scheduleID, nonExistentID)
+		assert.Error(t, err)
+		assert.Nil(t, info)
+	})
+
+	t.Run("異常系：存在しない入試日程ID", func(t *testing.T) {
+		nonExistentScheduleID := uint(99999)
+		info, err := repo.FindAdmissionInfo(nonExistentScheduleID, infoID)
+		assert.Error(t, err)
+		assert.Nil(t, info)
+	})
+
+	t.Run("異常系：異なる入試日程に属する入試情報ID", func(t *testing.T) {
+		// 別の入試日程と入試情報を作成
+		otherSchedule := &models.AdmissionSchedule{
+			BaseModel: models.BaseModel{Version: 1},
+			Name: "後",
+			DisplayOrder: 2,
+			MajorID: uni.Departments[0].Majors[0].ID,
+			AdmissionInfos: []models.AdmissionInfo{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Enrollment: 50,
+					AcademicYear: 2024,
+					Status: "draft",
+				},
+			},
+		}
+		err := repo.UpdateAdmissionSchedule(otherSchedule)
+		require.NoError(t, err)
+
+		// 異なる入試日程の入試情報IDで検索
+		info, err := repo.FindAdmissionInfo(scheduleID, otherSchedule.AdmissionInfos[0].ID)
+		assert.Error(t, err)
+		assert.Nil(t, info)
+	})
 }

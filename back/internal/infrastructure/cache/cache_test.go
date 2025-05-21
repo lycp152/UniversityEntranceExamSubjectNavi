@@ -30,6 +30,8 @@ const (
 	// キーフォーマットの定数
 	keyFormat = "key_%d"
 	valueFormat = "value_%d"
+	concurrentKeyFormat = "key_%d_%d"
+	concurrentValueFormat = "value_%d_%d"
 )
 
 // setup はテストの前処理を行います。
@@ -740,8 +742,8 @@ func TestCacheConcurrentAccess(t *testing.T) {
 
 func runCacheOps(t *testing.T, c Interface, id, operations int, mu *sync.Mutex) {
 	for j := 0; j < operations; j++ {
-		key := fmt.Sprintf("key_%d_%d", id, j)
-		value := fmt.Sprintf("value_%d_%d", id, j)
+		key := fmt.Sprintf(concurrentKeyFormat, id, j)
+		value := fmt.Sprintf(concurrentValueFormat, id, j)
 		checkSetGetDelete(t, c, key, value, mu)
 	}
 }
@@ -882,40 +884,64 @@ func TestCacheManagerConcurrentAccess(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	var mu sync.Mutex // テスト結果の検証用のmutex
+	var mu sync.Mutex
 
 	wg.Add(goroutines)
 
 	for i := 0; i < goroutines; i++ {
 		go func(id int) {
 			defer wg.Done()
-
-			for j := 0; j < operations; j++ {
-				key := fmt.Sprintf("key_%d_%d", id, j)
-				value := fmt.Sprintf("value_%d_%d", id, j)
-
-				// SetCache操作
-				manager.SetCache(key, value)
-
-				// GetFromCache操作
-				gotValue, found := manager.GetFromCache(key)
-
-				// テスト結果の検証をmutexで保護
-				mu.Lock()
-				if !found {
-					t.Errorf("GetFromCache() found = false, want true")
-					mu.Unlock()
-
-					continue
-				}
-
-				if gotValue != value {
-					t.Errorf("GetFromCache() value = %v, want %v", gotValue, value)
-				}
-				mu.Unlock()
-			}
+			runManagerOps(t, manager, id, operations, &mu)
 		}(i)
 	}
 
 	wg.Wait()
+	verifyFinalState(t, manager, goroutines, operations, &mu)
+}
+
+func runManagerOps(t *testing.T, manager *Manager, id, operations int, mu *sync.Mutex) {
+	for j := 0; j < operations; j++ {
+		key := fmt.Sprintf(concurrentKeyFormat, id, j)
+		value := fmt.Sprintf(concurrentValueFormat, id, j)
+		manager.SetCache(key, value)
+		verifyCacheOperation(t, manager, key, value, mu)
+	}
+}
+
+func verifyCacheOperation(t *testing.T, manager *Manager, key, value string, mu *sync.Mutex) {
+	gotValue, found := manager.GetFromCache(key)
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	if !found {
+		t.Errorf("GetFromCache() found = false, want true")
+		return
+	}
+
+	if gotValue != value {
+		t.Errorf("GetFromCache() value = %v, want %v", gotValue, value)
+	}
+}
+
+func verifyFinalState(t *testing.T, manager *Manager, goroutines, operations int, mu *sync.Mutex) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	for i := 0; i < goroutines; i++ {
+		for j := 0; j < operations; j++ {
+			key := fmt.Sprintf(concurrentKeyFormat, i, j)
+			expectedValue := fmt.Sprintf(concurrentValueFormat, i, j)
+			value, found := manager.GetFromCache(key)
+
+			if !found {
+				t.Errorf("Final check: GetFromCache() found = false for key %s", key)
+				continue
+			}
+
+			if value != expectedValue {
+				t.Errorf("Final check: GetFromCache() value = %v, want %v for key %s", value, expectedValue, key)
+			}
+		}
+	}
 }

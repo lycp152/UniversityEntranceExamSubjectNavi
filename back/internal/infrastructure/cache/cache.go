@@ -446,8 +446,8 @@ func NewCacheManager() *Manager {
 
 // GetFromCache はキャッシュから値を取得します
 func (cm *Manager) GetFromCache(key string) (interface{}, bool) {
-	cm.mutex.RLock()
-	defer cm.mutex.RUnlock()
+	cm.mutex.Lock()
+	defer cm.mutex.Unlock()
 
 	// キャッシュサイズチェック
 	if cm.cache.ItemCount() >= maxCacheSize {

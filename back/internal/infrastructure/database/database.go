@@ -17,6 +17,7 @@ import (
 	"university-exam-api/internal/domain/models"
 
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -188,47 +189,47 @@ func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 	return nil, fmt.Errorf(errMsgDBConnection, err)
 }
 
-// NewDB はデータベース接続を作成します。
-// この関数は以下の処理を行います：
-// - 設定の取得
-// - 接続文字列の生成
-// - データベース接続の確立
-// - コネクションプールの設定
+// NewDB はデータベース接続を確立します
 func NewDB() (*gorm.DB, error) {
-	config, err := NewConfig()
-	if err != nil {
-		return nil, fmt.Errorf(errMsgConfigCreation, err)
+	// テスト環境の場合はSQLiteを使用
+	if os.Getenv("GO_ENV") == "test" {
+		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+			TranslateError: true,
+		})
 	}
 
+	// 設定の取得
+	cfg, err := NewConfig()
+	if err != nil {
+		return nil, fmt.Errorf("データベース設定の取得に失敗: %w", err)
+	}
+
+	// 本番環境用のPostgreSQL接続設定
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s "+
-			"search_path=%s sslmode=disable TimeZone=Asia/Tokyo "+
+			"search_path=public sslmode=disable TimeZone=Asia/Tokyo "+
 			"client_encoding=UTF8",
-		config.Host,
-		config.User,
-		config.Password,
-		config.DBName,
-		config.Port,
-		config.Schema,
+		cfg.Host,
+		cfg.User,
+		cfg.Password,
+		cfg.DBName,
+		cfg.Port,
 	)
 
-	db, err := connectWithRetry(dsn, config)
+	// リトライ付きでデータベース接続を試みる
+	db, err := connectWithRetry(dsn, cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("データベース接続に失敗: %w", err)
 	}
 
+	// コネクションプールの設定
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, fmt.Errorf(errMsgDBInstance, err)
+		return nil, fmt.Errorf("データベースインスタンスの取得に失敗: %w", err)
 	}
 
-	err = setupConnectionPool(sqlDB, config)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := db.Exec(fmt.Sprintf("SET search_path TO %s", config.Schema)).Error; err != nil {
-		return nil, fmt.Errorf(errMsgSchemaSetting, err)
+	if err := setupConnectionPool(sqlDB, cfg); err != nil {
+		return nil, fmt.Errorf("コネクションプールの設定に失敗: %w", err)
 	}
 
 	return db, nil

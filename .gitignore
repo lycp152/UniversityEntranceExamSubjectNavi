@@ -25,9 +25,7 @@ back/vendor/
 back/tmp/*
 back/dist/
 back/**/*.log
-back/logs/
-!back/logs/.gitkeep
-!back/logs/tests/.gitkeep
+back/**/logs/
 back/bin/*
 back/internal/repositories/mocks/mock_university_repository.go
 back/coverage.*

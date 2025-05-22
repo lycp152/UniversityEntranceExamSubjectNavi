@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"sync"
 	"syscall"
@@ -219,21 +220,51 @@ func setupMetrics() {
 
 // initializeApp はアプリケーションの初期化を行います
 func initializeApp(ctx context.Context) (*config.Config, *gorm.DB, error) {
+	// プロジェクトルートを特定
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, nil, fmt.Errorf("カレントディレクトリの取得に失敗しました: %w", err)
+	}
+
+	projectRoot := wd
+	for {
+		if _, err := os.Stat(filepath.Join(projectRoot, "go.mod")); err == nil {
+			break
+		}
+		parent := filepath.Dir(projectRoot)
+		if parent == projectRoot {
+			return nil, nil, fmt.Errorf("プロジェクトルートが見つかりません")
+		}
+		projectRoot = parent
+	}
+
+	// ログディレクトリのパスを構築
+	logDir := filepath.Join(projectRoot, "logs")
+
+	// ログディレクトリの作成
+	if err := os.MkdirAll(logDir, 0750); err != nil {
+		return nil, nil, fmt.Errorf("ログディレクトリの作成に失敗しました: %w", err)
+	}
+
+	// ロガーの設定
+	cfg := applogger.DefaultConfig()
+	cfg.LogDir = logDir
+
 	// ロガーの初期化
-	if err := applogger.InitLoggers(applogger.DefaultConfig()); err != nil {
+	if err := applogger.InitLoggers(cfg); err != nil {
 		return nil, nil, fmt.Errorf("ロガーの初期化に失敗しました: %w", err)
 	}
 
 	applogger.Info(ctx, "アプリケーションを起動しています...")
 
 	// 設定の読み込み
-	cfg, err := config.New()
+	appCfg, err := config.New()
 	if err != nil {
 		return nil, nil, fmt.Errorf("設定の読み込みに失敗しました: %w", err)
 	}
 
 	// 環境変数の読み込みと検証
-	if err := setupEnvironment(ctx, cfg); err != nil {
+	if err := setupEnvironment(ctx, appCfg); err != nil {
 		return nil, nil, fmt.Errorf("環境変数の読み込みに失敗しました: %w", err)
 	}
 
@@ -258,7 +289,7 @@ func initializeApp(ctx context.Context) (*config.Config, *gorm.DB, error) {
 	// 新しいセッションを作成して安全性を確保
 	db = db.Session(&gorm.Session{})
 
-	return cfg, db, nil
+	return appCfg, db, nil
 }
 
 // setupServer はサーバーの初期化と設定を行います

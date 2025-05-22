@@ -227,14 +227,18 @@ func initializeApp(ctx context.Context) (*config.Config, *gorm.DB, error) {
 	}
 
 	projectRoot := wd
+
 	for {
 		if _, err := os.Stat(filepath.Join(projectRoot, "go.mod")); err == nil {
 			break
 		}
+
 		parent := filepath.Dir(projectRoot)
+
 		if parent == projectRoot {
 			return nil, nil, fmt.Errorf("プロジェクトルートが見つかりません")
 		}
+
 		projectRoot = parent
 	}
 

@@ -70,14 +70,18 @@ func setupTestLogger(t *testing.T) {
 		}
 
 		projectRoot := wd
+
 		for {
 			if _, err := os.Stat(filepath.Join(projectRoot, "go.mod")); err == nil {
 				break
 			}
+
 			parent := filepath.Dir(projectRoot)
+
 			if parent == projectRoot {
 				t.Fatalf("プロジェクトルートが見つかりません")
 			}
+
 			projectRoot = parent
 		}
 

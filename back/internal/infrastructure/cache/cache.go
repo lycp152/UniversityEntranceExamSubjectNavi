@@ -290,25 +290,45 @@ func (c *Cache) Get(key string) (interface{}, bool, error) {
 
 		item, exists := c.transaction.items[key]
 		if exists {
+			// 統計情報の更新をロックで保護
+			c.mu.RUnlock()
+			c.mu.Lock()
 			c.stats.Hits++
+			c.mu.Unlock()
+			c.mu.RLock()
 			return item.value, true, nil
 		}
 	}
 
 	item, exists := c.items[key]
 	if !exists {
+		// 統計情報の更新をロックで保護
+		c.mu.RUnlock()
+		c.mu.Lock()
 		c.stats.Misses++
+		c.mu.Unlock()
+		c.mu.RLock()
 		return nil, false, nil
 	}
 
 	if time.Now().After(item.expiration) {
+		// 統計情報の更新をロックで保護
+		c.mu.RUnlock()
+		c.mu.Lock()
 		c.stats.Misses++
+		c.mu.Unlock()
+		c.mu.RLock()
 		return nil, false, nil
 	}
 
+	// 統計情報の更新をロックで保護
+	c.mu.RUnlock()
+	c.mu.Lock()
 	c.stats.Hits++
 	item.accessCount++
 	c.items[key] = item
+	c.mu.Unlock()
+	c.mu.RLock()
 
 	applogger.Info(context.Background(), "キャッシュ: キー %s でヒットしました", key)
 
@@ -568,7 +588,10 @@ func (c *Cache) CommitTransaction() error {
 		// メモリ使用量のチェック
 		itemSize := calculateItemSize(item.value)
 		if c.currentSize+itemSize > c.maxSize {
+			// 一時的にロックを解放してevictItemsを実行
+			c.mu.Unlock()
 			c.evictItems()
+			c.mu.Lock()
 
 			if c.currentSize+itemSize > c.maxSize {
 				c.transaction = nil

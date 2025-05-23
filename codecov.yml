@@ -1,39 +1,35 @@
 # Codecovの設定ファイル
 # 参考: https://docs.codecov.com/docs/best-practices
 
-coverage:
-  status:
-    project:
-      default:
-        target: 80% # カバレッジの目標値
-        threshold: 1% # 許容される低下率
-    patch:
-      default:
-        target: 80%
-        threshold: 1%
-
-# カバレッジレポートの設定
 codecov:
-  require_ci_to_pass: true # CIが成功した場合のみカバレッジを更新
-  max_report_age: off # レポートの有効期限を無期限に設定
+  notify:
+    wait_for_ci: true
+  require_ci_to_pass: true
+  max_report_age: "12h"
 
-# カバレッジの傾向分析設定
 comment:
-  layout: "reach, diff, flags, files, footer"
   behavior: default
-  require_changes: false
-  require_base: false
+  layout: reach,diff,flags,tree,reach
+  show_carryforward_flags: false
+  require_changes: true
+  require_base: true
   require_head: true
 
-# カバレッジ低下のアラート設定
-notify:
-  slack:
-    default:
-      url: ${{ secrets.SLACK_WEBHOOK_URL }}
-      threshold: 1% # カバレッジが1%以上低下した場合に通知
-      branches: # 通知対象のブランチ
-        - main
-        - develop
+coverage:
+  precision: 2
+  range: "60.0,80.0"
+  round: down
+  status:
+    changes: false
+    default_rules:
+      flag_coverage_not_uploaded_behavior: include
+    patch: true
+    project: true
+
+github_checks:
+  annotations: true
+
+slack_app: true
 
 # カバレッジの除外設定
 ignore:

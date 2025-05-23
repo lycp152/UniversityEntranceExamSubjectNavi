@@ -235,3 +235,44 @@ func TestServerSetupRoutesError(t *testing.T) {
 	err := s.SetupRoutes(db)
 	assert.Error(t, err)
 }
+
+func TestRunServer(t *testing.T) {
+	t.Parallel()
+	setupTestLogger(t)
+
+	cfg := &config.Config{
+		Port: getFreePort(),
+	}
+
+	s := New(cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	defer cancel()
+
+	// サーバー起動用のチャネル
+	serverReady := make(chan struct{})
+
+	// サーバー起動
+	go func() {
+		err := s.Start(ctx)
+		assert.NoError(t, err)
+	}()
+
+	// サーバーが起動するのを待つ
+	go func() {
+		// サーバーが起動するまで少し待機
+		time.Sleep(100 * time.Millisecond)
+		close(serverReady)
+	}()
+
+	// サーバーが起動するのを待つ
+	<-serverReady
+
+	// サーバーのアドレスを取得
+	addr := s.GetActualAddr()
+	assert.NotEmpty(t, addr)
+
+	// シャットダウン
+	err := s.Shutdown(ctx)
+	assert.NoError(t, err)
+}

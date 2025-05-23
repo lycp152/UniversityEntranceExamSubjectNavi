@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 	"university-exam-api/internal/config"
 	applogger "university-exam-api/internal/logger"
@@ -36,6 +37,7 @@ type Server struct {
 	echo     *echo.Echo
 	cfg      *config.Config
 	listener net.Listener // 追加: 実際のリッスンアドレスを取得するため
+	mu       sync.RWMutex // 追加: listenerへのアクセスを同期化
 }
 
 // New は新しいサーバーインスタンスを作成します。
@@ -83,7 +85,9 @@ func (s *Server) Start(ctx context.Context) error {
 		return fmt.Errorf("リッスンに失敗しました: %w", err)
 	}
 
+	s.mu.Lock()
 	s.listener = ln
+	s.mu.Unlock()
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -124,6 +128,9 @@ func (s *Server) Start(ctx context.Context) error {
 
 // GetActualAddr は実際のリッスンアドレス（host:port）を返します
 func (s *Server) GetActualAddr() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	if s.listener != nil {
 		return s.listener.Addr().String()
 	}

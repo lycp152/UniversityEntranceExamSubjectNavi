@@ -37,9 +37,25 @@ notify:
 
 # カバレッジの除外設定
 ignore:
+  # テストファイル関連
   - "**/*_test.go" # テストファイルを除外
   - "**/testutils/**" # テストユーティリティを除外
   - "**/mocks/**" # モックファイルを除外
+  - "**/tests/testutils/**" # テストユーティリティを除外
+  - "**/tests/unit/test_data.go" # テストデータファイルを除外
+  - "**/tests/unit/benchmarks_test.go" # ベンチマークテストを除外
+  - "**/tests/unit/load_test.go" # 負荷テストを除外
+  - "**/tests/unit/memory_test.go" # メモリテストを除外
+  - "**/tests/unit/example_test.go" # テスト例示ファイルを除外
+  - "**/tests/e2e/**" # E2Eテストを除外
+  - "**/tests/integration/**" # 統合テストを除外
+
+  # マイグレーション関連
+  - "**/migrations/scripts/**" # マイグレーションスクリプトを除外
+  - "**/migrations/seeds/**" # シードデータを除外
+
+  # テストデータ関連
+  - "**/tests/testdata/**" # テストデータディレクトリを除外
 
 # カバレッジの集計方法
 flags:

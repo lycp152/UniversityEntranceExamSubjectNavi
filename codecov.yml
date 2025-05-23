@@ -54,9 +54,8 @@ slack_app: true
 # カバレッジ計測から除外すべきファイルを指定
 ignore:
   # テストファイル関連
-  - "**/*_test.go" # テストファイルを除外
-  - "**/testutils/**" # テストユーティリティを除外
-  - "**/mocks/**" # モックファイルを除外
+  - "back/tests/**/*_test.go" # テストファイルを除外
+  - "back/internal/testutils/**" # 内部テストユーティリティを除外
   - "back/tests/testutils/**" # テストユーティリティを除外
   - "back/tests/unit/test_data.go" # テストデータファイルを除外
   - "back/tests/unit/benchmarks_test.go" # ベンチマークテストを除外
@@ -72,6 +71,9 @@ ignore:
 
   # テストデータ関連
   - "back/tests/testdata/**" # テストデータディレクトリを除外
+
+  # モック関連
+  - "**/mocks/**" # モックファイルを除外
 
 # カバレッジの集計方法
 # flags: カバレッジの集計単位と方法を指定

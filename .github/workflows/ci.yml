@@ -266,12 +266,17 @@ jobs:
       - name: Run security tests
         run: |
           cd back
+          # セキュリティテストの実行
           go test -v -run=TestVulnerability ./tests/unit/vulnerability_test.go
           go test -v -run=TestSecurity ./tests/unit/security_test.go
-          # セキュリティスキャン
-          go run github.com/securego/gosec/v2/cmd/gosec/... ./...
+
+          # gosecのインストールと実行
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec -quiet ./...
+
           # 依存関係の脆弱性チェック
-          go list -json -m all | go run github.com/google/osv-scanner/cmd/osv-scanner@latest
+          go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+          osv-scanner
 
       # セキュリティレポートのアップロード
       - name: Upload security reports

@@ -51,11 +51,15 @@ jobs:
 
       # セキュリティスキャンの実行
       # -quiet: 警告のみを表示
-      - name: Install gosec
-        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+      - name: Install security tools
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          go install golang.org/x/vuln/cmd/govulncheck@latest
 
       - name: Run security scan
-        run: gosec -quiet ./...
+        run: |
+          $(go env GOPATH)/bin/gosec ./...
+          $(go env GOPATH)/bin/govulncheck ./...
 
       # テストの実行
       # -coverprofile: カバレッジレポートの出力
@@ -64,6 +68,9 @@ jobs:
       # -benchmem: メモリ割り当ての統計情報を表示
       - name: Run tests
         run: |
+          go test -v ./tests/unit/...
+          go test -v -run=TestVulnerability ./tests/unit/vulnerability_test.go
+          go test -v -run=TestSecurity ./tests/unit/security_test.go
           go test -v -coverprofile=coverage.txt -covermode=atomic ./...
           go test -v -bench=. -benchmem ./... | tee benchmark-results.txt
 

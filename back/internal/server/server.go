@@ -10,6 +10,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 	"university-exam-api/internal/config"
@@ -29,9 +30,12 @@ const (
 // この構造体は以下の設定を管理します：
 // - Echoインスタンス
 // - アプリケーション設定
+// - 実際のリッスンアドレス
+// - リスナー
 type Server struct {
-	echo *echo.Echo
-	cfg  *config.Config
+	echo     *echo.Echo
+	cfg      *config.Config
+	listener net.Listener // 追加: 実際のリッスンアドレスを取得するため
 }
 
 // New は新しいサーバーインスタンスを作成します。
@@ -73,12 +77,19 @@ func New(cfg *config.Config) *Server {
 // ctx: コンテキスト
 // 戻り値: エラー情報
 func (s *Server) Start(ctx context.Context) error {
-	// サーバーの起動
+	// net.Listenerを使って実際のアドレスを取得
+	ln, err := net.Listen("tcp", ":"+s.cfg.Port)
+	if err != nil {
+		return fmt.Errorf("リッスンに失敗しました: %w", err)
+	}
+
+	s.listener = ln
+
 	errCh := make(chan error, 1)
 	go func() {
-		applogger.Info(context.Background(), "サーバーを起動しています。ポート: %s", s.cfg.Port)
+		applogger.Info(context.Background(), "サーバーを起動しています。アドレス: %s", ln.Addr().String())
 
-		if err := s.echo.Start(":" + s.cfg.Port); err != nil && err != http.ErrServerClosed {
+		if err := s.echo.Server.Serve(ln); err != nil && err != http.ErrServerClosed {
 			errCh <- err
 			applogger.Error(context.Background(), "サーバーの起動に失敗しました: %v", err)
 
@@ -109,6 +120,15 @@ func (s *Server) Start(ctx context.Context) error {
 
 		return nil
 	}
+}
+
+// GetActualAddr は実際のリッスンアドレス（host:port）を返します
+func (s *Server) GetActualAddr() string {
+	if s.listener != nil {
+		return s.listener.Addr().String()
+	}
+
+	return ""
 }
 
 // SetupRoutes はルーティングを設定します。

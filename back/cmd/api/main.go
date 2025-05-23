@@ -312,10 +312,12 @@ func setupServer(ctx context.Context, cfg *config.Config, db *gorm.DB) (*server.
 }
 
 // runServer はサーバーを起動し、シグナルハンドリングを行います
-func runServer(ctx context.Context, srv *server.Server) error {
+func runServer(ctx context.Context, srv *server.Server, sigChan chan os.Signal) error {
 	// シグナルハンドリングの設定
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	if sigChan == nil {
+		sigChan = make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	}
 
 	// シャットダウン用のWaitGroup
 	var wg sync.WaitGroup
@@ -340,6 +342,12 @@ func runServer(ctx context.Context, srv *server.Server) error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
 
+	// シャットダウン処理
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		applogger.Error(ctx, "サーバーのシャットダウンに失敗しました: %v", err)
+		return err
+	}
+
 	// シャットダウン完了待機
 	done := make(chan struct{})
 	go func() {
@@ -350,11 +358,11 @@ func runServer(ctx context.Context, srv *server.Server) error {
 	select {
 	case <-done:
 		applogger.Info(ctx, "シャットダウンが完了しました")
+		return nil
 	case <-shutdownCtx.Done():
 		applogger.Warn(ctx, "シャットダウンがタイムアウトしました")
+		return fmt.Errorf("シャットダウンがタイムアウトしました")
 	}
-
-	return nil
 }
 
 func main() {
@@ -383,7 +391,7 @@ func main() {
 	}
 
 	// サーバーの起動と実行
-	if err := runServer(ctx, srv); err != nil {
+	if err := runServer(ctx, srv, nil); err != nil {
 		log.Printf("%v", err)
 		return
 	}

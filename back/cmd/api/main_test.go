@@ -50,6 +50,8 @@ const (
 	responseWriteErrorMsg = "レスポンスの書き込みに失敗しました: %v"
 	dbCloseErrorMsg = "データベース接続のクローズに失敗しました: %v"
 	routesSetupErrorMsg = "ルーティングの設定に失敗しました: %v"
+	// responseBodyCloseErrorMsg はレスポンスボディのクローズ失敗時のメッセージです
+	responseBodyCloseErrorMsg = "レスポンスボディのクローズに失敗しました: %v"
 )
 
 // setupTestLogger はテスト用のロガーをセットアップします。
@@ -406,7 +408,7 @@ func TestServerStartupAndShutdown(t *testing.T) {
 		if err == nil {
 			defer func() {
 				if err := resp.Body.Close(); err != nil {
-					t.Errorf("レスポンスボディのクローズに失敗しました: %v", err)
+					t.Errorf(responseBodyCloseErrorMsg, err)
 				}
 			}()
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -1161,7 +1163,7 @@ func simulateActiveConnections(t *testing.T, count int, wg *sync.WaitGroup) {
 			if err == nil {
 				defer func() {
 					if err := resp.Body.Close(); err != nil {
-						t.Errorf("レスポンスボディのクローズに失敗しました: %v", err)
+						t.Errorf(responseBodyCloseErrorMsg, err)
 					}
 				}()
 			}
@@ -1388,59 +1390,100 @@ func TestSetupServer(t *testing.T) {
 	})
 }
 
-// TestRunServer はサーバーの実行をテストします
+// TestRunServer はrunServer関数のカバレッジ向上のための直接テストです
 func TestRunServer(t *testing.T) {
 	setupTestLogger(t)
 
-	// DefaultServeMuxをリセット
-	http.DefaultServeMux = http.NewServeMux()
+	cfg := &config.Config{
+		Port: "0", // ランダムポートを使用
+	}
 
-	// 正常系のテスト
-	t.Run("正常系/サーバー実行", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
-		cfg := &config.Config{
-			Port: "0",
-		}
-		db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{})
-		assert.NoError(t, err)
-
-		defer func() {
-			if err := database.CloseDB(db); err != nil {
-				t.Errorf(dbCloseErrorMsg, err)
-			}
-		}()
-
-		srv, err := setupServer(ctx, cfg, db)
-		assert.NoError(t, err)
-
-		done := make(chan error, 1)
-		go func() {
-			done <- srv.Start(ctx)
-		}()
-
-		// サーバーが起動するまで待機
-		time.Sleep(500 * time.Millisecond)
-
-		// シャットダウンのタイムアウト設定
-		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer shutdownCancel()
-
-		// サーバーのシャットダウンを明示的に呼び出す
-		err = srv.Shutdown(shutdownCtx)
-		assert.NoError(t, err)
-
-		// 完了を待機
-		select {
-		case err := <-done:
-			if err != nil && err != http.ErrServerClosed {
-				t.Errorf("サーバーの実行中にエラーが発生しました: %v", err)
-			}
-		case <-time.After(5 * time.Second):
-			t.Error("サーバーのシャットダウンがタイムアウトしました")
-		}
+	db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{
+		TranslateError: true,
 	})
+	if err != nil {
+		t.Fatalf(dbConnectionErrorMsg, err)
+	}
+
+	srv := server.New(cfg)
+	if err := srv.SetupRoutes(db); err != nil {
+		t.Fatalf(routesSetupErrorMsg, err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// テスト用のシグナルチャネルを作成
+	sigChan := make(chan os.Signal, 1)
+
+	// サーバー起動完了を通知するチャネル
+	serverReady := make(chan struct{})
+
+	// runServerを別ゴルーチンで実行
+	errCh := make(chan error, 1)
+	go func() {
+		// サーバーが起動したことを通知
+		close(serverReady)
+		errCh <- runServer(ctx, srv, sigChan)
+	}()
+
+	// サーバーが起動するまで待機
+	<-serverReady
+
+	// サーバーの起動を待つ
+	time.Sleep(500 * time.Millisecond)
+
+	// 実際のリッスンアドレスを取得（最大3回まで再試行）
+	var actualAddr string
+	for i := 0; i < 3; i++ {
+		actualAddr = srv.GetActualAddr()
+		if actualAddr != "" {
+			break
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	if actualAddr == "" {
+		t.Fatal("サーバーのリッスンアドレスを取得できませんでした")
+	}
+
+	// ヘルスチェックでサーバーが応答することを確認
+	client := &http.Client{
+		Timeout: 1 * time.Second,
+	}
+
+	// 最大3回までリトライ
+	for i := 0; i < 3; i++ {
+		resp, err := client.Get("http://" + actualAddr + "/api/health")
+		if err == nil {
+			if err := resp.Body.Close(); err != nil {
+				t.Errorf(responseBodyCloseErrorMsg, err)
+			}
+
+			break
+		}
+
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	// シグナルを送信
+	sigChan <- syscall.SIGTERM
+
+	// シャットダウンのタイムアウト設定
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+
+	// 結果を待つ
+	select {
+	case err := <-errCh:
+		assert.NoError(t, err)
+	case <-shutdownCtx.Done():
+		t.Error("runServerのシャットダウンがタイムアウトしました")
+	}
+
+	// サーバーが完全にシャットダウンするまで待機
+	time.Sleep(500 * time.Millisecond)
 }
 
 // setupBrokenDB は切断されたデータベース接続をセットアップします

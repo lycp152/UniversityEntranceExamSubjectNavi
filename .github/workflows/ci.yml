@@ -276,7 +276,7 @@ jobs:
 
           # 依存関係の脆弱性チェック
           go install github.com/google/osv-scanner/cmd/osv-scanner@latest
-          osv-scanner
+          osv-scanner ./...
 
       # セキュリティレポートのアップロード
       - name: Upload security reports

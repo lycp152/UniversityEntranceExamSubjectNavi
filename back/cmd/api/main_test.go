@@ -1419,8 +1419,10 @@ func TestRunServer(t *testing.T) {
 	// サーバー起動完了を通知するチャネル
 	serverReady := make(chan struct{})
 
-	// runServerを別ゴルーチンで実行
+	// エラーを収集するチャネル
 	errCh := make(chan error, 1)
+
+	// runServerを別ゴルーチンで実行
 	go func() {
 		// サーバーが起動したことを通知
 		close(serverReady)
@@ -1477,7 +1479,9 @@ func TestRunServer(t *testing.T) {
 	// 結果を待つ
 	select {
 	case err := <-errCh:
-		assert.NoError(t, err)
+		if err != nil {
+			t.Errorf("runServerがエラーを返しました: %v", err)
+		}
 	case <-shutdownCtx.Done():
 		t.Error("runServerのシャットダウンがタイムアウトしました")
 	}

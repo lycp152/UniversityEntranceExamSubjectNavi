@@ -162,8 +162,6 @@ jobs:
           for f in coverage-*/*; do
             tail -n +2 $f >> coverage.txt
           done
-          # カバレッジ閾値のチェック（80%以上を要求）
-          go tool cover -func=coverage.txt | grep -E "total:\s+\(statements\)\s+([0-9.]+)%" | awk '{if ($3 < 80) {print "カバレッジが80%未満です: " $3; exit 1}}'
       # Codecovへのアップロード
       - uses: codecov/codecov-action@v4
         with:

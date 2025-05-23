@@ -77,7 +77,7 @@ target "app" {
 # ビルドステージのターゲット
 target "build" {
   context = "."
-  dockerfile = "Dockerfile.build"
+  dockerfile = "./Dockerfile.build"
   platforms = ["linux/amd64", "linux/arm64"]
   no-cache = false
 
@@ -120,7 +120,7 @@ target "build" {
 # テスト用のターゲット
 target "test" {
   context = "."
-  dockerfile = "Dockerfile.test"
+  dockerfile = "./Dockerfile.test"
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:test"]
   platforms = ["linux/amd64"]
 

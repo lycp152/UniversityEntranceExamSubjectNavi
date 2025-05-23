@@ -75,7 +75,7 @@ target "app" {
 # ビルドステージのターゲット
 target "build" {
   context = "."
-  dockerfile = "Dockerfile.build"
+  dockerfile = "./Dockerfile.build"
   platforms = ["linux/amd64", "linux/arm64"]
   no-cache = false
 
@@ -118,7 +118,7 @@ target "build" {
 # 開発環境用のターゲット
 target "dev" {
   context = "."
-  dockerfile = "Dockerfile.dev"
+  dockerfile = "./Dockerfile.dev"
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:dev"]
   platforms = ["linux/amd64"]
 

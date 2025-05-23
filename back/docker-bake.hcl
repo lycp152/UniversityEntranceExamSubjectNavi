@@ -100,11 +100,8 @@ target "build" {
     "type=registry,ref=${DOCKER_REGISTRY}/${IMAGE_NAME}:buildcache,mode=max,ignore-error=true"
   ]
 
-  # セキュリティ設定とビルド設定
+  # ビルド設定
   attrs = {
-    "security.insecure": "false"
-    "security.privileged": "false"
-    "security.sandbox": "true"
     "build-arg.BUILDKIT_INLINE_CACHE": "1"
     "build-arg.BUILDKIT_MULTI_PLATFORM": "1"
     "build-arg.BUILDKIT_BUILDKITD_FLAGS": "--debug"

@@ -49,15 +49,11 @@ target "app" {
     "type=local,dest=/tmp/.buildx-cache-new,ignore-error=true"
   ]
 
-  # セキュリティ設定
+  # セキュリティ設定とビルド設定
   attrs = {
     "security.insecure": "false"
     "security.privileged": "false"
     "security.sandbox": "true"
-  }
-
-  # ビルド設定
-  attrs = {
     "build-arg.BUILDKIT_INLINE_CACHE": "1"
     "build-arg.BUILDKIT_MULTI_PLATFORM": "1"
     "build-arg.BUILDKIT_BUILDKITD_FLAGS": "--debug"
@@ -147,15 +143,11 @@ target "test" {
     "type=local,dest=/tmp/.buildx-cache-new,ignore-error=true"
   ]
 
-  # セキュリティ設定
+  # セキュリティ設定とビルド設定
   attrs = {
     "security.insecure": "false"
     "security.privileged": "false"
     "security.sandbox": "true"
-  }
-
-  # ビルド設定
-  attrs = {
     "build-arg.BUILDKIT_INLINE_CACHE": "1"
     "build-arg.BUILDKIT_MULTI_PLATFORM": "1"
     "build-arg.BUILDKIT_BUILDKITD_FLAGS": "--debug"

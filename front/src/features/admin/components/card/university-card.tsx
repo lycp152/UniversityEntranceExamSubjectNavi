@@ -29,6 +29,10 @@ interface UniversityCardProps
   readonly university: University;
   /** 編集モードの状態 */
   readonly editMode: EditMode | null;
+  /** この大学が編集中かどうか */
+  readonly isEditing: boolean;
+  /** 編集ボタンを表示するかどうか */
+  readonly showEditButton: boolean;
 }
 
 /**
@@ -40,6 +44,8 @@ interface UniversityCardProps
 const UniversityCardList = ({
   university,
   editMode,
+  isEditing,
+  showEditButton,
   onEdit,
   onSave,
   onCancel,
@@ -56,6 +62,7 @@ const UniversityCardList = ({
           university={university}
           department={department}
           isEditing={
+            isEditing &&
             editMode?.universityId === university.id &&
             editMode?.departmentId === department.id &&
             editMode?.isEditing
@@ -65,13 +72,16 @@ const UniversityCardList = ({
           onCancel={onCancel}
           onScoreChange={onScoreChange}
           onInfoChange={onInfoChange}
-          onAddSubject={type => onAddSubject(university.id, department.id, type)}
+          onAddSubject={onAddSubject}
           onSubjectNameChange={onSubjectNameChange}
+          showEditButton={showEditButton}
         />
       )),
     [
       university,
       editMode,
+      isEditing,
+      showEditButton,
       onEdit,
       onSave,
       onCancel,

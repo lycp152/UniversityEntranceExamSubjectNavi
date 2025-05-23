@@ -8,6 +8,7 @@ package university
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 	"university-exam-api/internal/domain/models"
@@ -22,7 +23,7 @@ import (
 
 const (
 	// ErrMsgUniversityNotFound は大学が見つからない場合のエラーメッセージです
-	ErrMsgUniversityNotFound = "大学が見つかりません: %s"
+	ErrMsgUniversityNotFound = "大学が見つかりません"
 	// ErrMsgInvalidUniversityID は大学IDの形式が不正な場合のエラーメッセージです
 	ErrMsgInvalidUniversityID = "大学IDの形式が不正です"
 	// ErrMsgCreateUniversityFailed は大学の作成に失敗した場合のエラーメッセージです
@@ -41,6 +42,10 @@ const (
 	ErrMsgGetUniversitiesFailed = "大学一覧の取得に失敗しました"
 	// ErrMsgGetUniversityFailed は大学の取得に失敗した場合のエラーメッセージです
 	ErrMsgGetUniversityFailed = "大学の取得に失敗しました"
+	// ErrMsgInternalServerError はサーバー内部エラーのメッセージです
+	ErrMsgInternalServerError = "サーバー内部でエラーが発生しました"
+	// ErrMsgValidationError はバリデーションエラーのメッセージです
+	ErrMsgValidationError = "バリデーションエラー"
 )
 
 // Handler は大学関連のHTTPリクエストを処理する構造体です。
@@ -113,7 +118,7 @@ func (h *Handler) handleError(ctx context.Context, c echo.Context, err error) er
 		applogger.Error(ctx, "予期せぬエラーが発生しました: %v", err)
 
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "サーバー内部でエラーが発生しました",
+			"error": ErrMsgInternalServerError,
 		})
 	}
 }
@@ -143,8 +148,29 @@ func (h *Handler) GetUniversities(c echo.Context) error {
 
 	universities, err := h.repo.FindAll(ctx)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			applogger.Error(ctx, "リクエストがタイムアウトしました")
+
+			return c.JSON(http.StatusRequestTimeout, map[string]string{
+				"error": "リクエストがタイムアウトしました",
+			})
+		}
+
+		if errors.Is(err, context.Canceled) {
+			applogger.Error(ctx, "リクエストがクライアントによりキャンセルされました")
+
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error": ErrMsgInternalServerError,
+			})
+		}
+
 		applogger.Error(ctx, ErrMsgGetUniversitiesFailed+": %v", err)
+
 		return h.handleError(ctx, c, err)
+	}
+
+	if universities == nil {
+		universities = []models.University{}
 	}
 
 	applogger.Info(ctx, applogger.LogGetUniversitiesSuccess, len(universities))
@@ -216,12 +242,31 @@ func (h *Handler) UpdateUniversity(c echo.Context) error {
 		return h.handleError(ctx, c, err)
 	}
 
+	// 大学の存在確認
+	existingUniversity, err := h.repo.FindByID(id)
+	if err != nil {
+		if _, ok := err.(*customErrors.Error); ok && err.(*customErrors.Error).Code == customErrors.CodeNotFound {
+			applogger.Error(ctx, ErrMsgUniversityNotFound, id)
+
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": ErrMsgUniversityNotFound,
+			})
+		}
+
+		applogger.Error(ctx, ErrMsgUpdateUniversityFailed+": %v", err)
+
+		return h.handleError(ctx, c, err)
+	}
+
 	var university models.University
 	if err := h.bindRequest(ctx, c, &university); err != nil {
 		return h.handleError(ctx, c, err)
 	}
 
 	university.ID = id
+	university.CreatedAt = existingUniversity.CreatedAt
+	university.CreatedBy = existingUniversity.CreatedBy
+
 	if err := h.repo.Update(&university); err != nil {
 		applogger.Error(ctx, ErrMsgUpdateUniversityFailed+": %v", err)
 		return h.handleError(ctx, c, err)
@@ -243,6 +288,22 @@ func (h *Handler) DeleteUniversity(c echo.Context) error {
 
 	id, err := validation.ValidateUniversityID(ctx, c.Param("id"))
 	if err != nil {
+		return h.handleError(ctx, c, err)
+	}
+
+	// 大学の存在確認
+	_, err = h.repo.FindByID(id)
+	if err != nil {
+		if _, ok := err.(*customErrors.Error); ok && err.(*customErrors.Error).Code == customErrors.CodeNotFound {
+			applogger.Error(ctx, ErrMsgUniversityNotFound, id)
+
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": ErrMsgUniversityNotFound,
+			})
+		}
+
+		applogger.Error(ctx, ErrMsgDeleteUniversityFailed+": %v", err)
+
 		return h.handleError(ctx, c, err)
 	}
 

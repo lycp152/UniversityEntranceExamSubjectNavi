@@ -80,6 +80,8 @@ const mockHandlers = {
   onInfoChange: vi.fn(),
   onAddSubject: vi.fn(),
   onSubjectNameChange: vi.fn(),
+  isEditing: false,
+  showEditButton: true,
 };
 
 /**
@@ -118,6 +120,7 @@ describe('UniversityCard', () => {
             isEditing: true,
           }}
           {...mockHandlers}
+          isEditing={true}
         />
       );
 
@@ -154,6 +157,7 @@ describe('UniversityCard', () => {
             isEditing: true,
           }}
           {...mockHandlers}
+          isEditing={true}
         />
       );
 

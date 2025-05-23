@@ -23,6 +23,7 @@ import type { APIAdmissionInfo, APITestType, APISubject } from '@/types/api/type
  * @param onInfoChange - 情報変更時のハンドラー
  * @param onAddSubject - 科目追加時のハンドラー
  * @param onSubjectNameChange - 科目名変更時のハンドラー
+ * @param showEditButton - 編集ボタンを表示するかどうか
  */
 export const InfoCombiner = ({
   university,
@@ -35,6 +36,7 @@ export const InfoCombiner = ({
   onInfoChange,
   onAddSubject,
   onSubjectNameChange,
+  showEditButton,
 }: RowProps) => {
   const major = department.majors[0];
   const admissionSchedule = major?.admissionSchedules?.[0];
@@ -52,7 +54,7 @@ export const InfoCombiner = ({
   const handleScoreChange = (subjectId: number, value: number, isCommon: boolean) =>
     onScoreChange(university.id, department.id, subjectId, value, isCommon);
 
-  // Convert TestType and Subject to their API counterparts
+  // テストタイプと科目をAPIの形式に変換
   const mappedTestTypes: APITestType[] = admissionSchedule.testTypes.map(testType => ({
     id: testType.id,
     admission_schedule_id: testType.admissionScheduleId,
@@ -112,7 +114,10 @@ export const InfoCombiner = ({
     testTypes: mappedTestTypes,
   };
 
-  const handleAddSubject = (type: APITestType) => onAddSubject(university.id, department.id, type);
+  const handleAddSubject = (type: APITestType) => {
+    console.log('InfoCombiner: 科目追加が呼び出されました。タイプ:', type);
+    onAddSubject(university.id, department.id, type);
+  };
 
   const handleSubjectNameChange = (subjectId: number, name: string) =>
     onSubjectNameChange(university.id, department.id, subjectId, name);
@@ -120,13 +125,17 @@ export const InfoCombiner = ({
   return (
     <div className="px-4 py-3 transition-colors">
       <div className="flex items-start min-w-max">
-        <div className="flex-shrink-0 pr-4">
-          <EditButtons
-            isEditing={isEditing}
-            onEdit={() => onEdit(university, department)}
-            onSave={() => onSave(university, department)}
-            onCancel={onCancel}
-          />
+        <div className="flex-shrink-0 pr-1 w-[48px]">
+          {showEditButton ? (
+            <EditButtons
+              isEditing={isEditing}
+              onEdit={() => onEdit(university, department)}
+              onSave={() => onSave(university, department)}
+              onCancel={onCancel}
+            />
+          ) : (
+            <div className="h-[18px]" />
+          )}
         </div>
         <div className="flex-1 flex items-start gap-4">
           <BasicInfo

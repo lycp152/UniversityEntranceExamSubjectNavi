@@ -16,7 +16,6 @@ import {
   transformSubjectToAPI,
   transformSubjectFromAPI,
   transformTestTypeToAPI,
-  transformTestTypeFromAPI,
 } from '@/features/admin/utils/api-transformers';
 import { updateDepartmentInUniversity } from '@/features/admin/utils/department-updaters';
 import {
@@ -231,27 +230,76 @@ export function useUniversityEditor() {
 
   const handleAddSubject = (universityId: number, departmentId: number, type: APITestType) => {
     try {
-      const internalType = transformTestTypeFromAPI(type);
+      console.log('useUniversityEditor: 科目追加が呼び出されました。タイプ:', type);
+
+      if (!type || typeof type !== 'object') {
+        throw new Error('無効なテストタイプが指定されました');
+      }
+
+      if (!type.name) {
+        throw new Error('テストタイプ名が指定されていません');
+      }
+
+      const university = universities.find(u => u.id === universityId);
+      console.log('大学が見つかりました:', university);
+
+      if (!university) {
+        throw new Error('大学が見つかりません');
+      }
+
+      const department = university.departments.find(d => d.id === departmentId);
+      console.log('学部が見つかりました:', department);
+
+      if (!department) {
+        throw new Error('学部が見つかりません');
+      }
+
+      const major = department.majors[0];
+      console.log('学科が見つかりました:', major);
+
+      if (!major) {
+        throw new Error('学科が見つかりません');
+      }
+
+      const admissionSchedule = major.admissionSchedules[0];
+      console.log('入試日程が見つかりました:', admissionSchedule);
+
+      if (!admissionSchedule) {
+        throw new Error('入試日程が見つかりません');
+      }
+
+      const testType = admissionSchedule.testTypes.find(t => t.name === type.name);
+      console.log('テストタイプが見つかりました:', testType);
+
+      if (!testType) {
+        throw new Error('テストタイプが見つかりません');
+      }
+
+      const subjects = testType.subjects.map(transformSubjectToAPI);
+      console.log('科目が見つかりました:', subjects);
+
       const newSubject: Subject = {
-        id: 0,
-        testTypeId: internalType.id,
-        name: `科目${internalType.subjects.length + 1}` as SubjectName,
-        score: 100,
-        percentage: 100,
-        displayOrder: internalType.subjects.length,
-        createdAt: new Date().toString(),
-        updatedAt: new Date().toString(),
+        id: Date.now(),
+        testTypeId: testType.id,
+        name: '' as SubjectName,
+        score: 0,
+        percentage: 0,
+        displayOrder: subjects.length + 1,
         version: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         createdBy: '',
         updatedBy: '',
       };
+      console.log('新しい科目を作成しました:', newSubject);
 
       setUniversities(prevUniversities =>
         prevUniversities.map(university => {
           if (university.id !== universityId) return university;
-          return updateUniversityWithNewSubject(university, departmentId, internalType, newSubject);
+          return updateUniversityWithNewSubject(university, departmentId, testType, newSubject);
         })
       );
+      console.log('大学データの更新が完了しました');
     } catch (error) {
       console.error('科目の追加に失敗しました:', error);
       setError('科目の追加に失敗しました。');
@@ -338,6 +386,9 @@ export function useUniversityEditor() {
       setUniversities((prev: University[]) =>
         prev.map(u => (u.id === backupState.university.id ? backupState.university : u))
       );
+    } else if (editMode?.isNew) {
+      // 新規追加時のキャンセル処理
+      setUniversities((prev: University[]) => prev.filter(u => u.id !== editMode.universityId));
     }
 
     setEditMode(null);
@@ -406,8 +457,83 @@ export function useUniversityEditor() {
 
     const emptyUniversity: University = {
       id: tempId,
-      name: '',
-      departments: [],
+      name: '大学',
+      departments: [
+        {
+          id: tempId + 1,
+          name: '学部',
+          universityId: tempId,
+          majors: [
+            {
+              id: tempId + 2,
+              name: '学科',
+              departmentId: tempId + 1,
+              admissionSchedules: [
+                {
+                  id: tempId + 3,
+                  name: '前',
+                  majorId: tempId + 2,
+                  displayOrder: 0,
+                  testTypes: [
+                    {
+                      id: tempId + 4,
+                      name: '共通',
+                      admissionScheduleId: tempId + 3,
+                      subjects: [],
+                      version: 1,
+                      createdAt: new Date().toString(),
+                      updatedAt: new Date().toString(),
+                      createdBy: '',
+                      updatedBy: '',
+                    },
+                    {
+                      id: tempId + 5,
+                      name: '二次',
+                      admissionScheduleId: tempId + 3,
+                      subjects: [],
+                      version: 1,
+                      createdAt: new Date().toString(),
+                      updatedAt: new Date().toString(),
+                      createdBy: '',
+                      updatedBy: '',
+                    },
+                  ],
+                  admissionInfos: [
+                    {
+                      id: tempId + 6,
+                      admissionScheduleId: tempId + 3,
+                      academicYear: new Date().getFullYear(),
+                      enrollment: 0,
+                      status: 'draft',
+                      testTypes: [],
+                      version: 1,
+                      createdAt: new Date().toString(),
+                      updatedAt: new Date().toString(),
+                      createdBy: '',
+                      updatedBy: '',
+                    },
+                  ],
+                  version: 1,
+                  createdAt: new Date().toString(),
+                  updatedAt: new Date().toString(),
+                  createdBy: '',
+                  updatedBy: '',
+                },
+              ],
+              version: 1,
+              createdAt: new Date().toString(),
+              updatedAt: new Date().toString(),
+              createdBy: '',
+              updatedBy: '',
+            },
+          ],
+          version: 1,
+          createdAt: new Date().toString(),
+          updatedAt: new Date().toString(),
+          createdBy: '',
+          updatedBy: '',
+        },
+      ],
       createdAt: new Date().toString(),
       updatedAt: new Date().toString(),
       version: 1,

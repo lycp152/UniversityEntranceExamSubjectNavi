@@ -47,6 +47,8 @@ export interface RowProps extends EditCallbacks, SubjectCallbacks {
   department: Department;
   /** 編集モードの状態 */
   isEditing: boolean;
+  /** 編集ボタンを表示するかどうか */
+  showEditButton: boolean;
 }
 
 /** 大学一覧のプロパティ型 */

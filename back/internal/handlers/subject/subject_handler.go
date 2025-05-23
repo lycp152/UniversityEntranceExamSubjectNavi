@@ -141,11 +141,12 @@ func (h *Handler) CreateSubject(c echo.Context) error {
 		return err
 	}
 
+	// 先にTestTypeIDをセット
+	subject.TestTypeID = departmentID
 	if err := h.validateSubjectRequest(&subject); err != nil {
 		return errors.HandleError(c, err)
 	}
 
-	subject.TestTypeID = departmentID
 	if err := h.repo.CreateSubject(&subject); err != nil {
 		applogger.Error(ctx, "科目の作成に失敗しました: %v", err)
 		return errors.HandleError(c, err)
@@ -179,11 +180,12 @@ func (h *Handler) UpdateSubject(c echo.Context) error {
 		return err
 	}
 
+	// 先にIDをセット
+	subject.ID = subjectID
 	if err := h.validateSubjectRequest(&subject); err != nil {
 		return errors.HandleError(c, err)
 	}
 
-	subject.ID = subjectID
 	if err := h.repo.UpdateSubject(&subject); err != nil {
 		applogger.Error(ctx, "科目ID %dの更新に失敗しました: %v", subjectID, err)
 		return errors.HandleError(c, err)

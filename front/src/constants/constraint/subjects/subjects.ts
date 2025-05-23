@@ -20,7 +20,7 @@ export const SUBJECTS = {
 } as const;
 
 /** 科目名の型定義 */
-export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS];
+export type SubjectName = (typeof SUBJECTS)[keyof typeof SUBJECTS] | '';
 
 /**
  * 科目名の制約値

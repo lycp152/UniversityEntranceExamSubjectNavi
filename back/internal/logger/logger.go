@@ -79,6 +79,7 @@ var (
 	accessLogger *slog.Logger   // アクセスログ用のロガー
 	config       Config         // 現在のロガー設定
 	initTestOnce sync.Once     // テストロガーの初期化を一度だけ実行するためのOnceオブジェクト
+	loggerMutex  sync.RWMutex  // ロガーの初期化と使用を保護するためのミューテックス
 )
 
 // InitLoggers はロガーを初期化します。
@@ -125,6 +126,9 @@ func InitLoggers(cfg Config) error {
 // 戻り値:
 //   - error: 初期化に失敗した場合のエラー
 func initInfoLogger() error {
+	loggerMutex.Lock()
+	defer loggerMutex.Unlock()
+
 	infoFile := &lumberjack.Logger{
 		Filename:   filepath.Join(config.LogDir, "info.log"),
 		MaxSize:    int(config.MaxSize / 1024 / 1024), // MBに変換
@@ -159,6 +163,9 @@ func initInfoLogger() error {
 // 戻り値:
 //   - error: 初期化に失敗した場合のエラー
 func initErrorLogger() error {
+	loggerMutex.Lock()
+	defer loggerMutex.Unlock()
+
 	errorFile := &lumberjack.Logger{
 		Filename:   filepath.Join(config.LogDir, "error.log"),
 		MaxSize:    int(config.MaxSize / 1024 / 1024), // MBに変換
@@ -193,6 +200,9 @@ func initErrorLogger() error {
 // 戻り値:
 //   - error: 初期化に失敗した場合のエラー
 func initAccessLogger() error {
+	loggerMutex.Lock()
+	defer loggerMutex.Unlock()
+
 	accessFile := &lumberjack.Logger{
 		Filename:   filepath.Join(config.LogDir, "access.log"),
 		MaxSize:    int(config.MaxSize / 1024 / 1024), // MBに変換
@@ -229,7 +239,12 @@ func initAccessLogger() error {
 //   - msg: ログメッセージ
 //   - args: 追加の引数（キーと値のペア）
 func Debug(ctx context.Context, msg string, args ...any) {
-	infoLogger.DebugContext(ctx, msg, args...)
+	loggerMutex.RLock()
+	defer loggerMutex.RUnlock()
+
+	if infoLogger != nil {
+		infoLogger.DebugContext(ctx, msg, args...)
+	}
 }
 
 // Info は情報レベルのログを記録します。
@@ -243,7 +258,12 @@ func Debug(ctx context.Context, msg string, args ...any) {
 //   - msg: ログメッセージ
 //   - args: 追加の引数（キーと値のペア）
 func Info(ctx context.Context, msg string, args ...any) {
-	infoLogger.InfoContext(ctx, msg, args...)
+	loggerMutex.RLock()
+	defer loggerMutex.RUnlock()
+
+	if infoLogger != nil {
+		infoLogger.InfoContext(ctx, msg, args...)
+	}
 }
 
 // Warn は警告レベルのログを記録します。
@@ -257,7 +277,12 @@ func Info(ctx context.Context, msg string, args ...any) {
 //   - msg: ログメッセージ
 //   - args: 追加の引数（キーと値のペア）
 func Warn(ctx context.Context, msg string, args ...any) {
-	errorLogger.WarnContext(ctx, msg, args...)
+	loggerMutex.RLock()
+	defer loggerMutex.RUnlock()
+
+	if errorLogger != nil {
+		errorLogger.WarnContext(ctx, msg, args...)
+	}
 }
 
 // Error はエラーレベルのログを記録します。
@@ -271,7 +296,12 @@ func Warn(ctx context.Context, msg string, args ...any) {
 //   - msg: ログメッセージ
 //   - args: 追加の引数（キーと値のペア）
 func Error(ctx context.Context, msg string, args ...any) {
-	errorLogger.ErrorContext(ctx, msg, args...)
+	loggerMutex.RLock()
+	defer loggerMutex.RUnlock()
+
+	if errorLogger != nil {
+		errorLogger.ErrorContext(ctx, msg, args...)
+	}
 }
 
 // AccessLogMiddleware はアクセスログを記録するミドルウェアを返します。

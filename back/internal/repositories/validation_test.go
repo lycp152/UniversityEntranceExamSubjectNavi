@@ -11,6 +11,8 @@ import (
 	"testing"
 	"university-exam-api/internal/domain/models"
 	appErrors "university-exam-api/internal/errors"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -202,8 +204,58 @@ func TestValidateWithRules(t *testing.T) {
 func TestGetValidationRules(t *testing.T) {
 	t.Parallel()
 
-	rules := getValidationRules()
-	if len(rules) == 0 {
-		t.Error("バリデーションルールが取得できません")
-	}
+	t.Run("大学のバリデーションルール", func(t *testing.T) {
+		rules := getValidationRules()
+		assert.NotNil(t, rules)
+		assert.Contains(t, rules, "university")
+
+		universityRules := rules["university"]
+		found := false
+
+		for _, rule := range universityRules {
+			if rule.Field == "name" &&
+				rule.Message == "大学名のバリデーションに失敗しました" &&
+				rule.Code == "INVALID_NAME" &&
+				rule.Severity == "error" {
+				found = true
+				break
+			}
+		}
+
+		assert.True(t, found, "大学のバリデーションルールが見つかりません")
+	})
+
+	t.Run("学部のバリデーションルール", func(t *testing.T) {
+		rules := getValidationRules()
+		assert.NotNil(t, rules)
+		assert.Contains(t, rules, "department")
+
+		departmentRules := rules["department"]
+		found := false
+
+		for _, rule := range departmentRules {
+			if rule.Field == "name" &&
+				rule.Message == "学部名のバリデーションに失敗しました" &&
+				rule.Code == "INVALID_NAME" &&
+				rule.Severity == "error" {
+				found = true
+				break
+			}
+		}
+
+		assert.True(t, found, "学部のバリデーションルールが見つかりません")
+	})
+
+	t.Run("キャッシュの動作確認", func(t *testing.T) {
+		// 1回目の呼び出し
+		rules1 := getValidationRules()
+		assert.NotNil(t, rules1)
+
+		// 2回目の呼び出し
+		rules2 := getValidationRules()
+		assert.NotNil(t, rules2)
+
+		// 同じインスタンスが返されることを確認
+		assert.Equal(t, rules1, rules2)
+	})
 }

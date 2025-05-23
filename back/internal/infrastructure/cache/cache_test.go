@@ -8,6 +8,7 @@ package cache
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -23,9 +24,14 @@ const (
 	errMsgGet = "Get() error = %v"
 	errMsgOperation = "Operation error = %v, wantError %v"
 	errMsgErrorType = "Operation error type = %v, want %v"
+	errMsgFound = "Get() found = %v, want %v"
+	errMsgValue = "Get() value = %v, want %v"
+	errMsgPerformanceMetrics = "GetPerformanceMetrics() error = %v"
 	// キーフォーマットの定数
 	keyFormat = "key_%d"
 	valueFormat = "value_%d"
+	concurrentKeyFormat = "key_%d_%d"
+	concurrentValueFormat = "value_%d_%d"
 )
 
 // setup はテストの前処理を行います。
@@ -35,6 +41,14 @@ const (
 func setup() {
 	// テスト用のロガーを初期化
 	applogger.InitTestLogger()
+
+	// テスト用の新しいキャッシュインスタンスを作成
+	instance = &Cache{
+		items:      make(map[string]cacheItem),
+		maxSize:    10000, // テスト用にmaxSizeを増やす
+		stats:      Stats{},
+	}
+	go instance.startCleanup()
 }
 
 // teardown はテストの後処理を行います。
@@ -47,6 +61,9 @@ func teardown(_ testing.TB) {
 	_ = c.ClearAll()
 	// トランザクションを確実にクリア
 	_ = c.RollbackTransaction()
+
+	// インスタンスをリセット
+	instance = nil
 }
 
 // TestCacheSet はキャッシュのSet操作をテストします。
@@ -189,11 +206,11 @@ func TestCacheGet(t *testing.T) {
 			}
 
 			if gotFound != tt.wantFound {
-				t.Errorf("Get() found = %v, want %v", gotFound, tt.wantFound)
+				t.Errorf(errMsgFound, gotFound, tt.wantFound)
 			}
 
 			if gotValue != tt.wantValue {
-				t.Errorf("Get() value = %v, want %v", gotValue, tt.wantValue)
+				t.Errorf(errMsgValue, gotValue, tt.wantValue)
 			}
 		})
 	}
@@ -302,7 +319,7 @@ func TestCachePerformance(t *testing.T) {
 	// パフォーマンスメトリクスの取得
 	metrics, err := c.GetPerformanceMetrics()
 	if err != nil {
-		t.Fatalf("GetPerformanceMetrics() error = %v", err)
+		t.Fatalf(errMsgPerformanceMetrics, err)
 	}
 
 	// メトリクスの検証
@@ -379,7 +396,7 @@ func BenchmarkCacheGet(b *testing.B) {
 		_, _, err := c.Get(key)
 
 		if err != nil {
-			b.Fatalf("Get() error = %v", err)
+			b.Fatalf(errMsgGet, err)
 		}
 	}
 }
@@ -399,7 +416,7 @@ func TestCachePerformanceMetrics(t *testing.T) {
 	// パフォーマンスメトリクスの取得
 	metrics, err := c.GetPerformanceMetrics()
 	if err != nil {
-		t.Fatalf("GetPerformanceMetrics() error = %v", err)
+		t.Fatalf(errMsgPerformanceMetrics, err)
 	}
 
 	// 基本的なメトリクスの確認
@@ -459,5 +476,472 @@ func TestCacheErrorHandling(t *testing.T) {
 
 	if !errors.Is(err, appErrors.NewSystemError(ErrNoTransaction, nil, nil)) {
 		t.Errorf("Unexpected error type: %v", err)
+	}
+}
+
+// verifyDeleteResult は削除操作の結果を検証します
+func verifyDeleteResult(t *testing.T, c Interface, key string, wantError bool, errorType error) {
+	err := c.Delete(key)
+	if (err != nil) != wantError {
+		t.Errorf("Delete() error = %v, wantError %v", err, wantError)
+		return
+	}
+
+	if wantError && !errors.Is(err, errorType) {
+		t.Errorf(errMsgErrorType, err, errorType)
+	}
+
+	// 削除後の確認
+	if !wantError {
+		_, found, _ := c.Get(key)
+		if found {
+			t.Errorf("Delete() key %v still exists", key)
+		}
+	}
+}
+
+// TestCacheDelete はキャッシュの削除機能をテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：存在するキーの削除
+// - 正常系：存在しないキーの削除
+// - 異常系：空のキー
+func TestCacheDelete(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// テストデータの準備
+	err := c.Set(testKey, testValue, time.Minute)
+	if err != nil {
+		t.Fatalf(errMsgSet, err)
+	}
+
+	tests := []struct {
+		name      string
+		key       string
+		wantError bool
+		errorType error
+	}{
+		{
+			name:      "存在するキーの削除",
+			key:       testKey,
+			wantError: false,
+			errorType: nil,
+		},
+		{
+			name:      "存在しないキーの削除",
+			key:       "not_exist",
+			wantError: false,
+			errorType: nil,
+		},
+		{
+			name:      "空のキー",
+			key:       "",
+			wantError: true,
+			errorType: appErrors.NewInvalidInputError("key", ErrEmptyKey, nil),
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			verifyDeleteResult(t, c, tt.key, tt.wantError, tt.errorType)
+		})
+	}
+}
+
+// TestCacheClearAll はキャッシュの全クリア機能をテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：複数のキーをクリア
+// - 正常系：空のキャッシュのクリア
+func TestCacheClearAll(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// テストデータの準備
+	testKeys := []string{"key1", "key2", "key3"}
+	for _, key := range testKeys {
+		err := c.Set(key, "value", time.Minute)
+		if err != nil {
+			t.Fatalf(errMsgSet, err)
+		}
+	}
+
+	// クリア前の確認
+	for _, key := range testKeys {
+		_, found, _ := c.Get(key)
+		if !found {
+			t.Errorf("Key %v not found before ClearAll", key)
+		}
+	}
+
+	// キャッシュのクリア
+	err := c.ClearAll()
+	if err != nil {
+		t.Errorf("ClearAll() error = %v", err)
+	}
+
+	// クリア後の確認
+	for _, key := range testKeys {
+		_, found, _ := c.Get(key)
+		if found {
+			t.Errorf("Key %v still exists after ClearAll", key)
+		}
+	}
+
+	// 空のキャッシュのクリア
+	err = c.ClearAll()
+	if err != nil {
+		t.Errorf("ClearAll() on empty cache error = %v", err)
+	}
+}
+
+// TestCacheExpiration はキャッシュの有効期限機能をテストします。
+// このテストは以下のケースを検証します：
+// - 正常系：有効期限切れの確認
+// - 正常系：有効期限内の確認
+func TestCacheExpiration(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// 短い有効期限でデータを設定
+	shortDuration := 100 * time.Millisecond
+	err := c.Set(testKey, testValue, shortDuration)
+
+	if err != nil {
+		t.Fatalf(errMsgSet, err)
+	}
+
+	// 有効期限内の確認
+	value, found, err := c.Get(testKey)
+	if err != nil {
+		t.Errorf(errMsgGet, err)
+	}
+
+	if !found {
+		t.Errorf(errMsgFound, found, true)
+	}
+
+	if value != testValue {
+		t.Errorf(errMsgValue, value, testValue)
+	}
+
+	// 有効期限切れを待機
+	time.Sleep(shortDuration + 50*time.Millisecond)
+
+	// 有効期限切れの確認
+	value, found, err = c.Get(testKey)
+	if err != nil {
+		t.Errorf(errMsgGet, err)
+	}
+
+	if found {
+		t.Errorf(errMsgFound, found, false)
+	}
+
+	if value != nil {
+		t.Errorf(errMsgValue, value, nil)
+	}
+}
+
+// ManagerのGetStats, GetHitRate, ClearAllRelatedCache, ClearSubjectsCacheのテスト
+func TestCacheManagerStatsAndClear(t *testing.T) {
+	manager := NewCacheManager()
+
+	// SetCacheで値を追加
+	manager.SetCache("key1", "value1")
+	manager.SetCache("key2", "value2")
+
+	// GetFromCacheでヒットさせる
+	_, found1 := manager.GetFromCache("key1")
+	if !found1 {
+		t.Error("key1 should be found in cache")
+	}
+	// ミスさせる
+	_, found2 := manager.GetFromCache("not_exist")
+	if found2 {
+		t.Error("not_exist should not be found in cache")
+	}
+
+	hits, misses := manager.GetStats()
+	if hits != 1 {
+		t.Errorf("GetStats() hits = %v, want 1", hits)
+	}
+
+	if misses != 1 {
+		t.Errorf("GetStats() misses = %v, want 1", misses)
+	}
+
+	hitRate := manager.GetHitRate()
+	if hitRate != 50.0 {
+		t.Errorf("GetHitRate() = %v, want 50.0", hitRate)
+	}
+
+	// ClearAllRelatedCacheで大学関連キャッシュをクリア
+	manager.SetCache(fmt.Sprintf(CacheKeyUniversityFormat, 123), "uni123")
+	manager.SetCache(CacheKeyAllUniversities, "all")
+	manager.ClearAllRelatedCache(123)
+	_, foundUni := manager.GetFromCache(fmt.Sprintf(CacheKeyUniversityFormat, 123))
+
+	if foundUni {
+		t.Error("University cache should be cleared by ClearAllRelatedCache")
+	}
+
+	_, foundAll := manager.GetFromCache(CacheKeyAllUniversities)
+
+	if foundAll {
+		t.Error("All universities cache should be cleared by ClearAllRelatedCache")
+	}
+
+	// ClearSubjectsCacheで科目キャッシュをクリア
+	subjectKey := fmt.Sprintf("subjects:%d:*", 456)
+	manager.SetCache(subjectKey, "subject456")
+	manager.ClearSubjectsCache(456)
+	_, foundSubj := manager.GetFromCache(subjectKey)
+
+	if foundSubj {
+		t.Error("Subjects cache should be cleared by ClearSubjectsCache")
+	}
+}
+
+// TestCacheConcurrentAccess はキャッシュの並行アクセスをテストします。
+func TestCacheConcurrentAccess(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	const goroutines = 5
+
+	const operations = 50
+
+	var wg sync.WaitGroup
+
+	var mu sync.Mutex // テスト結果の検証用のmutex
+
+	wg.Add(goroutines)
+
+	for i := 0; i < goroutines; i++ {
+		go func(id int) {
+			defer wg.Done()
+			runCacheOps(t, c, id, operations, &mu)
+		}(i)
+	}
+
+	wg.Wait()
+}
+
+func runCacheOps(t *testing.T, c Interface, id, operations int, mu *sync.Mutex) {
+	for j := 0; j < operations; j++ {
+		key := fmt.Sprintf(concurrentKeyFormat, id, j)
+		value := fmt.Sprintf(concurrentValueFormat, id, j)
+		checkSetGetDelete(t, c, key, value, mu)
+	}
+}
+
+func checkSetGetDelete(t *testing.T, c Interface, key, value string, mu *sync.Mutex) {
+	if err := c.Set(key, value, time.Minute); err != nil {
+		mu.Lock()
+		t.Errorf(errMsgSet, err)
+		mu.Unlock()
+
+		return
+	}
+
+	gotValue, found, err := c.Get(key)
+
+	mu.Lock()
+	if err != nil {
+		t.Errorf(errMsgGet, err)
+		mu.Unlock()
+
+		return
+	}
+
+	if !found {
+		t.Errorf("Get() found = false, want true")
+		mu.Unlock()
+
+		return
+	}
+
+	if gotValue != value {
+		t.Errorf("Get() value = %v, want %v", gotValue, value)
+		mu.Unlock()
+
+		return
+	}
+	mu.Unlock()
+
+	if err := c.Delete(key); err != nil {
+		mu.Lock()
+		t.Errorf("Delete() error = %v", err)
+		mu.Unlock()
+	}
+}
+
+// TestCacheMemoryLimit はキャッシュのメモリ制限をテストします。
+func TestCacheMemoryLimit(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// 大きな値を設定してメモリ制限をテスト
+	largeValue := make([]byte, 1024*1024) // 1MB
+
+	for i := 0; i < 1000; i++ {
+		key := fmt.Sprintf("large_key_%d", i)
+		err := c.Set(key, largeValue, time.Minute)
+
+		if err != nil {
+			// メモリ制限に達した場合はエラーが返ることを確認
+			if !errors.Is(err, appErrors.NewSystemError(ErrCacheFull, nil, nil)) {
+				t.Errorf("Set() error = %v, want ErrCacheFull", err)
+			}
+
+			break
+		}
+	}
+}
+
+// TestCacheTransactionRollback はトランザクションのロールバックをテストします。
+func TestCacheTransactionRollback(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// トランザクション開始
+	err := c.StartTransaction()
+	if err != nil {
+		t.Fatalf("StartTransaction() error = %v", err)
+	}
+
+	// トランザクション内で値を設定
+	err = c.Set("key1", "value1", time.Minute)
+	if err != nil {
+		t.Fatalf(errMsgSet, err)
+	}
+
+	// ロールバック
+	err = c.RollbackTransaction()
+	if err != nil {
+		t.Fatalf("RollbackTransaction() error = %v", err)
+	}
+
+	// ロールバック後は値が存在しないことを確認
+	_, found, _ := c.Get("key1")
+	if found {
+		t.Error("Value should not exist after rollback")
+	}
+}
+
+// TestCacheLatencyRecording はレイテンシの記録をテストします。
+func TestCacheLatencyRecording(t *testing.T) {
+	setup()
+
+	defer teardown(t)
+
+	c := GetInstance()
+
+	// レイテンシを記録
+	err := c.RecordLatency("test_operation", 100*time.Millisecond)
+	if err != nil {
+		t.Errorf("RecordLatency() error = %v", err)
+	}
+
+	// パフォーマンスメトリクスを取得
+	metrics, err := c.GetPerformanceMetrics()
+	if err != nil {
+		t.Fatalf("GetPerformanceMetrics() error = %v", err)
+	}
+
+	// レイテンシが記録されていることを確認
+	if metrics.AverageLatency == 0 {
+		t.Error("AverageLatency should not be 0")
+	}
+}
+
+// TestCacheManagerConcurrentAccess はキャッシュマネージャーの並行アクセスをテストします。
+func TestCacheManagerConcurrentAccess(t *testing.T) {
+	manager := NewCacheManager()
+
+	const goroutines = 5
+
+	const operations = 50
+
+	var wg sync.WaitGroup
+
+	var mu sync.Mutex
+
+	wg.Add(goroutines)
+
+	for i := 0; i < goroutines; i++ {
+		go func(id int) {
+			defer wg.Done()
+			runManagerOps(t, manager, id, operations, &mu)
+		}(i)
+	}
+
+	wg.Wait()
+	verifyFinalState(t, manager, goroutines, operations, &mu)
+}
+
+func runManagerOps(t *testing.T, manager *Manager, id, operations int, mu *sync.Mutex) {
+	for j := 0; j < operations; j++ {
+		key := fmt.Sprintf(concurrentKeyFormat, id, j)
+		value := fmt.Sprintf(concurrentValueFormat, id, j)
+		manager.SetCache(key, value)
+		verifyCacheOperation(t, manager, key, value, mu)
+	}
+}
+
+func verifyCacheOperation(t *testing.T, manager *Manager, key, value string, mu *sync.Mutex) {
+	gotValue, found := manager.GetFromCache(key)
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	if !found {
+		t.Errorf("GetFromCache() found = false, want true")
+		return
+	}
+
+	if gotValue != value {
+		t.Errorf("GetFromCache() value = %v, want %v", gotValue, value)
+	}
+}
+
+func verifyFinalState(t *testing.T, manager *Manager, goroutines, operations int, mu *sync.Mutex) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	for i := 0; i < goroutines; i++ {
+		for j := 0; j < operations; j++ {
+			key := fmt.Sprintf(concurrentKeyFormat, i, j)
+			expectedValue := fmt.Sprintf(concurrentValueFormat, i, j)
+			value, found := manager.GetFromCache(key)
+
+			if !found {
+				t.Errorf("Final check: GetFromCache() found = false for key %s", key)
+				continue
+			}
+
+			if value != expectedValue {
+				t.Errorf("Final check: GetFromCache() value = %v, want %v for key %s", value, expectedValue, key)
+			}
+		}
 	}
 }

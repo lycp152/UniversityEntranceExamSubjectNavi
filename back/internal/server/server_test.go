@@ -7,7 +7,8 @@ package server
 
 import (
 	"context"
-	"net/http"
+	"fmt"
+	"net"
 	"testing"
 	"time"
 	"university-exam-api/internal/config"
@@ -18,6 +19,11 @@ import (
 	"gorm.io/gorm"
 )
 
+func init() {
+	// テスト用のロガーを初期化
+	applogger.InitTestLogger()
+}
+
 // setupTestLogger はテスト用のロガーを初期化します。
 // この関数は以下の処理を行います：
 // - テストロガーの初期化
@@ -25,6 +31,19 @@ import (
 func setupTestLogger(t *testing.T) {
 	t.Helper()
 	applogger.InitTestLogger()
+}
+
+func getFreePort() string {
+	// テスト用に空いているポートを取得
+	l, err := net.Listen("tcp", "127.0.0.1:0") // localhostのみにバインド
+	if err != nil {
+		return "18080" // fallback
+	}
+
+	port := fmt.Sprintf("%d", l.Addr().(*net.TCPAddr).Port)
+	_ = l.Close() // エラーは無視（テスト用の一時的なポートなので）
+
+	return port
 }
 
 // TestNew はNew関数のテストを行います。
@@ -36,7 +55,7 @@ func TestNew(t *testing.T) {
 	setupTestLogger(t)
 
 	cfg := &config.Config{
-		Port: "8080",
+		Port: getFreePort(),
 	}
 
 	s := New(cfg)
@@ -56,7 +75,7 @@ func TestStart(t *testing.T) {
 	setupTestLogger(t)
 
 	cfg := &config.Config{
-		Port: "8080",
+		Port: getFreePort(),
 	}
 
 	s := New(cfg)
@@ -78,7 +97,7 @@ func TestSetupRoutes(t *testing.T) {
 	setupTestLogger(t)
 
 	cfg := &config.Config{
-		Port: "8080",
+		Port: getFreePort(),
 	}
 
 	s := New(cfg)
@@ -92,17 +111,77 @@ func TestSetupRoutes(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// TestServerShutdown はサーバーのシャットダウン処理のテストを行います。
-// このテストは以下のケースを検証します：
-// - グレースフルシャットダウン
-// - リソースの解放
-// - エラーハンドリング
 func TestServerShutdown(t *testing.T) {
+	t.Run("正常なシャットダウン", func(t *testing.T) {
+		cfg := &config.Config{Port: getFreePort()}
+		s := New(cfg)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+		defer cancel()
+
+		err := s.Shutdown(ctx)
+		assert.NoError(t, err)
+	})
+}
+
+func TestServerStartShutdown(t *testing.T) {
+	// サーバーの初期化
+	cfg := &config.Config{
+		Port: getFreePort(),
+	}
+	s := New(cfg)
+
+	// コンテキストの作成
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// サーバー起動
+	go func() {
+		err := s.Start(ctx)
+		assert.NoError(t, err)
+	}()
+
+	// 少し待機してサーバーが起動するのを待つ
+	time.Sleep(100 * time.Millisecond)
+
+	// シャットダウン
+	err := s.Shutdown(ctx)
+	assert.NoError(t, err)
+}
+
+func TestServerStartContextCancel(t *testing.T) {
+	// サーバーの初期化
+	cfg := &config.Config{
+		Port: getFreePort(),
+	}
+	s := New(cfg)
+
+	// コンテキストの作成
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	// サーバー起動
+	go func() {
+		err := s.Start(ctx)
+		assert.NoError(t, err)
+	}()
+
+	// 少し待機してサーバーが起動するのを待つ
+	time.Sleep(100 * time.Millisecond)
+
+	// コンテキストのキャンセル
+	cancel()
+
+	// シャットダウンが完了するのを待つ
+	time.Sleep(100 * time.Millisecond)
+}
+
+func TestServerStartError(t *testing.T) {
 	t.Parallel()
 	setupTestLogger(t)
 
+	// 無効なポート番号を使用してエラーを発生させる
 	cfg := &config.Config{
-		Port: "8080",
+		Port: "invalid",
 	}
 
 	s := New(cfg)
@@ -110,23 +189,90 @@ func TestServerShutdown(t *testing.T) {
 
 	defer cancel()
 
-	done := make(chan error)
-	go func() {
-		done <- s.Start(ctx)
-	}()
+	err := s.Start(ctx)
+	assert.Error(t, err)
+}
 
-	// サーバーが起動するまで少し待機
-	time.Sleep(50 * time.Millisecond)
+func TestServerShutdownTimeout(t *testing.T) {
+	t.Parallel()
+	setupTestLogger(t)
 
-	// サーバーにリクエストを送信
-	resp, err := http.Get("http://localhost:8080/health")
-	if err == nil {
-		if err := resp.Body.Close(); err != nil {
-			t.Errorf("レスポンスボディのクローズに失敗しました: %v", err)
-		}
+	cfg := &config.Config{
+		Port: getFreePort(),
 	}
 
-	// エラーを待機
-	err = <-done
+	s := New(cfg)
+	// サーバーを起動
+	go func() {
+		_ = s.Start(context.Background())
+	}()
+
+	// 少し待機してサーバーが起動するのを待つ
+	time.Sleep(100 * time.Millisecond)
+
+	// 非常に短いタイムアウトを設定
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Nanosecond)
+	defer cancel()
+
+	err := s.Shutdown(ctx)
+	assert.Error(t, err)
+}
+
+func TestServerSetupRoutesError(t *testing.T) {
+	t.Parallel()
+	setupTestLogger(t)
+
+	cfg := &config.Config{
+		Port: getFreePort(),
+	}
+
+	s := New(cfg)
+	// 無効なデータベース接続を渡してエラーを発生させる
+	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	sqlDB, _ := db.DB()
+	_ = sqlDB.Close() // エラーは無視（テストの意図は無効なDB接続のテスト）
+
+	err := s.SetupRoutes(db)
+	assert.Error(t, err)
+}
+
+func TestRunServer(t *testing.T) {
+	t.Parallel()
+	setupTestLogger(t)
+
+	cfg := &config.Config{
+		Port: getFreePort(),
+	}
+
+	s := New(cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	defer cancel()
+
+	// サーバー起動用のチャネル
+	serverReady := make(chan struct{})
+
+	// サーバー起動
+	go func() {
+		err := s.Start(ctx)
+		assert.NoError(t, err)
+	}()
+
+	// サーバーが起動するのを待つ
+	go func() {
+		// サーバーが起動するまで少し待機
+		time.Sleep(100 * time.Millisecond)
+		close(serverReady)
+	}()
+
+	// サーバーが起動するのを待つ
+	<-serverReady
+
+	// サーバーのアドレスを取得
+	addr := s.GetActualAddr()
+	assert.NotEmpty(t, addr)
+
+	// シャットダウン
+	err := s.Shutdown(ctx)
 	assert.NoError(t, err)
 }

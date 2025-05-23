@@ -54,7 +54,7 @@ export const SubjectList = ({
   );
 
   return (
-    <div className="flex gap-1">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(60px,1fr))] gap-2">
       {sortedSubjects.map((subject, index) => (
         <SubjectCard
           key={`${subject.id}-${index}`}
@@ -67,11 +67,14 @@ export const SubjectList = ({
       ))}
       {isEditing && onAddSubject && (
         <Button
-          onClick={() => onAddSubject(type)}
+          onClick={() => {
+            console.log('SubjectList: 科目追加が呼び出されました。タイプ:', type);
+            onAddSubject(type);
+          }}
           variant="outline"
           className="
             flex flex-col items-center justify-center
-            h-16 w-[60px]
+            h-16 w-full
 
             border border-dashed
             bg-background/50 hover:bg-background dark:bg-input/30 dark:hover:bg-input/100

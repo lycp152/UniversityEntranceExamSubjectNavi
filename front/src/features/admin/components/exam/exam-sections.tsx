@@ -49,7 +49,7 @@ export const ExamSections = ({
   // 試験種別が見つからない場合のエラーハンドリング
   if (!commonType || !secondaryType) {
     return (
-      <div className="flex-1 flex items-center justify-center text-red-500">
+      <div className="flex-1 flex items-center justify-center text-red-500 gap-64">
         {!commonType && <p>{EXAM_TYPES.COMMON.formalName}の情報が見つかりません</p>}
         {!secondaryType && <p>{EXAM_TYPES.SECONDARY.formalName}の情報が見つかりません</p>}
       </div>

@@ -165,4 +165,42 @@ describe('BasicInfo', () => {
       expect(props.onInfoChange).toHaveBeenCalledWith('enrollment', -1);
     });
   });
+
+  describe('アクセシビリティ', () => {
+    it('入力フィールドに適切なラベルが設定されていること', () => {
+      const props = { ...createTestBasicInfo(), isEditing: true };
+      render(<BasicInfo {...props} />);
+
+      expect(screen.getByLabelText('日程')).toBeInTheDocument();
+      expect(screen.getByLabelText('募集人数')).toBeInTheDocument();
+    });
+
+    it('セレクトボックスが適切なARIA属性を持っていること', () => {
+      const props = { ...createTestBasicInfo(), isEditing: true };
+      render(<BasicInfo {...props} />);
+
+      const select = screen.getByRole('combobox');
+      expect(select).toHaveAttribute('aria-expanded', 'false');
+      expect(select).toHaveAttribute('aria-haspopup', 'listbox');
+    });
+
+    it('入力フィールドが適切なARIA属性を持っていること', () => {
+      const props = { ...createTestBasicInfo(), isEditing: true };
+      render(<BasicInfo {...props} />);
+
+      const inputs = screen.getAllByRole('textbox');
+      inputs.forEach(input => {
+        expect(input).toHaveAttribute('aria-label');
+      });
+    });
+
+    it('数値入力フィールドが適切なARIA属性を持っていること', () => {
+      const props = { ...createTestBasicInfo(), isEditing: true };
+      render(<BasicInfo {...props} />);
+
+      const numberInput = screen.getByRole('spinbutton');
+      expect(numberInput).toHaveAttribute('aria-label', '募集人数');
+      expect(numberInput).toHaveAttribute('aria-valuemin', '0');
+    });
+  });
 });

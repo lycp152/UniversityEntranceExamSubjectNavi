@@ -65,9 +65,7 @@ const EditScore = ({ score, onScoreChange }: EditScoreProps) => {
       pattern="[0-9]*"
       aria-label="スコア"
       aria-required="true"
-      aria-invalid={
-        score < SUBJECT_SCORE_CONSTRAINTS.MIN_SCORE || score > SUBJECT_SCORE_CONSTRAINTS.MAX_SCORE
-      }
+      aria-invalid={score === 0}
     />
   );
 };

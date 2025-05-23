@@ -22,24 +22,26 @@ const (
 	rollbackErrorMsg = "ロールバックに失敗しました: %v"
 )
 
-// calculatePercentages は科目のパーセンテージを自動計算します
-// この関数は以下の処理を行います：
-// - 全科目の総得点の計算
-// - 各科目のパーセンテージの計算
-func calculatePercentages(subjects []models.Subject) []models.Subject {
-	var totalScore float64
-
-	// 全科目の総得点を計算
-	for _, subject := range subjects {
-		totalScore += float64(subject.Score)
-	}
+// calculateAndSetSubjectPercentages は科目のパーセンテージを計算し、設定します
+func calculateAndSetSubjectPercentages(
+	subjects []models.Subject,
+	commonTestTotalScore float64,
+	secondaryTestTotalScore float64,
+) []models.Subject {
+	// 共通テストと二次試験の合計点を分母とする
+	denominator := commonTestTotalScore + secondaryTestTotalScore
 
 	// パーセンテージを計算
-	if totalScore > 0 {
+	if denominator > 0 {
 		for i := range subjects {
 			// パーセンテージを計算し、小数点以下2桁に丸める
-			percentage := float64(subjects[i].Score) / totalScore * 100
+			percentage := float64(subjects[i].Score) / denominator * 100
 			subjects[i].Percentage = math.Round(percentage*100) / 100
+		}
+	} else {
+		// 分母が0の場合はパーセンテージも0とする
+		for i := range subjects {
+			subjects[i].Percentage = 0
 		}
 	}
 
@@ -76,52 +78,47 @@ func cleanupDatabase(db *gorm.DB) error {
 // - 共通テストの得点
 // - 二次試験の得点
 type SubjectData struct {
-	Name string
-	Order int
-	CommonScore int
+	Name           string
+	Order          int
+	CommonScore    int
 	SecondaryScore int
 }
 
-// createSubjectsWithScores は科目データを作成します
-// この関数は以下の処理を行います：
-// - 共通テスト用科目の作成
-// - 二次試験用科目の作成
-// - パーセンテージの計算
+// createSubjectsWithScores は科目データを作成します (パーセンテージ計算は行わない)
 func createSubjectsWithScores(subjectsData []SubjectData) []models.Subject {
-	subjects := make([]models.Subject, len(subjectsData)*2)
-	idx := 0
+	subjects := make([]models.Subject, 0, len(subjectsData)) // 初期キャパシティを指定
 
 	for _, data := range subjectsData {
 		// 共通テスト用の科目
 		if data.CommonScore > 0 {
-			subjects[idx] = models.Subject{
+			subjects = append(subjects, models.Subject{
 				BaseModel: models.BaseModel{
 					Version: 1,
 				},
 				Name:         data.Name,
 				Score:        data.CommonScore,
 				DisplayOrder: data.Order,
-			}
-			idx++
+				Percentage:   0, // 初期値
+			})
 		}
 
-		// 二次試験用の科目
+		// 二次試験用の科目 (共通テストの科目とは別エンティティとして扱う場合)
+		// もし共通の科目名でScoreだけ異なる場合は、TestTypeを見てどちらのScoreを使うか判断
+		// ここではScoreが設定されていれば別々の科目として作成すると仮定
 		if data.SecondaryScore > 0 {
-			subjects[idx] = models.Subject{
+			subjects = append(subjects, models.Subject{
 				BaseModel: models.BaseModel{
 					Version: 1,
 				},
-				Name:         data.Name,
+				Name:         data.Name,    // 二次でも同じ科目名を使う想定
 				Score:        data.SecondaryScore,
-				DisplayOrder: data.Order,
-			}
-			idx++
+				DisplayOrder: data.Order, // 表示順は共通の場合と合わせるか、別途定義
+				Percentage:   0, // 初期値
+			})
 		}
 	}
 
-	subjects = subjects[:idx]
-
-	return calculatePercentages(subjects)
+	return subjects
 }
 
 // setupEnvironment は環境変数を設定します
@@ -159,22 +156,61 @@ func setupEnvironment() error {
 	return nil
 }
 
-// createTestTypes は試験種別を作成します
-// この関数は以下の処理を行います：
-// - 試験種別の作成
-// - 科目の関連付け
-func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypes []models.TestType) error {
-	for _, testType := range testTypes {
-		testType.AdmissionScheduleID = schedule.ID
-		subjects := testType.Subjects
-		testType.Subjects = nil
+// createTestTypes は試験種別を作成し、科目のパーセンテージを計算します
+func createTestTypes(tx *gorm.DB, schedule *models.AdmissionSchedule, testTypesInput []models.TestType) error {
+	createdTestTypes := make([]models.TestType, 0, len(testTypesInput))
 
-		if err := tx.Create(&testType).Error; err != nil {
-			return err
+	// まず全ての科目を作成 (パーセンテージはまだ0)
+	for _, ttInput := range testTypesInput {
+		newTestType := models.TestType{ // models.TestTypeを直接使う
+			BaseModel:           ttInput.BaseModel,
+			AdmissionScheduleID: schedule.ID,
+			Name:                ttInput.Name,
+			Subjects:            ttInput.Subjects, // このSubjectsはPercentageが0でScoreが設定済み
+		}
+		createdTestTypes = append(createdTestTypes, newTestType)
+	}
+
+	// 共通テストと二次試験の合計点を計算
+	var commonTestTotalScore float64
+
+	var secondaryTestTotalScore float64
+
+	for _, tt := range createdTestTypes {
+		var currentTypeTotal float64
+		for _, s := range tt.Subjects {
+			currentTypeTotal += float64(s.Score)
 		}
 
-		if err := createSubjects(tx, &testType, subjects); err != nil {
-			return err
+		switch tt.Name {
+		case "共通":
+			commonTestTotalScore = currentTypeTotal
+		case "二次":
+			secondaryTestTotalScore = currentTypeTotal
+		}
+	}
+
+	// 各試験種別の科目のパーセンテージを計算・設定
+	for i := range createdTestTypes {
+		createdTestTypes[i].Subjects = calculateAndSetSubjectPercentages(
+			createdTestTypes[i].Subjects,
+			commonTestTotalScore,
+			secondaryTestTotalScore,
+		)
+	}
+
+	// データベースに永続化
+	for _, tt := range createdTestTypes {
+		// Subjectsを一旦nilにしてTestType本体をCreateし、その後SubjectsをCreateする
+		subjectsToCreate := tt.Subjects
+		tt.Subjects = nil // GORMが関連を自動処理しようとするのを防ぐ
+
+		if err := tx.Create(&tt).Error; err != nil {
+			return fmt.Errorf("試験種別 '%s' の作成に失敗: %w", tt.Name, err)
+		}
+		// 作成されたTestTypeのIDを科目情報に紐付けて科目を作成
+		if err := createSubjects(tx, &tt, subjectsToCreate); err != nil {
+			return fmt.Errorf("試験種別 '%s' の科目作成に失敗: %w", tt.Name, err)
 		}
 	}
 
@@ -369,13 +405,12 @@ func main() {
 											Status:              "published",
 										},
 									},
+									// TestTypesのSubjectsはここでcreateSubjectsWithScoresを使って生成される
 									TestTypes: []models.TestType{
 										{
-											BaseModel: models.BaseModel{
-												Version: 1,
-											},
-											Name:                "共通",
-											Subjects: createSubjectsWithScores([]SubjectData{
+											BaseModel: models.BaseModel{Version: 1},
+											Name:      "共通",
+											Subjects: createSubjectsWithScores([]SubjectData{ // Scoreのみ設定、Percentageは0
 												{Name: "英語L", Order: 1, CommonScore: 50},
 												{Name: "英語R", Order: 2, CommonScore: 50},
 												{Name: "数学", Order: 3, CommonScore: 100},
@@ -385,11 +420,9 @@ func main() {
 											}),
 										},
 										{
-											BaseModel: models.BaseModel{
-												Version: 1,
-											},
-											Name:                "二次",
-											Subjects: createSubjectsWithScores([]SubjectData{
+											BaseModel: models.BaseModel{Version: 1},
+											Name:      "二次",
+											Subjects: createSubjectsWithScores([]SubjectData{ // Scoreのみ設定、Percentageは0
 												{Name: "英語R", Order: 1, SecondaryScore: 150},
 												{Name: "数学", Order: 2, SecondaryScore: 150},
 											}),
@@ -438,10 +471,8 @@ func main() {
 									},
 									TestTypes: []models.TestType{
 										{
-											BaseModel: models.BaseModel{
-												Version: 1,
-											},
-											Name:                "共通",
+											BaseModel: models.BaseModel{Version: 1},
+											Name:      "共通",
 											Subjects: createSubjectsWithScores([]SubjectData{
 												{Name: "英語L", Order: 1, CommonScore: 100},
 												{Name: "英語R", Order: 2, CommonScore: 100},
@@ -452,10 +483,8 @@ func main() {
 											}),
 										},
 										{
-											BaseModel: models.BaseModel{
-												Version: 1,
-											},
-											Name:                "二次",
+											BaseModel: models.BaseModel{Version: 1},
+											Name:      "二次",
 											Subjects: createSubjectsWithScores([]SubjectData{
 												{Name: "英語L", Order: 1, SecondaryScore: 100},
 												{Name: "英語R", Order: 2, SecondaryScore: 100},

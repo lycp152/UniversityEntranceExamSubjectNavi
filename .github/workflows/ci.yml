@@ -175,7 +175,9 @@ jobs:
           CSRF_SECRET: ${{ secrets.CSRF_SECRET }}
         run: |
           cd back
-          go test -v -race -coverprofile=coverage.txt -covermode=atomic $(go list ./... | grep -vE 'migrations/(scripts|seeds)|internal/testutils|tests/testutils|tests/unit/test_data')
+          go test -v -race -coverprofile=coverage.txt -covermode=atomic \
+            -coverpkg=$(go list ./... | grep -vE 'migrations/scripts|migrations/seeds|internal/testutils|tests/testutils|tests/unit/test_data.go' | paste -sd, -) \
+            $(go list ./... | grep -vE 'migrations/scripts|migrations/seeds|internal/testutils|tests/testutils|tests/unit/test_data.go')
           go test -v -bench=. -benchmem ./tests/unit/benchmarks_test.go
           go test -v ./tests/unit/security_test.go
           go test -v -run=TestEdgeCases ./tests/unit/edge_cases_test.go

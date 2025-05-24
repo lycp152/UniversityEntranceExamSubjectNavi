@@ -64,6 +64,10 @@ jobs:
             --failOnCVSS 7
             --enableRetired
             --enableExperimental
+            --nodeAuditSkipDevDependencies
+            --pnpmAuditSkipDevDependencies
+            --nodeAuditUseCache
+            --pnpmAuditUseCache
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results

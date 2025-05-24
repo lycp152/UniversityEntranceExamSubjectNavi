@@ -25,6 +25,8 @@ extraction:
   go:
     build-command: |
       cd back
+      go mod download
+      go mod tidy
       go build ./...
   javascript:
     paths:

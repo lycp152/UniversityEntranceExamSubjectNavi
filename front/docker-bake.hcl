@@ -74,8 +74,8 @@ target "app" {
 
 # ビルドステージのターゲット
 target "build" {
-  context = "${GITHUB_WORKSPACE}/front"
-  dockerfile = "${GITHUB_WORKSPACE}/front/Dockerfile.build"
+  context = "."
+  dockerfile = "front/Dockerfile.build"
   platforms = ["linux/amd64", "linux/arm64"]
   no-cache = false
 

@@ -495,8 +495,8 @@ func TestSetupHealthCheck(t *testing.T) {
 			setupDB: func(t *testing.T) *gorm.DB {
 				db, err := gorm.Open(sqlite.Open(sqliteMemoryDSN), &gorm.Config{})
 				assert.NoError(t, err)
-				// メモリ使用量を強制的に増加（より小さいサイズを使用）
-				_ = make([]byte, 512*1024*1024) // 512MB
+				// メモリ使用量を強制的に増加
+				_ = make([]byte, 2*1024*1024*1024) // 2GB
 				return db
 			},
 			expectedStatus: http.StatusServiceUnavailable,

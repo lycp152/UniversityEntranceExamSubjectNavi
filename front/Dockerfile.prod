@@ -34,7 +34,8 @@ RUN apk add --no-cache ca-certificates tzdata && \
     mkdir -p /var/cache/nginx /var/run
 
 # ビルドしたファイルをコピー
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/.next/standalone /usr/share/nginx/html
+COPY --from=builder /app/.next/static /usr/share/nginx/html/_next/static
 
 # nginx設定ファイルのコピー
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf

@@ -22,7 +22,7 @@ group "default" {
 # アプリケーションのビルドターゲット
 target "app" {
   context = "."
-  dockerfile = "Dockerfile"
+  dockerfile = "back/Dockerfile.prod"
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
@@ -77,7 +77,7 @@ target "app" {
 # ビルドステージのターゲット
 target "build" {
   context = "."
-  dockerfile = "back/Dockerfile.build"
+  dockerfile = "back/Dockerfile.prod"
   platforms = ["linux/amd64", "linux/arm64"]
   no-cache = false
 

@@ -30,10 +30,13 @@ extraction:
       cd back
       export GOCACHE=/tmp/go-cache
       export GOMODCACHE=/tmp/go-mod-cache
+      export GOCACHEPROG=/tmp/go-cache-prog
       export GOTOOLCHAIN=local
       export GO111MODULE=on
       export GOPROXY=direct
       export GOSUMDB=off
+      export GOENV=off
+      export GODEBUG=buildvcs=0
       go mod download
       go mod tidy
       go build -v ./...

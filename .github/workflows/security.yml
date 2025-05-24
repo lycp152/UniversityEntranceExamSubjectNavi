@@ -165,14 +165,28 @@ jobs:
       # ビルド環境の設定
       - name: Configure build environment
         run: |
+          # キャッシュディレクトリの作成
           mkdir -p /tmp/go-cache
           mkdir -p /tmp/go-mod-cache
+          mkdir -p /tmp/go-cache-prog
+
+          # 環境変数の設定
           echo "GOCACHE=/tmp/go-cache" >> $GITHUB_ENV
           echo "GOMODCACHE=/tmp/go-mod-cache" >> $GITHUB_ENV
+          echo "GOCACHEPROG=/tmp/go-cache-prog" >> $GITHUB_ENV
           echo "GOTOOLCHAIN=local" >> $GITHUB_ENV
           echo "GO111MODULE=on" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
           echo "GOSUMDB=off" >> $GITHUB_ENV
+          echo "GOENV=off" >> $GITHUB_ENV
+          echo "GODEBUG=buildvcs=0" >> $GITHUB_ENV
+
+      # 依存関係のインストール
+      - name: Install dependencies
+        run: |
+          cd back
+          go mod download
+          go mod tidy
 
       # 自動ビルドの実行
       - name: Autobuild
@@ -180,10 +194,13 @@ jobs:
         env:
           GOCACHE: /tmp/go-cache
           GOMODCACHE: /tmp/go-mod-cache
+          GOCACHEPROG: /tmp/go-cache-prog
           GOTOOLCHAIN: local
           GO111MODULE: on
           GOPROXY: direct
           GOSUMDB: off
+          GOENV: off
+          GODEBUG: buildvcs=0
 
       # CodeQL分析の実行
       - name: Perform CodeQL Analysis

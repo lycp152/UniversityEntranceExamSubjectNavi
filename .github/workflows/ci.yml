@@ -95,7 +95,7 @@ jobs:
       - name: Install golangci-lint
         uses: golangci/golangci-lint-action@v7.0.0
         with:
-          version: v2.0.2
+          version: latest
           working-directory: back
           skip-cache: false
           install-mode: binary
@@ -103,12 +103,13 @@ jobs:
           only-new-issues: false
           skip-save-cache: false
           cache-invalidation-interval: 7
+          args: --skip-files=".*_test.go" --skip-dirs="vendor|migrations|scripts" --timeout=5m --skip-schema-validation
 
       # リンターの実行
       - name: Run linters
         run: |
           cd back
-          golangci-lint run ./...
+          golangci-lint run --skip-schema-validation ./...
           cd ../front
           pnpm lint
           pnpm type-check

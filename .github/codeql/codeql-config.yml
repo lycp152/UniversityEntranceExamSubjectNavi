@@ -1,0 +1,24 @@
+name: "CodeQL Config"
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+  - uses: ./queries/go
+    with:
+      paths: back
+
+paths:
+  - back
+  - front
+
+paths-ignore:
+  - "**/vendor/**"
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+
+query-filters:
+  - include:
+      tags contain: security
+  - exclude:
+      tags contain: deprecated

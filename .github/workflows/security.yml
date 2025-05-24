@@ -30,6 +30,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node.jsのセットアップ
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: front/pnpm-lock.yaml
+
+      # pnpmのインストール
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+          run_install: false
+
+      # フロントエンドの依存関係をインストール
+      - name: Install frontend dependencies
+        run: |
+          cd front
+          pnpm install --frozen-lockfile
+
       # OWASP Dependency-Checkを使用して依存関係の脆弱性をスキャン
       - name: Run OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
@@ -38,7 +59,11 @@ jobs:
           path: "."
           format: "SARIF"
           out: "./dependency-check-report.sarif"
-          args: "--suppression ./.github/dependency-check-suppressions.xml"
+          args: |
+            --suppression ./.github/dependency-check-suppressions.xml
+            --failOnCVSS 7
+            --enableRetired
+            --enableExperimental
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results

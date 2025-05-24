@@ -26,3 +26,6 @@ extraction:
     build-command: |
       cd back
       go build ./...
+  javascript:
+    paths:
+      - front

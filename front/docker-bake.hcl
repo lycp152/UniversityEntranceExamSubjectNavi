@@ -21,8 +21,8 @@ group "default" {
 
 # アプリケーションのビルドターゲット
 target "app" {
-  context = "."
-  dockerfile = "front/Dockerfile.prod"
+  context = "./front"
+  dockerfile = "Dockerfile.prod"
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
 
@@ -74,8 +74,8 @@ target "app" {
 
 # ビルドステージのターゲット
 target "build" {
-  context = "."
-  dockerfile = "front/Dockerfile.prod"
+  context = "./front"
+  dockerfile = "Dockerfile.prod"
   platforms = ["linux/amd64", "linux/arm64"]
   no-cache = false
 
@@ -117,8 +117,8 @@ target "build" {
 
 # 開発環境用のターゲット
 target "dev" {
-  context = "."
-  dockerfile = "./Dockerfile.dev"
+  context = "./front"
+  dockerfile = "Dockerfile.dev"
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:dev"]
   platforms = ["linux/amd64"]
 

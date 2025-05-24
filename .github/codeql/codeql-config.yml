@@ -31,3 +31,6 @@ extraction:
   javascript:
     paths:
       - front
+    trap:
+      cache:
+        write: true

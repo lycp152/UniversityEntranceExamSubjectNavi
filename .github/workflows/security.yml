@@ -102,6 +102,56 @@ jobs:
           go-version: "1.24.2"
           cache: true
           cache-dependency-path: back/go.sum
+          check-latest: true
+
+      # メモリ制限の設定
+      - name: Set Go memory limit
+        run: |
+          echo "GOMEMLIMIT=2GiB" >> $GITHUB_ENV
+          echo "GOGC=100" >> $GITHUB_ENV
+          echo "GODEBUG=madvdontneed=1" >> $GITHUB_ENV
+
+      # ビルド最適化
+      - name: Configure build optimization
+        run: |
+          # 実験的な機能の設定
+          echo "GOEXPERIMENT=noswissmap,nospinbitmutex" >> $GITHUB_ENV
+
+          # ビルドデバッグ情報の設定
+          echo "GODEBUG=buildvcs=1,buildjson=1,buildinfo=1,buildcache=1,buildtrace=1,buildstats=1,buildprofile=1,buildmem=1,buildtime=1,buildcpu=1,buildio=1,buildnet=1,buildrace=1,buildcoverage=1,buildtest=1,buildbench=1,buildvet=1,buildlink=1,buildasm=1,buildcgo=1,buildmod=1,buildpkg=1,buildwork=1,buildid=1,buildtag=1,buildtype=1,buildvar=1,gotestjsonbuildtext=1,toolchaintrace=1" >> $GITHUB_ENV
+
+      # ビルド設定
+      - name: Configure build settings
+        run: |
+          # 認証とバージョン管理の設定
+          echo "GOAUTH=github" >> $GITHUB_ENV
+          echo "GOVCS=git:all,hg:all" >> $GITHUB_ENV
+
+          # セキュリティ設定
+          echo "GOINSECURE=github.com/*" >> $GITHUB_ENV
+          echo "GOPRIVATE=github.com/*" >> $GITHUB_ENV
+          echo "GONOSUMDB=github.com/*" >> $GITHUB_ENV
+          echo "GONOPROXY=github.com/*" >> $GITHUB_ENV
+
+          # ツールチェーンとキャッシュ設定
+          echo "GOTOOLCHAIN=local" >> $GITHUB_ENV
+          echo "GOMODCACHEMODE=readonly" >> $GITHUB_ENV
+          echo "GOCACHEMODE=readonly" >> $GITHUB_ENV
+
+      # ビルドキャッシュの最適化
+      - name: Configure build cache
+        run: |
+          # キャッシュディレクトリの設定
+          echo "GOCACHE=$RUNNER_TEMP/go-cache" >> $GITHUB_ENV
+          mkdir -p $RUNNER_TEMP/go-cache
+          echo "GOMODCACHE=$RUNNER_TEMP/go-mod-cache" >> $GITHUB_ENV
+          mkdir -p $RUNNER_TEMP/go-mod-cache
+          echo "GOCACHEPROG=$RUNNER_TEMP/go-cache-prog" >> $GITHUB_ENV
+          echo "GOBIN=$RUNNER_TEMP/go-bin" >> $GITHUB_ENV
+          mkdir -p $RUNNER_TEMP/go-bin
+
+          # キャッシュモードの設定
+          echo "GOCACHEPROGMODE=readonly" >> $GITHUB_ENV
 
       # CodeQLの初期化と設定
       - name: Initialize CodeQL

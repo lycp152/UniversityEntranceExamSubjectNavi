@@ -13,12 +13,15 @@ paths-ignore:
   - "**/node_modules/**"
   - "**/dist/**"
   - "**/build/**"
+  - "**/coverage/**"
+  - "**/.next/**"
+  - "**/out/**"
 
 query-filters:
   - include:
       tags contain: security
   - exclude:
-      tags contain: deprecated
+      tags contain: [deprecated, experimental]
 
 # 言語固有の設定
 extraction:
@@ -34,3 +37,7 @@ extraction:
     trap:
       cache:
         write: true
+    build-command: |
+      cd front
+      pnpm install --frozen-lockfile
+      pnpm build

@@ -176,6 +176,8 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           CSRF_SECRET: ${{ secrets.CSRF_SECRET }}
+          GOMEMLIMIT: "512MiB" # メモリ制限を設定
+          GOGC: "100" # GCの頻度を調整
         run: |
           cd back
           go test -v -race -coverprofile=coverage.txt -covermode=atomic \

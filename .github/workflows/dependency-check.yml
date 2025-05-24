@@ -28,7 +28,7 @@ jobs:
       # リポジトリのチェックアウト
       - uses: actions/checkout@v4
 
-      # pnpmのインストール（Node.jsのセットアップの前に配置）
+      # pnpmのインストール
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -41,23 +41,6 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
-
-      # pnpmストアのキャッシュ
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: Cache pnpm
-        uses: actions/cache@v4
-        with:
-          path: |
-            $(pnpm store path --silent)
-            node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
 
       # 依存関係のインストール
       - name: Install dependencies
@@ -77,15 +60,6 @@ jobs:
             --failOnCVSS 7  # CVSSスコア7以上の脆弱性で失敗
             --enableRetired  # 非推奨の依存関係もチェック
             --enableExperimental  # 実験的な機能を有効化
-
-      # スキャン結果のキャッシュ
-      - name: Cache scan results
-        uses: actions/cache@v4
-        with:
-          path: ./dependency-check-report.sarif
-          key: ${{ runner.os }}-dependency-check-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-dependency-check-
 
       # スキャン結果のアップロード
       - name: Upload scan results

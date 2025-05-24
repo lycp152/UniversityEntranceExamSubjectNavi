@@ -165,10 +165,13 @@ jobs:
       # ビルド環境の設定
       - name: Configure build environment
         run: |
-          # キャッシュディレクトリの作成
+          # キャッシュディレクトリの作成とパーミッション設定
           mkdir -p /tmp/go-cache
           mkdir -p /tmp/go-mod-cache
           mkdir -p /tmp/go-cache-prog
+          chmod -R 777 /tmp/go-cache
+          chmod -R 777 /tmp/go-mod-cache
+          chmod -R 777 /tmp/go-cache-prog
 
           # 環境変数の設定
           echo "GOCACHE=/tmp/go-cache" >> $GITHUB_ENV

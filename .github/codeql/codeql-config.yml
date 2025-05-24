@@ -28,6 +28,12 @@ extraction:
   go:
     build-command: |
       cd back
+      # キャッシュディレクトリのパーミッション設定
+      chmod -R 777 /tmp/go-cache
+      chmod -R 777 /tmp/go-mod-cache
+      chmod -R 777 /tmp/go-cache-prog
+
+      # 環境変数の設定
       export GOCACHE=/tmp/go-cache
       export GOMODCACHE=/tmp/go-mod-cache
       export GOCACHEPROG=/tmp/go-cache-prog
@@ -37,6 +43,8 @@ extraction:
       export GOSUMDB=off
       export GOENV=off
       export GODEBUG=buildvcs=0
+
+      # 依存関係のインストールとビルド
       go mod download
       go mod tidy
       go build -v ./...

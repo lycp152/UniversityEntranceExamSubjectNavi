@@ -35,6 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # キャッシュの展開前に既存のファイルをクリーンアップ
+      - name: Cleanup Go cache
+        run: |
+          rm -rf ~/.cache/go-build
+          rm -rf ~/go/pkg/mod
+
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"

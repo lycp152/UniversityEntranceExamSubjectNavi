@@ -35,32 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # より包括的なクリーンアップ
-      - name: Cleanup Go environment
-        run: |
-          rm -rf ~/.cache/go-build
-          rm -rf ~/go/pkg/mod
-          rm -rf ~/go/bin
-          go clean -cache -modcache -i -r
-
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
           check-latest: true
-          cache: false # キャッシュを無効化し、手動で管理
-
-      # キャッシュの設定を最適化
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-${{ needs.setup.outputs.cache-key }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-
-            ${{ runner.os }}-go-
+          cache: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3
@@ -74,6 +53,33 @@ jobs:
           node-version: "22"
           cache: "pnpm"
           cache-dependency-path: front/pnpm-lock.yaml
+
+      # Goモジュールのキャッシュ
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # pnpmストアのキャッシュ
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Cache pnpm
+        uses: actions/cache@v4
+        with:
+          path: |
+            $(pnpm store path --silent)
+            front/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       # 依存関係のインストール
       - name: Install dependencies
@@ -131,8 +137,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
-          cache: true
-          cache-dependency-path: back/go.sum
+          cache: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3

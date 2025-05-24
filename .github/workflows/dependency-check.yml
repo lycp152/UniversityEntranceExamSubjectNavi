@@ -24,6 +24,10 @@ jobs:
   # 依存関係の脆弱性チェック
   dependency-check:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front
+
     steps:
       # リポジトリのチェックアウト
       - uses: actions/checkout@v4
@@ -41,6 +45,7 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+          cache-dependency-path: front/pnpm-lock.yaml
 
       # 依存関係のインストール
       - name: Install dependencies
@@ -51,7 +56,7 @@ jobs:
         uses: dependency-check/Dependency-Check_Action@main
         with:
           project: "UniversityEntranceExamSubjectNavi"
-          path: "."
+          path: "front"
           format: "SARIF"
           out: "./dependency-check-report.sarif"
           args: |

@@ -22,8 +22,9 @@ query-filters:
   - exclude:
       tags contain: deprecated
 
-# Go言語の設定
-go:
-  build-command: |
-    cd back
-    go build ./...
+# 言語固有の設定
+languages:
+  go:
+    build-command: |
+      cd back
+      go build ./...

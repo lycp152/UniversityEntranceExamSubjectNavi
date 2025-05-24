@@ -4,8 +4,6 @@ queries:
   - uses: security-extended
   - uses: security-and-quality
   - uses: ./queries/go
-    with:
-      paths: back
 
 # JavaScript/TypeScriptのパス設定
 paths:

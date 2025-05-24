@@ -28,9 +28,15 @@ extraction:
   go:
     build-command: |
       cd back
+      export GOCACHE=/tmp/go-cache
+      export GOMODCACHE=/tmp/go-mod-cache
+      export GOTOOLCHAIN=local
+      export GO111MODULE=on
+      export GOPROXY=direct
+      export GOSUMDB=off
       go mod download
       go mod tidy
-      go build ./...
+      go build -v ./...
   javascript:
     paths:
       - front

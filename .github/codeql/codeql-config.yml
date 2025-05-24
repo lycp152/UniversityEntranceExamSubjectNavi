@@ -23,7 +23,7 @@ query-filters:
       tags contain: deprecated
 
 # 言語固有の設定
-languages:
+extraction:
   go:
     build-command: |
       cd back

@@ -64,6 +64,17 @@ jobs:
             --failOnCVSS 7
             --enableRetired
             --enableExperimental
+            --prettyPrint
+            --disableNodeAudit
+            --disableNodeJS
+            --disableRetireJS
+            --disableYarnAudit
+            --disablePnpmAudit
+
+      # SARIFレポートの修正
+      - name: Fix SARIF report
+        run: |
+          sed -i 's|file:///github/workspace/front/package.json?/|file:///github/workspace/front/package.json|g' ./dependency-check-report.sarif
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results

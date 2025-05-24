@@ -241,11 +241,20 @@ jobs:
       - name: Run performance tests
         run: |
           cd back
-          go test -v -run=TestLoad ./tests/unit/load_test.go
-          go test -v -run=TestMemory ./tests/unit/memory_test.go
+          # パフォーマンステストの実行
+          go test -v -run=TestLoad ./tests/unit/load_test.go -bench=. -benchmem > performance.txt
+          go test -v -run=TestMemory ./tests/unit/memory_test.go -bench=. -benchmem > memory.txt
+
           # パフォーマンス閾値のチェック
-          go test -v -run=TestLoad ./tests/unit/load_test.go | grep -E "パフォーマンスが期待値を下回っています" && exit 1 || true
-          go test -v -run=TestMemory ./tests/unit/memory_test.go | grep -E "メモリ使用量が期待値を超えています" && exit 1 || true
+          if grep -q "パフォーマンスが期待値を下回っています" performance.txt; then
+            echo "パフォーマンステストが失敗しました"
+            exit 1
+          fi
+
+          if grep -q "メモリ使用量が期待値を超えています" memory.txt; then
+            echo "メモリテストが失敗しました"
+            exit 1
+          fi
 
       # パフォーマンスレポートのアップロード
       - name: Upload performance reports
@@ -255,6 +264,7 @@ jobs:
           path: |
             back/performance.txt
             back/memory.txt
+          if-no-files-found: error
 
   # セキュリティテストの実行
   security:

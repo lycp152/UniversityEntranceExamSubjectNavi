@@ -27,7 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: cache-key
-        run: echo "value=$(date +%s)" >> $GITHUB_OUTPUT
+        run: |
+          # キャッシュキーの生成（タイムスタンプとコミットハッシュを組み合わせて一意性を確保）
+          echo "value=$(date +%s)-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
   # コード品質のチェック
   lint:
@@ -42,19 +44,6 @@ jobs:
           cache: true
           cache-dependency-path: back/go.sum
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10
-          run_install: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-          cache-dependency-path: front/pnpm-lock.yaml
-
       # Goモジュールのキャッシュ
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -62,8 +51,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-${{ needs.setup.outputs.cache-key }}
           restore-keys: |
+            ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-
             ${{ runner.os }}-go-
 
       # pnpmストアのキャッシュ
@@ -78,8 +68,9 @@ jobs:
           path: |
             $(pnpm store path --silent)
             front/node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ needs.setup.outputs.cache-key }}
           restore-keys: |
+            ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-
             ${{ runner.os }}-pnpm-
 
       # 依存関係のインストール

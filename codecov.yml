@@ -1,47 +1,83 @@
 # Codecovの設定ファイル
 # 参考: https://docs.codecov.com/docs/best-practices
 
-coverage:
-  status:
-    project:
-      default:
-        target: 80% # カバレッジの目標値
-        threshold: 1% # 許容される低下率
-    patch:
-      default:
-        target: 80%
-        threshold: 1%
-
-# カバレッジレポートの設定
+# 基本的な設定
+# wait_for_ci: CIの完了を待ってからレポートを処理
+# require_ci_to_pass: CIが成功した場合のみレポートを処理
+# max_report_age: 12時間以上経過したレポートを拒否
 codecov:
-  require_ci_to_pass: true # CIが成功した場合のみカバレッジを更新
-  max_report_age: off # レポートの有効期限を無期限に設定
+  notify:
+    wait_for_ci: true
+  require_ci_to_pass: true
+  max_report_age: "12h"
 
-# カバレッジの傾向分析設定
+# プルリクエストコメントの設定
+# behavior: default - 標準的なコメント動作
+# layout: カバレッジレポートの表示順序
+# require_changes: 変更があった場合のみコメント
+# require_base: ベースブランチのカバレッジが必要
+# require_head: 現在のブランチのカバレッジが必要
 comment:
-  layout: "reach, diff, flags, files, footer"
   behavior: default
-  require_changes: false
-  require_base: false
+  layout: reach,diff,flags,tree,reach
+  show_carryforward_flags: false
+  require_changes: true
+  require_base: true
   require_head: true
 
-# カバレッジ低下のアラート設定
-notify:
-  slack:
-    default:
-      url: ${{ secrets.SLACK_WEBHOOK_URL }}
-      threshold: 1% # カバレッジが1%以上低下した場合に通知
-      branches: # 通知対象のブランチ
-        - main
-        - develop
+# カバレッジの設定
+# precision: 小数点以下の桁数
+# range: カバレッジの許容範囲（最小60%、目標80%）
+# round: カバレッジの丸め方
+# status: カバレッジステータスの設定
+coverage:
+  precision: 2
+  range: "60.0...80.0"
+  round: down
+  status:
+    changes: false
+    default_rules:
+      flag_coverage_not_uploaded_behavior: include
+    patch: true
+    project: true
+
+# GitHub Checksの設定
+# annotations: プルリクエストにアノテーションを表示
+github_checks:
+  annotations: true
+
+# Slack通知の設定
+slack_app: true
 
 # カバレッジの除外設定
+# テストファイル、ユーティリティ、マイグレーションなど、
+# カバレッジ計測から除外すべきファイルを指定
 ignore:
-  - "**/*_test.go" # テストファイルを除外
-  - "**/testutils/**" # テストユーティリティを除外
+  # テストファイル関連
+  - "back/tests/**/*_test.go" # テストファイルを除外
+  - "back/internal/testutils/**" # 内部テストユーティリティを除外
+  - "back/tests/testutils/**" # テストユーティリティを除外
+  - "back/tests/unit/test_data.go" # テストデータファイルを除外
+  - "back/tests/unit/benchmarks_test.go" # ベンチマークテストを除外
+  - "back/tests/unit/load_test.go" # 負荷テストを除外
+  - "back/tests/unit/memory_test.go" # メモリテストを除外
+  - "back/tests/unit/example_test.go" # テスト例示ファイルを除外
+  - "back/tests/e2e/**" # E2Eテストを除外
+  - "back/tests/integration/**" # 統合テストを除外
+
+  # マイグレーション関連
+  - "back/migrations/scripts/**" # マイグレーションスクリプトを除外
+  - "back/migrations/seeds/**" # シードデータを除外
+
+  # テストデータ関連
+  - "back/tests/testdata/**" # テストデータディレクトリを除外
+
+  # モック関連
   - "**/mocks/**" # モックファイルを除外
 
 # カバレッジの集計方法
+# flags: カバレッジの集計単位と方法を指定
+# carryforward: 前回のカバレッジを引き継ぐ
 flags:
   unittests:
     paths:

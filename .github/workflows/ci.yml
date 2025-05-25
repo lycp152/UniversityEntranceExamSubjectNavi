@@ -241,11 +241,21 @@ jobs:
       - name: Run performance tests
         run: |
           cd back
+          echo "パフォーマンステストを開始します..."
+
           # パフォーマンステストの実行
+          echo "負荷テストを実行中..."
           go test -v -run=TestLoad ./tests/unit/load_test.go -bench=. -benchmem > performance.txt
+          echo "負荷テストの結果:"
+          cat performance.txt
+
+          echo "メモリテストを実行中..."
           go test -v -run=TestMemory ./tests/unit/memory_test.go -bench=. -benchmem > memory.txt
+          echo "メモリテストの結果:"
+          cat memory.txt
 
           # パフォーマンス閾値のチェック
+          echo "パフォーマンス閾値のチェックを実行中..."
           if grep -q "パフォーマンスが期待値を下回っています" performance.txt; then
             echo "パフォーマンステストが失敗しました"
             exit 1
@@ -255,6 +265,8 @@ jobs:
             echo "メモリテストが失敗しました"
             exit 1
           fi
+
+          echo "パフォーマンステストが正常に完了しました"
 
       # パフォーマンスレポートのアップロード
       - name: Upload performance reports

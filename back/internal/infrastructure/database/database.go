@@ -41,6 +41,7 @@ const (
 
 	// ロガー設定
 	logSlowThreshold = time.Second
+	logLevel        = logger.Info
 )
 
 // DBStats はデータベース接続の統計情報を保持する構造体です。
@@ -80,6 +81,22 @@ type Config struct {
 	ConnMaxIdleTime time.Duration
 	RetryAttempts   int
 	RetryDelay      time.Duration
+}
+
+// ErrorResponse はエラーメッセージの構造体です
+type ErrorResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Details string `json:"details,omitempty"`
+}
+
+// NewErrorResponse はエラーレスポンスを作成します
+func NewErrorResponse(code, message, details string) *ErrorResponse {
+	return &ErrorResponse{
+		Code:    code,
+		Message: message,
+		Details: details,
+	}
 }
 
 // getEnvInt は環境変数を整数として取得します。
@@ -160,7 +177,6 @@ func NewConfig() (*Config, error) {
 // - エラーハンドリング
 func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 	var db *gorm.DB
-
 	var err error
 
 	for i := 0; i < config.RetryAttempts; i++ {
@@ -170,7 +186,7 @@ func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 				log.New(os.Stdout, "\r\n", log.LstdFlags),
 				logger.Config{
 					SlowThreshold:             logSlowThreshold,
-					LogLevel:                  logger.Info,
+					LogLevel:                  logLevel,
 					IgnoreRecordNotFoundError: true,
 					Colorful:                  true,
 				},

@@ -177,6 +177,7 @@ func NewConfig() (*Config, error) {
 // - エラーハンドリング
 func connectWithRetry(dsn string, config *Config) (*gorm.DB, error) {
 	var db *gorm.DB
+
 	var err error
 
 	for i := 0; i < config.RetryAttempts; i++ {

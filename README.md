@@ -48,7 +48,7 @@
 
 ### バックエンド
 
-- Go 1.22
+- Go 1.24
   - 高パフォーマンスな並行処理
   - 型安全性による堅牢性
 - Echo Framework
@@ -89,7 +89,7 @@
 
 ### 前提条件
 
-- Go 1.22 以上
+- Go 1.24 以上
 - Node.js 18 以上
 - Docker & Docker Compose
 - Make

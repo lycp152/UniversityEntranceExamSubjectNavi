@@ -112,12 +112,13 @@ func checkMemoryHealth(ctx context.Context) bool {
 
 	runtime.ReadMemStats(&m)
 
-	// メモリ使用量が1GBを超えた場合に警告をログに記録
+	// メモリ使用量が1GBを超えた場合に警告をログに記録し、falseを返す
 	if m.Alloc > 1000000000 {
 		applogger.Warn(ctx, "メモリ使用量が高くなっています: %d bytes", m.Alloc)
+		return false
 	}
 
-	return m.Alloc <= 1000000000 // 1GB以下
+	return true
 }
 
 // setupHealthCheck はヘルスチェックエンドポイントを設定します

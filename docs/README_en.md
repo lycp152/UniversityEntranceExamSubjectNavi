@@ -48,7 +48,7 @@ A web application that efficiently supports university entrance exam subject sel
 
 ### Backend
 
-- Go 1.22
+- Go 1.24
   - High-performance concurrent processing
   - Type safety and robustness
 - Echo Framework
@@ -89,7 +89,7 @@ A web application that efficiently supports university entrance exam subject sel
 
 ### Prerequisites
 
-- Go 1.22 or higher
+- Go 1.24 or higher
 - Node.js 18 or higher
 - Docker & Docker Compose
 - Make

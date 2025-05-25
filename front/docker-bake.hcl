@@ -25,6 +25,7 @@ target "app" {
   dockerfile = "Dockerfile.prod"
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG}"]
   platforms = ["linux/amd64", "linux/arm64"]
+  output = ["type=registry"]
 
   # ビルド時の引数
   args = {

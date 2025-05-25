@@ -368,6 +368,7 @@ jobs:
           path: "."
           format: "SARIF"
           out: "./dependency-check-report.sarif"
+          args: "--pnpm-lock front/pnpm-lock.yaml"
 
       - name: Upload security results
         uses: github/codeql-action/upload-sarif@v3

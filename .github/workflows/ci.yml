@@ -293,17 +293,34 @@ jobs:
       - name: Run security tests
         run: |
           cd back
+          echo "セキュリティテストを開始します..."
+
           # セキュリティテストの実行
-          go test -v -run=TestVulnerability ./tests/unit/vulnerability_test.go
-          go test -v -run=TestSecurity ./tests/unit/security_test.go
+          echo "脆弱性テストを実行中..."
+          go test -v -run=TestVulnerability ./tests/unit/vulnerability_test.go > security.txt
+          echo "脆弱性テストの結果:"
+          cat security.txt
+
+          echo "セキュリティテストを実行中..."
+          go test -v -run=TestSecurity ./tests/unit/security_test.go >> security.txt
+          echo "セキュリティテストの結果:"
+          cat security.txt
 
           # gosecのインストールと実行
+          echo "gosecによる静的解析を実行中..."
           go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -quiet ./...
+          gosec -quiet ./... > vulnerability.txt
+          echo "gosecの解析結果:"
+          cat vulnerability.txt
 
           # 依存関係の脆弱性チェック
+          echo "依存関係の脆弱性チェックを実行中..."
           go install github.com/google/osv-scanner/cmd/osv-scanner@latest
-          osv-scanner .
+          osv-scanner . >> vulnerability.txt
+          echo "依存関係の脆弱性チェック結果:"
+          cat vulnerability.txt
+
+          echo "セキュリティテストが完了しました"
 
       # セキュリティレポートのアップロード
       - name: Upload security reports
@@ -313,6 +330,7 @@ jobs:
           path: |
             back/security.txt
             back/vulnerability.txt
+          if-no-files-found: error
 
       - name: Run security checks
         run: |

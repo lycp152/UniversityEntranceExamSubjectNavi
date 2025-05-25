@@ -7,7 +7,7 @@ variable "DOCKER_REGISTRY" {
 }
 
 variable "IMAGE_NAME" {
-  default = "university-exam-frontend"
+  default = "university-entrance-exam-subject-navi-front"
 }
 
 variable "TAG" {
@@ -23,9 +23,8 @@ group "default" {
 target "app" {
   context = "./front"
   dockerfile = "Dockerfile.prod"
-  platforms = ["linux/amd64", "linux/arm64"]
-  output = ["type=registry"]
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG}"]
+  platforms = ["linux/amd64", "linux/arm64"]
 
   # ビルド時の引数
   args = {

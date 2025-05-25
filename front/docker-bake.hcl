@@ -26,8 +26,6 @@ target "app" {
   platforms = ["linux/amd64", "linux/arm64"]
   output = ["type=registry"]
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG}"]
-  cache-from = ["type=gha"]
-  cache-to = ["type=gha,mode=max"]
 
   # ビルド時の引数
   args = {

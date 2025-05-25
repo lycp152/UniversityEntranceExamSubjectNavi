@@ -401,3 +401,8 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
             *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
+            *.push=true
+            *.tags=university-entrance-exam-subject-navi:latest
+            *.platforms=linux/amd64,linux/arm64
+            *.provenance=true
+            *.sbom=true

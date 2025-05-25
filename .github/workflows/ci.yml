@@ -61,8 +61,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-
             ${{ runner.os }}-go-
 
       # pnpmストアのキャッシュ
@@ -77,8 +78,9 @@ jobs:
           path: |
             $(pnpm store path --silent)
             front/node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-
             ${{ runner.os }}-pnpm-
 
       # 依存関係のインストール
@@ -94,7 +96,7 @@ jobs:
       - name: Install golangci-lint
         uses: golangci/golangci-lint-action@v7.0.0
         with:
-          version: v2.0.2
+          version: latest
           working-directory: back
           skip-cache: false
           install-mode: binary
@@ -107,7 +109,7 @@ jobs:
       - name: Run linters
         run: |
           cd back
-          golangci-lint run ./...
+          golangci-lint run --timeout=5m ./...
           cd ../front
           pnpm lint
           pnpm type-check
@@ -159,8 +161,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-test-${{ hashFiles('back/go.sum') }}
+          key: ${{ runner.os }}-go-test-${{ hashFiles('back/go.sum') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-go-test-${{ hashFiles('back/go.sum') }}-
             ${{ runner.os }}-go-
 
       # バックエンドテストの実行
@@ -201,6 +204,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           name: codecov-umbrella
+          verbose: true
+          directory: ./
 
       # テストレポートの生成
       - name: Generate test report
@@ -236,11 +241,32 @@ jobs:
       - name: Run performance tests
         run: |
           cd back
-          go test -v -run=TestLoad ./tests/unit/load_test.go
-          go test -v -run=TestMemory ./tests/unit/memory_test.go
+          echo "パフォーマンステストを開始します..."
+
+          # パフォーマンステストの実行
+          echo "負荷テストを実行中..."
+          go test -v -run=TestLoad ./tests/unit/load_test.go -bench=. -benchmem > performance.txt
+          echo "負荷テストの結果:"
+          cat performance.txt
+
+          echo "メモリテストを実行中..."
+          go test -v -run=TestMemory ./tests/unit/memory_test.go -bench=. -benchmem > memory.txt
+          echo "メモリテストの結果:"
+          cat memory.txt
+
           # パフォーマンス閾値のチェック
-          go test -v -run=TestLoad ./tests/unit/load_test.go | grep -E "パフォーマンスが期待値を下回っています" && exit 1 || true
-          go test -v -run=TestMemory ./tests/unit/memory_test.go | grep -E "メモリ使用量が期待値を超えています" && exit 1 || true
+          echo "パフォーマンス閾値のチェックを実行中..."
+          if grep -q "パフォーマンスが期待値を下回っています" performance.txt; then
+            echo "パフォーマンステストが失敗しました"
+            exit 1
+          fi
+
+          if grep -q "メモリ使用量が期待値を超えています" memory.txt; then
+            echo "メモリテストが失敗しました"
+            exit 1
+          fi
+
+          echo "パフォーマンステストが正常に完了しました"
 
       # パフォーマンスレポートのアップロード
       - name: Upload performance reports
@@ -250,6 +276,7 @@ jobs:
           path: |
             back/performance.txt
             back/memory.txt
+          if-no-files-found: error
 
   # セキュリティテストの実行
   security:
@@ -266,17 +293,34 @@ jobs:
       - name: Run security tests
         run: |
           cd back
+          echo "セキュリティテストを開始します..."
+
           # セキュリティテストの実行
-          go test -v -run=TestVulnerability ./tests/unit/vulnerability_test.go
-          go test -v -run=TestSecurity ./tests/unit/security_test.go
+          echo "脆弱性テストを実行中..."
+          go test -v -run=TestVulnerability ./tests/unit/vulnerability_test.go > security.txt
+          echo "脆弱性テストの結果:"
+          cat security.txt
+
+          echo "セキュリティテストを実行中..."
+          go test -v -run=TestSecurity ./tests/unit/security_test.go >> security.txt
+          echo "セキュリティテストの結果:"
+          cat security.txt
 
           # gosecのインストールと実行
+          echo "gosecによる静的解析を実行中..."
           go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -quiet ./...
+          gosec -quiet ./... > vulnerability.txt
+          echo "gosecの解析結果:"
+          cat vulnerability.txt
 
           # 依存関係の脆弱性チェック
+          echo "依存関係の脆弱性チェックを実行中..."
           go install github.com/google/osv-scanner/cmd/osv-scanner@latest
-          osv-scanner .
+          osv-scanner . >> vulnerability.txt
+          echo "依存関係の脆弱性チェック結果:"
+          cat vulnerability.txt
+
+          echo "セキュリティテストが完了しました"
 
       # セキュリティレポートのアップロード
       - name: Upload security reports
@@ -286,6 +330,51 @@ jobs:
           path: |
             back/security.txt
             back/vulnerability.txt
+          if-no-files-found: error
+
+      - name: Run security checks
+        run: |
+          cd back
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec -quiet ./...
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: front/pnpm-lock.yaml
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd front
+          pnpm install --frozen-lockfile
+
+      - name: Run Frontend Security Check
+        run: |
+          cd front
+          pnpm audit
+
+      - name: Run dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "UniversityEntranceExamSubjectNavi"
+          path: "."
+          format: "SARIF"
+          out: "./dependency-check-report.sarif"
+          args: "--scan front"
+
+      - name: Upload security results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "./dependency-check-report.sarif"
+          category: "security"
 
   # Dockerイメージのビルド
   build:

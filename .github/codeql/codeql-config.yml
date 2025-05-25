@@ -1,0 +1,60 @@
+name: "CodeQL Config"
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+  - uses: ./queries/go
+
+# JavaScript/TypeScriptのパス設定
+paths:
+  - front
+
+paths-ignore:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/coverage/**"
+  - "**/.next/**"
+  - "**/out/**"
+
+query-filters:
+  - include:
+      tags contain: security
+  - exclude:
+      tags contain: [deprecated, experimental]
+
+# 言語固有の設定
+extraction:
+  go:
+    build-command: |
+      cd back
+      # キャッシュディレクトリのパーミッション設定
+      chmod -R 777 /tmp/go-cache
+      chmod -R 777 /tmp/go-mod-cache
+      chmod -R 777 /tmp/go-cache-prog
+
+      # 環境変数の設定
+      export GOCACHE=/tmp/go-cache
+      export GOMODCACHE=/tmp/go-mod-cache
+      export GOCACHEPROG=/tmp/go-cache-prog
+      export GOTOOLCHAIN=local
+      export GO111MODULE=on
+      export GOPROXY=direct
+      export GOSUMDB=off
+      export GOENV=off
+      export GODEBUG=buildvcs=0
+
+      # 依存関係のインストールとビルド
+      go mod download
+      go mod tidy
+      go build -v ./...
+  javascript:
+    paths:
+      - front
+    trap:
+      cache:
+        write: true
+    build-command: |
+      cd front
+      pnpm install --frozen-lockfile
+      pnpm build

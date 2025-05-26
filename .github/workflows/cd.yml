@@ -101,36 +101,24 @@ jobs:
   # 本番環境へのデプロイ
   deploy:
     needs: build-and-push # build-and-pushジョブの完了を待機
-    if: |
-      startsWith(github.ref, 'refs/tags/v') && # バージョンタグが付いている場合
-      env.PRODUCTION_DEPLOY_ENABLED == 'true' # 本番環境デプロイが有効な場合
+    if: startsWith(github.ref, 'refs/tags/v') # バージョンタグが付いている場合のみ実行
     runs-on: ubuntu-latest
     concurrency: deployment # 同時実行を制限（同じデプロイが同時に実行されないように）
-    env:
-      PRODUCTION_DEPLOY_ENABLED: ${{ secrets.PRODUCTION_DEPLOY_ENABLED }}
     steps:
-      # デプロイが無効な場合のスキップメッセージ
-      - name: Skip deployment
-        if: env.PRODUCTION_DEPLOY_ENABLED != 'true'
-        run: echo "本番環境のデプロイは現在無効化されています。サーバー設定が完了次第、PRODUCTION_DEPLOY_ENABLEDをtrueに設定してください。"
-
       # SSHキーの設定
       - name: Configure SSH
-        if: env.PRODUCTION_DEPLOY_ENABLED == 'true'
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
       # 既知のホストの追加
       - name: Add known hosts
-        if: env.PRODUCTION_DEPLOY_ENABLED == 'true'
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
       # 本番環境へのデプロイ実行
       - name: Deploy to production
-        if: env.PRODUCTION_DEPLOY_ENABLED == 'true'
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}

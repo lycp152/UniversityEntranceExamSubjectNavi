@@ -67,14 +67,12 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Dockerイメージのメタデータを抽出
-      - name: Extract metadata for Docker
-        id: meta
+      # バックエンドのメタデータ抽出
+      - name: Extract metadata for backend
+        id: meta-backend
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_USERNAME }}/university-entrance-exam-subject-navi
-            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_USERNAME }}/university-entrance-exam-subject-navi-front
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_USERNAME }}/university-entrance-exam-subject-navi
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -82,28 +80,42 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
 
-      # Dockerイメージのビルドとプッシュ
+      # フロントエンドのメタデータ抽出
+      - name: Extract metadata for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_USERNAME }}/university-entrance-exam-subject-navi-front
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+
+      # バックエンドのビルドとプッシュ
       - name: Build and push backend
         uses: docker/bake-action@v6
         with:
           files: |
             ./back/docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
+            ${{ steps.meta-backend.outputs.bake-file }}
           targets: app
           set: |
-            *.tags=${{ steps.meta.outputs.tags }}
-            *.labels=${{ steps.meta.outputs.labels }}
+            *.tags=${{ steps.meta-backend.outputs.tags }}
+            *.labels=${{ steps.meta-backend.outputs.labels }}
 
+      # フロントエンドのビルドとプッシュ
       - name: Build and push frontend
         uses: docker/bake-action@v6
         with:
           files: |
             ./front/docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
+            ${{ steps.meta-frontend.outputs.bake-file }}
           targets: app
           set: |
-            *.tags=${{ steps.meta.outputs.tags }}
-            *.labels=${{ steps.meta.outputs.labels }}
+            *.tags=${{ steps.meta-frontend.outputs.tags }}
+            *.labels=${{ steps.meta-frontend.outputs.labels }}
 
   # 本番環境へのデプロイ
   deploy:

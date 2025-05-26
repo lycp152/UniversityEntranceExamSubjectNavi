@@ -78,11 +78,10 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/university-exam-backend
             ${{ secrets.DOCKER_USERNAME }}/university-exam-frontend
           tags: |
-            type=semver,pattern={{version}}      # 完全なバージョン番号（例：1.0.0）
-            type=semver,pattern={{major}}.{{minor}}  # メジャー.マイナーバージョン（例：1.0）
-            type=sha,prefix={{branch}}-          # ブランチ名とコミットハッシュ（例：main-abc123）
-            type=ref,event=branch                # ブランチ名（例：main）
-            type=ref,event=pr                    # プルリクエスト番号（例：pr-123）
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value={{version}},enable={{is_tag}}
+            type=raw,value={{sha}},enable={{is_branch}}
+            type=raw,value=pr-{{number}},enable={{is_pr}}
 
       # Dockerイメージのビルドとプッシュ
       - name: Build and push images
@@ -93,8 +92,8 @@ jobs:
             ./front/docker-bake.hcl
           push: true
           set: |
-            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}               # GitHub Actionsのキャッシュを使用
-            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}        # 最大限のキャッシュを保存
+            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
+            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
             *.tags=${{ steps.meta.outputs.tags }}
             *.labels=${{ steps.meta.outputs.labels }}
 

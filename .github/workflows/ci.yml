@@ -23,6 +23,12 @@ on:
   schedule:
     - cron: "0 0 * * *" # 毎日午前0時に実行
 
+env:
+  DOCKER_BUILDKIT: 1
+  BUILDKIT_INLINE_CACHE: 1
+  DOCKER_REGISTRY: ghcr.io
+  DOCKER_USERNAME: ${{ github.repository_owner }}
+
 jobs:
   # キャッシュキーの生成と共有
   setup:
@@ -394,21 +400,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:master
+            network=host
 
-      # Docker Hubへのログイン
-      - name: Login to Docker Hub
+      - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Dockerイメージのビルド
-      - name: Build images
+      - name: Build Images
         uses: docker/bake-action@v6
         with:
           files: |
-            ./back/docker-bake.hcl
-            ./front/docker-bake.hcl
+            front/docker-bake.hcl
+            back/docker-bake.hcl
           set: |
             *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
             *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
+            *.labels[0]=org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            *.labels[1]=org.opencontainers.image.revision=${{ github.sha }}
+            *.labels[2]=org.opencontainers.image.created=${{ github.event.repository.created_at }}
+            *.labels[3]=org.opencontainers.image.description=大学入試科目ナビゲーター
+            *.labels[4]=org.opencontainers.image.licenses=MIT
+            *.labels[5]=org.opencontainers.image.title=大学入試科目ナビゲーター
+            *.labels[6]=org.opencontainers.image.vendor=${{ github.repository_owner }}
+            *.labels[7]=org.opencontainers.image.version=${{ github.sha }}
+          push: true
+          targets: app
+          provenance: false
+          sbom: false

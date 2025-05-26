@@ -421,14 +421,14 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
             *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
-            *.labels[0]=org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            *.labels[1]=org.opencontainers.image.revision=${{ github.sha }}
-            *.labels[2]=org.opencontainers.image.created=${{ github.event.repository.created_at }}
-            *.labels[3]=org.opencontainers.image.description=大学入試科目ナビゲーター
-            *.labels[4]=org.opencontainers.image.licenses=MIT
-            *.labels[5]=org.opencontainers.image.title=大学入試科目ナビゲーター
-            *.labels[6]=org.opencontainers.image.vendor=${{ github.repository_owner }}
-            *.labels[7]=org.opencontainers.image.version=${{ github.sha }}
+            *.labels.org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            *.labels.org.opencontainers.image.revision=${{ github.sha }}
+            *.labels.org.opencontainers.image.created=${{ github.event.repository.created_at }}
+            *.labels.org.opencontainers.image.description=大学入試科目ナビゲーター
+            *.labels.org.opencontainers.image.licenses=MIT
+            *.labels.org.opencontainers.image.title=大学入試科目ナビゲーター
+            *.labels.org.opencontainers.image.vendor=${{ github.repository_owner }}
+            *.labels.org.opencontainers.image.version=${{ github.sha }}
           push: true
           targets: app
           provenance: false

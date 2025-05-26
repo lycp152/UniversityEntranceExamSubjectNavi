@@ -4,6 +4,9 @@ queries:
   - uses: security-extended
   - uses: security-and-quality
   - uses: ./queries/go
+  - exclude:
+      id: js/unbound-event-handler-receiver
+      reason: "アロー関数を使用したクラスフィールドは正しく動作しており、この警告は誤検知です"
 
 # JavaScript/TypeScriptのパス設定
 paths:

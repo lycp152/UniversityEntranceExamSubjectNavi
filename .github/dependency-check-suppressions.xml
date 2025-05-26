@@ -13,4 +13,14 @@
         <packageUrl regex="true">pkg:golang/github.com/prometheus/client_model@0.6.2</packageUrl>
         <cve>CVE-2019-3826</cve>
     </suppress>
+    <suppress>
+        <notes>Prometheusのcommonライブラリは最新バージョンに更新済みであり、この警告は誤検知です</notes>
+        <packageUrl regex="true">pkg:golang/github.com/prometheus/common@0.64.0</packageUrl>
+        <cve>CVE-2019-3826</cve>
+    </suppress>
+    <suppress>
+        <notes>Prometheusのprocfsライブラリは最新バージョンに更新済みであり、この警告は誤検知です</notes>
+        <packageUrl regex="true">pkg:golang/github.com/prometheus/procfs@0.16.1</packageUrl>
+        <cve>CVE-2019-3826</cve>
+    </suppress>
 </suppressions>

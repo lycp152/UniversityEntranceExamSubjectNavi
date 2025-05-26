@@ -1,3 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes>doublearrayパッケージのテスト用jQueryは実際のアプリケーションでは使用されていないため、この警告を無視します</notes>
+        <packageUrl regex="true">pkg:javascript/jquery@2.1.0</packageUrl>
+        <cve>CVE-2020-11023</cve>
+        <cve>CVE-2020-11022</cve>
+        <cve>CVE-2019-11358</cve>
+        <cve>CVE-2015-9251</cve>
+    </suppress>
 </suppressions>

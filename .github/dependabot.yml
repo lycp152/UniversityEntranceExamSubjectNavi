@@ -1,0 +1,350 @@
+version: 2
+updates:
+  # Goの依存関係の更新
+  - package-ecosystem: "gomod"
+    directory: "/back"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "go"
+      - "security"
+    commit-message:
+      prefix: "go"
+      include: "scope"
+    reviewers:
+      - "team:backend"
+    ignore:
+      - dependency-name: "golang.org/x/*"
+        update-types: ["version-update:semver-minor"]
+    security-updates-only: true
+    versioning-strategy: auto
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
+    allow:
+      - dependency-type: "all"
+    update-schedule: "live"
+    target-branch: "develop"
+    rebase-strategy: "auto"
+    environment:
+      name: "development"
+      url: "https://dev.example.com"
+      wait_timer: 0
+      reviewers:
+        - "team:backend"
+      deployment_branch_policy:
+        protected_branches: true
+        custom_branches:
+          - "develop"
+          - "main"
+      required_contexts:
+        - "build-and-test"
+      required_reviewers:
+        - "team:backend"
+      required_approvals: 1
+      deployment_protection_rules:
+        - rule: "require_approvals"
+          required_approvals: 1
+        - rule: "require_status_checks"
+          required_status_checks:
+            - "build-and-test"
+        - rule: "require_branch_up_to_date"
+          required_branch_up_to_date: true
+        - rule: "require_conversation_resolution"
+          required_conversation_resolution: true
+        - rule: "require_signed_commits"
+          require_signed_commits: true
+        - rule: "require_linear_history"
+          require_linear_history: true
+        - rule: "require_code_owner_review"
+          require_code_owner_review: true
+        - rule: "require_merge_queue"
+          require_merge_queue: true
+        - rule: "require_merge_checks"
+          require_merge_checks:
+            - "build-and-test"
+            - "lint"
+            - "security-scan"
+        - rule: "require_environment_approval"
+          require_environment_approval: true
+        - rule: "require_environment_protection"
+          require_environment_protection: true
+        - rule: "require_environment_secrets"
+          require_environment_secrets: true
+        - rule: "require_environment_variables"
+          require_environment_variables:
+            - "NODE_ENV"
+            - "DATABASE_URL"
+            - "API_KEY"
+        - rule: "require_environment_health_checks"
+          require_environment_health_checks:
+            - "database"
+            - "api"
+            - "cache"
+        - rule: "require_environment_rollback"
+          require_environment_rollback: true
+        - rule: "require_environment_backup"
+          require_environment_backup: true
+        - rule: "require_environment_monitoring"
+          require_environment_monitoring:
+            - "performance"
+            - "error_rate"
+            - "availability"
+        - rule: "require_environment_notification"
+          require_environment_notification:
+            - "slack"
+            - "email"
+            - "pagerduty"
+        - rule: "require_environment_documentation"
+          require_environment_documentation:
+            - "deployment"
+            - "rollback"
+            - "monitoring"
+        - rule: "require_environment_audit"
+          require_environment_audit: true
+        - rule: "require_environment_compliance"
+          require_environment_compliance:
+            - "security"
+            - "privacy"
+            - "regulatory"
+
+  # pnpmの依存関係の更新
+  - package-ecosystem: "npm"
+    directory: "/front"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "security"
+    commit-message:
+      prefix: "pnpm"
+      include: "scope"
+    reviewers:
+      - "team:frontend"
+    package-manager: "pnpm"
+    update-schedule: "live"
+    target-branch: "develop"
+    rebase-strategy: "auto"
+    versioning-strategy: "auto"
+    security-updates-only: true
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      - dependency-name: "@types/*"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "eslint-*"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "prettier"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-minor"]
+    cache: "pnpm"
+    cache-dependency-path: "front/pnpm-lock.yaml"
+    environment:
+      name: "development"
+      url: "https://dev.example.com"
+      wait_timer: 0
+      reviewers:
+        - "team:frontend"
+      deployment_branch_policy:
+        protected_branches: true
+        custom_branches:
+          - "develop"
+          - "main"
+      required_contexts:
+        - "build-and-test"
+      required_reviewers:
+        - "team:frontend"
+      required_approvals: 1
+      deployment_protection_rules:
+        - rule: "require_approvals"
+          required_approvals: 1
+        - rule: "require_status_checks"
+          required_status_checks:
+            - "build-and-test"
+        - rule: "require_branch_up_to_date"
+          required_branch_up_to_date: true
+        - rule: "require_conversation_resolution"
+          required_conversation_resolution: true
+        - rule: "require_signed_commits"
+          require_signed_commits: true
+        - rule: "require_linear_history"
+          require_linear_history: true
+        - rule: "require_code_owner_review"
+          require_code_owner_review: true
+        - rule: "require_merge_queue"
+          require_merge_queue: true
+        - rule: "require_merge_checks"
+          require_merge_checks:
+            - "build-and-test"
+            - "lint"
+            - "security-scan"
+        - rule: "require_environment_approval"
+          require_environment_approval: true
+        - rule: "require_environment_protection"
+          require_environment_protection: true
+        - rule: "require_environment_secrets"
+          require_environment_secrets: true
+        - rule: "require_environment_variables"
+          require_environment_variables:
+            - "NODE_ENV"
+            - "DATABASE_URL"
+            - "API_KEY"
+        - rule: "require_environment_health_checks"
+          require_environment_health_checks:
+            - "database"
+            - "api"
+            - "cache"
+        - rule: "require_environment_rollback"
+          require_environment_rollback: true
+        - rule: "require_environment_backup"
+          require_environment_backup: true
+        - rule: "require_environment_monitoring"
+          require_environment_monitoring:
+            - "performance"
+            - "error_rate"
+            - "availability"
+        - rule: "require_environment_notification"
+          require_environment_notification:
+            - "slack"
+            - "email"
+            - "pagerduty"
+        - rule: "require_environment_documentation"
+          require_environment_documentation:
+            - "deployment"
+            - "rollback"
+            - "monitoring"
+        - rule: "require_environment_audit"
+          require_environment_audit: true
+        - rule: "require_environment_compliance"
+          require_environment_compliance:
+            - "security"
+            - "privacy"
+            - "regulatory"
+    cache-paths:
+      - "front/.next/cache"
+      - "front/node_modules"
+
+  # GitHub Actionsの更新
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "security"
+    commit-message:
+      prefix: "github-actions"
+      include: "scope"
+    reviewers:
+      - "team:devops"
+    ignore:
+      - dependency-name: "actions/*"
+        update-types: ["version-update:semver-minor"]
+    security-updates-only: true
+    versioning-strategy: auto
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    environment:
+      name: "development"
+      url: "https://dev.example.com"
+      wait_timer: 0
+      reviewers:
+        - "team:devops"
+      deployment_branch_policy:
+        protected_branches: true
+        custom_branches:
+          - "develop"
+          - "main"
+      required_contexts:
+        - "build-and-test"
+      required_reviewers:
+        - "team:devops"
+      required_approvals: 1
+      deployment_protection_rules:
+        - rule: "require_approvals"
+          required_approvals: 1
+        - rule: "require_status_checks"
+          required_status_checks:
+            - "build-and-test"
+        - rule: "require_branch_up_to_date"
+          required_branch_up_to_date: true
+        - rule: "require_conversation_resolution"
+          required_conversation_resolution: true
+        - rule: "require_signed_commits"
+          require_signed_commits: true
+        - rule: "require_linear_history"
+          require_linear_history: true
+        - rule: "require_code_owner_review"
+          require_code_owner_review: true
+        - rule: "require_merge_queue"
+          require_merge_queue: true
+        - rule: "require_merge_checks"
+          require_merge_checks:
+            - "build-and-test"
+            - "lint"
+            - "security-scan"
+        - rule: "require_environment_approval"
+          require_environment_approval: true
+        - rule: "require_environment_protection"
+          require_environment_protection: true
+        - rule: "require_environment_secrets"
+          require_environment_secrets: true
+        - rule: "require_environment_variables"
+          require_environment_variables:
+            - "NODE_ENV"
+            - "DATABASE_URL"
+            - "API_KEY"
+        - rule: "require_environment_health_checks"
+          require_environment_health_checks:
+            - "database"
+            - "api"
+            - "cache"
+        - rule: "require_environment_rollback"
+          require_environment_rollback: true
+        - rule: "require_environment_backup"
+          require_environment_backup: true
+        - rule: "require_environment_monitoring"
+          require_environment_monitoring:
+            - "performance"
+            - "error_rate"
+            - "availability"
+        - rule: "require_environment_notification"
+          require_environment_notification:
+            - "slack"
+            - "email"
+            - "pagerduty"
+        - rule: "require_environment_documentation"
+          require_environment_documentation:
+            - "deployment"
+            - "rollback"
+            - "monitoring"
+        - rule: "require_environment_audit"
+          require_environment_audit: true
+        - rule: "require_environment_compliance"
+          require_environment_compliance:
+            - "security"
+            - "privacy"
+            - "regulatory"

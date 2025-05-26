@@ -34,19 +34,16 @@ target "app" {
     GOOS = "linux"
     GOARCH = "amd64"
     BUILDKIT_MULTI_PLATFORM = "1"
-    BUILDKIT_BUILDKITD_FLAGS = "--debug"
   }
 
   # キャッシュ設定
   cache-from = [
     "type=gha,scope=${IMAGE_NAME}-${TAG},ignore-error=true",
-    "type=registry,ref=${DOCKER_REGISTRY}/${IMAGE_NAME}:buildcache,ignore-error=true",
-    "type=local,src=/tmp/.buildx-cache,ignore-error=true"
+    "type=registry,ref=${DOCKER_REGISTRY}/${IMAGE_NAME}:buildcache,ignore-error=true"
   ]
   cache-to = [
     "type=gha,mode=max,scope=${IMAGE_NAME}-${TAG},ignore-error=true",
-    "type=registry,ref=${DOCKER_REGISTRY}/${IMAGE_NAME}:buildcache,mode=max,ignore-error=true",
-    "type=local,dest=/tmp/.buildx-cache-new,ignore-error=true"
+    "type=registry,ref=${DOCKER_REGISTRY}/${IMAGE_NAME}:buildcache,mode=max,ignore-error=true"
   ]
 
   # セキュリティ設定とビルド設定
@@ -56,16 +53,15 @@ target "app" {
     "security.sandbox": "true"
     "build-arg.BUILDKIT_INLINE_CACHE": "1"
     "build-arg.BUILDKIT_MULTI_PLATFORM": "1"
-    "build-arg.BUILDKIT_BUILDKITD_FLAGS": "--debug"
     "build-arg.BUILDKIT_CACHE_METADATA": "type=gha,scope=${IMAGE_NAME}-${TAG}"
     "build-arg.BUILDKIT_CACHE_COMPRESS": "true"
     "build-arg.BUILDKIT_CACHE_TTL": "168h"
-    "build-arg.BUILDKIT_MAX_PARALLELISM": "4"
-    "build-arg.BUILDKIT_MEMORY_LIMIT": "4g"
-    "build-arg.BUILDKIT_CACHE_COMPRESS_LEVEL": "6"
+    "build-arg.BUILDKIT_MAX_PARALLELISM": "8"
+    "build-arg.BUILDKIT_MEMORY_LIMIT": "8g"
+    "build-arg.BUILDKIT_CACHE_COMPRESS_LEVEL": "9"
     "build-arg.BUILDKIT_CACHE_PRIORITY": "high"
-    "build-arg.BUILDKIT_TIMEOUT": "30m"
-    "build-arg.BUILDKIT_RETRY": "3"
+    "build-arg.BUILDKIT_TIMEOUT": "60m"
+    "build-arg.BUILDKIT_RETRY": "5"
   }
 
   # マルチステージビルド設定
@@ -87,7 +83,6 @@ target "build" {
     GO_VERSION = "1.24.2"
     CGO_ENABLED = "0"
     BUILDKIT_MULTI_PLATFORM = "1"
-    BUILDKIT_BUILDKITD_FLAGS = "--debug"
   }
 
   # キャッシュ設定
@@ -104,16 +99,15 @@ target "build" {
   attrs = {
     "build-arg.BUILDKIT_INLINE_CACHE": "1"
     "build-arg.BUILDKIT_MULTI_PLATFORM": "1"
-    "build-arg.BUILDKIT_BUILDKITD_FLAGS": "--debug"
     "build-arg.BUILDKIT_CACHE_METADATA": "type=gha,scope=${IMAGE_NAME}-build"
     "build-arg.BUILDKIT_CACHE_COMPRESS": "true"
     "build-arg.BUILDKIT_CACHE_TTL": "168h"
-    "build-arg.BUILDKIT_MAX_PARALLELISM": "4"
-    "build-arg.BUILDKIT_MEMORY_LIMIT": "4g"
-    "build-arg.BUILDKIT_CACHE_COMPRESS_LEVEL": "6"
+    "build-arg.BUILDKIT_MAX_PARALLELISM": "8"
+    "build-arg.BUILDKIT_MEMORY_LIMIT": "8g"
+    "build-arg.BUILDKIT_CACHE_COMPRESS_LEVEL": "9"
     "build-arg.BUILDKIT_CACHE_PRIORITY": "high"
-    "build-arg.BUILDKIT_TIMEOUT": "30m"
-    "build-arg.BUILDKIT_RETRY": "3"
+    "build-arg.BUILDKIT_TIMEOUT": "60m"
+    "build-arg.BUILDKIT_RETRY": "5"
   }
 }
 
@@ -130,17 +124,14 @@ target "test" {
     GO_VERSION = "1.24.2"
     CGO_ENABLED = "0"
     BUILDKIT_MULTI_PLATFORM = "1"
-    BUILDKIT_BUILDKITD_FLAGS = "--debug"
   }
 
   # キャッシュ設定
   cache-from = [
-    "type=gha,scope=${IMAGE_NAME}-test,ignore-error=true",
-    "type=local,src=/tmp/.buildx-cache,ignore-error=true"
+    "type=gha,scope=${IMAGE_NAME}-test,ignore-error=true"
   ]
   cache-to = [
-    "type=gha,mode=max,scope=${IMAGE_NAME}-test,ignore-error=true",
-    "type=local,dest=/tmp/.buildx-cache-new,ignore-error=true"
+    "type=gha,mode=max,scope=${IMAGE_NAME}-test,ignore-error=true"
   ]
 
   # セキュリティ設定とビルド設定
@@ -150,15 +141,14 @@ target "test" {
     "security.sandbox": "true"
     "build-arg.BUILDKIT_INLINE_CACHE": "1"
     "build-arg.BUILDKIT_MULTI_PLATFORM": "1"
-    "build-arg.BUILDKIT_BUILDKITD_FLAGS": "--debug"
     "build-arg.BUILDKIT_CACHE_METADATA": "type=gha,scope=${IMAGE_NAME}-test"
     "build-arg.BUILDKIT_CACHE_COMPRESS": "true"
     "build-arg.BUILDKIT_CACHE_TTL": "168h"
-    "build-arg.BUILDKIT_MAX_PARALLELISM": "4"
-    "build-arg.BUILDKIT_MEMORY_LIMIT": "4g"
-    "build-arg.BUILDKIT_CACHE_COMPRESS_LEVEL": "6"
+    "build-arg.BUILDKIT_MAX_PARALLELISM": "8"
+    "build-arg.BUILDKIT_MEMORY_LIMIT": "8g"
+    "build-arg.BUILDKIT_CACHE_COMPRESS_LEVEL": "9"
     "build-arg.BUILDKIT_CACHE_PRIORITY": "high"
-    "build-arg.BUILDKIT_TIMEOUT": "30m"
-    "build-arg.BUILDKIT_RETRY": "3"
+    "build-arg.BUILDKIT_TIMEOUT": "60m"
+    "build-arg.BUILDKIT_RETRY": "5"
   }
 }

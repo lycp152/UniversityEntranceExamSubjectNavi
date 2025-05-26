@@ -9,6 +9,11 @@ permissions:
   packages: write
   security-events: write
 
+# 並行実行の制御
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # メインブランチ、開発ブランチへのプッシュ、プルリクエスト、および毎日の定期実行時にトリガー
 on:
   push:
@@ -40,6 +45,7 @@ jobs:
           go-version: "1.24.2"
           check-latest: true
           cache: false
+          cache-dependency-path: back/go.sum
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3
@@ -65,6 +71,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-
             ${{ runner.os }}-go-
+          enableCrossOsArchive: true
+          fail-on-cache-miss: false
 
       # pnpmストアのキャッシュ
       - name: Get pnpm store directory
@@ -78,10 +86,13 @@ jobs:
           path: |
             $(pnpm store path --silent)
             front/node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ github.run_id }}
+            front/.next/cache
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ hashFiles('front/**/*.{js,jsx,ts,tsx}') }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-
             ${{ runner.os }}-pnpm-
+          enableCrossOsArchive: true
+          fail-on-cache-miss: false
 
       # 依存関係のインストール
       - name: Install dependencies

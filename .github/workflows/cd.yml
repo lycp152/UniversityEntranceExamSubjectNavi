@@ -1,4 +1,4 @@
-name: Build and Push
+name: Continuous Deployment
 
 # 必要な権限を明示的に設定
 # contents: read - リポジトリの読み取り権限

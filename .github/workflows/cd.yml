@@ -20,6 +20,10 @@ on:
       - "deployments/docker/**"
       - ".github/workflows/cd.yml"
 
+# 環境変数の設定
+env:
+  PRODUCTION_READY: false # 本番環境の準備状態を示すフラグ
+
 jobs:
   # Docker Composeファイルの検証
   validate:
@@ -100,11 +104,25 @@ jobs:
 
   # 本番環境へのデプロイ
   deploy:
-    needs: build-and-push # build-and-pushジョブの完了を待機
-    if: startsWith(github.ref, 'refs/tags/v') # バージョンタグが付いている場合のみ実行
+    needs: build-and-push
+    if: |
+      startsWith(github.ref, 'refs/tags/v') &&
+      env.PRODUCTION_READY == 'true' &&
+      ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    concurrency: deployment # 同時実行を制限（同じデプロイが同時に実行されないように）
+    concurrency: deployment
     steps:
+      - name: Check deployment readiness
+        if: env.PRODUCTION_READY != 'true'
+        run: |
+          echo "本番環境の準備が完了していません。"
+          echo "以下の設定が必要です："
+          echo "1. 本番サーバーの準備"
+          echo "2. デプロイ用SSHキーの設定"
+          echo "3. デプロイ先ホストの設定"
+          echo "4. デプロイユーザーの設定"
+          exit 1
+
       # SSHキーの設定
       - name: Configure SSH
         uses: webfactory/ssh-agent@v0.8.0

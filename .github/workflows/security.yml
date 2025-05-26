@@ -17,6 +17,9 @@ on:
       - "**/pnpm-lock.yaml"
       - "**/go.mod"
       - "**/go.sum"
+      - ".github/workflows/security.yml"
+      - ".github/dependency-check-suppressions.xml"
+      - ".github/codeql/codeql-config.yml"
   pull_request:
     branches: [main, develop]
 

@@ -19,6 +19,9 @@ paths-ignore:
   - "**/coverage/**"
   - "**/.next/**"
   - "**/out/**"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/__tests__/**"
 
 query-filters:
   - include:

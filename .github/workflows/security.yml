@@ -54,6 +54,17 @@ jobs:
           cd front
           pnpm install --frozen-lockfile
 
+      # Next.jsのキャッシュを設定
+      - name: Cache Next.js
+        uses: actions/cache@v4
+        with:
+          path: |
+            front/.next/cache
+            front/node_modules/.cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ hashFiles('front/**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('front/pnpm-lock.yaml') }}-
+
       # OWASP Dependency-Checkを使用して依存関係の脆弱性をスキャン
       - name: Run OWASP Dependency-Check
         uses: dependency-check/Dependency-Check_Action@main
@@ -73,6 +84,16 @@ jobs:
             --disableRetireJS
             --disableYarnAudit
             --disablePnpmAudit
+            --scan front
+            --exclude "**/node_modules/**"
+            --exclude "**/.next/**"
+            --exclude "**/dist/**"
+            --exclude "**/build/**"
+            --exclude "**/coverage/**"
+            --exclude "**/out/**"
+            --exclude "**/test/**"
+            --exclude "**/tests/**"
+            --exclude "**/__tests__/**"
 
       # SARIFレポートの修正
       - name: Fix SARIF report

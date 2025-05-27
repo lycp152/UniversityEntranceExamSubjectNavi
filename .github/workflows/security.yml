@@ -163,6 +163,12 @@ jobs:
           upload: true
           output: "sarif-results"
 
+      # SARIFファイルの存在確認
+      - name: Check SARIF file
+        run: |
+          ls -la sarif-results/
+          cat sarif-results/*.sarif
+
       # アラートの自動抑制
       - name: Dismiss alerts
         if: github.ref == 'refs/heads/main'

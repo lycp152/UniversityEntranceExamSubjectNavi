@@ -33,6 +33,8 @@ jobs:
     # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -117,6 +119,8 @@ jobs:
     # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -156,6 +160,8 @@ jobs:
     # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:

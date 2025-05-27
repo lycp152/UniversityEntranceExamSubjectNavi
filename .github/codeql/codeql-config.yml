@@ -11,6 +11,7 @@ queries:
 # JavaScript/TypeScriptのパス設定
 paths:
   - front
+  - back
 
 paths-ignore:
   - "**/node_modules/**"
@@ -64,3 +65,9 @@ extraction:
       cd front
       pnpm install --frozen-lockfile
       pnpm build
+
+# 分析設定
+analysis:
+  threads: 0 # 利用可能なすべてのCPUコアを使用
+  memory: 0 # 利用可能なすべてのメモリを使用
+  timeout: 0 # タイムアウトなし

@@ -161,7 +161,7 @@ jobs:
         with:
           category: "code-scanning"
           upload: true
-          output: "./codeql-results.sarif"
+          output: "sarif-results"
 
       # アラートの自動抑制
       - name: Dismiss alerts
@@ -169,7 +169,7 @@ jobs:
         uses: advanced-security/dismiss-alerts@v2
         with:
           sarif-id: ${{ steps.analyze.outputs.sarif-id }}
-          sarif-file: "./codeql-results.sarif"
+          sarif-file: "sarif-results/codeql-results.sarif"
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

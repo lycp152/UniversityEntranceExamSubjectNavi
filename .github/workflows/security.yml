@@ -11,15 +11,18 @@ on:
     branches: [main, develop]
     paths:
       - "**.go"
-      - "**.ts"
-      - "**.tsx"
+      - "**/*.{ts,tsx}"
       - "**/package.json"
       - "**/pnpm-lock.yaml"
       - "**/go.mod"
       - "**/go.sum"
-      - ".github/workflows/security.yml"
-      - ".github/dependency-check-suppressions.xml"
-      - ".github/codeql.yml"
+      - "**/Dockerfile"
+      - "**/docker-compose*.yml"
+      - "**/docker-bake.hcl"
+      - "**/security.md"
+      - "**/.github/workflows/security.yml"
+      - "**/.github/dependency-check-suppressions.xml"
+      - "**/.github/codeql.yml"
   pull_request:
     branches: [main, develop]
 

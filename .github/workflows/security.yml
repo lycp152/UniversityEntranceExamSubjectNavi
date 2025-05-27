@@ -19,7 +19,7 @@ on:
       - "**/go.sum"
       - ".github/workflows/security.yml"
       - ".github/dependency-check-suppressions.xml"
-      - ".github/codeql/codeql-config.yml"
+      - ".github/codeql.yml"
   pull_request:
     branches: [main, develop]
 

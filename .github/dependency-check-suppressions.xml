@@ -7,7 +7,6 @@
         <cve>CVE-2020-11022</cve>
         <cve>CVE-2019-11358</cve>
         <cve>CVE-2015-9251</cve>
-        <filePath regex="true">.*/test/.*</filePath>
     </suppress>
     <suppress>
         <notes>Prometheusのクライアントライブラリは最新バージョンに更新済みであり、この警告は誤検知です</notes>

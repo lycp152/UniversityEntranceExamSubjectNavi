@@ -22,7 +22,7 @@ on:
       - "**/security.md"
       - "**/.github/workflows/security.yml"
       - "**/.github/dependency-check-suppressions.xml"
-      - "**/.github/codeql.yml"
+      - "**/.github/codeql/codeql-config.yml"
   pull_request:
     branches: [main, develop]
 
@@ -137,7 +137,7 @@ jobs:
           languages: "go,javascript,typescript"
           queries: security-extended,security-and-quality
           tools: linked
-          config-file: ./.github/codeql.yml
+          config-file: ./.github/codeql/codeql-config.yml
 
       # 自動ビルドの実行
       - name: Autobuild

@@ -134,7 +134,7 @@ jobs:
           languages: "go,javascript,typescript"
           queries: security-extended,security-and-quality
           tools: linked
-          config-file: ./.github/codeql/codeql-config.yml
+          config-file: ./.github/codeql.yml
 
       # 自動ビルドの実行
       - name: Autobuild

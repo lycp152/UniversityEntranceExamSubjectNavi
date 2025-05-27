@@ -1,0 +1,46 @@
+name: "Dependency Check Config"
+
+# スキャン対象の設定
+scan:
+  # フロントエンドの依存関係をスキャン
+  front:
+    path: front
+    package-manager: pnpm
+    lock-file: pnpm-lock.yaml
+    ignore-patterns:
+      - "**/node_modules/**"
+      - "**/dist/**"
+      - "**/build/**"
+      - "**/coverage/**"
+      - "**/.next/**"
+      - "**/out/**"
+      - "**/test/**"
+      - "**/tests/**"
+      - "**/__tests__/**"
+
+  # バックエンドの依存関係をスキャン
+  back:
+    path: back
+    package-manager: go
+    lock-file: go.sum
+    ignore-patterns:
+      - "**/vendor/**"
+      - "**/test/**"
+      - "**/tests/**"
+
+# スキャン設定
+settings:
+  # 脆弱性の重大度レベル
+  severity-threshold: medium
+  # スキャン頻度
+  schedule: weekly
+  # 自動更新の設定
+  auto-update: true
+  # プルリクエストの設定
+  pull-request:
+    enabled: true
+    labels:
+      - "dependencies"
+      - "security"
+    reviewers:
+      - "team:security"

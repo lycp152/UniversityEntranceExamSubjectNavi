@@ -1,0 +1,94 @@
+version: 2
+updates:
+  # Goの依存関係の更新
+  - package-ecosystem: "gomod"
+    directory: "/back"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "go"
+      - "security"
+    commit-message:
+      prefix: "go"
+      include: "scope"
+    reviewers:
+      - "team:backend"
+    ignore:
+      - dependency-name: "golang.org/x/*"
+        update-types: ["version-update:semver-minor"]
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
+    allow:
+      - dependency-type: "all"
+    target-branch: "develop"
+    rebase-strategy: "auto"
+
+  # pnpmの依存関係の更新
+  - package-ecosystem: "npm"
+    directory: "/front"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "security"
+    commit-message:
+      prefix: "pnpm"
+      include: "scope"
+    reviewers:
+      - "team:frontend"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      - dependency-name: "@types/*"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "eslint-*"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "prettier"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "next"
+        update-types: ["version-update:semver-minor"]
+    target-branch: "develop"
+    rebase-strategy: "auto"
+
+  # GitHub Actionsの依存関係の更新
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "security"
+    commit-message:
+      prefix: "github-actions"
+      include: "scope"
+    reviewers:
+      - "team:devops"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    allow:
+      - dependency-type: "all"
+    target-branch: "develop"
+    rebase-strategy: "auto"

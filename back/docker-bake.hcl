@@ -63,6 +63,52 @@ target "app" {
     "build-arg.BUILDKIT_TIMEOUT": "60m"
     "build-arg.BUILDKIT_RETRY": "5"
   }
+
+  # マルチステージビルド設定
+  contexts = {
+    build = "target:build"
+  }
+}
+
+# ビルドステージのターゲット
+target "build" {
+  context = "."
+  dockerfile = "back/Dockerfile.prod"
+  platforms = ["linux/amd64", "linux/arm64"]
+  no-cache = false
+
+  # ビルド時の引数
+  args = {
+    BUILDKIT_INLINE_CACHE = "1"
+    GO_VERSION = "1.24.2"
+    CGO_ENABLED = "0"
+    BUILDKIT_MULTI_PLATFORM = "1"
+  }
+
+  # キャッシュ設定
+  cache-from = [
+    "type=gha,scope=${IMAGE_NAME}-build,ignore-error=true",
+    "type=registry,ref=${DOCKER_REGISTRY}/${IMAGE_NAME}:buildcache,ignore-error=true"
+  ]
+  cache-to = [
+    "type=gha,mode=max,scope=${IMAGE_NAME}-build,ignore-error=true",
+    "type=registry,ref=${DOCKER_REGISTRY}/${IMAGE_NAME}:buildcache,mode=max,ignore-error=true"
+  ]
+
+  # ビルド設定
+  attrs = {
+    "build-arg.BUILDKIT_INLINE_CACHE": "1"
+    "build-arg.BUILDKIT_MULTI_PLATFORM": "1"
+    "build-arg.BUILDKIT_CACHE_METADATA": "type=gha,scope=${IMAGE_NAME}-build"
+    "build-arg.BUILDKIT_CACHE_COMPRESS": "true"
+    "build-arg.BUILDKIT_CACHE_TTL": "168h"
+    "build-arg.BUILDKIT_MAX_PARALLELISM": "8"
+    "build-arg.BUILDKIT_MEMORY_LIMIT": "8g"
+    "build-arg.BUILDKIT_CACHE_COMPRESS_LEVEL": "9"
+    "build-arg.BUILDKIT_CACHE_PRIORITY": "high"
+    "build-arg.BUILDKIT_TIMEOUT": "60m"
+    "build-arg.BUILDKIT_RETRY": "5"
+  }
 }
 
 # テスト用のターゲット

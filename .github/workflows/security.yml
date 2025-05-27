@@ -154,6 +154,11 @@ jobs:
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
 
+      # 既存のSARIFディレクトリを削除
+      - name: Clean up existing SARIF directory
+        run: |
+          rm -rf codeql-results.sarif
+
       # CodeQL分析の実行
       - name: Perform CodeQL Analysis
         id: analyze
@@ -161,13 +166,18 @@ jobs:
         with:
           category: "code-scanning"
           upload: true
-          output: "codeql-results.sarif"
+          output: "./codeql-results.sarif"
 
       # SARIFファイルの存在確認
       - name: Check SARIF file
         run: |
           ls -la
-          cat codeql-results.sarif
+          if [ -f "./codeql-results.sarif" ]; then
+            cat ./codeql-results.sarif
+          else
+            echo "SARIF file not found"
+            exit 1
+          fi
 
       # アラートの自動抑制
       - name: Dismiss alerts
@@ -175,7 +185,7 @@ jobs:
         uses: advanced-security/dismiss-alerts@v2
         with:
           sarif-id: ${{ steps.analyze.outputs.sarif-id }}
-          sarif-file: "codeql-results.sarif"
+          sarif-file: "./codeql-results.sarif"
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

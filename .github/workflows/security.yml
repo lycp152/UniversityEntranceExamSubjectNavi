@@ -105,11 +105,22 @@ jobs:
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results
+        id: upload
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: "./dependency-check-report.sarif"
           checkout_path: ${{ github.workspace }}
           category: "dependency-check"
+
+      # アラートの自動抑制
+      - name: Dismiss alerts
+        if: github.ref == 'refs/heads/main'
+        uses: advanced-security/dismiss-alerts@v2
+        with:
+          sarif-id: ${{ steps.upload.outputs.sarif-id }}
+          sarif-file: "./dependency-check-report.sarif"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   # コードの静的解析
   code-scanning:
@@ -145,10 +156,21 @@ jobs:
 
       # CodeQL分析の実行
       - name: Perform CodeQL Analysis
+        id: analyze
         uses: github/codeql-action/analyze@v3
         with:
           category: "code-scanning"
           upload: true
+
+      # アラートの自動抑制
+      - name: Dismiss alerts
+        if: github.ref == 'refs/heads/main'
+        uses: advanced-security/dismiss-alerts@v2
+        with:
+          sarif-id: ${{ steps.analyze.outputs.sarif-id }}
+          sarif-file: "./codeql-results.sarif"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   # シークレットの漏洩チェック
   secret-scanning:

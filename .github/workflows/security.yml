@@ -161,13 +161,13 @@ jobs:
         with:
           category: "code-scanning"
           upload: true
-          output: "sarif-results"
+          output: "codeql-results.sarif"
 
       # SARIFファイルの存在確認
       - name: Check SARIF file
         run: |
-          ls -la sarif-results/
-          cat sarif-results/*.sarif
+          ls -la
+          cat codeql-results.sarif
 
       # アラートの自動抑制
       - name: Dismiss alerts
@@ -175,7 +175,7 @@ jobs:
         uses: advanced-security/dismiss-alerts@v2
         with:
           sarif-id: ${{ steps.analyze.outputs.sarif-id }}
-          sarif-file: "sarif-results/codeql-results.sarif"
+          sarif-file: "codeql-results.sarif"
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

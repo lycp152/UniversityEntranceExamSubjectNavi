@@ -16,11 +16,11 @@ variable "TAG" {
 
 # ターゲット定義
 group "default" {
-  targets = ["backend"]
+  targets = ["app"]
 }
 
 # アプリケーションのビルドターゲット
-target "backend" {
+target "app" {
   context = "."
   dockerfile = "back/Dockerfile.prod"
   tags = ["${DOCKER_REGISTRY}/${IMAGE_NAME}:${TAG}"]

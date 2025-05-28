@@ -41,7 +41,7 @@ env:
 jobs:
   # 依存関係レビュー
   dependency-review:
-    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target' || github.event_name == 'merge_group'
+    if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target' || github.event_name == 'merge_group' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

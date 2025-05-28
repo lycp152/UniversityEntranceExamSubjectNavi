@@ -1,4 +1,11 @@
+---
 name: Security Checks
+
+# ワークフローレベルの権限設定
+permissions:
+  security-events: write
+  actions: read
+  contents: read
 
 # トリガー設定
 # 1. 毎日0時に定期実行
@@ -30,11 +37,6 @@ jobs:
   # 依存関係の脆弱性チェック
   dependency-check:
     runs-on: ubuntu-latest
-    # セキュリティイベントの書き込み権限を明示的に設定
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
     steps:
       - uses: actions/checkout@v4
 

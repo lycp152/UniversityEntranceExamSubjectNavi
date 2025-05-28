@@ -102,11 +102,11 @@ jobs:
             ./front/docker-bake.hcl
           push: true
           set: |
-            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
-            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
-            *.tags=${{ steps.meta.outputs.tags }}
-            *.labels=${{ steps.meta.outputs.labels }}
-            *.platform=linux/amd64,linux/arm64
+            app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
+            app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
+            app.tags=${{ steps.meta.outputs.tags }}
+            app.labels=${{ steps.meta.outputs.labels }}
+            app.platform=linux/amd64,linux/arm64
 
   # 本番環境へのデプロイ
   deploy:

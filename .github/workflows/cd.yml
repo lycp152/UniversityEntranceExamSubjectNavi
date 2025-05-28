@@ -105,7 +105,6 @@ jobs:
           set: |
             app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
             app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
-            app.tags=${{ steps.meta.outputs.tags }}
             app.labels=${{ steps.meta.outputs.labels }}
             app.platform=linux/amd64,linux/arm64
 

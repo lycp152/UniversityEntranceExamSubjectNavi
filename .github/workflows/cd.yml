@@ -93,8 +93,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.DOCKER_USERNAME }}/university-exam-backend
-            ${{ secrets.DOCKER_USERNAME }}/university-exam-frontend
+            ghcr.io/${{ github.repository }}/university-exam-backend
+            ghcr.io/${{ github.repository }}/university-exam-frontend
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -115,6 +115,8 @@ jobs:
             app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
             app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
             app.platform=linux/amd64,linux/arm64
+            app.tags=${{ steps.meta.outputs.tags }}
+            app.labels=${{ steps.meta.outputs.labels }}
 
       # メタデータのデバッグ出力
       - name: Debug tags output

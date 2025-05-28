@@ -1,4 +1,3 @@
----
 name: Security Checks
 
 # ワークフローレベルの権限設定
@@ -69,7 +68,9 @@ jobs:
           path: |
             front/.next/cache
             front/node_modules/.cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ hashFiles('front/**/*.{js,jsx,ts,tsx}') }}
+          key: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('front/pnpm-lock.yaml') }}-
+            ${{ hashFiles('front/**/*.{js,jsx,ts,tsx}') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('front/pnpm-lock.yaml') }}-
 

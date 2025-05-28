@@ -3,7 +3,9 @@ version: "3.9"
 services:
   # バックエンドサービス
   backend:
-    image: ${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_USERNAME:-lycp152}/university-entrance-exam-subject-navi:${TAG:-latest}
+    image: |
+      ${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_USERNAME:-lycp152}/
+      university-entrance-exam-subject-navi:${TAG:-latest}
     restart: unless-stopped
     environment:
       - DB_HOST=${DB_HOST}
@@ -35,7 +37,9 @@ services:
 
   # フロントエンドサービス
   frontend:
-    image: ${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_USERNAME:-lycp152}/university-entrance-exam-subject-navi-front:${TAG:-latest}
+    image: |
+      ${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_USERNAME:-lycp152}/
+      university-entrance-exam-subject-navi-front:${TAG:-latest}
     restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}

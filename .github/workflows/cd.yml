@@ -28,7 +28,9 @@ env:
   TRIVY_SEVERITY: "CRITICAL,HIGH"
   TRIVY_VULN_TYPE: "os,library"
   TRIVY_IGNORE_UNFIXED: true
+  TRIVY_CACHE_DIR: .trivycache/
 
+# キャッシュの設定
 jobs:
   # Docker Composeファイルの検証
   validate:
@@ -107,10 +109,8 @@ jobs:
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
           push: true
-          targets: backend,frontend
           set: |
-            backend.tags=${{ steps.meta.outputs.tags }}
-            frontend.tags=${{ steps.meta.outputs.tags }}
+            app.tags=${{ steps.meta.outputs.tags }}
 
   # 本番環境へのデプロイ
   deploy:

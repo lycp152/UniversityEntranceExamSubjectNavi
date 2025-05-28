@@ -28,7 +28,9 @@ env:
   TRIVY_SEVERITY: "CRITICAL,HIGH"
   TRIVY_VULN_TYPE: "os,library"
   TRIVY_IGNORE_UNFIXED: true
+  TRIVY_CACHE_DIR: .trivycache/
 
+# キャッシュの設定
 jobs:
   # Docker Composeファイルの検証
   validate:
@@ -55,7 +57,7 @@ jobs:
           severity: ${{ env.TRIVY_SEVERITY }}
           ignore-unfixed: ${{ env.TRIVY_IGNORE_UNFIXED }}
           vuln-type: ${{ env.TRIVY_VULN_TYPE }}
-          cache-dir: .trivycache/
+          cache-dir: ${{ env.TRIVY_CACHE_DIR }}
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3

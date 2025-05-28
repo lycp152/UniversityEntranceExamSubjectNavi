@@ -32,7 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: cache-key
-        run: echo "value=$(date +%s)" >> $GITHUB_OUTPUT
+        run: |
+          echo "value=$(date +%s)" >> $GITHUB_OUTPUT
 
   # コード品質のチェック
   lint:
@@ -87,7 +88,9 @@ jobs:
             $(pnpm store path --silent)
             front/node_modules
             front/.next/cache
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ hashFiles('front/**/*.{js,jsx,ts,tsx}') }}-${{ github.run_id }}
+          key: |
+            ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-
+            ${{ hashFiles('front/**/*.{js,jsx,ts,tsx}') }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-
             ${{ runner.os }}-pnpm-
@@ -130,7 +133,8 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     # Dependabotの更新時はPostgreSQLサービスをスキップ
-    if: github.actor != 'dependabot[bot]'
+    if: |
+      github.actor != 'dependabot[bot]'
     services:
       # テスト用PostgreSQLデータベース
       postgres:
@@ -150,7 +154,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
-        if: github.actor != 'dependabot[bot]' || contains(github.event.pull_request.labels.*.name, 'go-dependencies')
+        if: |
+          github.actor != 'dependabot[bot]' ||
+          contains(github.event.pull_request.labels.*.name, 'go-dependencies')
         with:
           go-version: "1.24.2"
           cache: false
@@ -182,7 +188,9 @@ jobs:
 
       # バックエンドテストの実行
       - name: Run backend tests
-        if: github.actor != 'dependabot[bot]' || contains(github.event.pull_request.labels.*.name, 'go-dependencies')
+        if: |
+          github.actor != 'dependabot[bot]' ||
+          contains(github.event.pull_request.labels.*.name, 'go-dependencies')
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -196,13 +204,28 @@ jobs:
           if [ "${{ github.actor }}" = "dependabot[bot]" ]; then
             # Dependabotの場合はDBを使わないテストのみ実行
             go test -v -race -coverprofile=coverage.txt -covermode=atomic \
-              -coverpkg=$(go list ./... | grep -vE 'migrations/scripts|migrations/seeds|internal/testutils|tests/testutils|tests/unit/test_data.go' | paste -sd, -) \
-              $(go list ./... | grep -vE 'migrations/scripts|migrations/seeds|internal/testutils|tests/testutils|tests/unit/test_data.go' | grep -vE 'tests/integration|tests/e2e')
+              -coverpkg=$(go list ./... | \
+                grep -vE 'migrations/scripts|migrations/seeds|' \
+                grep -vE 'internal/testutils|tests/testutils|' \
+                grep -vE 'tests/unit/test_data.go' | \
+                paste -sd, -) \
+              $(go list ./... | \
+                grep -vE 'migrations/scripts|migrations/seeds|' \
+                grep -vE 'internal/testutils|tests/testutils|' \
+                grep -vE 'tests/unit/test_data.go' | \
+                grep -vE 'tests/integration|tests/e2e')
           else
             # 通常のCI実行では全てのテストを実行
             go test -v -race -coverprofile=coverage.txt -covermode=atomic \
-              -coverpkg=$(go list ./... | grep -vE 'migrations/scripts|migrations/seeds|internal/testutils|tests/testutils|tests/unit/test_data.go' | paste -sd, -) \
-              $(go list ./... | grep -vE 'migrations/scripts|migrations/seeds|internal/testutils|tests/testutils|tests/unit/test_data.go')
+              -coverpkg=$(go list ./... | \
+                grep -vE 'migrations/scripts|migrations/seeds|' \
+                grep -vE 'internal/testutils|tests/testutils|' \
+                grep -vE 'tests/unit/test_data.go' | \
+                paste -sd, -) \
+              $(go list ./... | \
+                grep -vE 'migrations/scripts|migrations/seeds|' \
+                grep -vE 'internal/testutils|tests/testutils|' \
+                grep -vE 'tests/unit/test_data.go')
           fi
           go test -v -bench=. -benchmem ./tests/unit/benchmarks_test.go
           go test -v ./tests/unit/security_test.go
@@ -239,7 +262,9 @@ jobs:
           go tool cover -html=coverage.txt -o coverage.html
           go test -json ./... > test-report.json
           # カバレッジ閾値のチェック（80%以上を要求）
-          go tool cover -func=coverage.txt | grep -E "total:\s+\(statements\)\s+([0-9.]+)%" | awk '{if ($3 < 80) {print "カバレッジが80%未満です: " $3; exit 1}}'
+          go tool cover -func=coverage.txt | \
+            grep -E "total:\s+\(statements\)\s+([0-9.]+)%" | \
+            awk '{if ($3 < 80) {print "カバレッジが80%未満です: " $3; exit 1}}'
 
       # テスト成果物のアップロード
       - name: Upload test artifacts
@@ -424,5 +449,9 @@ jobs:
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
           set: |
-            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+            *.cache-from=type=gha,scope=${{ github.workflow }}-${{
+              github.event_name == 'pull_request' && github.head_ref || github.ref
+            }}
+            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{
+              github.event_name == 'pull_request' && github.head_ref || github.ref
+            }}

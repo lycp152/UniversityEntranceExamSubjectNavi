@@ -423,6 +423,9 @@ jobs:
           files: |
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
+          targets: backend,frontend
           set: |
-            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+            backend.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+            backend.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+            frontend.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+            frontend.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}

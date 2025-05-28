@@ -102,16 +102,16 @@ jobs:
             ./front/docker-bake.hcl
           push: true
           set: |
-            back.app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
-            back.app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
-            back.app.tags=${{ steps.meta.outputs.tags }}
-            back.app.labels=${{ steps.meta.outputs.labels }}
-            back.app.platform=linux/amd64,linux/arm64
-            front.app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
-            front.app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
-            front.app.tags=${{ steps.meta.outputs.tags }}
-            front.app.labels=${{ steps.meta.outputs.labels }}
-            front.app.platform=linux/amd64,linux/arm64
+            ./back/docker-bake.hcl#app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
+            ./back/docker-bake.hcl#app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
+            ./back/docker-bake.hcl#app.tags=${{ steps.meta.outputs.tags }}
+            ./back/docker-bake.hcl#app.labels=${{ steps.meta.outputs.labels }}
+            ./back/docker-bake.hcl#app.platform=linux/amd64,linux/arm64
+            ./front/docker-bake.hcl#app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
+            ./front/docker-bake.hcl#app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
+            ./front/docker-bake.hcl#app.tags=${{ steps.meta.outputs.tags }}
+            ./front/docker-bake.hcl#app.labels=${{ steps.meta.outputs.labels }}
+            ./front/docker-bake.hcl#app.platform=linux/amd64,linux/arm64
 
   # 本番環境へのデプロイ
   deploy:

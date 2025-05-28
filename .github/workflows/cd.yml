@@ -25,6 +25,9 @@ env:
   PRODUCTION_READY: false # 本番環境の準備状態を示すフラグ
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
+  TRIVY_SEVERITY: "CRITICAL,HIGH"
+  TRIVY_VULN_TYPE: "os,library"
+  TRIVY_IGNORE_UNFIXED: true
 
 jobs:
   # Docker Composeファイルの検証
@@ -49,9 +52,10 @@ jobs:
           scan-ref: "."
           format: "sarif"
           output: "trivy-results.sarif"
-          severity: "CRITICAL,HIGH" # 重大度が高い脆弱性のみを検出
-          ignore-unfixed: true # 修正されていない脆弱性を無視
-          vuln-type: "os,library" # OSとライブラリの脆弱性をスキャン
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: ${{ env.TRIVY_IGNORE_UNFIXED }}
+          vuln-type: ${{ env.TRIVY_VULN_TYPE }}
+          cache-dir: .trivycache/
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
@@ -93,14 +97,14 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/${{ github.repository }}/university-exam-backend
-            ghcr.io/${{ github.repository }}/university-exam-frontend
+            ${{ secrets.DOCKER_USERNAME }}/university-exam-backend
+            ${{ secrets.DOCKER_USERNAME }}/university-exam-frontend
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-            type=ref,event=branch
-            type=ref,event=pr
+            type=semver,pattern={{version}}      # 完全なバージョン番号（例：1.0.0）
+            type=semver,pattern={{major}}.{{minor}}  # メジャー.マイナーバージョン（例：1.0）
+            type=sha,prefix={{branch}}-          # ブランチ名とコミットハッシュ（例：main-abc123）
+            type=ref,event=branch                # ブランチ名（例：main）
+            type=ref,event=pr                    # プルリクエスト番号（例：pr-123）
 
       # Dockerイメージのビルドとプッシュ
       - name: Build and push images
@@ -110,21 +114,16 @@ jobs:
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
           push: true
-          targets: app
           set: |
-            app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
-            app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
-            app.platform=linux/amd64,linux/arm64
-            app.tags=${{ steps.meta.outputs.tags }}
-            app.labels=${{ steps.meta.outputs.labels }}
-
-      # メタデータのデバッグ出力
-      - name: Debug tags output
-        run: echo "${{ steps.meta.outputs.tags }}"
+            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
+            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
+            *.tags=${{ steps.meta.outputs.tags }}
+            *.labels=${{ steps.meta.outputs.labels }}
+            *.platform=linux/amd64,linux/arm64
 
   # 本番環境へのデプロイ
   deploy:
-    needs: build-and-push
+    needs: [build-and-push, security-scan]
     if: |
       startsWith(github.ref, 'refs/tags/v') &&
       env.PRODUCTION_READY == 'true' &&
@@ -165,7 +164,7 @@ jobs:
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             "docker compose -f deployments/docker/production/docker-compose.yml down && \
-             docker system prune -f"
+            docker system prune -f"
 
       # 本番環境へのデプロイ実行
       - name: Deploy to production
@@ -203,4 +202,4 @@ jobs:
           echo "デプロイに失敗したため、ロールバックを実行します"
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             "docker compose -f deployments/docker/production/docker-compose.yml down && \
-             docker compose -f deployments/docker/production/docker-compose.yml up -d"
+            docker compose -f deployments/docker/production/docker-compose.yml up -d"

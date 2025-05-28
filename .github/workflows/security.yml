@@ -1,11 +1,4 @@
----
 name: Security Checks
-
-# ワークフローレベルの権限設定
-permissions:
-  security-events: write
-  actions: read
-  contents: read
 
 # トリガー設定
 # 1. 毎日0時に定期実行
@@ -37,6 +30,11 @@ jobs:
   # 依存関係の脆弱性チェック
   dependency-check:
     runs-on: ubuntu-latest
+    # セキュリティイベントの書き込み権限を明示的に設定
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -104,13 +102,8 @@ jobs:
 
       # SARIFレポートの修正
       - name: Fix SARIF report
-        env:
-          SARIF_FILE: "./dependency-check-report.sarif"
-          PACKAGE_JSON: "file:///github/workspace/front/package.json"
         run: |
-          sed -i \
-            "s|${PACKAGE_JSON}?/|${PACKAGE_JSON}|g" \
-            "${SARIF_FILE}"
+          sed -i 's|file:///github/workspace/front/package.json?/|file:///github/workspace/front/package.json|g' ./dependency-check-report.sarif
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results
@@ -119,18 +112,19 @@ jobs:
           sarif_file: "./dependency-check-report.sarif"
           checkout_path: ${{ github.workspace }}
           category: "dependency-check"
-          wait-for-processing: true
 
   # コードの静的解析
   code-scanning:
-    name: "Code Scanning"
     runs-on: ubuntu-latest
+    # セキュリティイベントの書き込み権限を明示的に設定
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          # 完全な履歴を取得
-          fetch-depth: 0
+          fetch-depth: 0 # 完全な履歴を取得
 
       # Goのセットアップ
       - name: Set up Go
@@ -148,7 +142,6 @@ jobs:
           queries: security-extended,security-and-quality
           tools: linked
           config-file: ./.github/codeql/codeql-config.yml
-          source-root: ${{ github.workspace }}
 
       # 自動ビルドの実行
       - name: Autobuild
@@ -160,18 +153,19 @@ jobs:
         with:
           category: "code-scanning"
           upload: true
-          wait-for-processing: true
 
   # シークレットの漏洩チェック
   secret-scanning:
-    name: "Secret Scanning"
     runs-on: ubuntu-latest
+    # セキュリティイベントの書き込み権限を明示的に設定
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          # 完全な履歴を取得
-          fetch-depth: 0
+          fetch-depth: 0 # 完全な履歴を取得
 
       # Gitleaksを使用してシークレットの漏洩をチェック
       - name: Run Gitleaks
@@ -215,13 +209,8 @@ jobs:
 
       # SARIFレポートの修正
       - name: Fix SARIF report
-        env:
-          SARIF_FILE: "./dependency-check-report.sarif"
-          PACKAGE_JSON: "file:///github/workspace/front/package.json"
         run: |
-          sed -i \
-            "s|${PACKAGE_JSON}?/|${PACKAGE_JSON}|g" \
-            "${SARIF_FILE}"
+          sed -i 's|file:///github/workspace/front/package.json?/|file:///github/workspace/front/package.json|g' ./dependency-check-report.sarif
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results
@@ -230,4 +219,3 @@ jobs:
           sarif_file: "./dependency-check-report.sarif"
           checkout_path: ${{ github.workspace }}
           category: "dependency-check"
-          wait-for-processing: true

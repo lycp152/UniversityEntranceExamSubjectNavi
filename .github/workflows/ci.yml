@@ -448,6 +448,7 @@ jobs:
           files: |
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
+          targets: backend,frontend
           set: |
             *.cache-from=type=gha,scope=${{ github.workflow }}-${{
               github.event_name == 'pull_request' && github.head_ref || github.ref

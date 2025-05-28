@@ -109,8 +109,10 @@ jobs:
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
           push: true
+          targets: backend,frontend
           set: |
-            app.tags=${{ steps.meta.outputs.tags }}
+            backend.tags=${{ steps.meta.outputs.tags }}
+            frontend.tags=${{ steps.meta.outputs.tags }}
 
   # 本番環境へのデプロイ
   deploy:

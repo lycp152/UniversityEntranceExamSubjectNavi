@@ -29,6 +29,13 @@ updates:
       - dependency-type: "all"
     target-branch: "develop"
     rebase-strategy: "auto"
+    versioning-strategy: "auto"
+    security-updates-only: false
+    security-updates:
+      enabled: true
+      auto-merge: true
+      require-review: true
+      priority: high
 
   # pnpmの依存関係の更新
   - package-ecosystem: "npm"
@@ -65,6 +72,13 @@ updates:
         update-types: ["version-update:semver-minor"]
     target-branch: "develop"
     rebase-strategy: "auto"
+    versioning-strategy: "auto"
+    security-updates-only: false
+    security-updates:
+      enabled: true
+      auto-merge: true
+      require-review: true
+      priority: high
 
   # GitHub Actionsの依存関係の更新
   - package-ecosystem: "github-actions"
@@ -88,3 +102,10 @@ updates:
       - dependency-type: "all"
     target-branch: "develop"
     rebase-strategy: "auto"
+    versioning-strategy: "auto"
+    security-updates-only: false
+    security-updates:
+      enabled: true
+      auto-merge: true
+      require-review: true
+      priority: high

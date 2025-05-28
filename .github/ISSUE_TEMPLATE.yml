@@ -1,3 +1,4 @@
+---
 name: 大学入試科目ナビ
 description: 大学入試科目ナビのIssueトラッカー
 body:
@@ -12,9 +13,62 @@ body:
         - バグ報告
         - 機能要望
         - ドキュメント
+        - パフォーマンス
+        - セキュリティ
+        - アクセシビリティ
         - その他
     validations:
       required: true
+  - type: dropdown
+    attributes:
+      label: 優先度
+      options:
+        - 高
+        - 中
+        - 低
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 概要
+      description: 問題や要望の簡潔な説明
+      placeholder: 問題や要望の概要を入力してください
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 再現手順
+      description: バグの場合、問題を再現するための手順
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 期待される動作
+      description: 期待される動作の説明
+      placeholder: 期待される動作を入力してください
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 環境情報
+      description: 使用している環境の情報
+      placeholder: |
+        - OS:
+        - ブラウザ:
+        - バージョン:
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 追加情報
+      description: その他の関連情報
+      placeholder: その他の関連情報を入力してください
+    validations:
+      required: false
 blank_issues_enabled: false
 contact_links:
   - name: 質問・相談

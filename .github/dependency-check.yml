@@ -1,3 +1,4 @@
+---
 name: "Dependency Check Config"
 
 # スキャン対象の設定
@@ -30,12 +31,19 @@ scan:
 
 # スキャン設定
 settings:
-  # 脆弱性の重大度レベル
+  # 脆弱性の重大度レベル（medium以上を検出）
   severity-threshold: medium
-  # スキャン頻度
+  # スキャン頻度（週次実行）
   schedule: weekly
   # 自動更新の設定
-  auto-update: true
+  auto-update:
+    enabled: true
+    # セマンティックバージョニングに従う
+    versioning: semver
+    # パッチとマイナーバージョンの更新のみ自動マージ
+    allowed-updates:
+      - type: patch
+      - type: minor
   # プルリクエストの設定
   pull-request:
     enabled: true
@@ -44,3 +52,8 @@ settings:
       - "security"
     reviewers:
       - "team:security"
+    # セキュリティ更新の優先度を設定
+    security-updates:
+      priority: high
+      auto-merge: true
+      require-review: true

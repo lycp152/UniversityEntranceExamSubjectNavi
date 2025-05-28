@@ -146,6 +146,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-
             ${{ runner.os }}-go-
+          enableCrossOsArchive: true
           fail-on-cache-miss: false
 
       # pnpmストアのキャッシュ
@@ -165,6 +166,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-
             ${{ runner.os }}-pnpm-
+          enableCrossOsArchive: true
           fail-on-cache-miss: false
 
       # Next.jsのキャッシュ
@@ -320,6 +322,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-test-${{ hashFiles('back/go.sum') }}-
             ${{ runner.os }}-go-
+          enableCrossOsArchive: true
+          fail-on-cache-miss: false
 
       # バックエンドテストの実行
       - name: Run backend tests
@@ -332,8 +336,6 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           CSRF_SECRET: ${{ secrets.CSRF_SECRET }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           cd back
           if [ "${{ github.actor }}" = "dependabot[bot]" ]; then

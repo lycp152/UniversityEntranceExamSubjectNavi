@@ -129,6 +129,8 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    # Dependabotの更新時はPostgreSQLサービスをスキップ
+    if: github.actor != 'dependabot[bot]'
     services:
       # テスト用PostgreSQLデータベース
       postgres:
@@ -148,6 +150,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
+        if: github.actor != 'dependabot[bot]' || contains(github.event.pull_request.labels.*.name, 'go-dependencies')
         with:
           go-version: "1.24.2"
           cache: false
@@ -179,6 +182,7 @@ jobs:
 
       # バックエンドテストの実行
       - name: Run backend tests
+        if: github.actor != 'dependabot[bot]' || contains(github.event.pull_request.labels.*.name, 'go-dependencies')
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -206,6 +210,7 @@ jobs:
 
       # フロントエンドテストの実行
       - name: Run frontend tests
+        if: github.actor != 'dependabot[bot]' || contains(github.event.pull_request.labels.*.name, 'npm_and_yarn')
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8080/api
         run: |
@@ -216,6 +221,7 @@ jobs:
 
       # カバレッジレポートのアップロード
       - name: Upload coverage
+        if: github.actor != 'dependabot[bot]'
         uses: codecov/codecov-action@v5
         with:
           files: ./back/coverage.txt,./front/coverage/lcov.info

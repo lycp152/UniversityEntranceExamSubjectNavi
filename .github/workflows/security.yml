@@ -22,7 +22,7 @@ on:
       - "**/security.md"
       - "**/.github/workflows/security.yml"
       - "**/.github/dependency-check-suppressions.xml"
-      - "**/.github/codeql.yml"
+      - "**/.github/codeql/codeql-config.yml"
   pull_request:
     branches: [main, develop]
 
@@ -33,6 +33,8 @@ jobs:
     # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -117,6 +119,8 @@ jobs:
     # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -137,7 +141,7 @@ jobs:
           languages: "go,javascript,typescript"
           queries: security-extended,security-and-quality
           tools: linked
-          config-file: ./.github/codeql.yml
+          config-file: ./.github/codeql/codeql-config.yml
 
       # 自動ビルドの実行
       - name: Autobuild
@@ -156,6 +160,8 @@ jobs:
     # セキュリティイベントの書き込み権限を明示的に設定
     permissions:
       security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -170,3 +176,46 @@ jobs:
           GITLEAKS_REDACT: "true"
           GITLEAKS_VERBOSE: "true"
           GITLEAKS_NO_GIT: "false"
+
+      # 依存関係の脆弱性チェック
+      - name: Run dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "UniversityEntranceExamSubjectNavi"
+          path: "."
+          format: "SARIF"
+          out: "./dependency-check-report.sarif"
+          args: |
+            --suppression ./.github/dependency-check-suppressions.xml
+            --failOnCVSS 7
+            --enableRetired
+            --enableExperimental
+            --prettyPrint
+            --disableNodeAudit
+            --disableNodeJS
+            --disableRetireJS
+            --disableYarnAudit
+            --disablePnpmAudit
+            --scan front
+            --exclude "**/node_modules/**"
+            --exclude "**/.next/**"
+            --exclude "**/dist/**"
+            --exclude "**/build/**"
+            --exclude "**/coverage/**"
+            --exclude "**/out/**"
+            --exclude "**/test/**"
+            --exclude "**/tests/**"
+            --exclude "**/__tests__/**"
+
+      # SARIFレポートの修正
+      - name: Fix SARIF report
+        run: |
+          sed -i 's|file:///github/workspace/front/package.json?/|file:///github/workspace/front/package.json|g' ./dependency-check-report.sarif
+
+      # スキャン結果をSARIF形式でアップロード
+      - name: Upload dependency scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "./dependency-check-report.sarif"
+          checkout_path: ${{ github.workspace }}
+          category: "dependency-check"

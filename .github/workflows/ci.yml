@@ -1,13 +1,16 @@
+---
 name: Continuous Integration
 
 # 必要な権限を明示的に設定
 # contents: read - リポジトリの読み取り権限
 # packages: write - パッケージの書き込み権限（Dockerイメージのプッシュに必要）
 # security-events: write - セキュリティスキャン結果のアップロードに必要
+# pull-requests: write - プルリクエストの書き込み権限
 permissions:
   contents: read
   packages: write
   security-events: write
+  pull-requests: write
 
 # 並行実行の制御
 concurrency:
@@ -20,12 +23,97 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    - cron: "0 0 * * *" # 毎日午前0時に実行
+    # 毎日午前0時に実行
+    - cron: "0 0 * * *"
+
+# 環境変数の設定
+env:
+  NODE_ENV: development
+  NEXT_TELEMETRY_DISABLED: 1
+  GO111MODULE: on
+  GOPROXY: direct
+  GOSUMDB: off
+  GOENV: off
+  GODEBUG: buildvcs=0
 
 jobs:
+  # 依存関係レビュー
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          allow-licenses: >
+            MIT
+            Apache-2.0
+            BSD-2-Clause
+            BSD-3-Clause
+            ISC
+            Unlicense
+            WTFPL
+
+  # Dependabotの更新チェック
+  dependabot:
+    needs: dependency-review
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Enable auto-merge for Dependabot PRs
+        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --auto --merge "$PR_URL" --merge-method squash
+
+  # OpenSSF Scorecardsの実行
+  scorecards:
+    needs: dependabot
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Run OpenSSF Scorecards
+        uses: ossf/scorecard-action@v2.3.1
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_results: true
+
+      - name: Upload results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: "scorecards"
+          wait-for-processing: true
+
   # キャッシュキーの生成と共有
   setup:
+    needs: scorecards
     runs-on: ubuntu-latest
     outputs:
       cache-key: ${{ steps.cache-key.outputs.value }}
@@ -71,7 +159,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-${{ hashFiles('back/go.sum') }}-
             ${{ runner.os }}-go-
-          enableCrossOsArchive: true
           fail-on-cache-miss: false
 
       # pnpmストアのキャッシュ
@@ -91,11 +178,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-${{ hashFiles('front/pnpm-lock.yaml') }}-
             ${{ runner.os }}-pnpm-
-          enableCrossOsArchive: true
           fail-on-cache-miss: false
+
+      # Next.jsのキャッシュ
+      - name: Cache Next.js
+        uses: actions/cache@v4
+        with:
+          path: |
+            front/.next/cache
+            front/node_modules/.cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('front/pnpm-lock.yaml') }}-${{ hashFiles('front/**/*.{js,jsx,ts,tsx}') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('front/pnpm-lock.yaml') }}-
 
       # 依存関係のインストール
       - name: Install dependencies
+        env:
+          GO111MODULE: on
+          GOPROXY: direct
+          GOSUMDB: off
+          GOENV: off
+          GODEBUG: buildvcs=0
+          NODE_ENV: development
+          NEXT_TELEMETRY_DISABLED: 1
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           cd back
           go mod download
@@ -118,17 +225,70 @@ jobs:
 
       # リンターの実行
       - name: Run linters
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd back
           golangci-lint run --timeout=5m ./...
           cd ../front
           pnpm lint
           pnpm type-check
+          pnpm a11y
+
+      # プルリクエストのタイトルチェック
+      - name: Check PR title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request?.title;
+            if (!title) {
+              core.setFailed('プルリクエストのタイトルが見つかりません');
+              return;
+            }
+            if (!/^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .+/.test(title)) {
+              core.setFailed('プルリクエストのタイトルが規約に従っていません');
+              return;
+            }
+
+      # アクセシビリティチェック
+      - name: Run accessibility checks
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            try {
+              process.chdir('front');
+              execSync('pnpm build', { stdio: 'inherit' });
+              execSync('pnpm pa11y-ci', { stdio: 'inherit' });
+            } catch (error) {
+              core.setFailed('アクセシビリティチェックが失敗しました: ' + error.message);
+            }
+        env:
+          NODE_ENV: development
+          NEXT_TELEMETRY_DISABLED: 1
+
+      # コードスキャン
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,typescript,go
+          queries: security-extended
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "code-scanning"
+          upload: true
+          wait-for-processing: true
 
   # テストの実行
   test:
     needs: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     # Dependabotの更新時はPostgreSQLサービスをスキップ
     if: github.actor != 'dependabot[bot]'
     services:
@@ -191,6 +351,8 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           CSRF_SECRET: ${{ secrets.CSRF_SECRET }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           cd back
           if [ "${{ github.actor }}" = "dependabot[bot]" ]; then
@@ -255,6 +417,9 @@ jobs:
   performance:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -307,6 +472,9 @@ jobs:
   security:
     needs: performance
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -314,8 +482,20 @@ jobs:
           go-version: "1.24.2"
           cache: false
 
+      # 依存関係の脆弱性チェック
+      - name: Run dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "UniversityEntranceExamSubjectNavi"
+          path: "."
+          format: "SARIF"
+          out: "./dependency-check-report.sarif"
+          args: "--scan front"
+
       # セキュリティテストと脆弱性スキャン
       - name: Run security tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd back
           echo "セキュリティテストを開始します..."
@@ -358,6 +538,8 @@ jobs:
           if-no-files-found: error
 
       - name: Run security checks
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd back
           go install github.com/securego/gosec/v2/cmd/gosec@latest
@@ -386,25 +568,20 @@ jobs:
           cd front
           pnpm audit
 
-      - name: Run dependency check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: "UniversityEntranceExamSubjectNavi"
-          path: "."
-          format: "SARIF"
-          out: "./dependency-check-report.sarif"
-          args: "--scan front"
-
       - name: Upload security results
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: "./dependency-check-report.sarif"
           category: "security"
+          wait-for-processing: true
 
   # Dockerイメージのビルド
   build:
     needs: security
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

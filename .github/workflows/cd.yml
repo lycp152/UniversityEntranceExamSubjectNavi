@@ -93,6 +93,10 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
 
+      # メタデータのデバッグ出力
+      - name: Debug tags output
+        run: echo "${{ steps.meta.outputs.tags }}"
+
       # Dockerイメージのビルドとプッシュ
       - name: Build and push images
         uses: docker/bake-action@v6
@@ -103,11 +107,11 @@ jobs:
           push: true
           targets: app
           set: |
-            app.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.ref }}
-            app.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.ref }}
-            app.tags=${{ steps.meta.outputs.tags }}
-            app.labels=${{ steps.meta.outputs.labels }}
-            app.platform=linux/amd64,linux/arm64
+            type=semver,pattern={{version}}      # 完全なバージョン番号（例：1.0.0）
+            type=semver,pattern={{major}}.{{minor}}  # メジャー.マイナーバージョン（例：1.0）
+            type=sha,prefix={{branch}}-          # ブランチ名とコミットハッシュ（例：main-abc123）
+            type=ref,event=branch                # ブランチ名（例：main）
+            type=ref,event=pr                    # プルリクエスト番号（例：pr-123）
 
   # 本番環境へのデプロイ
   deploy:

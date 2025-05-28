@@ -100,7 +100,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/university-exam-backend
             ${{ secrets.DOCKER_USERNAME }}/university-exam-frontend
           tags: |
-            type=sha,prefix={{branch}}-          # ブランチ名とコミットハッシュ（例：main-abc123）
+            type=sha
 
       # Dockerイメージのビルドとプッシュ
       - name: Build and push images

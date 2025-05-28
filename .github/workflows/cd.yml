@@ -57,7 +57,7 @@ jobs:
           severity: ${{ env.TRIVY_SEVERITY }}
           ignore-unfixed: ${{ env.TRIVY_IGNORE_UNFIXED }}
           vuln-type: ${{ env.TRIVY_VULN_TYPE }}
-          cache-dir: ${{ env.TRIVY_CACHE_DIR }}
+          cache-dir: .trivycache/
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
@@ -109,10 +109,8 @@ jobs:
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
           push: true
-          targets: backend,frontend
           set: |
-            backend.tags=${{ steps.meta.outputs.tags }}
-            frontend.tags=${{ steps.meta.outputs.tags }}
+            app.tags=${{ steps.meta.outputs.tags }}
 
   # 本番環境へのデプロイ
   deploy:

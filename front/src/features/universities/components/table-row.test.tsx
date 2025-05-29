@@ -97,10 +97,11 @@ describe('TableRow', () => {
 
   describe('アクセシビリティ', () => {
     it('アクセシビリティ属性が正しく設定されている', () => {
-      renderTableRow('commonTest');
+      render(<TableRow subjects={mockSubjects} totals={mockTotals} type="commonTest" />);
 
       // 数学のセルに適切なaria-labelが設定されている
-      expect(screen.getByText('100')).toHaveAttribute('aria-label', '数学の共通テスト配点');
+      const mathCell = screen.getByText('100').closest('td');
+      expect(mathCell).toHaveAttribute('aria-label', '数学の共通テスト配点');
     });
   });
 });

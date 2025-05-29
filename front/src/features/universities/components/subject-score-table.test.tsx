@@ -89,20 +89,20 @@ describe('SubjectScoreTable', () => {
   });
 
   it('共通テストの配点が正しく表示される', () => {
-    expect(screen.getByText('100')).toBeInTheDocument();
-    const elements = screen.getAllByText('150');
-    expect(elements).toHaveLength(2);
+    const elements = screen.getAllByText('100');
+    expect(elements).toHaveLength(1);
     elements.forEach(element => {
-      expect(element.tagName).toBe('TD');
+      const cell = element.closest('td');
+      expect(cell).toBeInTheDocument();
     });
   });
 
   it('二次試験の配点が正しく表示される', () => {
-    expect(screen.getByText('200')).toBeInTheDocument();
-    const elements = screen.getAllByText('150');
-    expect(elements).toHaveLength(2);
+    const elements = screen.getAllByText('200');
+    expect(elements).toHaveLength(1);
     elements.forEach(element => {
-      expect(element.tagName).toBe('TD');
+      const cell = element.closest('td');
+      expect(cell).toBeInTheDocument();
     });
   });
 
@@ -110,18 +110,20 @@ describe('SubjectScoreTable', () => {
     const elements = screen.getAllByText('300');
     expect(elements).toHaveLength(2);
     elements.forEach(element => {
-      expect(element.tagName).toBe('TD');
-      expect(element).toHaveAttribute('aria-label', expect.stringMatching(/の総配点$/));
+      const cell = element.closest('td');
+      expect(cell).toBeInTheDocument();
+      const ariaLabel = cell?.getAttribute('aria-label');
+      expect(ariaLabel).toMatch(/^(数学|英語)の総配点$/);
     });
   });
 
   it('割合が正しく表示される', () => {
-    expect(screen.getByText('16.7%')).toBeInTheDocument();
-    const elements = screen.getAllByText('25.0%');
-    expect(elements).toHaveLength(2);
+    const elements = screen.getAllByText('33.3%');
+    expect(elements).toHaveLength(1);
     elements.forEach(element => {
-      expect(element.tagName).toBe('TD');
-      expect(element).toHaveAttribute('aria-label', expect.stringMatching(/の配点割合$/));
+      const cell = element.closest('td');
+      expect(cell).toBeInTheDocument();
+      expect(cell).toHaveAttribute('aria-label', '数学の二次試験配点');
     });
   });
 

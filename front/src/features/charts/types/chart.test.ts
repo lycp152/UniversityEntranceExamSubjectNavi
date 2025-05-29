@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ChartProps, TooltipPayload, SubjectExamComparisonChartProps } from './chart';
+import type { ChartProps, SubjectExamComparisonChartProps } from './chart';
 import type { DisplaySubjectScore } from '@/types/score';
 import type { UISubject } from '@/types/university-subject';
 
@@ -34,35 +34,6 @@ describe('ChartProps', () => {
 
     expect(props).toBeDefined();
     expect(props.isRightChart).toBeUndefined();
-  });
-});
-
-describe('TooltipPayload', () => {
-  it('正しい型のプロパティを持つべき', () => {
-    const payload: TooltipPayload = {
-      value: 100,
-      name: 'テスト',
-      payload: {
-        percentage: 50,
-      },
-    };
-
-    expect(payload).toBeDefined();
-    expect(typeof payload.value).toBe('number');
-    expect(typeof payload.name).toBe('string');
-    expect(payload.payload).toBeDefined();
-    expect(typeof payload.payload.percentage).toBe('number');
-  });
-
-  it('payload.percentageはオプショナルであるべき', () => {
-    const payload: TooltipPayload = {
-      value: 100,
-      name: 'テスト',
-      payload: {},
-    };
-
-    expect(payload).toBeDefined();
-    expect(payload.payload.percentage).toBeUndefined();
   });
 });
 

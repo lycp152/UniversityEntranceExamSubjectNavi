@@ -25,7 +25,9 @@ import {
  * Tailwind CSSのクラスを使用
  */
 const tableStyles = {
-  headerCell: 'whitespace-nowrap border-b p-3 text-base text-center bg-muted/100 font-semibold',
+  headerCell:
+    'whitespace-nowrap border-b border-b-transparent p-3 text-base text-center bg-muted/100 dark:bg-muted/50 font-semibold',
+  scoreCell: 'whitespace-nowrap border-b border-b-transparent p-3 text-base text-center',
 } as const;
 
 interface SubjectScoreTableProps {

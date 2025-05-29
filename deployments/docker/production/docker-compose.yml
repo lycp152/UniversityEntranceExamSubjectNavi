@@ -1,7 +1,9 @@
+# Docker Compose バージョン指定
 version: "3.9"
 
 services:
   # バックエンドサービス
+  # Go言語で実装されたRESTful APIサーバー
   backend:
     image: |
       ${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_USERNAME:-lycp152}/
@@ -36,6 +38,7 @@ services:
       - app-network
 
   # フロントエンドサービス
+  # Next.jsで実装されたSPAアプリケーション
   frontend:
     image: |
       ${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_USERNAME:-lycp152}/
@@ -63,6 +66,7 @@ services:
       - app-network
 
   # Nginxリバースプロキシ
+  # SSL終端、ロードバランシング、キャッシュ制御を担当
   nginx:
     image: nginx:stable-alpine
     restart: unless-stopped
@@ -92,6 +96,8 @@ services:
     networks:
       - app-network
 
+# ネットワーク設定
+# サービス間の通信を分離し、セキュリティを確保
 networks:
   app-network:
     driver: bridge

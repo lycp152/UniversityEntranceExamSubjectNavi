@@ -30,9 +30,13 @@ const tableLabels = {
  * Tailwind CSSのクラスを使用
  */
 const tableStyles = {
-  leftCell: 'border-b p-3 text-base text-left font-semibold pl-4 hover:bg-muted/100',
-  centerCell: 'border-b p-3 text-base text-center hover:bg-muted/100',
-  totalCell: 'border-b p-3 text-base text-center bg-muted/100 font-semibold',
+  leftCell:
+    'border-b-2 text-base text-left font-semibold pl-3 hover:bg-muted/100 dark:hover:bg-muted/50',
+  centerCell: 'border-b-2 text-base text-center hover:bg-muted/100 dark:hover:bg-muted/50',
+  totalCell: 'border-b-2 text-base text-center bg-muted/100 dark:bg-muted/50',
+  scoreRow: 'border-t-2',
+  scoreCell: 'pt-2 pb-2',
+  ratioCell: 'pt-0 pb-2',
 } as const;
 
 type ScoreType = 'commonTest' | 'secondTest' | 'total';
@@ -124,40 +128,40 @@ const TableRow: FC<TableRowProps> = ({ subjects, totals, type, showRatio = false
   const subjectEntries = useMemo(() => Object.entries(subjects), [subjects]);
 
   return (
-    <>
-      <UITableRow>
-        <TableCell className={tableStyles.leftCell}>{getLabel(type)}</TableCell>
-        {subjectEntries.map(([subject, scores]) => (
-          <TableCell
-            key={subject}
-            className={tableStyles.centerCell}
-            aria-label={`${subject}の${getLabel(type)}`}
-          >
-            {getScore(scores, type)}
-          </TableCell>
-        ))}
-        <TableCell className={tableStyles.totalCell} aria-label={`合計${getLabel(type)}`}>
-          {getTotal(type)}
+    <UITableRow className={tableStyles.scoreRow}>
+      <TableCell className={`${tableStyles.leftCell} ${tableStyles.scoreCell}`}>
+        <span className="text-xl">{getLabel(type)}</span>
+      </TableCell>
+      {subjectEntries.map(([subject, scores]) => (
+        <TableCell
+          key={subject}
+          className={`${tableStyles.centerCell} ${tableStyles.scoreCell}`}
+          aria-label={`${subject}の${getLabel(type)}`}
+        >
+          <div className="flex flex-col items-center">
+            <span className="text-[1.375rem] font-semibold">{getScore(scores, type)}</span>
+            {showRatio && (
+              <span className="text-base font-normal">
+                {calculatePercentage(getScore(scores, type), totals.total).toFixed(1)}%
+              </span>
+            )}
+          </div>
         </TableCell>
-      </UITableRow>
-      {showRatio && (
-        <UITableRow>
-          <TableCell className={tableStyles.leftCell}>{tableLabels.rows.ratio}</TableCell>
-          {subjectEntries.map(([subject, scores]) => (
-            <TableCell
-              key={subject}
-              className={tableStyles.centerCell}
-              aria-label={`${subject}の${tableLabels.rows.ratio}`}
-            >
-              {calculatePercentage(getScore(scores, type), totals.total).toFixed(1)}%
-            </TableCell>
-          ))}
-          <TableCell className={tableStyles.totalCell} aria-label={`合計${tableLabels.rows.ratio}`}>
-            {calculatePercentage(getTotal(type), totals.total).toFixed(1)}%
-          </TableCell>
-        </UITableRow>
-      )}
-    </>
+      ))}
+      <TableCell
+        className={`${tableStyles.totalCell} ${tableStyles.scoreCell}`}
+        aria-label={`合計${getLabel(type)}`}
+      >
+        <div className="flex flex-col items-center">
+          <span className="text-[1.375rem] font-semibold">{getTotal(type)}</span>
+          {showRatio && (
+            <span className="text-base font-normal">
+              {calculatePercentage(getTotal(type), totals.total).toFixed(1)}%
+            </span>
+          )}
+        </div>
+      </TableCell>
+    </UITableRow>
   );
 };
 

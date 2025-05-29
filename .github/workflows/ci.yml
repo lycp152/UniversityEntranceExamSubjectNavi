@@ -125,6 +125,14 @@ jobs:
           pnpm lint
           pnpm type-check
 
+      # Codecov設定ファイルのバリデーション
+      - name: Validate Codecov configuration
+        run: |
+          if ! curl --data-binary @codecov.yml https://codecov.io/validate | grep -q "Valid!"; then
+            echo "Codecov設定ファイルのバリデーションに失敗しました"
+            exit 1
+          fi
+
   # テストの実行
   test:
     needs: lint

@@ -47,7 +47,7 @@ github_checks:
   annotations: true
 
 # Slack通知の設定
-slack_app: true
+slack_app: false
 
 # カバレッジの除外設定
 # テストファイル、ユーティリティ、マイグレーションなど、
@@ -84,3 +84,13 @@ flags:
       - back/
       - front/
     carryforward: true # 前回のカバレッジを引き継ぐ
+    coverage:
+      status:
+        project:
+          default:
+            target: 80%
+            threshold: 1%
+        patch:
+          default:
+            target: 80%
+            threshold: 1%

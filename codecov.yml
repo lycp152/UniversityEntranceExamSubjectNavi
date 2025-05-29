@@ -19,7 +19,7 @@ codecov:
 # require_head: 現在のブランチのカバレッジが必要
 comment:
   behavior: default
-  layout: reach,diff,flags,tree,reach
+  layout: "reach, diff, flags, files"
   show_carryforward_flags: false
   require_changes: true
   require_base: true
@@ -35,11 +35,14 @@ coverage:
   range: "60.0...80.0"
   round: down
   status:
-    changes: false
-    default_rules:
-      flag_coverage_not_uploaded_behavior: include
-    patch: true
-    project: true
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+        threshold: 1%
 
 # GitHub Checksの設定
 # annotations: プルリクエストにアノテーションを表示
@@ -79,18 +82,19 @@ ignore:
 # flags: カバレッジの集計単位と方法を指定
 # carryforward: 前回のカバレッジを引き継ぐ
 flags:
-  unittests:
+  backend:
     paths:
-      - back/
-      - front/
-    carryforward: true # 前回のカバレッジを引き継ぐ
-    coverage:
-      status:
-        project:
-          default:
-            target: 80%
-            threshold: 1%
-        patch:
-          default:
-            target: 80%
-            threshold: 1%
+      - backend/
+    carryforward: true
+  frontend:
+    paths:
+      - frontend/
+    carryforward: true
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no

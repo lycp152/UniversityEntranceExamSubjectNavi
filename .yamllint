@@ -1,12 +1,19 @@
+# YAMLファイルのリンター設定
+# このファイルは、YAMLファイルの構文をチェックするためのルールを定義します。
+
 extends: default
 
 rules:
+  # ドキュメントの先頭に空行を要求しない
   document-start: disable
+  # 行の長さは120文字まで許可し、超えた場合は警告を出す
   line-length:
     max: 120
     level: warning
     allow-non-breakable-words: true
+  # コメントと内容の間に最低1スペースを要求
   comments:
     min-spaces-from-content: 1
+  # 真偽値として許可する値を制限
   truthy:
     allowed-values: ["true", "false", "yes", "no", "on", "off"]

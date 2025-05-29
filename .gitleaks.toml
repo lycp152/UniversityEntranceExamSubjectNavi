@@ -1,3 +1,7 @@
+# Gitleaks設定ファイル
+# このファイルは、リポジトリ内の機密情報を検出するためのルールを定義します。
+# 各ルールは、特定のパターンに一致する機密情報を検出するために使用されます。
+
 title = "UniversityEntranceExamSubjectNavi Gitleaks Configuration"
 
 [[rules]]

@@ -1,4 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# このファイルは、Gitリポジトリに含めないファイルやディレクトリを指定します。
+# 詳細については、https://help.github.com/articles/ignoring-files/ を参照してください。
 
 # Dependencies
 **/node_modules

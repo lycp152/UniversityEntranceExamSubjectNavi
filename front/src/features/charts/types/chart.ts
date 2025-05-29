@@ -6,7 +6,6 @@
  * - 内側と外側の円グラフのデータ型を定義
  */
 
-import type { Payload } from 'recharts/types/component/DefaultTooltipContent';
 import type { DisplaySubjectScore } from '@/types/score';
 import type { UISubject } from '@/types/university-subject';
 
@@ -21,15 +20,6 @@ export type ChartProps = {
   outerData: DisplaySubjectScore[];
   isRightChart?: boolean;
 };
-
-/**
- * ツールチップのペイロード型定義
- * @property value - 表示する値
- * @property name - 表示するラベル名
- * @property payload - 追加のデータペイロード
- * @property payload.percentage - パーセンテージ値（オプション）
- */
-export type TooltipPayload = Payload<number, string>;
 
 /**
  * 科目と試験の比較チャートコンポーネントのプロパティ型定義

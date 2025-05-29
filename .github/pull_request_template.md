@@ -15,7 +15,7 @@
 - [ ] [`chore`] ビルドプロセスやツール、CI の変更、ライブラリの更新など
 - [ ] その他（詳細を記述してください）
 
-> 注: 各項目の `[]` 内は、[コミットメッセージの規約](../../docs/contributing/README.md)で定義されている対応するタイプです。
+> 注: 各項目の `[]` 内は、[コミットメッセージの規約](https://github.com/lycp152/UniversityEntranceExamSubjectNavi/blob/main/docs/contributing/README.md)で定義されている対応するタイプです。
 
 ## 関連する Issue
 
@@ -47,7 +47,7 @@ UI の変更がある場合は、変更前後のスクリーンショットを�
 - [ ] 自己レビューを実施した
 - [ ] ユニットテストを追加/更新した
 - [ ] ドキュメントを更新した
-- [ ] コミットメッセージが[規約](../../docs/contributing/README.md)に従っている
+- [ ] コミットメッセージが[規約](https://github.com/lycp152/UniversityEntranceExamSubjectNavi/blob/main/docs/contributing/README.md)に従っている
 - [ ] 変更に必要なテストをすべて追加した
 - [ ] 既存のテストがすべて通過する
 - [ ] Linter チェックが通過する

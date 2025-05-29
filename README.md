@@ -107,7 +107,7 @@
 
 ```bash
 # リポジトリのクローン
-git clone https://github.com/yourusername/UniversityEntranceExamSubjectNavi.git
+git clone https://github.com/lycp152/UniversityEntranceExamSubjectNavi.git
 cd UniversityEntranceExamSubjectNavi
 
 # 環境変数の設定

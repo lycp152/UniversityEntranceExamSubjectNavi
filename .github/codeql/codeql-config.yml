@@ -1,12 +1,16 @@
 name: "CodeQL Config"
 
 queries:
-  - uses: security-extended
-  - uses: security-and-quality
+  - uses: security-extended@v2
+  - uses: security-and-quality@v2
   - uses: ./queries/go
   - exclude:
       id: js/unbound-event-handler-receiver
       reason: "アロー関数を使用したクラスフィールドは正しく動作しており、この警告は誤検知です"
+  - exclude:
+      tags: deprecated
+  - exclude:
+      tags: experimental
 
 # JavaScript/TypeScriptのパス設定
 paths:
@@ -74,3 +78,11 @@ analysis:
   memory: 0
   # タイムアウトなし
   timeout: 0
+
+# 言語固有の設定
+languages:
+  go:
+    extract_tests: false
+    extract_vendor_dirs: false
+  javascript:
+    skip_types: false

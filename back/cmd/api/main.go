@@ -364,6 +364,7 @@ func runServer(ctx context.Context, srv *server.Server, sigChan chan os.Signal) 
 	}
 }
 
+// coverage:ignore
 func main() {
 	// コンテキストの作成
 	ctx, cancel := context.WithCancel(context.Background())

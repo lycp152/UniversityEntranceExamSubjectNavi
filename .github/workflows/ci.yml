@@ -424,5 +424,5 @@ jobs:
             ./back/docker-bake.hcl
             ./front/docker-bake.hcl
           set: |
-            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+            *.cache-from=type=gha,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+            *.cache-to=type=gha,mode=max,scope=${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}

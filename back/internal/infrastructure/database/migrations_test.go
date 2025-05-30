@@ -29,7 +29,7 @@ func TestRunMigrationsSuccess(t *testing.T) {
 	metrics, err := RunMigrations(ctx, db, config)
 	assert.NoError(t, err)
 	assert.NotNil(t, metrics)
-	assert.Equal(t, 7, metrics.TotalTables) // モデル数
+	assert.Equal(t, 12, metrics.TotalTables) // モデル数
 	assert.Equal(t, metrics.TotalTables, metrics.CompletedTables)
 }
 

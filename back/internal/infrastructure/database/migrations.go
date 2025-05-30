@@ -267,6 +267,11 @@ func executeMigration(
 		{&models.AdmissionInfo{}, "admission_infos"},
 		{&models.TestType{}, "test_types"},
 		{&models.Subject{}, "subjects"},
+		{&models.Region{}, "regions"},
+		{&models.Prefecture{}, "prefectures"},
+		{&models.Classification{}, "classifications"},
+		{&models.SubClassification{}, "sub_classifications"},
+		{&models.AcademicField{}, "academic_fields"},
 	}
 
 	progress.TotalTables = len(models)

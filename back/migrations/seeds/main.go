@@ -6,7 +6,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"math"
@@ -64,8 +63,21 @@ func cleanupDatabase(db *gorm.DB) error {
 	}
 
 	// スキーマを再作成
-	if err := database.AutoMigrate(context.Background(), db); err != nil {
-		return err
+	if err := db.AutoMigrate(
+		&models.University{},           // 親テーブル
+		&models.Department{},           // 大学の子テーブル
+		&models.Major{},                // 学部の子テーブル
+		&models.AdmissionSchedule{},    // 学科の子テーブル
+		&models.AdmissionInfo{},        // 入試日程の子テーブル
+		&models.TestType{},             // 入試情報の子テーブル
+		&models.Subject{},              // 試験種別の子テーブル
+		&models.Region{},               // 大学の子テーブル（地域）
+		&models.Prefecture{},           // 地域の子テーブル（都道府県）
+		&models.Classification{},       // 大学の子テーブル（設置区分）
+		&models.SubClassification{},    // 設置区分の子テーブル（小分類）
+		&models.AcademicField{},        // 学科の子テーブル（学問系統）
+	); err != nil {
+		return fmt.Errorf("マイグレーションの実行に失敗しました: %w", err)
 	}
 
 	return nil
@@ -262,13 +274,19 @@ func createMajors(tx *gorm.DB, department *models.Department, majors []models.Ma
 	for _, major := range majors {
 		major.DepartmentID = department.ID
 		schedules := major.AdmissionSchedules
+		academicFields := major.AcademicFields
 		major.AdmissionSchedules = nil
+		major.AcademicFields = nil
 
 		if err := tx.Create(&major).Error; err != nil {
 			return err
 		}
 
 		if err := createAdmissionSchedules(tx, &major, schedules); err != nil {
+			return err
+		}
+
+		if err := createAcademicFields(tx, &major, academicFields); err != nil {
 			return err
 		}
 	}
@@ -302,16 +320,117 @@ func createDepartments(tx *gorm.DB, university *models.University, departments [
 // この関数は以下の処理を行います：
 // - 大学の作成
 // - 学部の関連付け
+// - 地域の関連付け
+// - 設置区分の関連付け
 func seedUniversities(tx *gorm.DB, universities []models.University) error {
 	for _, university := range universities {
 		departments := university.Departments
+		regions := university.Regions
+		classifications := university.Classifications
 		university.Departments = nil
+		university.Regions = nil
+		university.Classifications = nil
 
 		if err := tx.Create(&university).Error; err != nil {
 			return err
 		}
 
+		// 地域の作成
+		if err := createRegions(tx, &university, regions); err != nil {
+			return err
+		}
+
+		// 設置区分の作成
+		if err := createClassifications(tx, &university, classifications); err != nil {
+			return err
+		}
+
+		// 学部の作成
 		if err := createDepartments(tx, &university, departments); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// createRegions は地域データを作成します
+// この関数は以下の処理を行います：
+// - 地域の作成
+// - 都道府県の関連付け
+func createRegions(tx *gorm.DB, university *models.University, regions []models.Region) error {
+	for _, region := range regions {
+		region.UniversityID = university.ID
+		prefectures := region.Prefectures
+		region.Prefectures = nil
+
+		if err := tx.Create(&region).Error; err != nil {
+			return err
+		}
+
+		if err := createPrefectures(tx, &region, prefectures); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// createPrefectures は都道府県データを作成します
+func createPrefectures(tx *gorm.DB, region *models.Region, prefectures []models.Prefecture) error {
+	for _, prefecture := range prefectures {
+		prefecture.RegionID = region.ID
+		if err := tx.Create(&prefecture).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// createClassifications は設置区分データを作成します
+// この関数は以下の処理を行います：
+// - 設置区分の作成
+// - 小分類の関連付け
+func createClassifications(tx *gorm.DB, university *models.University, classifications []models.Classification) error {
+	for _, classification := range classifications {
+		classification.UniversityID = university.ID
+		subClassifications := classification.SubClassifications
+		classification.SubClassifications = nil
+
+		if err := tx.Create(&classification).Error; err != nil {
+			return err
+		}
+
+		if err := createSubClassifications(tx, &classification, subClassifications); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// createSubClassifications は設置区分の小分類データを作成します
+func createSubClassifications(
+	tx *gorm.DB,
+	classification *models.Classification,
+	subClassifications []models.SubClassification,
+) error {
+	for _, subClassification := range subClassifications {
+		subClassification.ClassificationID = classification.ID
+		if err := tx.Create(&subClassification).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// createAcademicFields は学問系統データを作成します
+func createAcademicFields(tx *gorm.DB, major *models.Major, academicFields []models.AcademicField) error {
+	for _, academicField := range academicFields {
+		academicField.MajorID = major.ID
+		if err := tx.Create(&academicField).Error; err != nil {
 			return err
 		}
 	}
@@ -376,6 +495,38 @@ func main() {
 				Version: 1,
 			},
 			Name: "津々大学",
+			Regions: []models.Region{
+				{
+					BaseModel: models.BaseModel{
+						Version: 1,
+					},
+					Name: "南関東",
+					Prefectures: []models.Prefecture{
+						{
+							BaseModel: models.BaseModel{
+								Version: 1,
+							},
+							Name: "東京",
+						},
+					},
+				},
+			},
+			Classifications: []models.Classification{
+				{
+					BaseModel: models.BaseModel{
+						Version: 1,
+					},
+					Name: "国公立",
+					SubClassifications: []models.SubClassification{
+						{
+							BaseModel: models.BaseModel{
+								Version: 1,
+							},
+							Name: "東京一工（東京、京都、一橋、東工）",
+						},
+					},
+				},
+			},
 			Departments: []models.Department{
 				{
 					BaseModel: models.BaseModel{
@@ -388,6 +539,14 @@ func main() {
 								Version: 1,
 							},
 							Name: "医学科",
+							AcademicFields: []models.AcademicField{
+								{
+									BaseModel: models.BaseModel{
+										Version: 1,
+									},
+									Name: "医学",
+								},
+							},
 							AdmissionSchedules: []models.AdmissionSchedule{
 								{
 									BaseModel: models.BaseModel{
@@ -440,6 +599,38 @@ func main() {
 				Version: 1,
 			},
 			Name: "浦々大学",
+			Regions: []models.Region{
+				{
+					BaseModel: models.BaseModel{
+						Version: 1,
+					},
+					Name: "関西",
+					Prefectures: []models.Prefecture{
+						{
+							BaseModel: models.BaseModel{
+								Version: 1,
+							},
+							Name: "大阪",
+						},
+					},
+				},
+			},
+			Classifications: []models.Classification{
+				{
+					BaseModel: models.BaseModel{
+						Version: 1,
+					},
+					Name: "私立",
+					SubClassifications: []models.SubClassification{
+						{
+							BaseModel: models.BaseModel{
+								Version: 1,
+							},
+							Name: "関関同立（関西、関西学院、同志社、立命館）",
+						},
+					},
+				},
+			},
 			Departments: []models.Department{
 				{
 					BaseModel: models.BaseModel{
@@ -452,6 +643,14 @@ func main() {
 								Version: 1,
 							},
 							Name: "機械工学科",
+							AcademicFields: []models.AcademicField{
+								{
+									BaseModel: models.BaseModel{
+										Version: 1,
+									},
+									Name: "工学",
+								},
+							},
 							AdmissionSchedules: []models.AdmissionSchedule{
 								{
 									BaseModel: models.BaseModel{

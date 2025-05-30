@@ -133,37 +133,23 @@ func connectToDatabase() (*gorm.DB, func()) {
 // - スキーマの適用
 // - トランザクションのコミット
 func migrateDatabase(ctx context.Context, db *gorm.DB) {
-	tx := db.WithContext(ctx).Begin()
-	if tx.Error != nil {
-		log.Fatalf("エラー: トランザクションの開始に失敗しました: %v", tx.Error)
-	}
-
-	if err := tx.Migrator().DropTable(
-		&models.Subject{},
-		&models.TestType{},
-		&models.AdmissionInfo{},
-		&models.AdmissionSchedule{},
-		&models.Major{},
-		&models.Department{},
-		&models.University{},
+	// テーブルの作成
+	if err := db.AutoMigrate(
+		&models.University{},           // 親テーブル
+		&models.Department{},           // 大学の子テーブル
+		&models.Major{},                // 学部の子テーブル
+		&models.AdmissionSchedule{},    // 学科の子テーブル
+		&models.AdmissionInfo{},        // 入試日程の子テーブル
+		&models.TestType{},             // 入試情報の子テーブル
+		&models.Subject{},              // 試験種別の子テーブル
+		&models.Region{},               // 大学の子テーブル（地域）
+		&models.Prefecture{},           // 地域の子テーブル（都道府県）
+		&models.Classification{},       // 大学の子テーブル（設置区分）
+		&models.SubClassification{},    // 設置区分の子テーブル（小分類）
+		&models.AcademicField{},        // 学科の子テーブル（学問系統）
 	); err != nil {
-		handleMigrationError(ctx, tx, err, "テーブルの削除に失敗しました")
-	}
-
-	if err := tx.AutoMigrate(
-		&models.University{},
-		&models.Department{},
-		&models.Major{},
-		&models.AdmissionSchedule{},
-		&models.AdmissionInfo{},
-		&models.TestType{},
-		&models.Subject{},
-	); err != nil {
-		handleMigrationError(ctx, tx, err, "データベースのマイグレーションに失敗しました")
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		log.Fatalf("エラー: トランザクションのコミットに失敗しました: %v", err)
+		handleMigrationError(ctx, db, err, "テーブルの作成に失敗しました")
+		return
 	}
 
 	log.Println("情報: データベースのマイグレーションが正常に完了しました")

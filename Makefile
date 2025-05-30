@@ -98,7 +98,7 @@ dev: verify ## 開発環境を起動
 	$(call MSG_START,開発環境の起動)
 	$(DOCKER_COMPOSE) up -d --build
 	$(call MSG_INFO,コンテナの起動を待機しています...)
-	sleep 15
+	sleep 20
 	$(call MSG_INFO,マイグレーションを実行しています...)
 	$(RUN_MIGRATIONS)
 	$(call MSG_INFO,シードデータを投入しています...)

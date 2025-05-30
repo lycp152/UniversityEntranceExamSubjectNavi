@@ -170,11 +170,16 @@ func (b *BaseModel) BeforeUpdate(_ *gorm.DB) error {
 // - BaseModel: 基本フィールド
 // - Name: 大学名
 // - Departments: 学部一覧
+// - Regions: 地域一覧
+// - Classifications: 設置区分一覧
 type University struct {
 	BaseModel
-	Name        string       `json:"name"` // 大学名
-	_ struct{} `gorm:"not null;uniqueIndex:idx_university_name;size:20;check:name <> ''"`
-	Departments []Department `json:"departments"` // 学部一覧
+	Name            string           `json:"name" gorm:"not null;uniqueIndex:idx_university_name;size:20;check:name <> ''"`
+	Departments     []Department     `json:"departments"`
+	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Regions         []Region         `json:"regions"`
+	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Classifications []Classification `json:"classifications"`
 	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
@@ -326,14 +331,16 @@ func containsSpecialCharacters(s string) bool {
 // - Name: 学科名
 // - Department: 所属学部
 // - AdmissionSchedules: 入試日程一覧
+// - AcademicFields: 学問系統一覧
 type Major struct {
 	BaseModel
-	DepartmentID      uint              `json:"department_id" gorm:"not null;index:idx_major_dept"` // 学部ID
-	Name             string            `json:"name"` // 学科名
-	_ struct{} `gorm:"not null;index:idx_major_name;size:20;check:name <> ''"`
-	Department       Department        `json:"-"` // 所属学部
+	DepartmentID      uint              `json:"department_id" gorm:"not null;index:idx_major_dept"`
+	Name             string            `json:"name" gorm:"not null;index:idx_major_name;size:20;check:name <> ''"`
+	Department       Department        `json:"-"`
 	_ struct{} `gorm:"foreignKey:DepartmentID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty"` // 入試日程一覧
+	AdmissionSchedules []AdmissionSchedule `json:"admission_schedules,omitempty"`
+	_ struct{} `gorm:"foreignKey:MajorID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	AcademicFields   []AcademicField   `json:"academic_fields"`
 	_ struct{} `gorm:"foreignKey:MajorID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
@@ -643,4 +650,77 @@ type TestEnv struct {
 	DB        *gorm.DB     // データベース接続
 	Server    *echo.Echo   // Echoサーバー
 	TestData  map[string]interface{} // テストデータ
+}
+
+// Region は地域エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - UniversityID: 大学ID
+// - Name: 地域名
+// - University: 所属大学
+// - Prefectures: 都道府県一覧
+type Region struct {
+	BaseModel
+	UniversityID uint         `json:"university_id" gorm:"not null;index:idx_region_univ"`
+	Name         string       `json:"name" gorm:"not null;index:idx_region_name;size:20;check:name <> ''"`
+	University   University   `json:"-" gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Prefectures  []Prefecture `json:"prefectures" gorm:"foreignKey:RegionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+// Prefecture は都道府県エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - RegionID: 地域ID
+// - Name: 都道府県名
+// - Region: 所属地域
+type Prefecture struct {
+	BaseModel
+	RegionID uint   `json:"region_id" gorm:"not null;index:idx_prefecture_region"`
+	Name     string `json:"name" gorm:"not null;index:idx_prefecture_name;size:20;check:name <> ''"`
+	Region   Region `json:"-" gorm:"foreignKey:RegionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+// Classification は設置区分エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - UniversityID: 大学ID
+// - Name: 設置区分名（国公立/私立）
+// - University: 所属大学
+// - SubClassifications: 小分類一覧
+type Classification struct {
+	BaseModel
+	UniversityID       uint              `json:"university_id" gorm:"not null;index:idx_classification_univ"`
+	Name              string            `json:"name"`
+	_ struct{} `gorm:"not null;index:idx_classification_name;size:20;check:name in ('国公立','私立')"`
+	University        University        `json:"-"`
+	_ struct{} `gorm:"foreignKey:UniversityID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	SubClassifications []SubClassification `json:"sub_classifications"`
+	_ struct{} `gorm:"foreignKey:ClassificationID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+// SubClassification は設置区分の小分類エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - ClassificationID: 設置区分ID
+// - Name: 小分類名
+// - Classification: 所属設置区分
+type SubClassification struct {
+	BaseModel
+	ClassificationID uint          `json:"classification_id" gorm:"not null;index:idx_sub_classification_class"`
+	Name            string        `json:"name" gorm:"not null;index:idx_sub_classification_name;size:50;check:name <> ''"`
+	Classification  Classification `json:"-"`
+	_ struct{} `gorm:"foreignKey:ClassificationID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+}
+
+// AcademicField は学問系統エンティティを表現する構造体です
+// 以下のフィールドを含みます：
+// - BaseModel: 基本フィールド
+// - MajorID: 学科ID
+// - Name: 学問系統名
+// - Major: 所属学科
+type AcademicField struct {
+	BaseModel
+	MajorID uint   `json:"major_id" gorm:"not null;index:idx_academic_field_major"`
+	Name    string `json:"name" gorm:"not null;index:idx_academic_field_name;size:50;check:name <> ''"`
+	Major   Major  `json:"-" gorm:"foreignKey:MajorID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

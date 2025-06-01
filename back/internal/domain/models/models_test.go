@@ -19,7 +19,7 @@ import (
 const (
 	// longString はテスト用の長い文字列です。
 	// バリデーションの上限チェックに使用されます。
-	longString = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"
+	longString = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんアイウエオ" // 51文字
 	// errExpected はエラーが期待される場合のメッセージです。
 	errExpected = "エラーが期待されましたが、発生しませんでした"
 	// errUnexpected は予期しないエラーが発生した場合のメッセージです。
@@ -677,4 +677,320 @@ func TestBaseModelBeforeUpdate(t *testing.T) {
 	err := baseModel.BeforeUpdate(&gorm.DB{})
 	require.NoError(t, err, "BeforeUpdate() がエラーを返しました")
 	assert.Equal(t, 2, baseModel.Version, "バージョンが期待通りに更新されていません")
+}
+
+// TestFilterOptionValidation はフィルターオプションモデルのバリデーションテストを実行します。
+// 以下のケースをテストします：
+// 1. 正常なフィルターオプション
+// 2. 無効なカテゴリ
+// 3. 無効な名前の長さ
+// 4. 無効な表示順
+// 5. 親子関係の整合性
+func TestFilterOptionValidation(t *testing.T) {
+	t.Parallel()
+
+	t.Log("longString length:", len([]rune(longString)))
+
+	tests := []struct {
+		name         string
+		filterOption *FilterOption
+		wantErr      bool
+	}{
+		{
+			name: "正常な地域フィルターオプション",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 1,
+			},
+			wantErr: false,
+		},
+		{
+			name: "正常な都道府県フィルターオプション",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "PREFECTURE",
+				Name:      "東京",
+				DisplayOrder: 1,
+				Parent: &FilterOption{
+					Category: "REGION",
+					Name:     "関東",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "無効なカテゴリ",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "INVALID",
+				Name:      "テスト",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "地域カテゴリの名前が長すぎる",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東地方全域",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "都道府県カテゴリの名前が長すぎる",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "PREFECTURE",
+				Name:      "東京都全域",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "無効な表示順（負の値）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "無効な表示順（上限超過）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 1000,
+			},
+			wantErr: true,
+		},
+		{
+			name: "無効な親子関係（都道府県の親が地域以外）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "PREFECTURE",
+				Name:      "東京",
+				DisplayOrder: 1,
+				Parent: &FilterOption{
+					Category: "CLASSIFICATION",
+					Name:     "国公立",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "無効な親子関係（小分類の親が分類以外）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "SUB_CLASSIFICATION",
+				Name:      "東京一工",
+				DisplayOrder: 1,
+				Parent: &FilterOption{
+					Category: "REGION",
+					Name:     "関東",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "正常な分類と小分類の関係",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "SUB_CLASSIFICATION",
+				Name:      "東京一工",
+				DisplayOrder: 1,
+				Parent: &FilterOption{
+					Category: "CLASSIFICATION",
+					Name:     "国公立",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "空の名前",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "日程カテゴリの名前が1文字以外",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "SCHEDULE",
+				Name:      "前期",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "学問系統カテゴリの名前が長すぎる",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "ACADEMIC_FIELD",
+				Name:      longString,
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "分類カテゴリの名前が長すぎる",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "CLASSIFICATION",
+				Name:      "あいうえおかきくけこさ", // 11文字
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "表示順の境界値テスト（0）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "表示順の境界値テスト（999）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 999,
+			},
+			wantErr: false,
+		},
+		{
+			name: "正常な日程カテゴリ",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "SCHEDULE",
+				Name:      "前",
+				DisplayOrder: 1,
+			},
+			wantErr: false,
+		},
+		{
+			name: "正常な学問系統カテゴリ",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "ACADEMIC_FIELD",
+				Name:      "工学",
+				DisplayOrder: 1,
+			},
+			wantErr: false,
+		},
+		{
+			name: "正常な分類カテゴリ",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "CLASSIFICATION",
+				Name:      "国公立",
+				DisplayOrder: 1,
+			},
+			wantErr: false,
+		},
+		{
+			name: "空のカテゴリ",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "",
+				Name:      "テスト",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "無効なカテゴリ値",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "INVALID_CATEGORY",
+				Name:      "テスト",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "表示順の境界値テスト（0）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 0,
+			},
+			wantErr: false,
+		},
+		{
+			name: "表示順の境界値テスト（999）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 999,
+			},
+			wantErr: false,
+		},
+		{
+			name: "表示順の無効な値（負の値）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: -1,
+			},
+			wantErr: true,
+		},
+		{
+			name: "表示順の無効な値（1000以上）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 1},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 1000,
+			},
+			wantErr: true,
+		},
+		{
+			name: "BaseModelのバリデーションエラー（Version=0）",
+			filterOption: &FilterOption{
+				BaseModel: BaseModel{Version: 0},
+				Category:  "REGION",
+				Name:      "関東",
+				DisplayOrder: 1,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if tt.name == "分類カテゴリの名前が長すぎる" {
+				t.Log("Category:", tt.filterOption.Category)
+				t.Log("Name:", tt.filterOption.Name)
+				t.Log("Name length:", len([]rune(tt.filterOption.Name)))
+			}
+
+			err := tt.filterOption.Validate()
+			if tt.wantErr {
+				assert.Error(t, err, errExpected)
+			} else {
+				assert.NoError(t, err, errUnexpected, err)
+			}
+		})
+	}
 }

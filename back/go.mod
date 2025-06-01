@@ -18,6 +18,8 @@ require (
 	gorm.io/gorm v1.30.0
 )
 
+require github.com/stretchr/objx v0.5.2 // indirect
+
 require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

@@ -132,12 +132,12 @@ const TableRow: FC<TableRowProps> = ({ subjects, totals, type, showRatio = false
       <TableCell className={`${tableStyles.leftCell} ${tableStyles.scoreCell}`}>
         <span className="text-xl">{getLabel(type)}</span>
       </TableCell>
-      {subjectEntries.map(([subject, scores]) => (
-        <TableCell
-          key={subject}
+        {subjectEntries.map(([subject, scores]) => (
+          <TableCell
+            key={subject}
           className={`${tableStyles.centerCell} ${tableStyles.scoreCell}`}
-          aria-label={`${subject}の${getLabel(type)}`}
-        >
+            aria-label={`${subject}の${getLabel(type)}`}
+          >
           <div className="flex flex-col items-center">
             <span className="text-[1.375rem] font-semibold">{getScore(scores, type)}</span>
             {showRatio && (
@@ -148,20 +148,20 @@ const TableRow: FC<TableRowProps> = ({ subjects, totals, type, showRatio = false
           </div>
         </TableCell>
       ))}
-      <TableCell
+            <TableCell
         className={`${tableStyles.totalCell} ${tableStyles.scoreCell}`}
         aria-label={`合計${getLabel(type)}`}
-      >
+            >
         <div className="flex flex-col items-center">
           <span className="text-[1.375rem] font-semibold">{getTotal(type)}</span>
           {showRatio && (
             <span className="text-base font-normal">
-              {calculatePercentage(getTotal(type), totals.total).toFixed(1)}%
+            {calculatePercentage(getTotal(type), totals.total).toFixed(1)}%
             </span>
           )}
         </div>
-      </TableCell>
-    </UITableRow>
+          </TableCell>
+        </UITableRow>
   );
 };
 

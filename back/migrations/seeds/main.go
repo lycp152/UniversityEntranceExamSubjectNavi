@@ -53,31 +53,50 @@ func calculateAndSetSubjectPercentages(
 // - 新規スキーマの作成
 // - マイグレーションの実行
 func cleanupDatabase(db *gorm.DB) error {
-	// 既存のデータを削除
-	if err := db.Exec("DROP SCHEMA public CASCADE").Error; err != nil {
-		return err
+	// トランザクションを開始
+	tx := db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("トランザクションの開始に失敗しました: %v", tx.Error)
 	}
 
-	if err := db.Exec("CREATE SCHEMA public").Error; err != nil {
-		return err
+	// 既存のテーブルを削除
+	if err := tx.Exec("DROP SCHEMA IF EXISTS public CASCADE").Error; err != nil {
+		if err := tx.Rollback().Error; err != nil {
+			return fmt.Errorf(rollbackErrorMsg, err)
+		}
+
+		return fmt.Errorf("スキーマの削除に失敗しました: %v", err)
 	}
 
-	// スキーマを再作成
-	if err := db.AutoMigrate(
-		&models.University{},           // 親テーブル
-		&models.Department{},           // 大学の子テーブル
-		&models.Major{},                // 学部の子テーブル
-		&models.AdmissionSchedule{},    // 学科の子テーブル
-		&models.AdmissionInfo{},        // 入試日程の子テーブル
-		&models.TestType{},             // 入試情報の子テーブル
-		&models.Subject{},              // 試験種別の子テーブル
-		&models.Region{},               // 大学の子テーブル（地域）
-		&models.Prefecture{},           // 地域の子テーブル（都道府県）
-		&models.Classification{},       // 大学の子テーブル（設置区分）
-		&models.SubClassification{},    // 設置区分の子テーブル（小分類）
-		&models.AcademicField{},        // 学科の子テーブル（学問系統）
-	); err != nil {
-		return fmt.Errorf("マイグレーションの実行に失敗しました: %w", err)
+	// 新しいスキーマを作成
+	if err := tx.Exec("CREATE SCHEMA IF NOT EXISTS public").Error; err != nil {
+		if err := tx.Rollback().Error; err != nil {
+			return fmt.Errorf(rollbackErrorMsg, err)
+		}
+
+		return fmt.Errorf("スキーマの作成に失敗しました: %v", err)
+	}
+
+	// 権限を付与
+	if err := tx.Exec("GRANT ALL ON SCHEMA public TO postgres").Error; err != nil {
+		if err := tx.Rollback().Error; err != nil {
+			return fmt.Errorf(rollbackErrorMsg, err)
+		}
+
+		return fmt.Errorf("権限の付与に失敗しました: %v", err)
+	}
+
+	if err := tx.Exec("GRANT ALL ON SCHEMA public TO public").Error; err != nil {
+		if err := tx.Rollback().Error; err != nil {
+			return fmt.Errorf(rollbackErrorMsg, err)
+		}
+
+		return fmt.Errorf("権限の付与に失敗しました: %v", err)
+	}
+
+	// トランザクションをコミット
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("トランザクションのコミットに失敗しました: %v", err)
 	}
 
 	return nil
@@ -438,6 +457,691 @@ func createAcademicFields(tx *gorm.DB, major *models.Major, academicFields []mod
 	return nil
 }
 
+// createFilterOptions はフィルターオプションのシードデータを作成します
+func createFilterOptions() []models.FilterOption {
+	return []models.FilterOption{
+		// 地域・都道府県
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "北海道",
+			DisplayOrder: 1,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "北海道",
+					DisplayOrder: 1,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "東北",
+			DisplayOrder: 2,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "青森",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "秋田",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "岩手",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "山形",
+					DisplayOrder: 4,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "宮城",
+					DisplayOrder: 5,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "福島",
+					DisplayOrder: 6,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "北関東",
+			DisplayOrder: 3,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "群馬",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "栃木",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "茨城",
+					DisplayOrder: 3,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "南関東",
+			DisplayOrder: 4,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "東京",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "神奈川",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "千葉",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "埼玉",
+					DisplayOrder: 4,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "甲信越",
+			DisplayOrder: 5,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "新潟",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "長野",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "山梨",
+					DisplayOrder: 3,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "北陸",
+			DisplayOrder: 6,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "富山",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "石川",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "福井",
+					DisplayOrder: 3,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "東海",
+			DisplayOrder: 7,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "静岡",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "愛知",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "岐阜",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "三重",
+					DisplayOrder: 4,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "関西",
+			DisplayOrder: 8,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "大阪",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "京都",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "兵庫",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "滋賀",
+					DisplayOrder: 4,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "奈良",
+					DisplayOrder: 5,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "和歌山",
+					DisplayOrder: 6,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "中国",
+			DisplayOrder: 9,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "広島",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "岡山",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "山口",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "鳥取",
+					DisplayOrder: 4,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "島根",
+					DisplayOrder: 5,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "四国",
+			DisplayOrder: 10,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "香川",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "徳島",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "愛媛",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "高知",
+					DisplayOrder: 4,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "REGION",
+			Name: "九州",
+			DisplayOrder: 11,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "福岡",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "佐賀",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "長崎",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "熊本",
+					DisplayOrder: 4,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "大分",
+					DisplayOrder: 5,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "宮崎",
+					DisplayOrder: 6,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "鹿児島",
+					DisplayOrder: 7,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "PREFECTURE",
+					Name: "沖縄",
+					DisplayOrder: 8,
+				},
+			},
+		},
+		// 日程
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "SCHEDULE",
+			Name: "前",
+			DisplayOrder: 1,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "SCHEDULE",
+			Name: "中",
+			DisplayOrder: 2,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "SCHEDULE",
+			Name: "後",
+			DisplayOrder: 3,
+		},
+
+		// 学問系統
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "文学",
+			DisplayOrder: 1,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "心理学",
+			DisplayOrder: 2,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "哲学",
+			DisplayOrder: 3,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "史学・人類学",
+			DisplayOrder: 4,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "社会・社会福祉・観光学",
+			DisplayOrder: 5,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "語学",
+			DisplayOrder: 6,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "法学・政治学",
+			DisplayOrder: 7,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "経済・経営・商学",
+			DisplayOrder: 8,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "教員養成・教育学",
+			DisplayOrder: 9,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "理学",
+			DisplayOrder: 10,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "工学",
+			DisplayOrder: 11,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "農・林・水産・獣医学",
+			DisplayOrder: 12,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "医学",
+			DisplayOrder: 13,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "看護・保健・衛生学",
+			DisplayOrder: 14,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "歯学",
+			DisplayOrder: 15,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "薬学",
+			DisplayOrder: 16,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "生活科学",
+			DisplayOrder: 17,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "芸術学",
+			DisplayOrder: 18,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "体育学",
+			DisplayOrder: 19,
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "ACADEMIC_FIELD",
+			Name: "人間・情報科学・総合科学",
+			DisplayOrder: 20,
+		},
+		// 設置区分
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "CLASSIFICATION",
+			Name: "国公立",
+			DisplayOrder: 1,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "東京一工（東京、京都、一橋、東工）",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "旧帝大（東京、京都、東北、名古屋、大阪、九州）",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "難関国立10大学（東京、京都、一橋、東工、北海道、東北、名古屋、大阪、九州、神戸）",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "筑横千首（筑波、横国、千葉、東京都立）",
+					DisplayOrder: 4,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "電農名繊（電気通信、東京農工、名古屋工業、京都工芸繊維）",
+					DisplayOrder: 5,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "金岡千広（金沢、岡山、千葉、広島）",
+					DisplayOrder: 6,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "5S（埼玉、信州、新潟、静岡、滋賀）",
+					DisplayOrder: 7,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "STARS（佐賀、鳥取、秋田、琉球、島根）",
+					DisplayOrder: 8,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "その他の国立大",
+					DisplayOrder: 9,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "その他の公立大",
+					DisplayOrder: 10,
+				},
+			},
+		},
+		{
+			BaseModel: models.BaseModel{Version: 1},
+			Category: "CLASSIFICATION",
+			Name: "私立",
+			DisplayOrder: 2,
+			Children: []models.FilterOption{
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "早慶上理ICU（早稲田、慶応、上智、東京理科、ICU）",
+					DisplayOrder: 1,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "私立医大四天王（慶応、東京慈恵会医科、日本医科、順天堂）",
+					DisplayOrder: 2,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "SMART（明治、青山、立教、上智、東京理科）",
+					DisplayOrder: 3,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "GMARCH（明治、青山、立教、中央、法政、学習院）",
+					DisplayOrder: 4,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "関関同立（関西、関西学院、同志社、立命館）",
+					DisplayOrder: 5,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "五美大（多摩美術、女子美術、東京造形、日大藝術、武蔵野美術）",
+					DisplayOrder: 6,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "成成明学（成蹊、成城、明治学院）",
+					DisplayOrder: 7,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "四工大（芝浦工業、東京都市、東京電機、工学院）",
+					DisplayOrder: 8,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "日東駒専（日本、東洋、駒澤、専修）",
+					DisplayOrder: 9,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "産近甲龍（京都産業、近畿、甲南、龍谷）",
+					DisplayOrder: 10,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "愛愛名中+南山（愛知、愛知学院、名城、中京、南山）",
+					DisplayOrder: 11,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "大東亜帝国（大東文化、東海、亜細亜、帝京、国士舘）",
+					DisplayOrder: 12,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "摂神追桃（摂南、神戸学院、追手門学院、桃山学院）",
+					DisplayOrder: 13,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "関東上流江戸桜(関東学院、上武、流通経済、江戸川、桜美林)",
+					DisplayOrder: 14,
+				},
+				{
+					BaseModel: models.BaseModel{Version: 1},
+					Category: "SUB_CLASSIFICATION",
+					Name: "その他の私立大",
+					DisplayOrder: 15,
+				},
+			},
+		},
+	}
+}
+
 // main はシードデータの投入を実行します
 // この関数は以下の処理を行います：
 // - 環境変数の設定
@@ -455,11 +1159,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	// データベース接続の確立
+	// データベース接続
 	db, err := database.NewDB()
 	if err != nil {
-		log.Printf("データベース接続に失敗しました: %v", err)
-		os.Exit(1)
+		log.Fatalf("データベース接続に失敗しました: %v", err)
 	}
 
 	// データベースのクリーンアップ
@@ -468,27 +1171,42 @@ func main() {
 		os.Exit(1)
 	}
 
-	// トランザクションの開始
+	// トランザクション開始
 	tx := db.Begin()
 	if tx.Error != nil {
-		log.Printf("トランザクションの開始に失敗しました: %v", tx.Error)
-		os.Exit(1)
+		log.Fatalf("トランザクションの開始に失敗しました: %v", tx.Error)
 	}
 
-	// パニック時のロールバック処理
-	defer func() {
-		if r := recover(); r != nil {
-			if err := tx.Rollback().Error; err != nil {
-				log.Printf(rollbackErrorMsg, err)
-			}
-
-			log.Printf("パニックが発生しました: %v", r)
-			os.Exit(1)
-		}
-	}()
+	// テーブルの存在確認と作成
+	if err := tx.AutoMigrate(
+		&models.University{},
+		&models.Department{},
+		&models.Major{},
+		&models.AdmissionSchedule{},
+		&models.AdmissionInfo{},
+		&models.TestType{},
+		&models.Subject{},
+		&models.Region{},
+		&models.Prefecture{},
+		&models.Classification{},
+		&models.SubClassification{},
+		&models.AcademicField{},
+		&models.FilterOption{},
+	); err != nil {
+		tx.Rollback()
+		log.Fatalf("テーブルの作成に失敗しました: %v", err)
+	}
 
 	// シードデータの定義
 	currentYear := 2024
+
+	// フィルターオプションのシードデータを投入
+	filterOptions := createFilterOptions()
+	if err := seedFilterOptions(tx, filterOptions); err != nil {
+		tx.Rollback()
+		log.Fatalf("フィルターオプションのシードデータ投入に失敗しました: %v", err)
+	}
+
 	universities := []models.University{
 		{
 			BaseModel: models.BaseModel{
@@ -705,21 +1423,40 @@ func main() {
 
 	// シードデータの投入
 	if err := seedUniversities(tx, universities); err != nil {
-		if err := tx.Rollback().Error; err != nil {
-			log.Printf(rollbackErrorMsg, err)
-		}
-
-		log.Printf("シードデータの投入に失敗しました: %v", err)
+		tx.Rollback()
+		log.Fatalf("シードデータの投入に失敗しました: %v", err)
 	}
 
 	// トランザクションのコミット
 	if err := tx.Commit().Error; err != nil {
-		if err := tx.Rollback().Error; err != nil {
-			log.Printf(rollbackErrorMsg, err)
-		}
-
 		log.Printf("トランザクションのコミットに失敗しました: %v", err)
+		return
 	}
 
 	log.Println("シードデータの投入が正常に完了しました")
+}
+
+// seedFilterOptions はフィルターオプションのシードデータを投入します
+func seedFilterOptions(tx *gorm.DB, options []models.FilterOption) error {
+	// 親子関係を考慮して投入する必要があるため、2段階で処理
+	// 1. 親レコードの投入
+	for _, option := range options {
+		children := option.Children
+		option.Children = nil // 子レコードを一時的に切り離す
+
+		if err := tx.Create(&option).Error; err != nil {
+			return fmt.Errorf("フィルターオプション '%s' の作成に失敗: %w", option.Name, err)
+		}
+
+		// 2. 子レコードの投入
+		for i := range children {
+			children[i].ParentID = &option.ID
+			if err := tx.Create(&children[i]).Error; err != nil {
+				return fmt.Errorf("フィルターオプション '%s' の子レコード '%s' の作成に失敗: %w",
+					option.Name, children[i].Name, err)
+			}
+		}
+	}
+
+	return nil
 }

@@ -38,7 +38,7 @@ jobs:
   dependency-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # pnpmのインストール
       - name: Install pnpm
@@ -49,7 +49,7 @@ jobs:
 
       # Node.jsのセットアップ
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
           cache: "pnpm"
@@ -116,7 +116,7 @@ jobs:
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: "./dependency-check-report.sarif"
           checkout_path: ${{ github.workspace }}
@@ -127,14 +127,14 @@ jobs:
   code-scanning:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # 完全な履歴を取得
           fetch-depth: 0
 
       # Goのセットアップ
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: "1.24.2"
           cache: true
@@ -142,7 +142,7 @@ jobs:
 
       # CodeQLの初期化と設定
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: "go,javascript,typescript"
           queries: security-extended,security-and-quality
@@ -152,11 +152,11 @@ jobs:
 
       # 自動ビルドの実行
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
 
       # CodeQL分析の実行
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "code-scanning"
           upload: true
@@ -166,7 +166,7 @@ jobs:
   secret-scanning:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # 完全な履歴を取得
           fetch-depth: 0
@@ -223,7 +223,7 @@ jobs:
 
       # スキャン結果をSARIF形式でアップロード
       - name: Upload dependency scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: "./dependency-check-report.sarif"
           checkout_path: ${{ github.workspace }}

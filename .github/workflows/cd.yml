@@ -36,7 +36,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v3
       - name: Validate docker compose file
         run: docker compose -f deployments/docker/production/docker-compose.yml config
@@ -46,7 +46,7 @@ jobs:
     needs: validate # validateジョブの完了を待機
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -60,7 +60,7 @@ jobs:
           cache-dir: .trivycache/
 
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: "trivy-results.sarif"
           category: "security-scan"
@@ -71,7 +71,7 @@ jobs:
     needs: validate # validateジョブの完了を待機
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v3
         with:
           driver-opts: |
